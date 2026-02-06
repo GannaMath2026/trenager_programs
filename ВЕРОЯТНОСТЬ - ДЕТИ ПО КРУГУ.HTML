@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вероятность соседства ✨</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial; 
+            background: linear-gradient(135deg, #0c0c0c, #1a1a2e, #16213e); 
+            color: #ffdd44; 
+            margin: 0; padding: 20px; 
+            min-height: 100vh;
+            font-weight: bold;
+        }
+        .header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 36px; text-shadow: 0 0 20px #aa00ff; margin-bottom: 10px; font-weight: bold; }
+        .condition { 
+            font-size: 22px; font-weight: bold; 
+            margin: 0 auto 40px; padding: 20px; 
+            background: rgba(255,23,68,0.2); 
+            border: 2px solid #ff1744; 
+            border-radius: 15px;
+            text-align: center; max-width: 800px;
+            line-height: 1.4;
+        }
+        .main-container { 
+            display: flex; gap: 40px; max-width: 1400px; margin: 0 auto; 
+            align-items: flex-start; 
+        }
+        canvas { 
+            border: 3px solid #aa00ff; 
+            background: radial-gradient(circle, #0f0f23, #000); 
+            box-shadow: 0 0 30px #aa00ff, inset 0 0 30px rgba(170,0,255,0.1);
+            border-radius: 20px; cursor: pointer;
+        }
+        .controls { 
+            background: rgba(170,0,255,0.1); 
+            padding: 25px; 
+            border-radius: 15px; 
+            border: 2px solid #aa00ff; 
+            backdrop-filter: blur(10px);
+            width: 280px;
+        }
+        .result { 
+            font-size: 28px; font-weight: bold; 
+            padding: 30px; 
+            border: 2px solid #aa00ff; 
+            border-radius: 15px; 
+            background: rgba(170,0,255,0.15); 
+            box-shadow: 0 0 25px rgba(170,0,255,0.5);
+            text-shadow: 0 0 10px #aa00ff; 
+            width: 320px;
+            height: 220px; display: flex; flex-direction: column; justify-content: center;
+        }
+        input, select, button { 
+            font-size: 18px; padding: 12px 15px; 
+            border: 2px solid #aa00ff; 
+            border-radius: 10px; 
+            background: rgba(170,0,255,0.2); 
+            color: #ffdd44; 
+            font-weight: bold; width: 100%;
+            margin: 8px 0; box-sizing: border-box;
+        }
+        button:hover { 
+            background: rgba(170,0,255,0.4); 
+            box-shadow: 0 0 15px #aa00ff;
+        }
+        label { display: block; margin: 15px 0; font-size: 18px; color: #ffdd44; font-weight: bold; }
+        option { 
+            color: #ffdd44 !important; 
+            background: rgba(170,0,255,0.3) !important;
+            font-weight: bold;
+        }
+        select:focus, button:focus, input:focus { 
+            box-shadow: 0 0 20px #aa00ff;
+            border-color: #ff00ff;
+        }
+        .info {
+            font-size: 16px; color: #ffaa88; margin-top: 10px; font-weight: bold;
+        }
+        .answer-label {
+            font-size: 20px; color: #00ff88; margin-bottom: 5px; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 Вероятность соседства в круге ✨</h1>
+    </div>
+    
+    <div class="condition" id="condition">
+        Маша встала. Выбери условие для второй девочки!
+    </div>
+    
+    <div class="main-container">
+        <div class="controls">
+            <label>Всего детей: 
+                <input type="number" id="total" value="18" min="4" max="25" onchange="drawCircle()">
+            </label>
+            <label>Условие для второй девочки: 
+                <select id="distance" onchange="onConditionChange()">
+                    <option value="-1">— Выбери условие —</option>
+                    <option value="0">≠1 (не рядом)</option>
+                </select>
+            </label>
+            <button onclick="clearSecondGirls()">🔄 Сбросить все отметки</button>
+            <div class="info" id="clickInfo">🔘 Выбери условие или сброс → ручной выбор позиций</div>
+        </div>
+        
+        <canvas id="circle" width="500" height="500"></canvas>
+        
+        <div id="result" class="result">
+            Выбери условие!
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('circle');
+        const ctx = canvas.getContext('2d');
+        const centerX = 250, centerY = 250, radius = 180;
+        let secondGirlsPos = [];
+        let clickMode = false;
+        let isManualMode = false;
+
+        // ✅ ПРАВИЛЬНОЕ склонение ИМЕНИТЕЛЬНЫЙ падеж "23 ребёнка, 21 мальчик"
+       function getChildrenNominativeDeclension(count) {
+    if (count === 1) return '1 ребёнок';
+    const lastDigit = count % 10;
+    const lastTwoDigits = count % 100;
+    
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 19) return `${count} детей`;
+    if (lastDigit === 1) return `${count} ребёнок`;
+    if (lastDigit >= 2 && lastDigit <= 4) return `${count} ребёнка`;
+    return `${count} детей`;
+}
+
+        // ✅ ПРАВИЛЬНОЕ склонение РОДИТЕЛЬНЫЙ падеж "из 23 детей, 21 мальчик"
+        function getChildrenGenitiveDeclension(count) {
+            if (count === 1) return '1 ребёнка';
+            if (count >= 2 && count <= 4) return `${count} ребёнка`;
+            return `${count} детей`;
+        }
+
+        // ✅ ПОЛНАЯ ЛОГИКА склонения МАЛЬЧИКОВ (именительный падеж)
+function getBoysNominativeDeclension(count) {
+    if (count === 0) return '0 мальчиков';
+    if (count === 1) return '1 мальчик';
+    
+    const lastDigit = count % 10;
+    const lastTwoDigits = count % 100;
+    
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 19) return `${count} мальчиков`;
+    if (lastDigit === 1) return `${count} мальчик`;
+    if (lastDigit >= 2 && lastDigit <= 4) return `${count} мальчика`;
+    return `${count} мальчиков`;
+}
+
+        function getBoysGenitiveDeclension(count) {
+            if (count === 1) return '1 мальчика';
+            if (count >= 2 && count <= 4) return `${count} мальчика`;
+            return `${count} мальчиков`;
+        }
+
+        // Склонение для "между девочками"
+        function getBoysBetweenDeclension(count) {
+            if (count === 0) return 'девочки рядом';
+            if (count === 1) return 'между девочками 1 мальчик';
+            if (count >= 2 && count <= 4) return `между девочками ${count} мальчика`;
+            return `между девочками ${count} мальчиков`;
+        }
+
+        function onConditionChange() {
+            secondGirlsPos = [];
+            clickMode = false;
+            isManualMode = false;
+            document.getElementById('clickInfo').textContent = '🔘 Выбери условие или сброс → ручной выбор позиций';
+            drawCircle();
+        }
+
+        function clearSecondGirls() {
+            secondGirlsPos = [];
+            clickMode = true;
+            isManualMode = true;
+            document.getElementById('distance').value = '-1';
+            document.getElementById('clickInfo').textContent = '✅ КЛИКАЙ на кружки для ручного выбора позиций 👧';
+            document.getElementById('condition').textContent = 'Маша встала. Выбери условие для второй девочки!';
+            document.getElementById('result').innerHTML = 'Выбери условие!';
+            drawCircle();
+        }
+
+        function getPositionFromClick(x, y, n) {
+            const dx = x - centerX;
+            const dy = y - centerY;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            if (distance > radius + 40 || distance < radius - 40) return -1;
+            
+            let angle = Math.atan2(dy, dx);
+            if (angle < 0) angle += 2 * Math.PI;
+            
+            const mashkaAngle = Math.PI / 2;
+            let pos = Math.round(((mashkaAngle - angle + 2 * Math.PI) % (2 * Math.PI)) * n / (2 * Math.PI));
+            return pos;
+        }
+
+        canvas.addEventListener('click', function(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            const n = parseInt(document.getElementById('total').value);
+            const pos = getPositionFromClick(x, y, n);
+            
+            if (pos > 0 && pos < n) {
+                if (!isManualMode) {
+                    secondGirlsPos = [];
+                    isManualMode = true;
+                    clickMode = true;
+                    document.getElementById('distance').value = '-1';
+                    document.getElementById('clickInfo').textContent = '✅ РУЧНОЙ РЕЖИМ: КЛИКАЙ на кружки 👧';
+                }
+                
+                if (secondGirlsPos.includes(pos)) {
+                    secondGirlsPos = secondGirlsPos.filter(p => p !== pos);
+                } else {
+                    secondGirlsPos.push(pos);
+                }
+                
+                const positionsText = secondGirlsPos.map(p => p.toString()).join(', ');
+                if (secondGirlsPos.length > 0) {
+                    document.getElementById('clickInfo').textContent = `✅ Выбраны позиции: ${positionsText}`;
+                } else {
+                    document.getElementById('clickInfo').textContent = '✅ КЛИКАЙ на кружки для ручного выбора позиций 👧';
+                }
+                drawCircle();
+            }
+        });
+
+        function drawCircle() {
+            const n = parseInt(document.getElementById('total').value);
+            const k = parseInt(document.getElementById('distance').value);
+            const boysCount = n - 2;
+            
+            const childrenNominativeText = getChildrenNominativeDeclension(n);
+            const boysNominativeText = getBoysNominativeDeclension(boysCount);
+            const boysGenitiveText = getBoysGenitiveDeclension(boysCount);
+            
+            // ✅ БЕЗ НУМЕРАЦИИ - ТОЛЬКО условия
+            const select = document.getElementById('distance');
+            select.innerHTML = '<option value="-1">— Выбери условие —</option><option value="0">≠1 (не рядом)</option>';
+            const maxDist = Math.floor(n / 2);
+            for (let i = 1; i <= maxDist; i++) {
+                const boysBetween = i - 1;
+                const betweenText = getBoysBetweenDeclension(boysBetween);
+                const option = new Option(betweenText, i);
+                select.appendChild(option);
+            }
+            if (k >= 0 && k <= maxDist) select.value = k;
+            
+            ctx.clearRect(0, 0, 500, 500);
+            
+            // Круг
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#aa00ff';
+            ctx.lineWidth = 5;
+            ctx.shadowColor = '#aa00ff';
+            ctx.shadowBlur = 20;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            
+            // Маша
+            const mashkaAngle = Math.PI / 2;
+            const mashX = centerX + radius * Math.cos(mashkaAngle);
+            const mashY = centerY + radius * Math.sin(mashkaAngle);
+            
+            ctx.beginPath();
+            ctx.arc(mashX, mashY, 28, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ff69b4';
+            ctx.shadowColor = '#ff69b4';
+            ctx.shadowBlur = 30;
+            ctx.fill();
+            ctx.strokeStyle = '#ff1493';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 28px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('👧', mashX, mashY + 20);
+            ctx.font = 'bold 18px Arial';
+            ctx.fillStyle = '#fff';
+            ctx.fillText('МАША', mashX, mashY + 48);
+            
+            // ЛОГИКА вероятностей
+            let goodCases = 0;
+            let conditionText = 'Маша встала. Выбери условие для второй девочки!';
+            
+            if (secondGirlsPos.length > 0) {
+                goodCases = secondGirlsPos.length;
+                const positionsList = secondGirlsPos.map(p => `${p}`).join(', ');
+                conditionText = `${childrenNominativeText} встали в круг. Среди них 2 девочки, ${boysNominativeText}. Найдите вероятность того, что 2-я девочка находится на позиции: ${positionsList}`;
+            } else if (k === 0) {
+                goodCases = n - 3;
+                conditionText = `${childrenNominativeText} встали в круг. Среди них 2 девочки, ${boysNominativeText}. Найдите вероятность того, что девочки стоят не рядом`;
+            } else if (k > 0) {
+                const boysBetween = k - 1;
+                const betweenText = getBoysBetweenDeclension(boysBetween);
+                for (let i = 1; i < n; i++) {
+                    const distClockwise = i;
+                    const distCounterClockwise = n - i;
+                    const minDist = Math.min(distClockwise, distCounterClockwise);
+                    if (minDist === k) goodCases++;
+                }
+                conditionText = `${childrenNominativeText} встали в круг. Среди них 2 девочки, ${boysNominativeText}. Найдите вероятность того, что ${betweenText}`;
+            }
+            
+            document.getElementById('condition').textContent = conditionText;
+            
+            // Остальные позиции
+            for (let i = 1; i < n; i++) {
+                const angle = mashkaAngle - (2 * Math.PI * i / n);
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                
+                const isSecondGirl = secondGirlsPos.includes(i);
+                const distClockwise = i;
+                const distCounterClockwise = n - i;
+                const minDist = Math.min(distClockwise, distCounterClockwise);
+                const isGoodPosition = secondGirlsPos.length === 0 && 
+                    ((k === 0 && minDist > 1) || (k > 0 && minDist === k));
+                
+                ctx.beginPath();
+                ctx.arc(x, y, isSecondGirl ? 28 : (isGoodPosition ? 24 : 20), 0, 2 * Math.PI);
+                
+                if (isSecondGirl) {
+                    ctx.fillStyle = '#ffff00';
+                    ctx.shadowColor = '#ffff00';
+                    ctx.shadowBlur = 35;
+                } else if (isGoodPosition) {
+                    ctx.fillStyle = '#aa00ff';
+                    ctx.shadowColor = '#aa00ff';
+                    ctx.shadowBlur = 25;
+                } else {
+                    ctx.fillStyle = '#444';
+                    ctx.shadowColor = '#333';
+                    ctx.shadowBlur = 5;
+                }
+                
+                ctx.fill();
+                ctx.strokeStyle = isSecondGirl ? '#ffaa00' : (isGoodPosition ? '#dd33ff' : '#666');
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 24px Arial';
+                ctx.textBaseline = 'bottom';
+                
+                if (isSecondGirl) {
+                    ctx.fillText('👧', x, y + 16);
+                    ctx.font = 'bold 16px Arial';
+                    ctx.fillText('ПОЗ.' + i, x, y + 43);
+                } else if (isGoodPosition) {
+                    ctx.fillText('👧', x, y + 14);
+                } else {
+                    ctx.fillText('👦', x, y + 12);
+                }
+            }
+            
+            // ОТВЕТ
+            if (secondGirlsPos.length > 0 || k >= 0) {
+                const totalPositions = n - 1;
+                const prob = (goodCases / totalPositions).toFixed(3);
+                document.getElementById('result').innerHTML = 
+                    `<div class="answer-label">📊 ОТВЕТ:</div>
+                     <div style="font-size: 34px; margin-bottom: 15px;">P = <span style="color:#aa00ff;">${prob}</span></div>
+                     <div style="font-size: 22px;">${goodCases} из ${n-1}</div>
+                     <div style="font-size: 24px; color:#ffdd44; text-shadow: 0 0 15px #aa00ff;">${goodCases}/${n-1}</div>`;
+            } else {
+                document.getElementById('result').innerHTML = 'Выбери условие!';
+            }
+        }
+        
+        drawCircle();
+    </script>
+</body>
+</html>
