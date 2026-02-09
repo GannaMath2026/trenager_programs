@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Python Runner + Tasks</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+
+<style>
+body {
+    margin: 0;
+    background: #0f172a;
+    color: white;
+    font-family: Segoe UI, Tahoma, sans-serif;
+    padding: 12px;
+}
+
+.toolbar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+button, input, select {
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 8px;
+    border: none;
+}
+
+button {
+    cursor: pointer;
+    background: #3b82f6;
+    color: white;
+}
+
+button.gray { background:#64748b; }
+button.green { background:#10b981; }
+button.red { background:#ef4444; }
+
+button.active {
+    outline: 3px solid #facc15;
+}
+
+#taskImage {
+    max-width: 100%;
+    max-height: 240px;
+    display: none;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: 2px solid #334155;
+    transform: scale(1.1);
+    transform-origin: top left;
+}
+
+#answerInput {
+    width: 100%;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    font-size: 18px;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    height: calc(100vh - 260px);
+}
+
+textarea, #output {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    border: none;
+    padding: 14px;
+    font-family: Consolas, monospace;
+    font-size: 18px;
+    line-height: 1.5;
+    background: #020617;
+    color: #e5e7eb;
+}
+
+#code { margin-top: 12px; }
+
+#output {
+    white-space: pre-wrap;
+    overflow-y: auto;
+    color: #22c55e;
+}
+
+#drawCanvas {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.error { color:#ef4444; }
+</style>
+</head>
+
+<body>
+
+<div class="toolbar">
+    <button onclick="pasteImage()">📋 Условие</button>
+
+    <input id="taskName" placeholder="Имя задачи">
+    <button onclick="addTask()">💾 Сохранить</button>
+
+    <select id="taskSelect" onchange="selectTask()">
+        <option value="">— задачи —</option>
+    </select>
+
+    <button class="gray" onclick="importTasks()">⬆ Импорт</button>
+    <button class="gray" onclick="exportTasks()">⬇ Экспорт</button>
+
+    <button class="green" onclick="runPython()">▶ Run</button>
+    <button class="gray" onclick="copyCode()">📋 Копировать код</button>
+
+    <button id="drawBtn" onclick="toggleDraw()">✏️ Рисование</button>
+    <input type="color" id="colorPicker" value="#ffff00">
+    <button class="gray" onclick="undo()">↩ Undo</button>
+    <button class="red" onclick="clearCanvas()">🧹 Очистить</button>
+</div>
+
+<img id="taskImage">
+
+<input id="answerInput" placeholder="Верный ответ">
+
+<div class="main">
+    <textarea id="code">print("Привет, Python")</textarea>
+    <div id="output">Загрузка Python…</div>
+</div>
+
+<canvas id="drawCanvas"></canvas>
+<input type="file" id="importFile" accept=".json" hidden>
+
+<script>
+/* ================= PYTHON ================= */
+let pyodide, ready=false;
+async function initPy() {
+    pyodide = await loadPyodide();
+    ready = true;
+    output.textContent = "Python готов.";
+}
+initPy();
+
+async function runPython() {
+    if (!ready) return;
+    try {
+        pyodide.runPython(`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+        `);
+        pyodide.runPython(code.value);
+        output.textContent =
+            pyodide.runPython("sys.stdout.getvalue()") || "Без вывода";
+        output.className="";
+    } catch (e) {
+        output.textContent = e;
+        output.className="error";
+    }
+}
+
+/* ================= COPY ================= */
+function copyCode() {
+    navigator.clipboard.writeText(code.value);
+    alert("Код скопирован");
+}
+
+/* ================= TASKS ================= */
+let tasks = [];
+let current = -1;
+
+function addTask() {
+    const name = taskName.value.trim();
+    if (!name) {
+        alert("Введите имя задачи");
+        return;
+    }
+
+    const data = {
+        name,
+        code: code.value,
+        answer: answerInput.value,
+        image: taskImage.src || ""
+    };
+
+    const idx = tasks.findIndex(t => t.name === name);
+    if (idx !== -1) {
+        if (!confirm(`Задача «${name}» уже существует.\nЗаменить её?`)) return;
+        tasks[idx] = data;
+        showTask(idx);
+    } else {
+        tasks.push(data);
+        showTask(tasks.length - 1);
+    }
+    updateSelect();
+}
+
+function updateSelect() {
+    taskSelect.innerHTML = '<option value="">— задачи —</option>';
+    tasks.forEach((t,i)=>{
+        const o = document.createElement("option");
+        o.value = i;
+        o.textContent = `${i+1}. ${t.name}`;
+        taskSelect.appendChild(o);
+    });
+}
+
+function showTask(i) {
+    const t = tasks[i];
+    current = i;
+    code.value = t.code;
+    answerInput.value = t.answer;
+    if (t.image) {
+        taskImage.src = t.image;
+        taskImage.style.display = "block";
+    } else {
+        taskImage.style.display = "none";
+    }
+    taskSelect.value = i;
+}
+
+function selectTask() {
+    if (taskSelect.value !== "") showTask(+taskSelect.value);
+}
+
+function exportTasks() {
+    const blob = new Blob([JSON.stringify(tasks,null,2)],{type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "tasks.json";
+    a.click();
+}
+
+function importTasks() { importFile.click(); }
+importFile.onchange = () => {
+    const r = new FileReader();
+    r.onload = () => {
+        tasks.push(...JSON.parse(r.result));
+        updateSelect();
+    };
+    r.readAsText(importFile.files[0]);
+};
+
+/* ================= IMAGE ================= */
+async function pasteImage() {
+    const items = await navigator.clipboard.read();
+    for (const item of items)
+        for (const type of item.types)
+            if (type.startsWith("image/")) {
+                const blob = await item.getType(type);
+                const reader = new FileReader();
+                reader.onload = () => {
+                    taskImage.src = reader.result;
+                    taskImage.style.display = "block";
+                };
+                reader.readAsDataURL(blob);
+            }
+}
+
+/* ================= CANVAS ================= */
+const canvas = drawCanvas;
+const ctx = canvas.getContext("2d");
+let drawEnabled=false, drawing=false, history=[];
+let color = colorPicker.value;
+
+function resize() {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+}
+resize();
+addEventListener("resize", resize);
+
+colorPicker.oninput = e => color = e.target.value;
+
+function toggleDraw() {
+    drawEnabled = !drawEnabled;
+    canvas.style.pointerEvents = drawEnabled ? "auto" : "none";
+    drawBtn.classList.toggle("active", drawEnabled);
+}
+
+canvas.addEventListener("pointerdown", e => {
+    if (!drawEnabled) return;
+    drawing = true;
+    history.push(ctx.getImageData(0,0,canvas.width,canvas.height));
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(e.clientX, e.clientY);
+});
+canvas.addEventListener("pointermove", e => {
+    if (!drawing) return;
+    ctx.lineTo(e.clientX, e.clientY);
+    ctx.stroke();
+});
+canvas.addEventListener("pointerup", () => drawing=false);
+canvas.addEventListener("pointerleave", () => drawing=false);
+
+function undo() {
+    if (history.length) ctx.putImageData(history.pop(),0,0);
+}
+function clearCanvas() {
+    history.push(ctx.getImageData(0,0,canvas.width,canvas.height));
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && drawEnabled) toggleDraw();
+});
+
+/* ================= PYTHON INDENT ================= */
+const TAB="    ";
+code.addEventListener("keydown", e => {
+    const s = code.selectionStart;
+    const v = code.value;
+
+    if (e.key === "Tab") {
+        e.preventDefault();
+        code.value = v.slice(0,s)+TAB+v.slice(code.selectionEnd);
+        code.selectionStart = code.selectionEnd = s+4;
+    }
+
+    if (e.key === "Enter") {
+        e.preventDefault();
+        const ls = v.lastIndexOf("\n",s-1)+1;
+        let ind = (v.slice(ls,s).match(/^\s*/)||[""])[0];
+        if (v.slice(ls,s).trim().endsWith(":")) ind += TAB;
+        code.value = v.slice(0,s)+"\n"+ind+v.slice(s);
+        code.selectionStart = code.selectionEnd = s+1+ind.length;
+    }
+});
+</script>
+
+</body>
+</html>
