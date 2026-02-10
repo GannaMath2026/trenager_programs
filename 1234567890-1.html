@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Шарик в квадрате</title>
+    <style>
+        body { margin: 0; background: #222; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        canvas { border: 2px solid #fff; background: #000; cursor: crosshair; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="500" height="500"></canvas>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Шарик
+        let x = 250, y = 250, vx = 0, vy = 0, radius = 20;
+        let friction = 0.98; // Замедление
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Рисуем шарик
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#0ff';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Границы квадрата
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(radius, radius, canvas.width - 2*radius, canvas.height - 2*radius);
+        }
+        
+        function update() {
+            // Движение
+            x += vx;
+            y += vy;
+            
+            // Отбой от стен
+            if (x - radius < 0 || x + radius > canvas.width) vx *= -1;
+            if (y - radius < 0 || y + radius > canvas.height) vy *= -1;
+            
+            // Замедление
+            vx *= friction;
+            vy *= friction;
+            
+            // Остановка
+            if (Math.abs(vx) < 0.1) vx = 0;
+            if (Math.abs(vy) < 0.1) vy = 0;
+            
+            draw();
+            requestAnimationFrame(update);
+        }
+        
+        // Клик - летит к точке
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const targetX = e.clientX - rect.left;
+            const targetY = e.clientY - rect.top;
+            
+            vx = (targetX - x) * 0.1;
+            vy = (targetY - y) * 0.1;
+        });
+        
+        update();
+    </script>
+</body>
+</html>
