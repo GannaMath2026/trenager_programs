@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🦘 Прыгающая точка MOBILE</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            height: 100vh; overflow: hidden;
+            touch-action: none; /* Отключаем зум/скролл */
+            display: flex; flex-direction: column;
+        }
+        .header {
+            background: rgba(255,255,255,0.2); backdrop-filter: blur(20px);
+            padding: 15px; text-align: center; color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        h1 { 
+            font-size: 22px; margin: 0; 
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4); 
+        }
+        .info { 
+            font-size: 14px; opacity: 0.95; margin-top: 3px; 
+        }
+        .canvas-container {
+            flex: 1; position: relative; 
+            cursor: crosshair; -webkit-tap-highlight-color: transparent;
+        }
+        #gameCanvas {
+            width: 100%; height: 100%; display: block;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, transparent 70%);
+            touch-action: none;
+        }
+        .controls {
+            position: absolute; bottom: 20px; left: 50%;
+            transform: translateX(-50%); 
+            background: rgba(255,255,255,0.25); backdrop-filter: blur(15px);
+            padding: 12px 24px; border-radius: 40px; 
+            border: 2px solid rgba(255,255,255,0.4);
+            color: white; font-weight: 600; font-size: 16px;
+            cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            min-height: 48px; display: flex; align-items: center;
+            user-select: none; -webkit-user-select: none;
+        }
+        .controls:active {
+            transform: translateX(-50%) translateY(2px) scale(0.95);
+            background: rgba(255,255,255,0.35);
+        }
+        .stats {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(12px);
+            padding: 12px 12px 8px; border-radius: 12px; 
+            color: white; font-family: monospace; font-size: 12px;
+            min-width: 100px; text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .stat-item { margin: 4px 0; }
+        .stat-value { color: #ffd700; font-size: 16px; font-weight: bold; }
+        .target-indicator {
+            position: absolute; pointer-events: none;
+            width: 35px; height: 35px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 70%);
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.2s ease-out;
+            box-shadow: 0 0 18px rgba(255,255,255,0.7);
+        }
+        .target-indicator.active {
+            transform: translate(-50%, -50%) scale(1);
+            animation: pulse 0.8s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 18px rgba(255,255,255,0.7); }
+            50% { box-shadow: 0 0 35px rgba(255,255,255,1); }
+        }
+        .speech-bubble {
+            position: absolute; pointer-events: none;
+            background: rgba(0,0,0,0.95); color: #fff;
+            padding: 12px 20px; border-radius: 25px;
+            font-weight: bold; font-size: 20px;
+            transform: translate(-50%, -100%) scale(0);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+            border: 3px solid #ffeb3b;
+            text-shadow: 2px 2px 4px rgba(0,0,0,1);
+            font-family: 'Comic Sans MS', cursive;
+            animation: bubbleMagic 1.8s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes bubbleMagic {
+            0% { transform: translate(-50%, -100%) scale(0); opacity: 0; }
+            20% { transform: translate(-50%, -100%) scale(1.2); opacity: 1; }
+            60% { transform: translate(-50%, -100%) scale(0.9); opacity: 1; }
+            80% { transform: translate(-50%, -100%) scale(0.7); opacity: 1; }
+            100% { transform: translate(-50%, -100%) scale(0); opacity: 0; }
+        }
+        .snowflake, .spark {
+            position: absolute; pointer-events: none;
+            background: #fff; border-radius: 50%;
+            box-shadow: 0 0 6px rgba(255,255,255,0.9);
+            animation: snowFall linear forwards;
+            z-index: 50;
+        }
+        @keyframes snowFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(150px) rotate(720deg); opacity: 0; }
+        }
+        /* 🎮 МОБАЙЛ КНОПКИ */
+        .mobile-controls {
+            position: absolute; bottom: 90px; left: 20px; right: 20px;
+            display: flex; gap: 15px; justify-content: center;
+        }
+        .mobile-btn {
+            width: 60px; height: 60px; border-radius: 50%;
+            border: none; font-size: 20px; color: white;
+            background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);
+            cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .mobile-btn:active {
+            transform: scale(0.9); background: rgba(255,255,255,0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🦘 Прыгающая точка</h1>
+        <div class="info">👆 Касайся экрана!</div>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="gameCanvas"></canvas>
+        <div class="target-indicator" id="targetIndicator"></div>
+        <div class="stats">
+            <div class="stat-item">Прыжков:<br><span class="stat-value" id="jumpCount">0</span></div>
+            <div class="stat-item">Путь:<br><span class="stat-value" id="pathLength">0</span></div>
+        </div>
+        
+        <!-- 🎮 МОБАЙЛ КНОПКИ -->
+        <div class="mobile-controls">
+            <button class="mobile-btn" onclick="resetPoint()" title="Сброс">🔄</button>
+            <button class="mobile-btn" onclick="toggleSound()" id="soundBtn" title="Звук">🔊</button>
+        </div>
+        
+        <div class="controls" onclick="resetPoint()">
+            🔄 Сброс
+        </div>
+    </div>
+
+    <script>
+        // 🎵 ЗВУК (с переключателем)
+        let soundEnabled = true;
+        function playBlub() {
+            if (!soundEnabled) return;
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(900, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(450, audioContext.currentTime + 0.12);
+                
+                gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.22);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.22);
+            } catch(e) {}
+        }
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+        }
+
+        // ✨ ИСКОРКИ
+        function createSparks(x, y, count = 12) {
+            for (let i = 0; i < count; i++) {
+                const spark = document.createElement('div');
+                spark.className = 'spark';
+                spark.style.left = x + 'px';
+                spark.style.top = y + 'px';
+                spark.style.width = spark.style.height = (1.5 + Math.random() * 3) + 'px';
+                spark.style.animationDuration = (0.4 + Math.random() * 0.6) + 's';
+                spark.style.background = `hsl(${20 + Math.random() * 40}, 100%, ${80 + Math.random() * 20}%)`;
+                document.querySelector('.canvas-container').appendChild(spark);
+                setTimeout(() => spark.remove(), 1200);
+            }
+        }
+
+        // ❄️ СНЕЖИНОЧКИ
+        function explodeWordToSnow(x, y) {
+            for (let i = 0; i < 18; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.style.left = x + (Math.random() - 0.5) * 80 + 'px';
+                snowflake.style.top = y + 'px';
+                snowflake.style.width = snowflake.style.height = (0.8 + Math.random() * 2.5) + 'px';
+                snowflake.style.animationDuration = (0.8 + Math.random() * 1.5) + 's';
+                document.querySelector('.canvas-container').appendChild(snowflake);
+                setTimeout(() => snowflake.remove(), 2500);
+            }
+        }
+
+        const funnyWords = ['Буль!', 'Плюх!', 'Бум!', 'Прыг!', 'Хоп!', 'Ё!'];
+
+        class MobileJumpingDot {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.targetIndicator = document.getElementById('targetIndicator');
+                
+                this.initCanvas();
+                this.reset();
+                this.setupEvents();
+                this.animate();
+            }
+
+            initCanvas() {
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+                window.addEventListener('orientationchange', () => this.resizeCanvas());
+            }
+
+            resizeCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+                this.centerX = this.canvas.width / 2;
+                this.centerY = this.canvas.height / 2;
+            }
+
+            reset() {
+                this.x = this.centerX;
+                this.y = this.centerY;
+                this.targetX = this.centerX;
+                this.targetY = this.centerY;
+                this.state = 'idle';
+                this.jumpProgress = 0;
+                this.bounceProgress = 0;
+                this.jumpCount = 0;
+                this.pathLength = 0;
+                this.updateStats();
+            }
+
+            setupEvents() {
+                // 👆 ТАЧ + КЛИК
+                let lastTouch = 0;
+                const handleInput = (e) => {
+                    e.preventDefault();
+                    const rect = this.canvas.getBoundingClientRect();
+                    let clientX, clientY;
+                    
+                    if (e.touches && e.touches[0]) {
+                        clientX = e.touches[0].clientX;
+                        clientY = e.touches[0].clientY;
+                    } else {
+                        clientX = e.clientX;
+                        clientY = e.clientY;
+                    }
+                    
+                    // Дебounce для тача
+                    const now = Date.now();
+                    if (now - lastTouch < 300) return;
+                    lastTouch = now;
+                    
+                    playBlub();
+                    createSparks(clientX, clientY);
+                    
+                    this.targetX = clientX - rect.left;
+                    this.targetY = clientY - rect.top;
+                    
+                    this.targetIndicator.style.left = this.targetX + 'px';
+                    this.targetIndicator.style.top = this.targetY + 'px';
+                    this.targetIndicator.classList.add('active');
+                    
+                    this.state = 'jumping';
+                    this.jumpProgress = 0;
+                };
+
+                this.canvas.addEventListener('touchstart', handleInput, { passive: false });
+                this.canvas.addEventListener('click', handleInput);
+            }
+
+            showWordBubble() {
+                const word = funnyWords[Math.floor(Math.random() * funnyWords.length)];
+                const rect = this.canvas.getBoundingClientRect();
+                
+                const bubble = document.createElement('div');
+                bubble.className = 'speech-bubble';
+                bubble.textContent = word;
+                bubble.style.left = (this.targetX + rect.left) + 'px';
+                bubble.style.top = (this.targetY + rect.top - 50) + 'px';
+                
+                document.querySelector('.canvas-container').appendChild(bubble);
+                
+                setTimeout(() => {
+                    if (bubble.parentNode) {
+                        explodeWordToSnow(
+                            this.targetX + rect.left,
+                            this.targetY + rect.top - 25
+                        );
+                        bubble.parentNode.removeChild(bubble);
+                    }
+                }, 1800);
+            }
+
+            updateStats() {
+                document.getElementById('jumpCount').textContent = this.jumpCount;
+                document.getElementById('pathLength').textContent = Math.round(this.pathLength);
+            }
+
+            animate() {
+                this.update();
+                this.draw();
+                requestAnimationFrame(() => this.animate());
+            }
+
+            update() {
+                const dt = 0.016;
+                switch (this.state) {
+                    case 'jumping':
+                        this.jumpProgress += dt * 2.8;
+                        if (this.jumpProgress >= 1) {
+                            this.x = this.targetX;
+                            this.y = this.targetY;
+                            this.state = 'bouncing1';
+                            this.bounceProgress = 0;
+                            this.jumpCount++;
+                            this.pathLength += this.distance(this.centerX, this.centerY, this.targetX, this.targetY);
+                            this.updateStats();
+                        } else {
+                            const t = this.jumpProgress;
+                            const height = 80 * Math.sin(t * Math.PI);
+                            this.x = this.centerX + (this.targetX - this.centerX) * t;
+                            this.y = this.centerY + (this.targetY - this.centerY) * t - height;
+                        }
+                        break;
+                    case 'bouncing1':
+                        this.bounceProgress += dt * 4.5;
+                        if (this.bounceProgress >= 1) {
+                            this.showWordBubble();
+                            this.state = 'bouncing2';
+                            this.bounceProgress = 0;
+                        } else {
+                            const bounceHeight = 18 * (1 - this.bounceProgress * 2);
+                            this.y -= bounceHeight * dt * 60;
+                        }
+                        break;
+                    case 'bouncing2':
+                        this.bounceProgress += dt * 4.5;
+                        if (this.bounceProgress >= 1) {
+                            this.state = 'idle';
+                            this.targetIndicator.classList.remove('active');
+                        } else {
+                            const bounceHeight = 9 * (1 - this.bounceProgress);
+                            this.y -= bounceHeight * dt * 60;
+                        }
+                        break;
+                }
+            }
+
+            draw() {
+                this.ctx.fillStyle = 'rgba(13, 17, 23, 0.97)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+                this.ctx.lineWidth = 2.5;
+                this.ctx.lineCap = 'round';
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.centerX, this.centerY);
+                this.ctx.lineTo(this.x, this.y);
+                this.ctx.stroke();
+
+                if (this.state === 'idle') {
+                    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                    this.ctx.lineWidth = 2.5;
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.targetX, this.targetY, 7, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                }
+
+                const gradient = this.ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 22);
+                gradient.addColorStop(0, '#ffeb3b');
+                gradient.addColorStop(0.7, '#ffc107');
+                gradient.addColorStop(1, '#ff9800');
+
+                this.ctx.shadowColor = '#ffeb3b';
+                this.ctx.shadowBlur = 25;
+                this.ctx.fillStyle = gradient;
+                this.ctx.beginPath();
+                this.ctx.arc(this.x, this.y, 18, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                this.ctx.shadowBlur = 0;
+                this.ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                this.ctx.beginPath();
+                this.ctx.arc(this.x - 7, this.y - 7, 5, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                if (this.state !== 'idle') {
+                    this.ctx.strokeStyle = `rgba(255, 235, 59, ${0.6 + 0.4 * Math.sin(Date.now() * 0.02)})`;
+                    this.ctx.lineWidth = 3.5;
+                    this.ctx.shadowColor = '#ffeb3b';
+                    this.ctx.shadowBlur = 18;
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.x, this.y, 27, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                }
+            }
+
+            distance(x1, y1, x2, y2) {
+                return Math.hypot(x2 - x1, y2 - y1);
+            }
+        }
+
+        function resetPoint() {
+            dot.reset();
+        }
+
+        const dot = new MobileJumpingDot();
+    </script>
+</body>
+</html>
