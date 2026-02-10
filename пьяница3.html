@@ -1,0 +1,480 @@
+<html lang="ru"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍺 ПЬЯНИЦЫ - ГЭМБЛ!</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #0c0c1d 0%, #1a1a3e 50%, #2d1b69 100%);
+            min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 10px; display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+        canvas { border: 10px solid #ffd700; border-radius: 25px; box-shadow: 0 25px 60px rgba(255,215,0,0.4); }
+        canvas:hover { box-shadow: 0 30px 70px rgba(255,215,0,0.6); }
+        .panel { 
+            background: linear-gradient(145deg, rgba(255,255,255,0.98), rgba(240,240,255,0.95)); 
+            border-radius: 20px; padding: 15px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); 
+            position: sticky; top: 10px; border: 2px solid #ffd700;
+            font-size: 14px;
+        }
+        input[type=number], input[type=range] { 
+            width: 100%; padding: 8px; border-radius: 8px; 
+            background: linear-gradient(to right, #e0e0ff, #f0f0ff); 
+            border: 2px solid #aaa; outline: none; margin: 8px 0; font-size: 14px; 
+        }
+        button { 
+            width: 100%; padding: 12px; margin: 8px 0; border: none; 
+            border-radius: 20px; font-size: 16px; font-weight: bold; 
+            cursor: pointer; background: linear-gradient(45deg, #ff6b6b, #ff8e8e); 
+            color: white; transition: all 0.3s; 
+        }
+        button:hover:not(:disabled) { transform: translateY(-3px) scale(1.03); box-shadow: 0 15px 40px rgba(255,100,0,0.8); }
+        button:disabled { background: linear-gradient(45deg, #666, #888); cursor: not-allowed; }
+        #simulations { 
+            font-size: 22px; font-weight: bold; text-align: center; 
+            margin: 15px 0; padding: 15px; border-radius: 15px; 
+            background: linear-gradient(135deg, rgba(78,205,196,0.2), rgba(255,215,0,0.2)); 
+            border: 2px dashed #ffd700; 
+        }
+        .stats { 
+            font-size: 16px; margin-top: 15px; padding: 15px; 
+            background: rgba(255,255,255,0.9); border-radius: 12px; 
+            display: flex; justify-content: space-around; 
+        }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 22px; font-weight: bold; display: block; color: #ff6b6b; }
+        h2 { font-size: 18px; margin-bottom: 10px; }
+        label { font-size: 14px; font-weight: bold; display: block; margin: 5px 0; }
+    </style>
+<style type="text/css" id="operaUserStyle"></style></head>
+<body>
+    <div class="container">
+        <canvas id="canvas" width="1200" height="700"></canvas>
+        <div class="panel">
+            <h2>🍺 ГЭМБЛ!</h2>
+            <label>👥 Пьяниц:</label>
+            <input type="number" id="simCountInput" min="20" max="200" value="100">
+            <label>P(к обрыву):</label>
+            <span id="pValue" style="color:#ff6b6b; font-weight: bold; font-size: 16px;">0.20</span>
+            <input type="range" id="pCliff" min="0.1" max="0.9" step="0.05" value="0.2">
+            <label>⚡ Скорость:</label>
+            <span id="speedValue" style="color:#4ecdc4; font-weight: bold; font-size: 16px;">1.0x</span>
+            <input type="range" id="speedSlider" min="0.3" max="3.0" step="0.1" value="1.0">
+            
+            <button id="startBtn" onclick="startSimulation()" disabled="">🚀 Запуск!</button>
+            <button id="nextBtn" onclick="launchNext()" disabled="">➡️ Шаг!</button>
+            <button onclick="launchAll()">⚡ Всех!</button>
+            <button onclick="resetAll()">🔄 Сброс</button>
+            
+            <div id="simulations">💀20 | 👼80</div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span>P(падения)</span>
+                    <span id="theory" class="stat-value">0.250</span>
+                </div>
+                <div class="stat-item">
+                    <span>Ожидается</span>
+                    <span id="expectation" class="stat-value">25</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let pCliff = 0.2, speed = 1.0, drunkards = [], activeQueue = [], particles = [], speechBubbles = [], clouds = [];
+        let topText = '';
+        
+        // 🎵 Звуки
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        function playFallSound() {
+            const osc = audioContext.createOscillator(), gain = audioContext.createGain();
+            osc.connect(gain); gain.connect(audioContext.destination);
+            osc.frequency.setValueAtTime(200, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(80, audioContext.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            osc.type = 'sawtooth'; osc.start(audioContext.currentTime); osc.stop(audioContext.currentTime + 0.5);
+        }
+        function playHeavenSound() {
+            const osc = audioContext.createOscillator(), gain = audioContext.createGain();
+            osc.connect(gain); gain.connect(audioContext.destination);
+            osc.frequency.setValueAtTime(800, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+            osc.type = 'sine'; osc.start(audioContext.currentTime); osc.stop(audioContext.currentTime + 0.4);
+        }
+        function playDrunkStep() {
+            const osc = audioContext.createOscillator(), gain = audioContext.createGain();
+            osc.connect(gain); gain.connect(audioContext.destination);
+            osc.frequency.setValueAtTime(150 + Math.random()*50, audioContext.currentTime);
+            gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            osc.type = 'square'; osc.start(audioContext.currentTime); osc.stop(audioContext.currentTime + 0.1);
+        }
+        
+        // Облака (НИЖЕ плашки с текстом)
+        for(let i = 0; i < 6; i++) {
+            clouds.push({x: Math.random()*canvas.width, y: Math.random()*80+90, speed: 0.3+Math.random()*0.4, size: 25+Math.random()*35});
+        }
+
+        function calculateProbability(p) {
+            if (p >= 0.5) return "1.000";
+            return (p / (1-p)).toFixed(3);
+        }
+        function calculateExpectation(count, p) {
+            const prob = p >= 0.5 ? 1 : p / (1-p);
+            return Math.round(count * prob);
+        }
+
+        function updateUI() {
+            document.getElementById('pValue').textContent = pCliff.toFixed(2);
+            document.getElementById('speedValue').textContent = speed.toFixed(1) + 'x';
+            document.getElementById('theory').textContent = calculateProbability(pCliff);
+            document.getElementById('expectation').textContent = calculateExpectation(drunkards.length || 100, pCliff);
+            
+            const count = drunkards.length || 100;
+            if (pCliff >= 0.5) {
+                topText = `P(падения) = 1.000`;
+            } else {
+                topText = `P(падения) = ${pCliff.toFixed(1)}/${(1-pCliff).toFixed(1)} = ${calculateProbability(pCliff)}`;
+            }
+        }
+
+        document.getElementById('pCliff').oninput = e => {
+            pCliff = +e.target.value;
+            updateUI();
+        };
+        document.getElementById('speedSlider').oninput = e => {
+            speed = +e.target.value;
+            updateUI();
+        };
+        document.getElementById('simCountInput').oninput = updateUI;
+
+        function drawRoad() {
+            const roadY = canvas.height*0.55;
+            
+            // АД ДО ЗЕМЛИ - большая черная пропасть слева
+            ctx.fillStyle = '#1a0f0a'; 
+            ctx.fillRect(0, roadY-20, canvas.width*0.15, canvas.height - (roadY-20));
+            
+            // ✅ ДОРОЖКА ПРОДЛЕНА ДО ДВЕРИ (canvas.width*0.85 + 60)
+            ctx.fillStyle = '#8B4513'; 
+            ctx.fillRect(canvas.width*0.15, roadY, canvas.width*0.85 + 60 - canvas.width*0.15, 35);
+            ctx.fillStyle = '#D2691E'; 
+            ctx.fillRect(canvas.width*0.15, roadY, canvas.width*0.85 + 60 - canvas.width*0.15, 18);
+            
+            // ✅ РАЗМЕТКА ДО ДВЕРИ (32 сегмента вместо 28)
+            ctx.fillStyle = '#FFD700';
+            for(let i = 0; i < 32; i++) {
+                ctx.fillRect(canvas.width*0.15 + i*38, roadY+5, 28, 6);
+            }
+            
+            // ФОН СПРАВА ТЕМНЕЕ - градиент к концу дороги
+            const rightGradient = ctx.createLinearGradient(canvas.width*0.7, 0, canvas.width, 0);
+            rightGradient.addColorStop(0, '#F0E68C');
+            rightGradient.addColorStop(1, '#4a3d2a');
+            ctx.fillStyle = rightGradient;
+            ctx.fillRect(canvas.width*0.7, 0, canvas.width*0.3, canvas.height);
+            
+            // РАЙ - ЗОЛОТАЯ ДВЕРЬ НА ДОРОГЕ
+            ctx.fillStyle = '#FFD700'; ctx.shadowColor = '#FFD700'; ctx.shadowBlur = 25;
+            const doorX = canvas.width*0.85, doorY = roadY - 25;
+            ctx.fillRect(doorX, doorY, 60, 60); // Дверь
+            ctx.fillStyle = '#FFF8DC'; 
+            ctx.fillRect(doorX+8, doorY+8, 44, 44); // Свет внутри
+            ctx.shadowBlur = 0;
+            
+            // Сияние вокруг двери
+            const gradient = ctx.createRadialGradient(doorX+30, doorY+30, 0, doorX+30, doorY+30, 80);
+            gradient.addColorStop(0, 'rgba(255,255,200,0.8)');
+            gradient.addColorStop(1, 'rgba(255,215,0,0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(doorX-20, doorY-20, 100, 100);
+            
+            // 🔥 КРАСНАЯ НАДПИСЬ АД (выше)
+            ctx.shadowColor = '#ff1111'; ctx.shadowBlur = 30;
+            ctx.fillStyle = '#ff1111'; ctx.font = 'bold 36px Arial'; ctx.textAlign = 'center';
+            ctx.fillText('🔥 АД', canvas.width*0.075, canvas.height*0.45);
+            ctx.shadowBlur = 0;
+            
+            // 👼 КРАСНАЯ НАДПИСЬ РАЙ
+            ctx.shadowColor = '#ffaa00'; ctx.shadowBlur = 35;
+            ctx.fillStyle = '#ff6600'; ctx.font = 'bold 36px Arial'; 
+            ctx.fillText('👼 РАЙ', doorX+30, doorY-15);
+            ctx.shadowBlur = 0;
+        }
+
+        function updateClouds() {
+            clouds.forEach(cloud => { 
+                cloud.x += cloud.speed * speed * 0.5; 
+                if (cloud.x > canvas.width+100) cloud.x = -100; 
+            });
+        }
+
+        function drawPuppet(x, y, id, state) {
+            ctx.save(); ctx.translate(x, y);
+            const sway = Math.sin(Date.now()*0.01* speed +id)*2;
+            const walk = Math.sin(Date.now()*0.03* speed +id)*12;
+            ctx.rotate(sway*0.12); ctx.translate(0, walk*0.2);
+            
+            // 🔥 РОГА для близких к аду
+            const nearHell = state.position < 5 && !state.fallen && !state.saved;
+            if (nearHell && !state.fallen) {
+                ctx.fillStyle = '#8B0000';
+                ctx.beginPath(); ctx.moveTo(-10,-55); ctx.lineTo(-18,-68); ctx.lineTo(-5,-62); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(10,-55); ctx.lineTo(18,-68); ctx.lineTo(5,-62); ctx.fill();
+            }
+            
+            // 👼 ЯРКИЙ НИМБ для близких к раю (position > 30)
+            const nearHeaven = state.position > 30 && !state.fallen && !state.saved;
+            if (nearHeaven) {
+                ctx.shadowColor = '#FFD700'; ctx.shadowBlur = 25;
+                ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.arc(0, -55, 20, 0, Math.PI*2);
+                ctx.stroke();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#FFF8DC';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+            
+            ctx.fillStyle = state.fallen ? '#8B0000' : (state.saved ? '#FFD700' : `hsl(${120+id*5}, 70%, 55%)`);
+            ctx.fillRect(-12, -25, 24, 35);
+            
+            ctx.strokeStyle = state.fallen ? '#500' : (state.saved ? '#fff' : '#2c3e50');
+            ctx.lineWidth = 8; ctx.lineCap = 'round';
+            const legSwing = Math.sin(Date.now()*0.04* speed +id)*18;
+            ctx.beginPath(); ctx.moveTo(-6,2); ctx.lineTo(-20,22+legSwing); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(6,2); ctx.lineTo(20,22-legSwing); ctx.stroke();
+            
+            ctx.beginPath(); ctx.arc(0, -40, 14, 0, Math.PI*2);
+            ctx.fillStyle = state.fallen ? '#654321' : (state.saved ? '#FFE4B5' : '#f4a261');
+            ctx.fill();
+            
+            if (state.fallen) {
+                ctx.fillStyle = '#8B0000';
+                ctx.beginPath(); ctx.moveTo(-10,-55); ctx.lineTo(-18,-68); ctx.lineTo(-5,-62); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(10,-55); ctx.lineTo(18,-68); ctx.lineTo(5,-62); ctx.fill();
+            }
+            
+            ctx.fillStyle = state.fallen ? '#FF4500' : (state.saved ? '#00ff88' : '#e74c3c');
+            ctx.beginPath(); ctx.arc(-7,-41,4,0,Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(7,-40,4,0,Math.PI*2); ctx.fill();
+            ctx.restore();
+        }
+
+        function createSpeechBubble(x, y, text, color = '#ffeb3b') {
+            speechBubbles.push({x, y, text, color, life: 1, decay: 0.01/speed, vx: (Math.random()-0.5)*2, vy: -Math.random()*5-2});
+        }
+
+        const fallPhrases = ['Ой!', 'Ааа!', 'В яму!', '😱', 'Бу!', 'Неет!'];
+        const heavenPhrases = ['Ура!', 'Рай!', '👼', 'Йее!', 'Свет!'];
+
+        function createParticles(x, y, count, color) {
+            for(let i = 0; i < count; i++) {
+                particles.push({x, y, vx: (Math.random()-0.5)*20, vy: -Math.random()*15, life: 1, decay: 0.03*speed, size: 3+Math.random()*3, color});
+            }
+        }
+
+        function updateParticles() {
+            particles = particles.filter(p => {
+                p.x += p.vx * speed * 0.1; p.y += p.vy * speed * 0.1; p.vy += 0.25;
+                p.life -= p.decay; p.size *= 0.95;
+                return p.life > 0;
+            });
+            particles.forEach(p => {
+                ctx.save(); ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        function updateSpeechBubbles() {
+            speechBubbles = speechBubbles.filter(b => {
+                b.x += b.vx * speed * 0.1; b.y += b.vy * speed * 0.1; b.vy += 0.1;
+                b.life -= b.decay;
+                return b.life > 0;
+            });
+            speechBubbles.forEach(b => {
+                ctx.save(); ctx.globalAlpha = b.life;
+                ctx.fillStyle = b.color; ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+                const w = ctx.measureText(b.text).width + 20;
+                ctx.beginPath(); ctx.roundRect(b.x-w/2, b.y-20, w, 32, 10); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#000'; ctx.font = 'bold 16px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(b.text, b.x, b.y); ctx.restore();
+            });
+        }
+
+        let pitCount = 0, cloudCount = 0;
+
+        function drawCounters() {
+            ctx.fillStyle = '#ff1111'; ctx.shadowColor = '#ff1111'; ctx.shadowBlur = 25;
+            ctx.font = 'bold 42px Arial'; ctx.textAlign = 'center';
+            ctx.fillText(`💀 ${pitCount}`, canvas.width*0.08, canvas.height*0.75);
+            ctx.shadowBlur = 0;
+            
+            ctx.fillStyle = '#FFD700'; ctx.shadowColor = '#FFD700'; ctx.shadowBlur = 30;
+            ctx.font = 'bold 42px Arial'; ctx.textAlign = 'center';
+            ctx.fillText(`👼 ${cloudCount}`, canvas.width*0.92, canvas.height*0.15);
+            ctx.shadowBlur = 0;
+        }
+
+        function draw() {
+            // ✅ ФОН И ГРАДИЕНТ
+            const gradient = ctx.createLinearGradient(0,0,0,canvas.height);
+            gradient.addColorStop(0,'#87CEEB'); gradient.addColorStop(0.6,'#F0E68C'); gradient.addColorStop(1,'#8B4513');
+            ctx.fillStyle = gradient; ctx.fillRect(0,0,canvas.width,canvas.height);
+            
+            // ✅ ТЕМНАЯ ПЛАШКА ПОВЕРХ ВСЕГО
+            ctx.fillStyle = 'rgba(0,0,0,0.9)';
+            ctx.fillRect(20, 5, canvas.width-60, 70);
+            
+            // ✅ НАДПИСЬ НА ПЛАШКЕ
+            ctx.fillStyle = '#FFD700'; 
+            ctx.shadowColor = '#FFD700'; ctx.shadowBlur = 20;
+            ctx.font = 'bold 32px Arial'; ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(topText, 35, 40);
+            ctx.shadowBlur = 0;
+            
+            // ✅ ВТОРАЯ СТРОКА
+            ctx.fillStyle = '#FF6B6B'; 
+            ctx.shadowColor = '#FF6B6B'; ctx.shadowBlur = 15;
+            ctx.font = 'bold 22px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`E[падших] = ${calculateExpectation(drunkards.length || 100, pCliff)}`, 35, 68);
+            ctx.shadowBlur = 0;
+            
+            // ✅ Облака ПОСЛЕ плашки
+            updateClouds();
+            ctx.fillStyle = 'rgba(255,255,255,0.95)'; ctx.shadowColor = '#fff'; ctx.shadowBlur = 25;
+            clouds.forEach(cloud => {
+                ctx.beginPath();
+                ctx.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI*2);
+                ctx.arc(cloud.x+cloud.size*0.6, cloud.y-10, cloud.size*0.8, 0, Math.PI*2);
+                ctx.arc(cloud.x-cloud.size*0.6, cloud.y+5, cloud.size*0.7, 0, Math.PI*2);
+                ctx.fill();
+            });
+            ctx.shadowBlur = 0;
+            
+            drawRoad(); updateParticles(); updateSpeechBubbles(); drawCounters();
+            
+            ctx.globalAlpha = 0.4;
+            drunkards.forEach((d,i) => {
+                if (!d.launched) {
+                    const startX = canvas.width * 0.15 + 38;
+                    const row = Math.floor(i/20), col = i%20;
+                    drawPuppet(startX+(col-10)*24, canvas.height*0.55+row*28, i, d);
+                }
+            });
+            ctx.globalAlpha = 1;
+            
+            activeQueue.forEach((d,i) => {
+                const roadX = canvas.width*0.15 + d.position * 38;
+                drawPuppet(roadX, canvas.height*0.55, drunkards.indexOf(d), d);
+            });
+        }
+
+        function startSimulation() {
+            const count = Math.max(20, Math.min(200, +document.getElementById('simCountInput').value || 100));
+            document.getElementById('simCountInput').value = count;
+            
+            drunkards = Array(count).fill().map((_,i) => ({
+                position: 1, fallen: false, saved: false, launched: false
+            }));
+            activeQueue = []; particles = []; speechBubbles = []; pitCount = 0; cloudCount = 0;
+            
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = false;
+            document.getElementById('simulations').textContent = `${count} пьяниц!`;
+            updateUI();
+        }
+
+        function launchNext() {
+            const remaining = drunkards.filter(d=>!d.launched).length;
+            const toLaunch = Math.min(5, remaining);
+            
+            for(let i = 0; i < toLaunch; i++) {
+                const d = drunkards.find(d=>!d.launched);
+                if (d) { 
+                    d.launched = true; 
+                    activeQueue.push(d); 
+                    createSpeechBubble(canvas.width*0.15 + 38, canvas.height*0.52, 'Иду!');
+                    playDrunkStep();
+                }
+            }
+            
+            activeQueue = activeQueue.filter(d => {
+                if (!d.fallen && !d.saved) {
+                    d.position += Math.random() < pCliff ? -1 : 1;
+                    playDrunkStep();
+                    if (d.position <= 0) {
+                        d.fallen = true; pitCount++;
+                        createParticles(canvas.width*0.12, canvas.height*0.57, 15, '#ff1111');
+                        createSpeechBubble(canvas.width*0.12, canvas.height*0.55, fallPhrases[Math.floor(Math.random()*fallPhrases.length)], '#ff1111');
+                        playFallSound();
+                    } else if (d.position >= 32) { // ✅ Увеличено до 32
+                        d.saved = true; cloudCount++;
+                        createParticles(canvas.width*0.88, canvas.height*0.52, 20, '#FFD700');
+                        createSpeechBubble(canvas.width*0.88, canvas.height*0.48, heavenPhrases[Math.floor(Math.random()*heavenPhrases.length)], '#FFD700');
+                        playHeavenSound();
+                    }
+                    return true;
+                }
+                return false;
+            });
+            draw();
+        }
+
+        function launchAll() {
+            drunkards.forEach(d => { if (!d.launched) { d.launched = true; activeQueue.push(d); } });
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('simulations').textContent = '⚡ Толпа бежит!';
+            
+            let step = 0;
+            const sim = setInterval(() => {
+                step++;
+                activeQueue = activeQueue.filter(d => {
+                    if (!d.fallen && !d.saved) {
+                        d.position += Math.random() < pCliff ? -1 : 1;
+                        playDrunkStep();
+                        if (d.position <= 0) { d.fallen = true; pitCount++; playFallSound(); }
+                        else if (d.position >= 32) { d.saved = true; cloudCount++; playHeavenSound(); }
+                        return true;
+                    }
+                    return false;
+                });
+                draw();
+                if (activeQueue.length === 0) {
+                    clearInterval(sim);
+                    document.getElementById('simulations').innerHTML = `💀${pitCount} | 👼${cloudCount}`;
+                }
+            }, 60 / speed);
+        }
+
+        function resetAll() {
+            drunkards = []; activeQueue = []; particles = []; speechBubbles = []; pitCount = 0; cloudCount = 0;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('simulations').textContent = '🎊 Готово!';
+            updateUI();
+            draw();
+        }
+
+        function animate() {
+            draw();
+            requestAnimationFrame(animate);
+        }
+        
+        updateUI();
+        animate();
+    </script>
+
+</body></html>
