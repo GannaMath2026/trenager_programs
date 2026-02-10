@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Python Runner + Tasks</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+
+<style>
+body {
+    margin: 0;
+    background: #0f172a;
+    color: white;
+    font-family: Segoe UI, Tahoma, sans-serif;
+    padding: 12px;
+}
+
+.toolbar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    padding: 8px;
+    background: #1e293b;
+    border-radius: 12px;
+    position: relative;
+}
+
+.toolbar:hover {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+
+.toolbar button:hover,
+.toolbar input:hover,
+.toolbar select:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+button, input, select {
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 8px;
+    border: none;
+    transition: all 0.2s ease;
+    position: relative;
+    background: #334155;
+    color: white;
+}
+
+select {
+    background: #334155 !important;
+    color: white !important;
+}
+
+select option {
+    background: #1e293b;
+    color: white;
+}
+
+button {
+    cursor: pointer;
+    background: #3b82f6;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.3);
+    transform: skewX(-20deg);
+    transition: left 0.3s;
+}
+
+button:active::after {
+    left: 100%;
+}
+
+button.gray { background:#64748b; }
+button.green { background:#10b981; }
+button.red { background:#ef4444; }
+
+button.active {
+    outline: 3px solid #facc15;
+}
+
+button:hover::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1001;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    margin-bottom: 4px;
+}
+
+.color-thickness-group {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    position: relative;
+}
+
+.color-btn, .thickness-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 6px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.thickness-btn {
+    background: #475569;
+}
+
+.thickness-btn.active {
+    background: #facc15;
+    color: #000;
+}
+
+#taskImage, #taskText {
+    position: relative;
+}
+
+.no-draw-zone * {
+    pointer-events: auto !important;
+}
+
+#taskImage {
+    max-width: 100%;
+    max-height: 240px;
+    display: none;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: 2px solid #334155;
+    transform: scale(1.1);
+    transform-origin: top left;
+}
+
+#taskText {
+    display: none;
+    margin-bottom: 10px;
+    padding: 12px;
+    background: #1e293b;
+    border-radius: 8px;
+    border: 2px solid #334155;
+    white-space: pre-wrap;
+    font-family: Consolas, monospace;
+    font-size: 18px;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+#taskText .number {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+.answer-section, .video-section {
+    cursor: pointer;
+    margin-top: 12px;
+    padding: 8px;
+    background: #1e293b;
+    border-radius: 8px;
+    border: 2px solid #334155;
+    font-size: 16px;
+}
+
+.answer-section:hover, .video-section:hover {
+    background: #334155;
+}
+
+#answerInput, #videoInput {
+    width: 100%;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    font-size: 18px;
+    padding: 10px;
+    border-radius: 8px;
+    display: none;
+    box-sizing: border-box;
+}
+
+#videoInput {
+    font-size: 16px;
+    background: #1e293b;
+    border: 2px solid #475569;
+}
+
+#videoInput.valid-link {
+    color: #10b981 !important;
+    background: linear-gradient(90deg, #1e293b 0%, #10b98120 100%);
+    border-color: #10b981;
+    cursor: pointer !important;
+    text-decoration: none;
+}
+
+#videoInput.valid-link:hover {
+    background: linear-gradient(90deg, #1e293b 0%, #10b98140 100%);
+    text-decoration: underline;
+}
+
+.task-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.task-controls label {
+    font-size: 14px;
+    user-select: none;
+}
+
+.main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    height: calc(100vh - 320px);
+}
+
+textarea, #output {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    border: none;
+    padding: 14px;
+    font-family: Consolas, monospace;
+    font-size: 20px;
+    line-height: 1.5;
+    background: #020617;
+    color: #e5e7eb;
+}
+
+#code { margin-top: 12px; }
+
+#output {
+    white-space: pre-wrap;
+    overflow-y: auto;
+    color: #22c55e;
+}
+
+#drawCanvas {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.error { color:#ef4444; }
+
+#taskFilter, #taskSelect {
+    background: #334155;
+    color: white;
+}
+
+#taskName.new-task {
+    background: #10b981;
+    color: white;
+}
+</style>
+</head>
+
+<body>
+
+<div class="toolbar" id="toolbar">
+    <button data-tooltip="Вставить изображение условия из буфера" onclick="pasteImage()">📋 Условие (img)</button>
+    <button data-tooltip="Вставить текст условия из буфера" onclick="pasteText()">📄 Условие (текст)</button>
+
+    <input id="taskName" placeholder="Новое имя задачи" data-tooltip="Введите имя → Enter">
+    
+    <select id="taskFilter" data-tooltip="Фильтр задач">
+        <option value="all">Все задачи</option>
+        <option value="solved">✅ Решённые</option>
+        <option value="unsolved">⏳ Нерешённые</option>
+    </select>
+
+    <select id="taskSelect" data-tooltip="Выберите задачу" onchange="selectTask()">
+        <option value="">— задачи —</option>
+    </select>
+
+    <button class="gray" data-tooltip="Импорт задач из JSON" onclick="importTasks()">⬆ Импорт</button>
+    <button class="gray" data-tooltip="Экспорт задач в JSON" onclick="exportTasks()">⬇ Экспорт</button>
+
+    <button class="green" data-tooltip="Запустить Python код" onclick="runPython()">▶ Run</button>
+    <button class="gray" data-tooltip="Копировать код в буфер" onclick="copyCode()">📋 Копировать</button>
+
+    <button id="drawBtn" data-tooltip="Режим рисования (Esc=выкл)" onclick="toggleDraw()">✏️ Рисование</button>
+    
+    <div class="color-thickness-group">
+        <button class="color-btn active" style="background:#ff0000" data-color="#ff0000" data-tooltip="Красный">●</button>
+        <button class="color-btn" style="background:#00ff00" data-color="#00ff00" data-tooltip="Зелёный">●</button>
+        <button class="color-btn" style="background:#0000ff" data-color="#0000ff" data-tooltip="Синий">●</button>
+        <button class="color-btn" style="background:#ffff00" data-color="#ffff00" data-tooltip="Жёлтый">●</button>
+        <button class="color-btn" style="background:#ff00ff" data-color="#ff00ff" data-tooltip="Фиолетовый">●</button>
+        <button class="color-btn" style="background:#00ffff" data-color="#00ffff" data-tooltip="Голубой">●</button>
+        <button class="color-btn" style="background:#ffffff" data-color="#ffffff" data-tooltip="Белый">●</button>
+        <button class="color-btn" style="background:#ff8000" data-color="#ff8000" data-tooltip="Оранжевый">●</button>
+        <button class="color-btn" style="background:#8000ff" data-color="#8000ff" data-tooltip="Фиолетовый тёмный">●</button>
+        <button class="color-btn" style="background:#ff4080" data-color="#ff4080" data-tooltip="Розовый">●</button>
+    </div>
+
+    <div class="color-thickness-group">
+        <span style="font-size:12px; opacity:0.7;">Толщина:</span>
+        <button class="thickness-btn active" data-thickness="1" data-tooltip="1px">1</button>
+        <button class="thickness-btn" data-thickness="3" data-tooltip="3px">3</button>
+        <button class="thickness-btn" data-thickness="6" data-tooltip="6px">6</button>
+        <button class="thickness-btn" data-thickness="12" data-tooltip="12px">12</button>
+        <button class="thickness-btn" data-thickness="20" data-tooltip="20px">20</button>
+    </div>
+
+    <button class="gray" data-tooltip="Отменить последнее действие" onclick="undo()">↩ Undo</button>
+    <button class="red" data-tooltip="Очистить ЭКРАН текущей задачи" onclick="clearCurrentTaskCanvas()">🧹 Очистить</button>
+</div>
+
+<!-- ✅ ЗОНА ОТКЛЮЧЕНИЯ РИСОВАНИЯ -->
+<div class="no-draw-zone" id="noDrawZone">
+    <div class="task-controls">
+        <input type="checkbox" id="solvedCheckbox">
+        <label for="solvedCheckbox">✅ Решено</label>
+    </div>
+
+    <img id="taskImage">
+    <div id="taskText"></div>
+
+    <div class="answer-section" onclick="toggleAnswer()" id="answerToggle" data-tooltip="Показать/скрыть ответ">
+        👁️ Ответ
+    </div>
+    <input id="answerInput" placeholder="Верный ответ">
+
+    <div class="video-section" onclick="toggleVideo()" id="videoToggle" data-tooltip="Показать/скрыть ссылку на видео">
+        🎥 Видеоразбор
+    </div>
+    <input id="videoInput" placeholder="https://youtube.com/watch?v=... или любая ссылка">
+</div>
+
+<div class="main">
+    <textarea id="code">print("Привет, Python")</textarea>
+    <div id="output">Загрузка Python…</div>
+</div>
+
+<canvas id="drawCanvas"></canvas>
+<input type="file" id="importFile" accept=".json" hidden>
+
+<script>
+/* ================= PYTHON ================= */
+let pyodide, ready=false;
+let taskTextGlobal = "";
+let currentColor = '#ffff00';
+let currentThickness = 3;
+
+async function initPy() {
+    pyodide = await loadPyodide();
+    ready = true;
+    output.textContent = "Python готов.";
+    
+    pyodide.runPython(`
+task_text = ""
+def set_task_text(text):
+    global task_text
+    task_text = text
+    print(f"📄 Текст условия: {len(text)} символов")
+    `);
+}
+initPy();
+
+async function runPython() {
+    if (!ready) return;
+    try {
+        pyodide.runPython(`set_task_text(r"""${taskTextGlobal.replace(/"/g, '\\\\"')}""")`);
+        
+        pyodide.runPython(`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+        `);
+        pyodide.runPython(code.value);
+        output.textContent = pyodide.runPython("sys.stdout.getvalue()") || "Без вывода";
+        output.className="";
+    } catch (e) {
+        output.textContent = e;
+        output.className="error";
+    }
+}
+
+/* ================= TEXT PASTE ================= */
+async function pasteText() {
+    try {
+        const text = await navigator.clipboard.readText();
+        taskTextGlobal = text;
+        const taskTextDiv = document.getElementById("taskText");
+        taskTextDiv.innerHTML = highlightNumbers(text);
+        taskTextDiv.style.display = "block";
+        document.getElementById("taskImage").style.display = "none";
+        alert("✅ Текст условия загружен!");
+    } catch (e) {
+        alert("Ошибка чтения буфера: " + e.message + "\\nПроверьте HTTPS и разрешения");
+    }
+}
+
+function highlightNumbers(text) {
+    const numberRegex = /\\b\\d+(?:\\.\\d+)?(?:[+%×÷=≤≥<>]|руб|[a-zA-Zа-яА-Я]{0,3})?\\b/g;
+    return text.replace(numberRegex, '<span class="number">$&</span>');
+}
+
+/* ================= ANSWER & VIDEO TOGGLE ================= */
+function toggleAnswer() {
+    const answerInput = document.getElementById("answerInput");
+    answerInput.style.display = answerInput.style.display === "none" ? "block" : "none";
+}
+
+function toggleVideo() {
+    const videoInput = document.getElementById("videoInput");
+    videoInput.style.display = videoInput.style.display === "none" ? "block" : "none";
+    if (videoInput.style.display === "block") {
+        setTimeout(() => validateVideoLink(videoInput), 10);
+    }
+}
+
+/* ================= VIDEO LINK VALIDATION - ЛЮБАЯ HTTPS ССЫЛКА ================= */
+function validateVideoLink(input) {
+    const url = input.value.trim();
+    // ✅ ПРОВЕРЯЕМ ЛЮБУЮ HTTPS/HTTP ССЫЛКУ
+    const isValid = url.match(/https?:\/\//i);
+    
+    input.classList.toggle('valid-link', isValid);
+    
+    if (isValid) {
+        input.style.cursor = 'pointer';
+        input.title = 'Кликните чтобы открыть: ' + url;
+        // ✅ НАДЕЖНОЕ ОТКРЫТИЕ ССЫЛКИ
+        input.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            window.open(url, '_blank', 'noopener,noreferrer');
+        };
+    } else {
+        input.style.cursor = 'text';
+        input.title = '';
+        input.onclick = null;
+    }
+}
+
+const videoInput = document.getElementById("videoInput");
+videoInput.addEventListener('input', () => validateVideoLink(videoInput));
+videoInput.addEventListener('blur', () => validateVideoLink(videoInput));
+videoInput.addEventListener('focus', () => validateVideoLink(videoInput));
+
+/* ================= COPY ================= */
+function copyCode() {
+    navigator.clipboard.writeText(code.value).then(() => {
+        alert("✅ Код скопирован:\\n" + code.value.split('\\n')[0]);
+    }).catch(err => {
+        alert("Ошибка копирования: " + err);
+    });
+}
+
+/* ================= TASKS ================= */
+let tasks = [];
+let current = -1;
+
+function saveCurrentCanvasState() {
+    if (current >= 0 && tasks[current]) {
+        tasks[current].canvasState = canvas.toDataURL('image/png', 0.7);
+        tasks[current].code = code.value;
+        tasks[current].answer = answerInput.value;
+        tasks[current].video = videoInput.value;
+        tasks[current].text = taskTextGlobal;
+        tasks[current].image = taskImage.src || "";
+        tasks[current].solved = solvedCheckbox.checked;
+        tasks[current].color = currentColor;
+        tasks[current].thickness = currentThickness;
+    }
+}
+
+function clearCurrentTaskCanvas() {
+    history = [];
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (current >= 0) {
+        tasks[current].canvasState = "";
+    }
+}
+
+function createNewTask() {
+    const name = taskName.value.trim();
+    if (!name) {
+        alert("Введите имя новой задачи");
+        return;
+    }
+
+    saveCurrentCanvasState();
+    
+    const canvasState = canvas.toDataURL('image/png', 0.7);
+    
+    const newTask = {
+        name,
+        code: code.value,
+        answer: answerInput.value,
+        video: videoInput.value,
+        image: taskImage.src || "",
+        text: taskTextGlobal,
+        solved: solvedCheckbox.checked,
+        canvasState: canvasState,
+        color: currentColor,
+        thickness: currentThickness
+    };
+    
+    tasks.push(newTask);
+    current = tasks.length - 1;
+    taskName.value = "";
+    taskName.placeholder = "Новое имя задачи";
+    taskName.classList.remove('new-task');
+    
+    updateSelect();
+    showTask(current);
+}
+
+function updateSelect() {
+    const filter = taskFilter.value;
+    taskSelect.innerHTML = '<option value="">— задачи —</option>';
+    
+    tasks.forEach((t,i) => {
+        if (filter === "all" || 
+            (filter === "solved" && t.solved) || 
+            (filter === "unsolved" && !t.solved)) {
+            const o = document.createElement("option");
+            o.value = i;
+            o.textContent = `${t.solved ? "✅" : "⏳"} ${t.name}`;
+            taskSelect.appendChild(o);
+        }
+    });
+}
+
+function showTask(i) {
+    saveCurrentCanvasState();
+    
+    const t = tasks[i];
+    current = i;
+    
+    code.value = t.code || "print('Привет, Python')";
+    taskName.value = t.name;
+    taskName.placeholder = "Имя текущей задачи";
+    
+    answerInput.value = t.answer || "";
+    videoInput.value = t.video || "";
+    solvedCheckbox.checked = t.solved || false;
+    currentColor = t.color || '#ffff00';
+    currentThickness = t.thickness || 3;
+    
+    // ✅ ВАЛИДАЦИЯ ССЫЛКИ ПОСЛЕ ЗАГРУЗКИ ЗАДАЧИ
+    setTimeout(() => validateVideoLink(videoInput), 50);
+    
+    document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.thickness-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[data-color="${currentColor}"]`)?.classList.add('active');
+    document.querySelector(`[data-thickness="${currentThickness}"]`)?.classList.add('active');
+    
+    history = [];
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if (t.canvasState) {
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0);
+            history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        };
+        img.src = t.canvasState;
+    }
+    
+    if (t.image) {
+        taskImage.src = t.image;
+        taskImage.style.display = "block";
+        document.getElementById("taskText").style.display = "none";
+        taskTextGlobal = "";
+    } else if (t.text) {
+        taskTextGlobal = t.text;
+        document.getElementById("taskText").innerHTML = highlightNumbers(t.text);
+        document.getElementById("taskText").style.display = "block";
+        taskImage.style.display = "none";
+    } else {
+        taskImage.style.display = "none";
+        document.getElementById("taskText").style.display = "none";
+    }
+    
+    taskSelect.value = i;
+    updateSolvedCheckbox();
+}
+
+function selectTask() {
+    if (taskSelect.value !== "") {
+        showTask(+taskSelect.value);
+    }
+}
+
+function updateSolvedCheckbox() {
+    solvedCheckbox.parentElement.style.background = solvedCheckbox.checked ? "#10b981" : "#1e293b";
+}
+
+solvedCheckbox.onchange = () => {
+    if (current >= 0) {
+        tasks[current].solved = solvedCheckbox.checked;
+        updateSelect();
+        updateSolvedCheckbox();
+    }
+};
+
+taskFilter.onchange = updateSelect;
+
+function exportTasks() {
+    saveCurrentCanvasState();
+    const blob = new Blob([JSON.stringify(tasks,null,2)],{type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "tasks.json";
+    a.click();
+}
+
+function importTasks() { 
+    importFile.click(); 
+}
+importFile.onchange = () => {
+    const r = new FileReader();
+    r.onload = () => {
+        tasks = JSON.parse(r.result);
+        if (tasks.length > 0) {
+            current = 0;
+            showTask(0);
+        }
+        updateSelect();
+    };
+    r.readAsText(importFile.files[0]);
+};
+
+taskName.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        createNewTask();
+    }
+});
+
+taskName.addEventListener('focus', () => {
+    if (current < 0 || !tasks[current]) {
+        taskName.classList.add('new-task');
+        taskName.placeholder = "Введите имя → Enter";
+    }
+});
+
+/* ================= ЦВЕТА И ТОЛЩИНА ================= */
+document.querySelectorAll('.color-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentColor = btn.dataset.color;
+    });
+});
+
+document.querySelectorAll('.thickness-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.thickness-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentThickness = parseInt(btn.dataset.thickness);
+    });
+});
+
+/* ================= IMAGE ================= */
+async function pasteImage() {
+    const items = await navigator.clipboard.read();
+    for (const item of items)
+        for (const type of item.types)
+            if (type.startsWith("image/")) {
+                const blob = await item.getType(type);
+                const reader = new FileReader();
+                reader.onload = () => {
+                    taskImage.src = reader.result;
+                    taskImage.style.display = "block";
+                    document.getElementById("taskText").style.display = "none";
+                    taskTextGlobal = "";
+                };
+                reader.readAsDataURL(blob);
+            }
+}
+
+/* ================= CANVAS ================= */
+const canvas = drawCanvas;
+const ctx = canvas.getContext("2d");
+let drawEnabled=false, drawing=false, history=[];
+
+function resize() {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+}
+resize();
+addEventListener("resize", resize);
+
+function toggleDraw() {
+    drawEnabled = !drawEnabled;
+    canvas.style.pointerEvents = drawEnabled ? "auto" : "none";
+    drawBtn.classList.toggle("active", drawEnabled);
+    drawBtn.title = drawEnabled ? "Рисование ВКЛ (Esc=выкл)" : "Рисование ВЫКЛ";
+}
+
+// ✅ ГАРАНТИРОВАННОЕ ОТКЛЮЧЕНИЕ РИСОВАНИЯ
+const toolbar = document.getElementById('toolbar');
+const noDrawZone = document.getElementById('noDrawZone');
+
+toolbar.addEventListener('mouseenter', () => {
+    if (drawEnabled) {
+        toggleDraw();
+        drawBtn.title = "Рисование отключено (toolbar)";
+    }
+});
+
+noDrawZone.addEventListener('mouseenter', () => {
+    if (drawEnabled) {
+        toggleDraw();
+        drawBtn.title = "Рисование отключено (условие)";
+    }
+});
+
+toolbar.addEventListener('mouseleave', () => {
+    drawBtn.title = drawEnabled ? "Рисование ВКЛ (Esc=выкл)" : "Рисование ВЫКЛ";
+});
+
+canvas.addEventListener("pointerdown", e => {
+    if (!drawEnabled) return;
+    drawing = true;
+    history.push(ctx.getImageData(0,0,canvas.width,canvas.height));
+    ctx.strokeStyle = currentColor;
+    ctx.lineWidth = currentThickness;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(e.clientX, e.clientY);
+});
+
+canvas.addEventListener("pointermove", e => {
+    if (!drawing) return;
+    ctx.lineTo(e.clientX, e.clientY);
+    ctx.stroke();
+});
+
+canvas.addEventListener("pointerup", () => drawing=false);
+canvas.addEventListener("pointerleave", () => drawing=false);
+
+function undo() {
+    if (history.length) ctx.putImageData(history.pop(),0,0);
+}
+
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && drawEnabled) toggleDraw();
+});
+
+/* ================= PYTHON INDENT ================= */
+const TAB="    ";
+code.addEventListener("keydown", e => {
+    const s = code.selectionStart;
+    const v = code.value;
+
+    if (e.key === "Tab") {
+        e.preventDefault();
+        code.value = v.slice(0,s)+TAB+v.slice(code.selectionEnd);
+        code.selectionStart = code.selectionEnd = s+4;
+    }
+
+    if (e.key === "Enter") {
+        e.preventDefault();
+        const ls = v.lastIndexOf("\\n",s-1)+1;
+        let ind = (v.slice(ls,s).match(/^\\s*/)||[""])[0];
+        if (v.slice(ls,s).trim().endsWith(":")) ind += TAB;
+        code.value = v.slice(0,s)+"\\n"+ind+v.slice(s);
+        code.selectionStart = code.selectionEnd = s+1+ind.length;
+    }
+});
+</script>
+
+</body>
+</html>
