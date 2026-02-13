@@ -1,0 +1,1267 @@
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Дерево вероятностей</title>
+<style>
+* {margin:0;padding:0;box-sizing:border-box;}
+body {background:linear-gradient(135deg,#0c0c0c 0%,#1a1a2e 50%,#16213e 100%);font-family:'Segoe UI',system-ui;font-size:20px;color:#e2e8f0;padding:20px;overflow:hidden;}
+.container {max-width:1600px;margin:0 auto;display:flex;flex-direction:column;gap:20px;height:100vh;}
+h1 {font-size:42px;background:linear-gradient(135deg,#00f5ff,#7c3aed);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;margin-bottom:5px;text-align:center;}
+
+.canvas-wrapper {
+  flex:1;
+  display:flex;
+  gap:40px;
+  position:relative;
+  min-height:0;
+}
+
+.canvas-container {
+  position:relative;
+  flex:1;
+  min-height:0;
+  background:rgba(20,20,30,0.95);
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,0.1);
+  backdrop-filter:blur(20px);
+  box-shadow:0 32px 64px rgba(0,0,0,0.5);
+  overflow:auto;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+}
+
+#canvas {
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+.leaf-labels {
+  display:flex;
+  justify-content:space-around;
+  margin-top:30px;
+  padding:10px;
+  min-height:60px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+}
+
+.leaf-label {
+  text-align:center;
+  padding:6px 10px;
+  min-width:90px;
+  max-width:120px;
+  background:rgba(0,0,0,0.3);
+  border-radius:6px;
+  border:1px solid rgba(0,245,255,0.2);
+  margin:2px;
+  cursor:pointer;
+  transition:all 0.3s;
+}
+
+.leaf-label:hover {
+  background:rgba(0,245,255,0.1);
+  border-color:#00f5ff;
+}
+
+.leaf-label-text {
+  font-size:13px;
+  font-weight:bold;
+  color:#e2e8f0;
+  line-height:1.2;
+  white-space:nowrap;
+  text-align:center;
+}
+
+.result-corner {
+  position:absolute;
+  top:30px;
+  left:30px;
+  background:rgba(15,15,25,0.9);
+  backdrop-filter:blur(20px);
+  padding:15px 20px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,0.1);
+  box-shadow:0 12px 24px rgba(0,0,0,0.4);
+  z-index:10;
+  min-width:150px;
+}
+
+.result-corner h3 {
+  margin:0 0 8px;
+  font-size:18px;
+  color:#00f5ff;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  text-align:center;
+}
+
+.result-value {
+  font-size:36px;
+  font-weight:900;
+  background:linear-gradient(135deg,#00f5ff,#7c3aed);
+  background-clip:text;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin:5px 0;
+  text-align:center;
+}
+
+#debug {
+  font-size:14px;
+  color:#94a3b8;
+  margin-top:8px;
+  line-height:1.2;
+  text-align:center;
+}
+
+#input {
+  position:fixed;
+  border:2px solid rgba(0,245,255,0.5);
+  border-radius:12px;
+  padding:12px 16px;
+  font-size:18px;
+  font-weight:600;
+  box-shadow:0 20px 40px rgba(0,0,0,0.5),0 0 0 1px rgba(0,245,255,0.3);
+  z-index:10000;
+  background:rgba(15,15,25,0.98);
+  backdrop-filter:blur(20px);
+  color:#e2e8f0;
+  display:none;
+}
+
+#input::placeholder {
+  color:#64748b;
+  font-size:16px;
+}
+
+.btns {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+  margin-bottom:15px;
+}
+
+.btn {
+  padding:12px 20px;
+  border:2px solid rgba(0,245,255,0.5);
+  border-radius:14px;
+  background:rgba(0,245,255,0.1);
+  color:#00f5ff;
+  font-weight:700;
+  cursor:pointer;
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+  backdrop-filter:blur(10px);
+  font-size:15px;
+}
+
+.btn:hover {
+  background:linear-gradient(135deg,rgba(0,245,255,0.2),rgba(124,58,237,0.2));
+  border-color:#00f5ff;
+  transform:translateY(-2px) scale(1.02);
+  box-shadow:0 12px 24px rgba(0,245,255,0.3);
+}
+
+.btn.primary {
+  background:linear-gradient(135deg,#00f5ff,#7c3aed);
+  border-color:#00f5ff;
+  color:#0c0c0c;
+}
+
+.btn.primary:hover {
+  transform:translateY(-2px) scale(1.02);
+  box-shadow:0 12px 24px rgba(0,245,255,0.4);
+}
+
+.glow {
+  box-shadow:0 0 20px rgba(0,245,255,0.5),inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.formula {
+  margin-top:10px;
+  padding:10px;
+  background:rgba(0,0,0,0.3);
+  border-radius:8px;
+  border:1px solid rgba(0,245,255,0.2);
+  font-family:'Consolas',monospace;
+  font-size:12px;
+  color:#00f5ff;
+  text-align:center;
+  line-height:1.2;
+}
+
+.leaf-counter {
+  margin-top:8px;
+  color:#94a3b8;
+  font-size:12px;
+  text-align:center;
+}
+
+.prob-input {
+  margin-top:20px;
+  width:100%;
+}
+
+.prob-input label {
+  display:block;
+  margin-bottom:6px;
+  color:#00f5ff;
+  font-weight:bold;
+  font-size:15px;
+}
+
+.prob-input-fields {
+  display:flex;
+  gap:8px;
+}
+
+.prob-input-fields input {
+  flex:1;
+  padding:8px 12px;
+  border:2px solid rgba(0,245,255,0.3);
+  border-radius:8px;
+  background:rgba(0,0,0,0.3);
+  color:#e2e8f0;
+  font-size:15px;
+}
+
+.prob-input-fields input:focus {
+  outline:none;
+  border-color:#00f5ff;
+  box-shadow:0 0 10px rgba(0,245,255,0.3);
+}
+
+.prob-hint {
+  margin-top:8px;
+  font-size:13px;
+  color:#94a3b8;
+  text-align:center;
+}
+
+.examples-menu {
+  display:none;
+  position:absolute;
+  top:60px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(15,15,25,0.95);
+  border-radius:16px;
+  border:1px solid rgba(0,245,255,0.3);
+  padding:15px;
+  z-index:100;
+  min-width:300px;
+  max-height:400px;
+  overflow-y:auto;
+  box-shadow:0 20px 40px rgba(0,0,0,0.5);
+}
+
+.examples-menu.show {
+  display:block;
+}
+
+.examples-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+  padding-bottom:10px;
+  border-bottom:1px solid rgba(0,245,255,0.2);
+}
+
+.examples-header h3 {
+  margin:0;
+  color:#00f5ff;
+  font-size:18px;
+}
+
+.save-example-btn {
+  padding:6px 12px;
+  background:rgba(0,245,255,0.1);
+  border:1px solid rgba(0,245,255,0.3);
+  border-radius:8px;
+  color:#00f5ff;
+  cursor:pointer;
+  font-size:13px;
+  transition:all 0.3s;
+}
+
+.save-example-btn:hover {
+  background:rgba(0,245,255,0.2);
+  border-color:#00f5ff;
+}
+
+.example-item {
+  padding:10px 15px;
+  margin:5px 0;
+  background:rgba(0,0,0,0.3);
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.1);
+  cursor:pointer;
+  transition:all 0.3s;
+  position:relative;
+}
+
+.example-item:hover {
+  background:rgba(0,245,255,0.1);
+  border-color:#00f5ff;
+}
+
+.example-item .delete-btn {
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  background:rgba(255,50,50,0.1);
+  border:1px solid rgba(255,50,50,0.3);
+  border-radius:4px;
+  color:#ff6666;
+  padding:3px 6px;
+  font-size:11px;
+  cursor:pointer;
+  display:none;
+}
+
+.example-item:hover .delete-btn {
+  display:block;
+}
+
+.example-item .delete-btn:hover {
+  background:rgba(255,50,50,0.2);
+  border-color:#ff6666;
+}
+
+.save-modal {
+  display:none;
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:rgba(15,15,25,0.98);
+  border-radius:16px;
+  border:1px solid rgba(0,245,255,0.3);
+  padding:20px;
+  z-index:1000;
+  min-width:300px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.7);
+}
+
+.save-modal.show {
+  display:block;
+}
+
+.save-modal h3 {
+  margin:0 0 15px;
+  color:#00f5ff;
+  text-align:center;
+}
+
+.save-modal input {
+  width:100%;
+  padding:10px;
+  margin-bottom:15px;
+  background:rgba(0,0,0,0.3);
+  border:2px solid rgba(0,245,255,0.3);
+  border-radius:8px;
+  color:#e2e8f0;
+  font-size:16px;
+}
+
+.save-modal input:focus {
+  outline:none;
+  border-color:#00f5ff;
+}
+
+.save-modal-btns {
+  display:flex;
+  gap:10px;
+  justify-content:center;
+}
+
+.save-modal-btn {
+  padding:8px 16px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+  transition:all 0.3s;
+}
+
+.save-modal-btn.save {
+  background:linear-gradient(135deg,#00f5ff,#7c3aed);
+  border:none;
+  color:#0c0c0c;
+}
+
+.save-modal-btn.cancel {
+  background:rgba(255,50,50,0.1);
+  border:1px solid rgba(255,50,50,0.3);
+  color:#ff6666;
+}
+</style>
+<style type="text/css" id="operaUserStyle"></style></head>
+<body>
+<div class="container">
+  <h1>🧮 Дерево вероятностей</h1>
+  
+  <div class="btns">
+    <button class="btn primary" onclick="addLevel()">➕ Этаж</button>
+    <button class="btn" onclick="removeLevel()">➖ Убрать</button>
+    <button class="btn" onclick="showExamples()">📋 Примеры</button>
+    <button class="btn" onclick="resetSelection()">🔄 Сброс</button>
+  </div>
+  
+  <!-- Меню примеров -->
+  <div class="examples-menu" id="examplesMenu">
+    <div class="examples-header">
+      <h3>Сохранённые примеры</h3>
+      <button class="save-example-btn" onclick="showSaveModal()">+ Сохранить текущее</button>
+    </div>
+    <div id="examplesList"><div class="example-item">
+      <div>Монетка (3 броска) (3 этажа)</div>
+    </div><div class="example-item">
+      <div>Волейбол (3 матча) (3 этажа)</div>
+    </div><div class="example-item">
+      <div>Билеты по биологии (1 этаж)</div>
+    </div><div class="example-item">
+      <div>Медицинский тест (исправлен) (2 этажа)</div>
+    </div><div style="margin: 10px 0px 5px; padding: 5px 10px; color: rgb(148, 163, 184); font-size: 12px; border-top: 1px solid rgba(255, 255, 255, 0.1);">Сохранённые примеры</div><div class="example-item">
+      <div>111111111111 (3 этажа)</div>
+      <div class="delete-btn" onclick="deleteSavedExample(0)">×</div>
+    </div></div>
+  </div>
+  
+  <!-- Модальное окно сохранения -->
+  <div class="save-modal" id="saveModal">
+    <h3>Сохранить пример</h3>
+    <input type="text" id="exampleNameInput" placeholder="Название примера" maxlength="50">
+    <div class="save-modal-btns">
+      <button class="save-modal-btn save" onclick="saveCurrentExample()">Сохранить</button>
+      <button class="save-modal-btn cancel" onclick="hideSaveModal()">Отмена</button>
+    </div>
+  </div>
+  
+  <div class="canvas-wrapper">
+    <div class="canvas-container">
+      <!-- Ответ в левом верхнем углу -->
+      <div class="result-corner glow">
+        <h3>P(успех)</h3>
+        <div class="result-value" id="resultValue">0.2450</div>
+        <div class="formula" id="formulaDisplay">(7/10 × 7/10 × 1/2)</div>
+        <div class="leaf-counter" id="debugInfo">Выбрано: 1 из 8</div>
+      </div>
+      
+      <canvas id="canvas" width="1128" height="515"></canvas>
+      <div class="leaf-labels" id="leafLabels"><div class="leaf-label"><div class="leaf-label-text">Болен Тест+0.7 +</div></div><div class="leaf-label" style="background: rgba(0, 255, 136, 0.2); border-color: rgb(0, 255, 136);"><div class="leaf-label-text">Болен Тест+0.7 -</div></div><div class="leaf-label"><div class="leaf-label-text">Болен Тест- +</div></div><div class="leaf-label"><div class="leaf-label-text">Болен Тест- -</div></div><div class="leaf-label"><div class="leaf-label-text">Здоров Тест+0.7 +</div></div><div class="leaf-label"><div class="leaf-label-text">Здоров Тест+0.7 -</div></div><div class="leaf-label"><div class="leaf-label-text">Здоров Тест- +</div></div><div class="leaf-label"><div class="leaf-label-text">Здоров Тест- -</div></div></div>
+      
+      <!-- Панель для ввода вероятностей -->
+      <div class="prob-input">
+        <label>Редактирование ветки:</label>
+        <div class="prob-input-fields">
+          <input type="text" id="branchTextInput" placeholder="Заголовок">
+          <input type="text" id="branchProbInput" placeholder="Вероятность">
+        </div>
+        <div class="prob-hint">Выберите ветку кликом, затем введите значения</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const resultValue = document.getElementById('resultValue');
+const debugInfo = document.getElementById('debugInfo');
+const formulaDisplay = document.getElementById('formulaDisplay');
+const leafLabels = document.getElementById('leafLabels');
+const branchTextInput = document.getElementById('branchTextInput');
+const branchProbInput = document.getElementById('branchProbInput');
+const examplesMenu = document.getElementById('examplesMenu');
+const examplesList = document.getElementById('examplesList');
+const saveModal = document.getElementById('saveModal');
+const exampleNameInput = document.getElementById('exampleNameInput');
+
+// Ключ для localStorage
+const STORAGE_KEY = 'probability_tree_examples';
+
+// Стандартные примеры (встроенные) - ИСПРАВЛЕН МЕДИЦИНСКИЙ ТЕСТ
+const DEFAULT_EXAMPLES = [
+  
+
+{
+    id: 'default1',
+    name: 'Монетка',
+    levels: 2,
+    branches: [
+    {A: {text: "ОР", prob: "1/2"}, B: {text: "РЕШ", prob: "1/2"}},
+    {A: {text: "ОР", prob: "1/2"}, B: {text: "РЕШ", prob: "1/2"}}
+    ]
+  },
+
+{
+    id: 'default2',
+    name: 'Монетка',
+    levels: 3,
+    branches: [
+      {A: {text: "Орёл", prob: "1/2"}, B: {text: "Решка", prob: "1/2"}},
+      {A: {text: "Орёл", prob: "1/2"}, B: {text: "Решка", prob: "1/2"}},
+      {A: {text: "Орёл", prob: "1/2"}, B: {text: "Решка", prob: "1/2"}}
+    ]
+  },
+  {
+    id: 'default3',
+    name: '3 МАТЧА',
+    levels: 3,
+    branches: [
+      {A: {text: "Нач", prob: "1/2"}, B: {text: "Не нач", prob: "1/2"}},
+      {A: {text: "Нач", prob: "1/2"}, B: {text: "Не нач", prob: "1/2"}},
+      {A: {text: "Нач", prob: "1/2"}, B: {text: "Не нач", prob: "1/2"}},
+    ]
+  },
+  {
+    id: 'default4',
+    name: 'Билеты по биологии',
+    levels: 1,
+    branches: [
+      {A: {text: "С грибами", prob: "2/25"}, B: {text: "Без грибов", prob: "23/25"}}
+    ]
+  },
+
+  {
+    id: 'default5',
+    name: 'НОВЫЙ',
+    levels: 1,
+    branches: [
+      {A: {text: "С грибами", prob: "2/25"}, B: {text: "Без грибов", prob: "23/25"}}
+    ]
+  },
+
+
+
+
+
+
+
+
+];
+
+// Загружаем сохранённые примеры из localStorage
+let savedExamples = [];
+
+function loadSavedExamples() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      savedExamples = JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error('Ошибка загрузки примеров:', e);
+    savedExamples = [];
+  }
+}
+
+function saveExamples() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedExamples));
+  } catch (e) {
+    console.error('Ошибка сохранения примеров:', e);
+  }
+}
+
+// Инициализация сохранённых примеров
+loadSavedExamples();
+
+// НАЧАЛЬНЫЕ ДАННЫЕ - МОНЕТКA 2 БРОСКА
+let treeData = {
+  levels: 2,
+  branches: [
+    {A: {text: "ОР", prob: "1/2"}, B: {text: "РЕШ", prob: "1/2"}},
+    {A: {text: "ОР", prob: "1/2"}, B: {text: "РЕШ", prob: "1/2"}}
+   ],
+  leaves: []
+};
+
+let editingField = null;
+let hitZones = [];
+let mouseX = 0, mouseY = 0;
+let hoveredZone = null;
+let selectedBranch = null;
+let activeBranches = new Map();
+
+// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ПРАВИЛЬНОГО ОПРЕДЕЛЕНИЯ ПУТИ ЛИСТА
+function getLeafPath(leafId) {
+  const L = treeData.levels;
+  const path = [];
+  let currentId = leafId;
+  
+  // Проходим от корня к листу
+  for (let level = 0; level < L; level++) {
+    // Для каждого уровня определяем, какая ветка (A или B) была выбрана
+    // Чтобы дойти до листа leafId, на уровне level нужно выбрать:
+    // A если бит на позиции (L-1-level) равен 0, B если равен 1
+    const bitPosition = L - 1 - level;
+    const branchIndex = (currentId >> bitPosition) & 1;
+    const branch = treeData.branches[level][branchIndex === 0 ? 'A' : 'B'];
+    
+    // Берем первое слово из названия ветки
+    const firstWord = branch.text.split(' ')[0];
+    path.push(firstWord);
+    
+    // Обновляем currentId для следующей итерации
+    currentId = currentId & ((1 << bitPosition) - 1);
+  }
+  
+  return path;
+}
+
+// ФУНКЦИЯ ДЛЯ ОТОБРАЖЕНИЯ СПИСКА ПРИМЕРОВ
+function updateExamplesList() {
+  examplesList.innerHTML = '';
+  
+  // Добавляем стандартные примеры
+  DEFAULT_EXAMPLES.forEach(example => {
+    const exampleDiv = document.createElement('div');
+    exampleDiv.className = 'example-item';
+    exampleDiv.innerHTML = `
+      <div>${example.name} (${example.levels} этаж${example.levels === 1 ? '' : example.levels < 5 ? 'а' : 'ей'})</div>
+    `;
+    exampleDiv.onclick = () => loadExample(example);
+    examplesList.appendChild(exampleDiv);
+  });
+  
+  // Добавляем разделитель
+  if (savedExamples.length > 0) {
+    const separator = document.createElement('div');
+    separator.style.margin = '10px 0 5px';
+    separator.style.padding = '5px 10px';
+    separator.style.color = '#94a3b8';
+    separator.style.fontSize = '12px';
+    separator.style.borderTop = '1px solid rgba(255,255,255,0.1)';
+    separator.textContent = 'Сохранённые примеры';
+    examplesList.appendChild(separator);
+  }
+  
+  // Добавляем сохранённые примеры
+  savedExamples.forEach((example, index) => {
+    const exampleDiv = document.createElement('div');
+    exampleDiv.className = 'example-item';
+    exampleDiv.innerHTML = `
+      <div>${example.name} (${example.levels} этаж${example.levels === 1 ? '' : example.levels < 5 ? 'а' : 'ей'})</div>
+      <div class="delete-btn" onclick="deleteSavedExample(${index})">×</div>
+    `;
+    exampleDiv.onclick = () => loadExample(example);
+    examplesList.appendChild(exampleDiv);
+  });
+}
+
+// ФУНКЦИЯ ДЛЯ УДАЛЕНИЯ СОХРАНЁННОГО ПРИМЕРА
+function deleteSavedExample(index) {
+  event.stopPropagation();
+  if (confirm(`Удалить пример "${savedExamples[index].name}"?`)) {
+    savedExamples.splice(index, 1);
+    saveExamples();
+    updateExamplesList();
+  }
+}
+
+// ФУНКЦИЯ ДЛЯ СОХРАНЕНИЯ ТЕКУЩЕГО ДЕРЕВА
+function saveCurrentExample() {
+  const name = exampleNameInput.value.trim();
+  if (!name) {
+    alert('Введите название примера');
+    return;
+  }
+  
+  const exampleToSave = {
+    id: 'saved_' + Date.now(),
+    name: name,
+    levels: treeData.levels,
+    branches: JSON.parse(JSON.stringify(treeData.branches))
+  };
+  
+  savedExamples.unshift(exampleToSave);
+  saveExamples();
+  updateExamplesList();
+  hideSaveModal();
+  exampleNameInput.value = '';
+  alert(`Пример "${name}" сохранён!`);
+}
+
+// ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ПРИМЕРА
+function loadExample(example) {
+  treeData = {
+    levels: example.levels,
+    branches: JSON.parse(JSON.stringify(example.branches)),
+    leaves: []
+  };
+  
+  initLeaves();
+  treeData.leaves.forEach(l => l.selected = false);
+  selectedBranch = null;
+  examplesMenu.classList.remove('show');
+  render();
+}
+
+// ФУНКЦИИ ДЛЯ ПОКАЗА/СКРЫТИЯ МОДАЛЬНЫХ ОКОН
+function showExamples() {
+  updateExamplesList();
+  examplesMenu.classList.toggle('show');
+}
+
+function showSaveModal() {
+  saveModal.classList.add('show');
+  exampleNameInput.focus();
+}
+
+function hideSaveModal() {
+  saveModal.classList.remove('show');
+  exampleNameInput.value = '';
+}
+
+// Закрыть меню примеров при клике вне его
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.examples-menu') && !e.target.closest('.btn') && !examplesMenu.contains(e.target)) {
+    examplesMenu.classList.remove('show');
+  }
+  if (!e.target.closest('.save-modal') && !e.target.closest('.save-example-btn')) {
+    hideSaveModal();
+  }
+});
+
+// Обработка нажатия Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    examplesMenu.classList.remove('show');
+    hideSaveModal();
+  }
+});
+
+// Инициализация списка примеров
+updateExamplesList();
+
+// ОСНОВНЫЕ ФУНКЦИИ
+function initLeaves() {
+  const numLeaves = 1 << treeData.levels;
+  treeData.leaves = Array(numLeaves).fill().map((_, i) => ({id: i, selected: false}));
+}
+
+function updateActiveBranches() {
+  activeBranches.clear();
+  treeData.leaves.forEach((leaf, leafId) => {
+    if (leaf.selected) {
+      // Для правильного определения активных веток используем ту же логику, что и для путей
+      let fullPath = '';
+      let currentId = leafId;
+      
+      for (let level = 0; level < treeData.levels; level++) {
+        const bitPosition = treeData.levels - 1 - level;
+        const branchIndex = (currentId >> bitPosition) & 1;
+        const side = branchIndex === 0 ? 'A' : 'B';
+        
+        if (level === 0) {
+          fullPath = `0-${side}`;
+        } else {
+          fullPath += `-${side}`;
+        }
+        
+        activeBranches.set(fullPath, true);
+        currentId = currentId & ((1 << bitPosition) - 1);
+      }
+    }
+  });
+}
+
+function isBranchActive(level, side, parentPath = '') {
+  // Для упрощения проверяем все активные пути
+  for (const key of activeBranches.keys()) {
+    const parts = key.split('-');
+    if (parts[level + 1] === side) {
+      // Проверяем совпадение родительского пути
+      if (level === 0) {
+        return true;
+      } else if (parentPath) {
+        const parentParts = parentPath.split('-');
+        let match = true;
+        for (let i = 0; i <= level; i++) {
+          if (parts[i] !== parentParts[i]) {
+            match = false;
+            break;
+          }
+        }
+        if (match) return true;
+      }
+    }
+  }
+  return false;
+}
+
+initLeaves();
+updateActiveBranches();
+
+function parseProbability(text) {
+  const s = text.toString().trim().replace(',', '.');
+  if (s.endsWith('%')) return parseFloat(s.slice(0, -1)) / 100;
+  if (s.includes('/')) {
+    const parts = s.split('/');
+    const num = parseFloat(parts[0]);
+    const den = parseFloat(parts[1]);
+    return den !== 0 ? num / den : 0;
+  }
+  return parseFloat(s) || 0;
+}
+
+function toFraction(p) {
+  if (!isFinite(p)) return '0';
+  if (p === 0) return '0';
+  if (p === 1) return '1';
+  
+  const fractions = [
+    {value: 0.5, frac: '1/2'},
+    {value: 0.25, frac: '1/4'},
+    {value: 0.75, frac: '3/4'},
+    {value: 0.125, frac: '1/8'},
+    {value: 0.375, frac: '3/8'},
+    {value: 0.625, frac: '5/8'},
+    {value: 0.875, frac: '7/8'},
+    {value: 1/3, frac: '1/3'},
+    {value: 2/3, frac: '2/3'},
+    {value: 1/6, frac: '1/6'},
+    {value: 5/6, frac: '5/6'},
+    {value: 0.1, frac: '1/10'},
+    {value: 0.2, frac: '1/5'},
+    {value: 0.4, frac: '2/5'},
+    {value: 0.6, frac: '3/5'},
+    {value: 0.8, frac: '4/5'}
+  ];
+  
+  for (const frac of fractions) {
+    if (Math.abs(p - frac.value) < 0.001) return frac.frac;
+  }
+  
+  for (let den = 2; den <= 100; den++) {
+    const num = Math.round(p * den);
+    if (Math.abs(num/den - p) < 0.001) {
+      return `${num}/${den}`;
+    }
+  }
+  
+  return p.toFixed(3);
+}
+
+function formatProbability(p) {
+  return toFraction(p);
+}
+
+function formatResult(p) {
+  if (!isFinite(p)) return '0';
+  if (p === 0) return '0';
+  if (p === 1) return '1';
+  
+  // Всегда показываем как десятичную дробь с 4 знаками
+  const rounded = Math.round(p * 10000) / 10000;
+  return rounded.toFixed(4);
+}
+
+
+function render() {
+  const canvasContainer = document.querySelector('.canvas-container');
+  const rect = canvasContainer.getBoundingClientRect();
+  canvas.width = rect.width - 40;
+  canvas.height = rect.height - 240;
+  
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  hitZones = [];
+  updateActiveBranches();
+  
+  const L = treeData.levels;
+  const topPadding = 80;
+  const availableHeight = canvas.height - topPadding - 40;
+  const levelHeight = availableHeight / L;
+  const centerX = canvas.width / 2;
+  const maxWidth = canvas.width * 0.9;
+  const levelWidths = [];
+  
+  for (let level = 0; level <= L; level++) {
+    const leavesAtLevel = 1 << level;
+    const widthPerLeaf = maxWidth / (1 << L);
+    levelWidths[level] = leavesAtLevel * widthPerLeaf;
+  }
+  
+  const nodePositions = Array(L + 1).fill().map(() => []);
+  
+  for (let level = 0; level < L; level++) {
+    const nodesAtLevel = 1 << level;
+    const y = topPadding + level * levelHeight;
+    
+    for (let nodeIdx = 0; nodeIdx < nodesAtLevel; nodeIdx++) {
+      let parentX, parentY;
+      if (level === 0) {
+        parentX = centerX;
+        parentY = topPadding - 15;
+        nodePositions[0].push({x: parentX, y: parentY});
+      } else {
+        parentX = nodePositions[level][nodeIdx].x;
+        parentY = nodePositions[level][nodeIdx].y;
+      }
+      
+      const childLevel = level + 1;
+      const childrenAtLevel = 1 << childLevel;
+      const childY = topPadding + childLevel * levelHeight;
+      const childSpacing = levelWidths[childLevel] / childrenAtLevel;
+      const leftChildIdx = nodeIdx * 2;
+      const rightChildIdx = nodeIdx * 2 + 1;
+      const leftChildX = centerX - levelWidths[childLevel]/2 + leftChildIdx * childSpacing + childSpacing/2;
+      const rightChildX = centerX - levelWidths[childLevel]/2 + rightChildIdx * childSpacing + childSpacing/2;
+      
+      if (nodePositions[childLevel].length <= leftChildIdx) nodePositions[childLevel].push({x: leftChildX, y: childY});
+      if (nodePositions[childLevel].length <= rightChildIdx) nodePositions[childLevel].push({x: rightChildX, y: childY});
+      
+      let parentPath = '';
+      if (level > 0) {
+        const parentPathParts = [];
+        let tempIdx = nodeIdx;
+        for (let l = 0; l < level; l++) {
+          const sideAtLevel = (tempIdx % 2 === 0) ? 'A' : 'B';
+          parentPathParts.unshift(sideAtLevel);
+          tempIdx = Math.floor(tempIdx / 2);
+        }
+        parentPath = `0-${parentPathParts.join('-')}`;
+      }
+      
+      const isActiveA = isBranchActive(level, 'A', parentPath);
+      drawBranch({x: parentX, y: parentY}, {x: leftChildX, y: childY}, treeData.branches[level].A, level, 'A', parentPath, isActiveA, nodeIdx);
+      const isActiveB = isBranchActive(level, 'B', parentPath);
+      drawBranch({x: parentX, y: parentY}, {x: rightChildX, y: childY}, treeData.branches[level].B, level, 'B', parentPath, isActiveB, nodeIdx);
+    }
+  }
+  
+  const leafCount = 1 << L;
+  const leafY = topPadding + L * levelHeight + 20;
+  updateLeafLabels();
+  
+  for (let i = 0; i < leafCount; i++) {
+    if (nodePositions[L] && nodePositions[L][i]) {
+      const leafX = nodePositions[L][i].x;
+      drawLeaf({x: leafX, y: leafY}, i);
+    }
+  }
+  
+  // ПРАВИЛЬНЫЙ РАСЧЁТ ВЕРОЯТНОСТИ
+  let totalProb = 0;
+  let selectedLeaves = treeData.leaves.filter(l => l.selected);
+  let formulaParts = [];
+  
+  selectedLeaves.forEach(leaf => {
+    let leafIndex = leaf.id;
+    let leafProb = 1;
+    let leafFormula = [];
+    
+    // Правильный расчёт вероятности пути к листу
+    let currentId = leafIndex;
+    for (let level = 0; level < L; level++) {
+      const bitPosition = L - 1 - level;
+      const branchIndex = (currentId >> bitPosition) & 1;
+      const branch = treeData.branches[level][branchIndex === 0 ? 'A' : 'B'];
+      const p = parseProbability(branch.prob);
+      leafProb *= p;
+      leafFormula.push(formatProbability(p));
+      currentId = currentId & ((1 << bitPosition) - 1);
+    }
+    
+    totalProb += leafProb;
+    
+    if (leafFormula.length > 0) {
+      formulaParts.push(`(${leafFormula.join(' × ')})`);
+    }
+  });
+  
+
+ resultValue.textContent = formatResult(totalProb);
+  totalProb = Math.round(totalProb * 1000000) / 1000000;
+  
+
+  debugInfo.textContent = `Выбрано: ${selectedLeaves.length} из ${leafCount}`;
+  
+  if (formulaDisplay) {
+    if (formulaParts.length > 0) {
+      formulaDisplay.textContent = formulaParts.join(' + ');
+    } else {
+      formulaDisplay.textContent = 'Выберите листья';
+    }
+  }
+  
+  if (selectedBranch) {
+    const data = treeData.branches[selectedBranch.level][selectedBranch.side];
+    branchTextInput.value = data.text;
+    branchProbInput.value = data.prob;
+  }
+}
+
+function updateLeafLabels() {
+  const L = treeData.levels;
+  const leafCount = 1 << L;
+  leafLabels.innerHTML = '';
+  
+  for (let i = 0; i < leafCount; i++) {
+    const leaf = treeData.leaves[i];
+    
+    // Используем исправленную функцию getLeafPath
+    const path = getLeafPath(i);
+    const labelText = path.join(' ');
+    
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'leaf-label';
+    labelDiv.innerHTML = `<div class="leaf-label-text">${labelText}</div>`;
+    
+    if (leaf.selected) {
+      labelDiv.style.background = 'rgba(0,255,136,0.2)';
+      labelDiv.style.borderColor = '#00ff88';
+    }
+    
+    labelDiv.onclick = () => {
+      treeData.leaves[i].selected = !treeData.leaves[i].selected;
+      selectedBranch = null;
+      render();
+    };
+    
+    leafLabels.appendChild(labelDiv);
+  }
+}
+
+function drawBranch(from, to, data, level, side, parentPath, isActive, nodeIdx) {
+  const isHovered = hoveredZone?.target?.level === level && hoveredZone?.target?.side === side;
+  const isSelected = selectedBranch && selectedBranch.level === level && selectedBranch.side === side;
+  
+  const gradient = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
+  if (isSelected) gradient.addColorStop(0, 'rgba(255,215,0,0.9)'), gradient.addColorStop(1, 'rgba(255,165,0,0.9)');
+  else if (isActive) gradient.addColorStop(0, 'rgba(0,255,136,0.9)'), gradient.addColorStop(1, 'rgba(0,200,106,0.9)');
+  else if (isHovered) gradient.addColorStop(0, 'rgba(0,245,255,0.8)'), gradient.addColorStop(1, 'rgba(0,204,255,0.8)');
+  else gradient.addColorStop(0, 'rgba(0,245,255,0.6)'), gradient.addColorStop(1, 'rgba(124,58,237,0.6)');
+  
+  ctx.strokeStyle = gradient;
+  ctx.lineWidth = isSelected ? 7 : (isActive ? 6 : (isHovered ? 4 : 2));
+  ctx.lineCap = 'round';
+  ctx.shadowBlur = isSelected ? 20 : (isActive ? 16 : (isHovered ? 12 : 8));
+  ctx.shadowColor = isSelected ? 'rgba(255,215,0,0.6)' : (isActive ? 'rgba(0,255,136,0.6)' : (isHovered ? 'rgba(0,245,255,0.5)' : 'rgba(0,245,255,0.4)'));
+  
+  ctx.beginPath();
+  ctx.moveTo(from.x, from.y + 10);
+  ctx.lineTo(to.x, to.y - 15);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  
+  const prob = parseProbability(data.prob);
+  const labelText = data.text;
+  const probText = formatProbability(prob);
+  
+  const midX = (from.x + to.x) / 2;
+  const labelY = (from.y + to.y) / 2 - 15;
+  
+  ctx.save();
+  ctx.translate(midX, labelY);
+  
+  ctx.font = 'bold 15px system-ui';
+  const labelWidth = ctx.measureText(labelText).width + 18;
+  const labelHeight = 22;
+  
+  ctx.fillStyle = 'rgba(15,15,25,0.9)';
+  ctx.fillRect(-labelWidth/2, -labelHeight/2, labelWidth, labelHeight);
+  
+  ctx.strokeStyle = isSelected ? '#ffd700' : (isHovered ? '#00f5ff' : 'rgba(255,255,255,0.3)');
+  ctx.lineWidth = 1;
+  ctx.strokeRect(-labelWidth/2, -labelHeight/2, labelWidth, labelHeight);
+  
+  ctx.fillStyle = isSelected ? '#ffd700' : (isHovered ? '#00f5ff' : '#e2e8f0');
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(labelText, 0, 0);
+  ctx.restore();
+  
+  const probY = (from.y + to.y) / 2 + 15;
+  
+  ctx.save();
+  ctx.translate(midX, probY);
+  
+  ctx.font = 'bold 13px system-ui';
+  const probWidth = ctx.measureText(probText).width + 14;
+  const probHeight = 20;
+  
+  ctx.fillStyle = 'rgba(15,15,25,0.9)';
+  ctx.fillRect(-probWidth/2, -probHeight/2, probWidth, probHeight);
+  
+  ctx.strokeStyle = isSelected ? '#ffd700' : (isHovered ? '#00f5ff' : 'rgba(255,255,255,0.2)');
+  ctx.lineWidth = 1;
+  ctx.strokeRect(-probWidth/2, -probHeight/2, probWidth, probHeight);
+  
+  ctx.fillStyle = isSelected ? '#ffd700' : (isHovered ? '#00f5ff' : '#94a3b8');
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(probText, 0, 0);
+  ctx.restore();
+  
+  hitZones.push({
+    type: 'branch-header',
+    target: {level, side, field: 'header', parentPath, nodeIdx},
+    rect: {x: midX - labelWidth/2, y: labelY - labelHeight/2, w: labelWidth, h: labelHeight}
+  });
+  
+  hitZones.push({
+    type: 'branch-prob',
+    target: {level, side, field: 'prob', parentPath, nodeIdx},
+    rect: {x: midX - probWidth/2, y: probY - probHeight/2, w: probWidth, h: probHeight}
+  });
+}
+
+function drawLeaf(pos, id) {
+  const leaf = treeData.leaves[id];
+  const isSelected = leaf.selected;
+  const isHovered = hoveredZone?.type === 'leaf' && hoveredZone.id === id;
+  
+  const gradient = ctx.createRadialGradient(pos.x-7, pos.y-7, 0, pos.x, pos.y, 14);
+  gradient.addColorStop(0, isSelected ? '#00ff88' : (isHovered ? '#00f5ff' : '#7c3aed'));
+  gradient.addColorStop(1, isSelected ? '#00cc6a' : (isHovered ? '#00ccff' : '#5b21b6'));
+  
+  ctx.shadowBlur = isHovered ? 12 : 8;
+  ctx.shadowColor = isSelected ? '#00ff88' : (isHovered ? '#00f5ff' : '#7c3aed');
+  
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(pos.x, pos.y, 14, 0, Math.PI * 2);
+  ctx.fill();
+  
+  ctx.strokeStyle = isHovered ? '#00f5ff' : (isSelected ? '#00ff88' : 'rgba(255,255,255,0.3)');
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  
+  hitZones.push({
+    type: 'leaf',
+    id: id,
+    rect: {x: pos.x - 22, y: pos.y - 22, w: 44, h: 44}
+  });
+}
+
+// Обработчики событий
+branchTextInput.addEventListener('change', function() {
+  if (selectedBranch) {
+    const data = treeData.branches[selectedBranch.level][selectedBranch.side];
+    data.text = this.value;
+    render();
+  }
+});
+
+branchProbInput.addEventListener('change', function() {
+  if (selectedBranch) {
+    const data = treeData.branches[selectedBranch.level][selectedBranch.side];
+    const prob = parseProbability(this.value);
+    if (isFinite(prob) && prob >= 0 && prob <= 1) {
+      data.prob = this.value;
+      const otherSide = selectedBranch.side === 'A' ? 'B' : 'A';
+      treeData.branches[selectedBranch.level][otherSide].prob = toFraction(1 - prob);
+      render();
+    }
+  }
+});
+
+branchTextInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') this.blur();
+});
+
+branchProbInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') this.blur();
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  const canvasContainer = document.querySelector('.canvas-container');
+  const rect = canvasContainer.getBoundingClientRect();
+  mouseX = (e.clientX - rect.left - 20) * (canvas.width / (rect.width - 40));
+  mouseY = (e.clientY - rect.top - 20) * (canvas.height / (rect.height - 240));
+  
+  hoveredZone = null;
+  for (let i = hitZones.length - 1; i >= 0; i--) {
+    const zone = hitZones[i];
+    const r = zone.rect;
+    if (mouseX >= r.x && mouseX <= r.x + r.w && mouseY >= r.y && mouseY <= r.y + r.h) {
+      hoveredZone = zone;
+      break;
+    }
+  }
+  render();
+});
+
+canvas.addEventListener('click', (e) => {
+  e.preventDefault();
+  const canvasContainer = document.querySelector('.canvas-container');
+  const rect = canvasContainer.getBoundingClientRect();
+  const x = (e.clientX - rect.left - 20) * (canvas.width / (rect.width - 40));
+  const y = (e.clientY - rect.top - 20) * (canvas.height / (rect.height - 240));
+  
+  let clicked = false;
+  for (let i = hitZones.length - 1; i >= 0; i--) {
+    const zone = hitZones[i];
+    const r = zone.rect;
+    if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) {
+      if (zone.type === 'leaf') {
+        treeData.leaves[zone.id].selected = !treeData.leaves[zone.id].selected;
+        selectedBranch = null;
+      } else if (zone.type === 'branch-header' || zone.type === 'branch-prob') {
+        selectedBranch = {
+          level: zone.target.level,
+          side: zone.target.side,
+          field: zone.type === 'branch-header' ? 'header' : 'prob'
+        };
+        const data = treeData.branches[selectedBranch.level][selectedBranch.side];
+        branchTextInput.value = data.text;
+        branchProbInput.value = data.prob;
+        branchTextInput.focus();
+      }
+      clicked = true;
+      break;
+    }
+  }
+  
+  if (clicked) {
+    render();
+  }
+});
+
+canvas.addEventListener('mouseleave', () => {
+  hoveredZone = null;
+  render();
+});
+
+function addLevel() {
+  if (treeData.levels < 5) {
+    treeData.levels++;
+    treeData.branches.push({
+      A: {text: `Событие ${treeData.levels}A`, prob: "1/2"},
+      B: {text: `Событие ${treeData.levels}B`, prob: "1/2"}
+    });
+    initLeaves();
+    selectedBranch = null;
+    render();
+  }
+}
+
+function removeLevel() {
+  if (treeData.levels > 1) {
+    treeData.levels--;
+    treeData.branches.pop();
+    initLeaves();
+    selectedBranch = null;
+    render();
+  }
+}
+
+function resetSelection() {
+  treeData.leaves.forEach(l => l.selected = false);
+  selectedBranch = null;
+  render();
+}
+
+window.addEventListener('resize', render);
+render();
+</script>
+
+
+</body></html>
