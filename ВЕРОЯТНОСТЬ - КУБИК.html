@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вероятность с кубиком</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: #0a0a0a;
+            margin: 0;
+            padding: 10px;
+            color: #00ff9d;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            background: rgba(10, 10, 20, 0.95);
+            border-radius: 0;
+            border: 2px solid #00ff9d;
+            padding: 15px;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 157, 0.3),
+                inset 0 0 30px rgba(0, 255, 157, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 255, 157, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 26px;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #00ff9d;
+            text-shadow: 0 0 15px rgba(0, 255, 157, 0.7);
+        }
+        
+        .main-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .controls-left {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .controls-right {
+            flex: 0 0 auto;
+            min-width: 300px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(0, 20, 30, 0.8);
+            border: 1px solid rgba(0, 200, 255, 0.4);
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 180px;
+        }
+        
+        .control-group label {
+            font-weight: 300;
+            color: #00c3ff;
+            font-size: 16px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-group label::before {
+            content: "▸";
+            font-size: 16px;
+            color: #00ff9d;
+            text-shadow: 0 0 8px rgba(0, 255, 157, 0.7);
+        }
+        
+        select, button {
+            padding: 12px 18px;
+            border: 1px solid #00c3ff;
+            border-radius: 0;
+            font-size: 16px;
+            font-weight: 300;
+            background: rgba(0, 30, 40, 0.9);
+            color: #00ff9d;
+            transition: all 0.3s ease;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        select:focus, button:hover {
+            border-color: #ff00ff;
+            box-shadow: 
+                0 0 20px rgba(255, 0, 255, 0.4),
+                inset 0 0 20px rgba(255, 0, 255, 0.1);
+        }
+        
+        button {
+            background: rgba(255, 0, 85, 0.2);
+            border-color: #ff0055;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .result-container {
+            padding: 20px;
+            background: rgba(0, 25, 40, 0.9);
+            border: 1px solid rgba(0, 255, 157, 0.4);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .result-label {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00ff9d;
+            text-align: center;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .result {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            color: #ff00ff;
+            text-shadow: 
+                0 0 15px #ff00ff,
+                0 0 30px #ff00ff;
+            padding: 15px;
+            background: rgba(20, 0, 40, 0.5);
+            border: 2px solid #ff00ff;
+            letter-spacing: 1px;
+            animation: glow 2s ease-in-out infinite alternate;
+            line-height: 1.4;
+        }
+        
+        .result-decimal {
+            font-size: 20px;
+            color: #00c3ff;
+            margin-top: 8px;
+        }
+        
+        .visualization {
+            width: 100%;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 15, 25, 0.8);
+            border: 1px solid rgba(255, 0, 200, 0.3);
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: auto;
+        }
+        
+        .single-roll {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .die-face {
+            width: 90px;
+            height: 90px;
+            border: 2px solid #00c3ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            font-weight: 700;
+            color: #00ff9d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(0, 40, 60, 0.3);
+            position: relative;
+        }
+        
+        .die-face.selected {
+            background: rgba(255, 0, 85, 0.4);
+            border-color: #ff0055;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.5);
+        }
+        
+        .die-face.excluded {
+            opacity: 0.3;
+            border-color: #ff0055;
+            background: rgba(255, 0, 85, 0.2);
+        }
+        
+        /* Таблица для 2 бросков - теперь адаптивная */
+        .two-rolls-table {
+            display: grid;
+            gap: 2px;
+            margin: 15px 0;
+            background: rgba(0, 30, 40, 0.5);
+            border: 1px solid #00c3ff;
+            max-width: 100%;
+        }
+        
+        .table-cell {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid rgba(0, 195, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 55px;
+            min-height: 55px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            position: relative;
+            background: rgba(0, 40, 60, 0.5);
+        }
+        
+        .table-cell.header {
+            background: rgba(0, 60, 80, 0.7);
+            font-weight: 700;
+            cursor: default;
+            padding: 15px;
+        }
+        
+        .table-cell.selected {
+            background: rgba(255, 0, 85, 0.4);
+            border-color: #ff0055;
+            box-shadow: inset 0 0 10px rgba(255, 0, 85, 0.5);
+        }
+        
+        .table-cell:hover {
+            background: rgba(0, 150, 255, 0.3);
+        }
+        
+        /* Стили для таблицы с тремя кубиками - УВЕЛИЧЕНЫ */
+        .three-dice-table {
+            display: grid;
+            gap: 3px;
+            margin: 15px 0;
+            background: rgba(0, 30, 40, 0.5);
+            border: 1px solid #00c3ff;
+            max-width: 1200px; /* Увеличено еще на 15 см */
+            width: 100%;
+            min-width: 800px;
+        }
+        
+        .three-dice-cell {
+            padding: 8px;
+            border: 1px solid rgba(0, 195, 255, 0.3);
+            min-width: 90px; /* Увеличено */
+            min-height: 90px; /* Увеличено */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px; /* Увеличено */
+            background: rgba(0, 40, 60, 0.5);
+            position: relative;
+        }
+        
+        .three-dice-cell.header {
+            background: rgba(0, 60, 80, 0.7);
+            font-weight: 700;
+            cursor: default;
+            padding: 15px;
+            font-size: 20px; /* Увеличено */
+            min-width: 90px;
+            min-height: 90px;
+        }
+        
+        .third-dice-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px; /* Увеличено */
+            justify-content: center;
+            margin-top: 5px; /* Увеличено */
+        }
+        
+        .third-dice-option {
+            width: 28px; /* Увеличено */
+            height: 28px; /* Увеличено */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px; /* Увеличено */
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(0, 30, 40, 0.8);
+        }
+        
+        .third-dice-option:hover {
+            background: rgba(0, 150, 255, 0.3);
+        }
+        
+        .third-dice-option.selected {
+            background: rgba(255, 0, 85, 0.6);
+            border-color: #ff0055;
+            box-shadow: 0 0 6px rgba(255, 0, 85, 0.5);
+        }
+        
+        .cell-main-value {
+            font-size: 18px; /* Увеличено */
+            font-weight: bold;
+            color: #00ff9d;
+            margin-bottom: 5px; /* Увеличено */
+            min-height: 25px; /* Увеличено */
+            text-align: center;
+        }
+        
+        .cell-selection-count {
+            font-size: 14px; /* Увеличено */
+            color: #ff00ff;
+            margin-top: 3px; /* Увеличено */
+        }
+        
+        .instruction {
+            text-align: center;
+            color: #00c3ff;
+            margin: 10px 0;
+            font-size: 16px;
+            font-style: italic;
+        }
+        
+        @keyframes glow {
+            0% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #ff00ff; }
+            100% { text-shadow: 0 0 25px #ff00ff, 0 0 40px #ff00ff; }
+        }
+        
+        /* Медиа-запросы для мобильных устройств */
+        @media (max-width: 768px) {
+            .main-controls {
+                flex-direction: column;
+            }
+            
+            .controls-left, .controls-right {
+                width: 100%;
+            }
+            
+            .result {
+                font-size: 20px;
+                padding: 12px;
+            }
+            
+            .result-decimal {
+                font-size: 16px;
+            }
+            
+            .three-dice-table {
+                min-width: 600px;
+                max-width: 100%;
+                overflow-x: auto;
+            }
+            
+            .three-dice-cell {
+                min-width: 70px;
+                min-height: 70px;
+                padding: 5px;
+            }
+            
+            .third-dice-option {
+                width: 24px;
+                height: 24px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Вероятность с кубиком</h1>
+        </div>
+
+        <div class="main-controls">
+            <div class="controls-left">
+                <div class="controls">
+                    <div class="control-group">
+                        <label>КОЛИЧЕСТВО БРОСКОВ</label>
+                        <select id="rollCount">
+                            <option value="1">1 бросок</option>
+                            <option value="2">2 броска</option>
+                            <option value="3">3 броска</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>ГРАНИ НА КУБИКЕ</label>
+                        <select id="diceSides">
+                            <option value="6">6 граней</option>
+                            <option value="10">10 граней</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>ЧТО В КЛЕТКАХ</label>
+                        <select id="cellContent">
+                            <option value="sum">Сумма очков</option>
+                            <option value="product">Произведение очков</option>
+                            <option value="none">Пустые клетки</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="clearSelection()">ОЧИСТИТЬ ВЫБОР</button>
+                </div>
+            </div>
+            
+            <div class="controls-right">
+                <div class="result-container">
+                    <div class="result-label">Вероятность:</div>
+                    <div class="result" id="result">0</div>
+                    <div class="result-decimal" id="resultDecimal"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instruction" id="instruction">
+            Выберите подходящие варианты
+        </div>
+
+        <div class="visualization" id="visualization">
+            <!-- Здесь будет визуализация -->
+        </div>
+    </div>
+
+    <script>
+        let selectedCells = new Set();
+        let excludedNumbers = new Set();
+        let rollCount = 1;
+        let cellContent = 'sum';
+        let diceSides = 6;
+        
+        // Хранилище для выбранных третьих кубиков: ключ = "i,j", значение = Set(выбранные третьи кубики)
+        let thirdDiceSelections = new Map();
+        
+        function init() {
+            updateVisualization();
+        }
+        
+        function updateVisualization() {
+            rollCount = parseInt(document.getElementById('rollCount').value);
+            cellContent = document.getElementById('cellContent').value;
+            diceSides = parseInt(document.getElementById('diceSides').value);
+            
+            const vis = document.getElementById('visualization');
+            const inst = document.getElementById('instruction');
+            
+            vis.innerHTML = '';
+            selectedCells.clear();
+            
+            if (rollCount === 1) {
+                inst.textContent = 'Кликните на выпавшие числа (клик на отмеченное число исключает его)';
+                createSingleRoll();
+            } else if (rollCount === 2) {
+                inst.textContent = 'Кликните на подходящие пары результатов';
+                createTwoRollsTable();
+            } else if (rollCount === 3) {
+                inst.textContent = 'Выберите значения третьего кубика';
+                createThreeRollsTable();
+            }
+            
+            updateResult();
+        }
+        
+        function createSingleRoll() {
+            const container = document.createElement('div');
+            container.className = 'single-roll';
+            
+            for (let i = 1; i <= diceSides; i++) {
+                const face = document.createElement('div');
+                face.className = 'die-face';
+                if (excludedNumbers.has(i)) {
+                    face.classList.add('excluded');
+                } else if (selectedCells.has(`1:${i}`)) {
+                    face.classList.add('selected');
+                }
+                face.textContent = i;
+                face.dataset.value = i;
+                
+                face.onclick = () => {
+                    const key = `1:${i}`;
+                    if (excludedNumbers.has(i)) {
+                        excludedNumbers.delete(i);
+                        face.classList.remove('excluded');
+                    } else if (selectedCells.has(key)) {
+                        excludedNumbers.add(i);
+                        face.classList.add('excluded');
+                        selectedCells.delete(key);
+                    } else {
+                        selectedCells.add(key);
+                        face.classList.add('selected');
+                    }
+                    updateResult();
+                };
+                
+                container.appendChild(face);
+            }
+            
+            document.getElementById('visualization').appendChild(container);
+        }
+        
+        function createTwoRollsTable() {
+            const table = document.createElement('div');
+            table.className = 'two-rolls-table';
+            
+            // Устанавливаем размер сетки в зависимости от количества граней + 1 для заголовков
+            const gridSize = diceSides + 1;
+            table.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+            
+            for (let i = 0; i <= diceSides; i++) {
+                for (let j = 0; j <= diceSides; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'table-cell';
+                    
+                    if (i === 0 && j === 0) {
+                        cell.textContent = 'X';
+                        cell.classList.add('header');
+                    } else if (i === 0) {
+                        cell.textContent = j;
+                        cell.classList.add('header');
+                    } else if (j === 0) {
+                        cell.textContent = i;
+                        cell.classList.add('header');
+                    } else {
+                        let content = '';
+                        if (cellContent === 'sum') {
+                            content = i + j;
+                        } else if (cellContent === 'product') {
+                            content = i * j;
+                        } else if (cellContent === 'none') {
+                            content = '';
+                        }
+                        cell.textContent = content;
+                        
+                        const key = `2:${i},${j}`;
+                        if (selectedCells.has(key)) {
+                            cell.classList.add('selected');
+                        }
+                        
+                        cell.onclick = () => {
+                            if (selectedCells.has(key)) {
+                                selectedCells.delete(key);
+                                cell.classList.remove('selected');
+                            } else {
+                                selectedCells.add(key);
+                                cell.classList.add('selected');
+                            }
+                            updateResult();
+                        };
+                    }
+                    
+                    table.appendChild(cell);
+                }
+            }
+            
+            document.getElementById('visualization').appendChild(table);
+        }
+        
+        function createThreeRollsTable() {
+            const table = document.createElement('div');
+            table.className = 'three-dice-table';
+            
+            // Устанавливаем размер сетки в зависимости от количества граней + 1 для заголовков
+            const gridSize = diceSides + 1;
+            table.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+            
+            // Создаем заголовки
+            for (let i = 0; i <= diceSides; i++) {
+                for (let j = 0; j <= diceSides; j++) {
+                    const cell = document.createElement('div');
+                    
+                    if (i === 0 && j === 0) {
+                        cell.className = 'three-dice-cell header';
+                        cell.textContent = 'X';
+                    } else if (i === 0) {
+                        cell.className = 'three-dice-cell header';
+                        cell.textContent = j;
+                    } else if (j === 0) {
+                        cell.className = 'three-dice-cell header';
+                        cell.textContent = i;
+                    } else {
+                        cell.className = 'three-dice-cell';
+                        
+                        // Основное значение в ячейке
+                        const mainValue = document.createElement('div');
+                        mainValue.className = 'cell-main-value';
+                        cell.appendChild(mainValue);
+                        
+                        // Опции для третьего кубика
+                        const optionsContainer = document.createElement('div');
+                        optionsContainer.className = 'third-dice-options';
+                        
+                        // Ключ для хранения выбранных третьих кубиков
+                        const selectionKey = `${i},${j}`;
+                        
+                        // Инициализируем, если нет
+                        if (!thirdDiceSelections.has(selectionKey)) {
+                            thirdDiceSelections.set(selectionKey, new Set());
+                        }
+                        
+                        const selectedThirdDice = thirdDiceSelections.get(selectionKey);
+                        
+                        // Создаем цифры для третьего кубика в зависимости от количества граней
+                        for (let k = 1; k <= diceSides; k++) {
+                            const option = document.createElement('div');
+                            option.className = 'third-dice-option';
+                            option.textContent = k;
+                            option.dataset.value = k;
+                            
+                            if (selectedThirdDice.has(k)) {
+                                option.classList.add('selected');
+                            }
+                            
+                            option.onclick = (e) => {
+                                e.stopPropagation(); // Предотвращаем клик по ячейке
+                                const cellKey = `${i},${j}`;
+                                const thirdValue = parseInt(option.dataset.value);
+                                
+                                if (selectedThirdDice.has(thirdValue)) {
+                                    selectedThirdDice.delete(thirdValue);
+                                    option.classList.remove('selected');
+                                    selectedCells.delete(`3:${i},${j},${thirdValue}`);
+                                } else {
+                                    selectedThirdDice.add(thirdValue);
+                                    option.classList.add('selected');
+                                    selectedCells.add(`3:${i},${j},${thirdValue}`);
+                                }
+                                
+                                // Обновляем отображение основного значения
+                                updateThreeDiceCellValue(cell, i, j, selectedThirdDice);
+                                updateResult();
+                            };
+                            
+                            optionsContainer.appendChild(option);
+                        }
+                        
+                        cell.appendChild(optionsContainer);
+                        
+                        // Обновляем значение при инициализации
+                        updateThreeDiceCellValue(cell, i, j, selectedThirdDice);
+                    }
+                    
+                    table.appendChild(cell);
+                }
+            }
+            
+            document.getElementById('visualization').appendChild(table);
+        }
+        
+        function updateThreeDiceCellValue(cell, first, second, selectedThirdDice) {
+            const mainValue = cell.querySelector('.cell-main-value');
+            
+            if (selectedThirdDice.size === 0) {
+                mainValue.textContent = '-';
+                return;
+            }
+            
+            // Для режима "none" показываем количество выбранных
+            if (cellContent === 'none') {
+                if (selectedThirdDice.size === diceSides) {
+                    mainValue.textContent = 'все';
+                } else {
+                    mainValue.textContent = selectedThirdDice.size;
+                }
+                return;
+            }
+            
+            // Вычисляем значения для всех выбранных третьих кубиков
+            const values = [];
+            selectedThirdDice.forEach(third => {
+                if (cellContent === 'sum') {
+                    values.push(first + second + third);
+                } else if (cellContent === 'product') {
+                    values.push(first * second * third);
+                }
+            });
+            
+            // Отображаем информацию
+            if (values.length === 1) {
+                mainValue.textContent = values[0];
+            } else {
+                // Показываем диапазон или несколько значений
+                const min = Math.min(...values);
+                const max = Math.max(...values);
+                if (min === max) {
+                    mainValue.textContent = min;
+                } else {
+                    mainValue.textContent = `${min}-${max}`;
+                }
+            }
+        }
+        
+        function updateResult() {
+            let totalOutcomes, favorableOutcomes;
+            
+            if (rollCount === 1) {
+                totalOutcomes = diceSides;
+                favorableOutcomes = selectedCells.size;
+            } else if (rollCount === 2) {
+                totalOutcomes = diceSides * diceSides;
+                favorableOutcomes = selectedCells.size;
+            } else if (rollCount === 3) {
+                totalOutcomes = diceSides * diceSides * diceSides;
+                favorableOutcomes = selectedCells.size;
+            }
+            
+            const probability = favorableOutcomes / totalOutcomes;
+            
+            let resultText = '0';
+            let decimalText = '';
+            
+            if (favorableOutcomes === 0) {
+                resultText = '0';
+                decimalText = '0';
+            } else if (probability === 1) {
+                resultText = '1';
+                decimalText = '1';
+            } else if (favorableOutcomes > 0) {
+                // Сначала пробуем найти точную обыкновенную дробь
+                const gcdValue = gcd(favorableOutcomes, totalOutcomes);
+                const simpleFav = favorableOutcomes / gcdValue;
+                const simpleTotal = totalOutcomes / gcdValue;
+                
+                // Показываем обыкновенную дробь
+                resultText = `${simpleFav}/${simpleTotal}`;
+                
+                // Показываем десятичную дробь с точностью до тысячных
+                const decimalValue = probability.toFixed(3);
+                decimalText = `≈ ${decimalValue}`;
+                
+                // Если десятичная дробь точная (например, 0.5 для 1/2), убираем знак ≈
+                const exactDecimal = simpleFav / simpleTotal;
+                const roundedDecimal = Math.round(exactDecimal * 1000) / 1000;
+                if (Math.abs(probability - roundedDecimal) < 0.0001) {
+                    decimalText = `= ${decimalValue}`;
+                }
+            }
+            
+            document.getElementById('result').textContent = resultText;
+            document.getElementById('resultDecimal').textContent = decimalText;
+        }
+        
+        function gcd(a, b) {
+            return b === 0 ? a : gcd(b, a % b);
+        }
+        
+        function clearSelection() {
+            selectedCells.clear();
+            excludedNumbers.clear();
+            thirdDiceSelections.clear();
+            updateVisualization();
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', init);
+        document.getElementById('rollCount').addEventListener('change', updateVisualization);
+        document.getElementById('cellContent').addEventListener('change', updateVisualization);
+        document.getElementById('diceSides').addEventListener('change', updateVisualization);
+    </script>
+</body>
+</html>
