@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/split.js@1.6.5/dist/split.min.js"></script>
 
 <style>
 body {
@@ -229,17 +230,32 @@ button:hover::before {
     user-select: none;
 }
 
-.main {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    height: calc(100vh - 320px);
+.split-wrap {
+    display: flex;
+    width: 100%;
+    margin-top: 10px;
 }
+
+.split-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: calc(100vh - 320px);
+    gap: 0;
+}
+
+.code-panel, .output-panel {
+    background: #020617;
+    height: 100%;
+    overflow: hidden;
+}
+
+.code-panel { border-radius: 10px 0 0 10px; }
+.output-panel { border-radius: 0 10px 10px 0; }
 
 textarea, #output {
     width: 100%;
     height: 100%;
-    border-radius: 10px;
     border: none;
     padding: 14px;
     font-family: Consolas, monospace;
@@ -247,14 +263,27 @@ textarea, #output {
     line-height: 1.5;
     background: #020617;
     color: #e5e7eb;
+    box-sizing: border-box;
 }
 
-#code { margin-top: 12px; }
+#code { border-radius: 10px 0 0 10px; resize: none; }
 
 #output {
+    border-radius: 0 10px 10px 0;
     white-space: pre-wrap;
     overflow-y: auto;
     color: #22c55e;
+}
+
+.gutter {
+    cursor: col-resize;
+    background: #334155;
+    width: 6px;
+    border-radius: 3px;
+}
+
+.gutter:hover {
+    background: #facc15;
 }
 
 #drawCanvas {
@@ -300,6 +329,7 @@ textarea, #output {
     <button class="gray" data-tooltip="Экспорт задач в JSON" onclick="exportTasks()">⬇ Экспорт</button>
 
     <button class="green" data-tooltip="Запустить Python код" onclick="runPython()">▶ Run</button>
+    <button class="green" style="background:#ff9800" data-tooltip="Построчная анимация" onclick="startCodeAnimation()">🎬 Анимация</button>
     <button class="gray" data-tooltip="Копировать код в буфер" onclick="copyCode()">📋 Копировать</button>
 
     <button id="drawBtn" data-tooltip="Режим рисования (Esc=выкл)" onclick="toggleDraw()">✏️ Рисование</button>
@@ -351,9 +381,15 @@ textarea, #output {
     <input id="videoInput" placeholder="https://youtube.com/watch?v=... или любая ссылка">
 </div>
 
-<div class="main">
-    <textarea id="code">print("Привет, Python")</textarea>
-    <div id="output">Загрузка Python…</div>
+<div class="split-wrap">
+    <div class="split-container" id="splitContainer">
+        <div class="code-panel" id="codePanel">
+            <textarea id="code">print("Привет, Python")</textarea>
+        </div>
+        <div class="output-panel" id="outputPanel">
+            <div id="output">Загрузка Python…</div>
+        </div>
+    </div>
 </div>
 
 <canvas id="drawCanvas"></canvas>
@@ -363,8 +399,16 @@ textarea, #output {
 /* ================= PYTHON ================= */
 let pyodide, ready=false;
 let taskTextGlobal = "";
-let currentColor = '#ffff00';
-let currentThickness = 3;
+let currentColor = '#ff0000';
+let currentThickness = 1;
+
+let animationActive = false;
+let animationLines = [];
+let currentAnimLine = 0;
+let animationSpeed = 20;
+let animationInterval = null;
+let lineElement = null;
+let currentLineText = '';
 
 async function initPy() {
     pyodide = await loadPyodide();
@@ -381,10 +425,25 @@ def set_task_text(text):
 }
 initPy();
 
+window.addEventListener("load", () => {
+    if (typeof Split !== "undefined") {
+        Split(["#codePanel", "#outputPanel"], {
+            sizes: [55, 45],
+            minSize: [220, 220],
+            gutterSize: 6,
+            cursor: "col-resize"
+        });
+    }
+});
+
 async function runPython() {
     if (!ready) return;
     try {
-        pyodide.runPython(`set_task_text(r"""${taskTextGlobal.replace(/"/g, '\\\\"')}""")`);
+        const escapedTaskText = JSON.stringify(taskTextGlobal);
+        pyodide.runPython(`
+import json
+set_task_text(json.loads(${escapedTaskText}))
+        `);
         
         pyodide.runPython(`
 import sys
@@ -398,6 +457,113 @@ sys.stdout = StringIO()
         output.textContent = e;
         output.className="error";
     }
+}
+
+
+function startCodeAnimation() {
+    const codeText = code.value;
+    if (!codeText.trim()) return alert('Сначала напишите код!');
+
+    stopAnimation();
+    animationLines = codeText.split('\n');
+    currentAnimLine = 0;
+    animationActive = true;
+
+    output.innerHTML = '';
+    output.style.whiteSpace = 'pre';
+    output.style.color = '#e5e7eb';
+
+    document.addEventListener('keydown', handleAnimationKey);
+    processNextLine();
+}
+
+function stopAnimation() {
+    animationActive = false;
+    if (animationInterval) {
+        clearTimeout(animationInterval);
+        animationInterval = null;
+    }
+    document.removeEventListener('keydown', handleAnimationKey);
+}
+
+function handleAnimationKey(e) {
+    if (!animationActive) return;
+    if (e.key === 'Escape') return;
+    e.preventDefault();
+
+    if (animationInterval) {
+        if (lineElement) {
+            lineElement.innerHTML = highlightComment(currentLineText);
+            clearTimeout(animationInterval);
+            animationInterval = null;
+            setTimeout(() => {
+                if (animationActive) {
+                    currentAnimLine++;
+                    processNextLine();
+                }
+            }, 50);
+        }
+    } else {
+        currentAnimLine++;
+        processNextLine();
+    }
+}
+
+function processNextLine() {
+    if (!animationActive) return;
+    if (currentAnimLine >= animationLines.length) {
+        output.innerHTML += '\n\n✅ Анимация завершена!';
+        output.style.color = '#22c55e';
+        stopAnimation();
+        return;
+    }
+
+    const line = animationLines[currentAnimLine];
+    lineElement = document.createElement('div');
+    lineElement.style.whiteSpace = 'pre';
+    output.appendChild(lineElement);
+    output.scrollTop = output.scrollHeight;
+
+    const isCommentLine = line.trim().startsWith('#');
+    if (isCommentLine) {
+        lineElement.innerHTML = `<span style="color:#ff8c00;">${line}</span>`;
+        setTimeout(() => {
+            if (animationActive) {
+                currentAnimLine++;
+                processNextLine();
+            }
+        }, 50);
+        return;
+    }
+
+    currentLineText = line;
+    animateLine(lineElement, line);
+}
+
+function animateLine(element, fullLine) {
+    let index = 0;
+    element.innerHTML = '';
+
+    const typeNext = () => {
+        if (!animationActive) return;
+        if (index < fullLine.length) {
+            const currentText = fullLine.substring(0, index + 1);
+            element.innerHTML = highlightComment(currentText);
+            index++;
+            output.scrollTop = output.scrollHeight;
+            animationInterval = setTimeout(typeNext, animationSpeed);
+        } else {
+            animationInterval = null;
+        }
+    };
+
+    typeNext();
+}
+
+function highlightComment(line) {
+    const i = line.indexOf('#');
+    if (i === -1) return line;
+    return `${line.substring(0, i)}<span style="color:#ff8c00;">${line.substring(i)}</span>`;
 }
 
 /* ================= TEXT PASTE ================= */
@@ -561,8 +727,8 @@ function showTask(i) {
     answerInput.value = t.answer || "";
     videoInput.value = t.video || "";
     solvedCheckbox.checked = t.solved || false;
-    currentColor = t.color || '#ffff00';
-    currentThickness = t.thickness || 3;
+    currentColor = t.color || '#ff0000';
+    currentThickness = t.thickness || 1;
     
     // ✅ ВАЛИДАЦИЯ ССЫЛКИ ПОСЛЕ ЗАГРУЗКИ ЗАДАЧИ
     setTimeout(() => validateVideoLink(videoInput), 50);
@@ -627,25 +793,59 @@ function exportTasks() {
     saveCurrentCanvasState();
     const blob = new Blob([JSON.stringify(tasks,null,2)],{type:"application/json"});
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
+    const objectUrl = URL.createObjectURL(blob);
+    a.href = objectUrl;
     a.download = "tasks.json";
     a.click();
+    URL.revokeObjectURL(objectUrl);
 }
 
 function importTasks() { 
     importFile.click(); 
 }
 importFile.onchange = () => {
+    if (!importFile.files[0]) return;
     const r = new FileReader();
     r.onload = () => {
-        tasks = JSON.parse(r.result);
-        if (tasks.length > 0) {
-            current = 0;
-            showTask(0);
+        try {
+            const imported = JSON.parse(r.result);
+            if (!Array.isArray(imported)) {
+                throw new Error("Файл должен содержать массив задач");
+            }
+
+            const normalized = imported.map((task, idx) => {
+                if (!task || typeof task !== 'object') {
+                    throw new Error(`Задача №${idx + 1} повреждена`);
+                }
+                return {
+                    name: task.name || `Задача ${tasks.length + idx + 1}`,
+                    code: task.code || "print('Привет, Python')",
+                    answer: task.answer || '',
+                    video: task.video || '',
+                    image: task.image || '',
+                    text: task.text || '',
+                    solved: Boolean(task.solved),
+                    canvasState: task.canvasState || '',
+                    color: task.color || '#ff0000',
+                    thickness: Number.isFinite(Number(task.thickness)) ? Number(task.thickness) : 1
+                };
+            });
+
+            saveCurrentCanvasState();
+            const startIndex = tasks.length;
+            tasks.push(...normalized);
+
+            if (tasks.length > 0) {
+                showTask(startIndex);
+            }
+            updateSelect();
+            alert(`✅ Загружено ${normalized.length} задач`);
+        } catch (e) {
+            alert("Ошибка импорта: " + e.message);
         }
-        updateSelect();
     };
     r.readAsText(importFile.files[0]);
+    importFile.value = '';
 };
 
 taskName.addEventListener('keypress', (e) => {
@@ -680,20 +880,28 @@ document.querySelectorAll('.thickness-btn').forEach(btn => {
 
 /* ================= IMAGE ================= */
 async function pasteImage() {
-    const items = await navigator.clipboard.read();
-    for (const item of items)
-        for (const type of item.types)
-            if (type.startsWith("image/")) {
-                const blob = await item.getType(type);
-                const reader = new FileReader();
-                reader.onload = () => {
-                    taskImage.src = reader.result;
-                    taskImage.style.display = "block";
-                    document.getElementById("taskText").style.display = "none";
-                    taskTextGlobal = "";
-                };
-                reader.readAsDataURL(blob);
+    try {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+            for (const type of item.types) {
+                if (type.startsWith("image/")) {
+                    const blob = await item.getType(type);
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        taskImage.src = reader.result;
+                        taskImage.style.display = "block";
+                        document.getElementById("taskText").style.display = "none";
+                        taskTextGlobal = "";
+                    };
+                    reader.readAsDataURL(blob);
+                    return;
+                }
             }
+        }
+        alert("В буфере нет изображения");
+    } catch (e) {
+        alert("Ошибка чтения буфера: " + e.message);
+    }
 }
 
 /* ================= CANVAS ================= */
@@ -763,7 +971,13 @@ function undo() {
 }
 
 document.addEventListener("keydown", e => {
-    if (e.key === "Escape" && drawEnabled) toggleDraw();
+    if (e.key === "Escape") {
+        if (drawEnabled) toggleDraw();
+        if (animationActive) {
+            stopAnimation();
+            output.innerHTML += "\n\n⏸️ Анимация остановлена";
+        }
+    }
 });
 
 /* ================= PYTHON INDENT ================= */
