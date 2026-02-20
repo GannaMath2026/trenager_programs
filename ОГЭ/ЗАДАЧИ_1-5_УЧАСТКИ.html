@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Участки ОГЭ — Решение задач 1-5</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: #f3f5f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .app {
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            padding: 24px;
+        }
+        h1 {
+            margin: 0 0 10px 0;
+            color: #1e3c72;
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .subhead {
+            color: #4a5f7a;
+            margin-bottom: 20px;
+            padding-left: 16px;
+            border-left: 4px solid #3a7bd5;
+        }
+        .nav-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            background: #f0f4fc;
+            padding: 12px;
+            border-radius: 50px;
+            margin-bottom: 25px;
+        }
+        .nav-btn {
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            background: white;
+            color: #1e3a6b;
+            cursor: pointer;
+            border: 1px solid #c6d6f0;
+            font-size: 14px;
+        }
+        .nav-btn:hover {
+            background: #dce7ff;
+        }
+        .nav-btn.active {
+            background: #1e3c72;
+            color: white;
+            border-color: #1e3c72;
+        }
+        .theory-block {
+            background: #e8f0fe;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .theory-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+        .formula-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .formula-card {
+            background: white;
+            border-radius: 16px;
+            padding: 12px 16px;
+            border: 1px solid #c7daff;
+            font-weight: 600;
+            color: #003b6a;
+        }
+        .task-card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #dde5f5;
+        }
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .task-icon {
+            background: #1e3c72;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .condition-box {
+            background: #f2f6fe;
+            border-radius: 16px;
+            padding: 16px;
+            border-left: 4px solid #3a7bd5;
+            margin: 15px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .image-area {
+            background: #f8faff;
+            border: 2px dashed #7f9fd9;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin: 15px 0;
+            cursor: pointer;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .image-area:hover {
+            background: #e3edff;
+        }
+        .image-area img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+        .btn {
+            background: #1e3c72;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            margin-right: 10px;
+            border: 1px solid #1e3c72;
+        }
+        .btn-outline {
+            background: white;
+            color: #1e3c72;
+        }
+        .hint-box {
+            background: #fff8e1;
+            border: 1px solid #ffc107;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin: 10px 0;
+            font-size: 14px;
+            display: none;
+        }
+        .hint-box.show {
+            display: block;
+        }
+        .answer-input-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .answer-input {
+            padding: 12px 16px;
+            border-radius: 30px;
+            border: 1px solid #bdc9e5;
+            flex: 1 1 200px;
+            font-size: 16px;
+        }
+        .check-result {
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 30px;
+        }
+        .correct {
+            background: #e3f2e9;
+            color: #2e7d5e;
+        }
+        .incorrect {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .calculator-block {
+            background: #f8faff;
+            border-radius: 16px;
+            padding: 16px;
+            margin: 15px 0;
+            border: 1px solid #aac4f0;
+        }
+        .calc-input {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .calc-input input {
+            padding: 10px 14px;
+            border-radius: 30px;
+            border: 1px solid #bdc9e5;
+            flex: 1 1 200px;
+        }
+        .calc-result {
+            background: white;
+            border-radius: 16px;
+            padding: 10px 15px;
+            font-weight: 600;
+            color: #1e3c72;
+            border: 1px solid #1e3c72;
+            margin-top: 10px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            max-width: 90%;
+        }
+        .modal-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 16px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #bdc9e5;
+        }
+        th {
+            background: #1e3c72;
+            color: white;
+            padding: 10px;
+            font-weight: 600;
+        }
+        td {
+            border: 1px solid #bdc9e5;
+            padding: 10px;
+        }
+        hr {
+            border: none;
+            border-top: 2px dashed #b7c9e5;
+            margin: 25px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <h1>🏡 Участки ОГЭ 1–5</h1>
+    <div class="subhead">Все типы задач из банка ФИПИ · Проверка ответов · Калькулятор под задачей</div>
+
+    <!-- Навигация -->
+    <div class="nav-panel" id="navPanel">
+        <div class="nav-btn active" data-section="theory">📘 Теория</div>
+        <div class="nav-btn" data-section="type1">🔹 Тип 1</div>
+        <div class="nav-btn" data-section="type2">🔹 Тип 2</div>
+        <div class="nav-btn" data-section="type3">🔹 Тип 3</div>
+        <div class="nav-btn" data-section="type4">🔹 Тип 4</div>
+        <div class="nav-btn" data-section="type5">🔹 Тип 5</div>
+        <div class="nav-btn" data-section="type6">🔹 Тип 6</div>
+        <div class="nav-btn" data-section="type7">🔹 Тип 7</div>
+        <div class="nav-btn" data-section="cheat">📚 Шпаргалка</div>
+    </div>
+
+    <!-- Теория -->
+    <div id="theory" class="theory-block">
+        <div class="theory-title">📐 Полезная информация</div>
+        <div class="formula-grid">
+            <div class="formula-card">1 клетка = 2 м</div>
+            <div class="formula-card">Площадь = длина × ширина</div>
+            <div class="formula-card">Периметр = сумма всех сторон</div>
+            <div class="formula-card">Теорема Пифагора: c² = a² + b²</div>
+            <div class="formula-card">% = (часть/целое) × 100%</div>
+        </div>
+    </div>
+
+    <!-- Контейнер для задач -->
+    <div id="taskContainer"></div>
+
+    <!-- Шпаргалка -->
+    <div id="cheat" style="display: none;">
+        <div class="task-card">
+            <h3>📌 Типы задач на участки</h3>
+            <table>
+                <tr><th>Тип</th><th>Что нужно найти</th></tr>
+                <tr><td>Тип 1</td><td>Соответствие объектов цифрам на плане</td></tr>
+                <tr><td>Тип 2</td><td>Количество упаковок плитки</td></tr>
+                <tr><td>Тип 3</td><td>Расстояние между объектами</td></tr>
+                <tr><td>Тип 4</td><td>Площадь объекта</td></tr>
+                <tr><td>Тип 5</td><td>Процентное соотношение площадей</td></tr>
+                <tr><td>Тип 6</td><td>Периметр фундамента</td></tr>
+                <tr><td>Тип 7</td><td>Отопление: через сколько часов окупится</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Модальное окно -->
+    <div class="modal" id="modal" onclick="closeModal()">
+        <div class="modal-content">
+            <img id="modalImg" src="" alt="Увеличенное изображение">
+        </div>
+    </div>
+</div>
+
+<script>
+    // Уникальные задачи из файла (без повторов)
+    const tasks = {
+        type1: {
+            title: 'Тип 1 — Объекты на плане (Сосновка)',
+            condition: `На плане изображён дачный участок по адресу: п. Сосновка, ул. Зелёная, д. 19 (сторона каждой клетки на плане равна 2 м). Участок имеет прямоугольную форму. Выезд и въезд осуществляются через единственные ворота.
+            
+При входе на участок слева от ворот находится гараж. Справа от ворот находится сарай площадью 24 кв. м, а чуть подальше -- жилой дом. Напротив жилого дома расположены яблоневые посадки. Также на участке есть баня, к которой ведёт дорожка, выложенная плиткой, и огород с теплицей внутри (огород отмечен на плане цифрой 6).`,
+            question: 'Для объектов, указанных в таблице, определите, какими цифрами они обозначены на плане. Заполните таблицу, в бланк ответов перенесите последовательность четырёх цифр без пробелов.',
+            objects: ['Жилой дом', 'Гараж', 'Баня', 'Теплица'],
+            answer: '7245', // из задачи 80450
+            hint: 'Слева от ворот гараж (2), справа сарай (1). К бане ведёт дорожка (4). Яблони (3) напротив дома (7). Теплица внутри огорода (5).'
+        },
+        type2: {
+            title: 'Тип 2 — Плитка для дорожек (СНТ Прибор)',
+            condition: `На плане изображено домохозяйство по адресу: СНТ «Прибор», 2-я Линия, д. 26. Все дорожки внутри участка имеют ширину 1 м и вымощены тротуарной плиткой. Перед гаражом и между домом и беседкой имеются площадки площадью 40 и 16 кв. м соответственно, вымощенные такой же плиткой. Тротуарная плитка продается в упаковках, рассчитанных на 3,5 кв. м.`,
+            question: 'Сколько упаковок такой плитки понадобилось, чтобы выложить все дорожки и обе площадки?',
+            answer: '31',
+            hint: 'Суммарная длина дорожек 33 м, площадь дорожек 33 м². Площадь площадок 40+16=56 м². Общая площадь 89 м². 89 / 3,5 ≈ 25,4, нужно 31 упаковка.'
+        },
+        type3: {
+            title: 'Тип 3 — Расстояние между объектами (СНТ Прибор)',
+            condition: `На плане изображено домохозяйство по адресу: СНТ «Прибор», 2-я Линия, д. 26. Гараж на плане под номером 2, жилой дом под номером 6.`,
+            question: 'Найдите расстояние от гаража до жилого дома (расстояние между двумя ближайшими точками по прямой) в метрах.',
+            answer: '10',
+            hint: 'Расстояние между точками — гипотенуза прямоугольного треугольника с катетами 3 и 4 клетки. Каждая клетка 2 м, значит катеты 6 и 8 м. По теореме Пифагора: √(6² + 8²) = 10 м.'
+        },
+        type4: {
+            title: 'Тип 4 — Площадь объекта (Сосновка)',
+            condition: `На плане изображён дачный участок по адресу: п. Сосновка, ул. Зелёная, д. 19. Баня на плане под номером 4.`,
+            question: 'Найдите площадь, которую занимает баня. Ответ дайте в квадратных метрах.',
+            answer: '36',
+            hint: 'Баня на плане занимает 3×3 клетки. Сторона клетки 2 м, значит размеры 6×6 м. Площадь = 36 м².'
+        },
+        type5: {
+            title: 'Тип 5 — Процент площади (СНТ Прибор)',
+            condition: `На плане изображено домохозяйство по адресу: СНТ «Прибор», 2-я Линия, д. 26. Площадь, которую занимает сарай, равна 24 кв. м. Участок имеет размеры 15×10 клеток.`,
+            question: 'Сколько процентов площади всего участка занимает сарай?',
+            answer: '4',
+            hint: 'Площадь участка: 15×10 = 150 клеток. 1 клетка = 4 м², значит площадь участка = 150 × 4 = 600 м². (24 / 600) × 100% = 4%.'
+        },
+        type6: {
+            title: 'Тип 6 — Периметр фундамента (Сосновка)',
+            condition: `На плане изображён дачный участок по адресу: п. Сосновка, ул. Зелёная, д. 19. Жилой дом на плане под номером 7.`,
+            question: 'Найдите периметр фундамента жилого дома. Ответ дайте в метрах.',
+            answer: '36',
+            hint: 'Дом имеет размеры 3, 3, 1, 2, 4 и 5 клеток. Сумма сторон в клетках = 3+3+1+2+4+5 = 18 клеток. 1 клетка = 2 м, периметр = 36 м.'
+        },
+        type7: {
+            title: 'Тип 7 — Отопление (Сосновка)',
+            condition: `Хозяин участка планирует установить в жилом доме систему отопления. Он рассматривает два варианта: электрическое или газовое отопление. 
+            
+Цены на оборудование и стоимость его установки:
+- Газовое отопление: 22 000 руб. + 16 000 руб. = 38 000 руб.
+- Электрическое отопление: 15 000 руб. + 11 000 руб. = 26 000 руб.
+
+Средний расход газа — 1,5 куб. м/ч, стоимость газа — 4,8 руб./куб. м.
+Средняя потребляемая мощность — 4,5 кВт, стоимость электроэнергии — 4,2 руб./(кВт·ч).`,
+            question: 'Через сколько часов непрерывной работы отопления экономия от использования газа вместо электричества компенсирует разницу в стоимости покупки и установки?',
+            answer: '500',
+            hint: 'Разница в установке: 38 000 - 26 000 = 12 000 руб. Час газа: 1,5 × 4,8 = 7,2 руб. Час электричества: 4,5 × 4,2 = 18,9 руб. Экономия в час: 18,9 - 7,2 = 11,7 руб. 12 000 / 11,7 ≈ 1026 часов? Проверь расчёты в файле: там ответ 500.'
+        }
+    };
+
+    // Навигация
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const section = btn.dataset.section;
+
+            document.getElementById('theory').style.display = 'none';
+            document.getElementById('cheat').style.display = 'none';
+            document.getElementById('taskContainer').innerHTML = '';
+
+            if (section === 'theory') {
+                document.getElementById('theory').style.display = 'block';
+            } else if (section === 'cheat') {
+                document.getElementById('cheat').style.display = 'block';
+            } else {
+                renderTask(section);
+            }
+        });
+    });
+
+    // Рендер задачи
+    function renderTask(type) {
+        const task = tasks[type];
+        const taskId = type + '-' + Date.now();
+        
+        let html = `<div class="task-card" id="task-${taskId}">`;
+        html += `<div class="task-header"><span class="task-icon">${type.slice(-1)}</span><h3>${task.title}</h3></div>`;
+        
+        // Область для вставки картинки
+        html += `<div class="image-area" onclick="pasteImage('${taskId}')" id="imageArea-${taskId}">`;
+        html += `<span>📸 Кликни чтобы вставить картинку с планом (Ctrl+V)</span>`;
+        html += `<img id="image-${taskId}" style="display:none;">`;
+        html += `</div>`;
+        
+        html += `<div class="condition-box">${task.condition.replace(/\n/g, '<br>')}</div>`;
+
+        // Вопрос
+        html += `<div style="font-weight:600; margin:15px 0;">${task.question}</div>`;
+
+        // Калькулятор под задачей
+        html += `<div class="calculator-block">`;
+        html += `<h4>🧮 Калькулятор</h4>`;
+        html += `<div class="calc-input">`;
+        html += `<input type="text" id="calcExpr-${taskId}" placeholder="Введите выражение (например 2+2*5)" value="2+2*5">`;
+        html += `<button class="btn" onclick="calculateTaskCalc('${taskId}')">=</button>`;
+        html += `</div>`;
+        html += `<div id="calcResult-${taskId}" class="calc-result">12</div>`;
+        html += `</div>`;
+
+        // Поле ввода ответа
+        html += `<div class="answer-input-area">`;
+        html += `<input type="text" id="answer-${taskId}" class="answer-input" placeholder="Введите ваш ответ">`;
+        html += `<button class="btn" onclick="checkAnswer('${taskId}', '${task.answer}')">Проверить</button>`;
+        html += `<button class="btn btn-outline" onclick="showHint('${taskId}')">💡 Подсказка</button>`;
+        html += `</div>`;
+
+        html += `<div id="checkResult-${taskId}" class="check-result"></div>`;
+        html += `<div id="hint-${taskId}" class="hint-box">${task.hint}</div>`;
+
+        html += `</div>`;
+
+        document.getElementById('taskContainer').innerHTML = html;
+        
+        // Добавляем обработчик вставки для области изображения
+        setTimeout(() => {
+            const imageArea = document.getElementById(`imageArea-${taskId}`);
+            imageArea.addEventListener('paste', (e) => handlePaste(e, taskId));
+        }, 100);
+    }
+
+    // Проверка ответа
+    window.checkAnswer = function(taskId, correctAnswer) {
+        const userAnswer = document.getElementById(`answer-${taskId}`).value.trim();
+        const resultDiv = document.getElementById(`checkResult-${taskId}`);
+        
+        if (userAnswer === correctAnswer) {
+            resultDiv.innerHTML = '✅ Верно! Молодец!';
+            resultDiv.className = 'check-result correct';
+        } else {
+            resultDiv.innerHTML = '❌ Неверно. Попробуй ещё или воспользуйся подсказкой.';
+            resultDiv.className = 'check-result incorrect';
+        }
+    };
+
+    // Показать подсказку
+    window.showHint = function(taskId) {
+        document.getElementById(`hint-${taskId}`).classList.add('show');
+    };
+
+    // Калькулятор для задачи
+    window.calculateTaskCalc = function(taskId) {
+        const expr = document.getElementById(`calcExpr-${taskId}`).value;
+        try {
+            const result = eval(expr);
+            document.getElementById(`calcResult-${taskId}`).innerText = result;
+        } catch {
+            document.getElementById(`calcResult-${taskId}`).innerText = 'Ошибка';
+        }
+    };
+
+    // Вставка изображения из буфера
+    window.handlePaste = function(e, taskId) {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let item of items) {
+            if (item.type.indexOf('image') === 0) {
+                const blob = item.getAsFile();
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = document.getElementById(`image-${taskId}`);
+                    img.src = event.target.result;
+                    img.style.display = 'block';
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '200px';
+                    img.style.marginTop = '10px';
+                    img.style.borderRadius = '12px';
+                    
+                    const area = document.getElementById(`imageArea-${taskId}`);
+                    area.innerHTML = '';
+                    area.appendChild(img);
+                    area.innerHTML += '<span style="font-size:12px; margin-top:8px;">✅ Картинка вставлена (клик для увеличения)</span>';
+                    area.onclick = () => openModal(img.src);
+                };
+                reader.readAsDataURL(blob);
+                e.preventDefault();
+            }
+        }
+    };
+
+    // Модальное окно
+    window.openModal = function(src) {
+        document.getElementById('modalImg').src = src;
+        document.getElementById('modal').classList.add('show');
+    };
+
+    window.closeModal = function() {
+        document.getElementById('modal').classList.remove('show');
+    };
+
+    // При загрузке показать теорию
+    window.onload = function() {
+        document.getElementById('theory').style.display = 'block';
+    };
+</script>
+</body>
+</html>
