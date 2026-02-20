@@ -772,20 +772,50 @@ x + 0,75x = 350 → 1,75x = 350 → x = 200 руб.</div>
     <div class="footnote">⚡ Подсказка появляется по кнопке. Калькулятор понимает √, ^, +, -, *, /</div>
 </div>
 
-<script>
 <script src="https://cdn.jsdelivr.net/npm/mathjs@11.7.0/lib/browser/math.js"></script>
 <script>
 (function() {
+    // ===== СОЗДАЕМ МОДАЛЬНОЕ ОКНО С ПРАВИЛЬНЫМИ КЛАССАМИ =====
+    let modal = document.getElementById('globalImageModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'globalImageModal';
+        modal.className = 'modal'; // Этот класс есть в стилях
+        modal.innerHTML = '<span class="modal-close" id="globalModalClose">&times;</span><img class="modal-content" id="globalModalImage" style="max-width: 90%; max-height: 90vh;">';
+        document.body.appendChild(modal);
+        
+        // Закрытие по крестику
+        const modalClose = modal.querySelector('.modal-close');
+        modalClose.onclick = function() {
+            modal.style.display = 'none';
+            document.getElementById('globalModalImage').src = '';
+        };
+        
+        // Закрытие по клику вне картинки
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                document.getElementById('globalModalImage').src = '';
+            }
+        };
+        
+        // Закрытие по ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'block') {
+                modal.style.display = 'none';
+                document.getElementById('globalModalImage').src = '';
+            }
+        });
+    }
+    const modalImg = document.getElementById('globalModalImage');
+
     // ===== ЗАГРУЗКА ПРАВИЛЬНЫХ ОТВЕТОВ ИЗ ПАНЕЛИ =====
     const answersPanel = document.getElementById('answersPanel');
     const answerItems = answersPanel ? answersPanel.querySelectorAll('.answer-item') : [];
     const correctAnswers = {};
     
-    // Заполняем объект ответов: ключ = номер задачи (0,1,2...), значение = текст ответа
     answerItems.forEach((item, index) => {
-        // Очищаем ответ от лишнего (оставляем только цифры)
         const answerText = item.textContent.trim();
-        // Если ответ в формате "1. 76108", берем только число после точки
         const match = answerText.match(/\d+$/);
         if (match) {
             correctAnswers[index] = match[0];
@@ -797,7 +827,6 @@ x + 0,75x = 350 → 1,75x = 350 → x = 200 руб.</div>
     // ===== ПОКАЗ ВСЕХ ОТВЕТОВ =====
     const showAnswersBtn = document.getElementById('showAllAnswersBtn');
     if (showAnswersBtn && answersPanel) {
-        // Удаляем старый обработчик, если был
         const newBtn = showAnswersBtn.cloneNode(true);
         showAnswersBtn.parentNode.replaceChild(newBtn, showAnswersBtn);
         newBtn.addEventListener('click', () => {
@@ -808,7 +837,7 @@ x + 0,75x = 350 → 1,75x = 350 → x = 200 руб.</div>
     // ===== ФУНКЦИЯ ДЛЯ НАВЕШИВАНИЯ ОБРАБОТЧИКОВ =====
     function initHandlers() {
         // ----- ПОДСКАЗКИ -----
-        document.querySelectorAll('.hint-wrapper').forEach((wrapper, idx) => {
+        document.querySelectorAll('.hint-wrapper').forEach((wrapper) => {
             const btn = wrapper.querySelector('.hint-button');
             const popup = wrapper.querySelector('.hint-popup');
             if (btn && popup && !btn._hasHintListener) {
@@ -830,7 +859,6 @@ x + 0,75x = 350 → 1,75x = 350 → x = 200 руб.</div>
                     const result = document.getElementById('calcRes' + num);
                     if (input && result) {
                         try {
-                            // Безопасное вычисление
                             const expr = input.value.replace(/[^0-9+\-*/().]/g, '');
                             result.textContent = eval(expr) || '0';
                         } catch {
@@ -852,7 +880,6 @@ x + 0,75x = 350 → 1,75x = 350 → x = 200 руб.</div>
                     
                     if (input && badge) {
                         const userAnswer = input.value.trim();
-                        // Получаем правильный ответ из нашего объекта
                         const correctAnswer = correctAnswers[num];
                         
                         if (correctAnswer && userAnswer === correctAnswer) {
@@ -894,9 +921,6 @@ x + 0,75x = 350 → 1,75x = 350 → x = 200 руб.</div>
                         reader.onload = (e) => {
                             preview.src = e.target.result;
                             preview.style.display = 'block';
-                            // Показываем кнопку зума
-                            const zoomBtn = document.getElementById('zoomTask' + num);
-                            if (zoomBtn) zoomBtn.style.display = 'inline-block';
                         };
                         reader.readAsDataURL(e.target.files[0]);
                     }
@@ -904,7 +928,7 @@ x + 0,75x = 350 → 1,75x = 350 → x = 200 руб.</div>
             }
         });
 
-        // ----- ЗУМ (УВЕЛИЧЕНИЕ) -----
+        // ----- ЗУМ ДЛЯ КАРТИНОК ЗАДАЧ -----
         document.querySelectorAll('[id^="zoomTask"]').forEach(btn => {
             if (!btn._hasZoomListener) {
                 btn._hasZoomListener = true;
@@ -912,29 +936,52 @@ x + 0,75x = 350 → 1,75x = 350 → x = 200 руб.</div>
                     const num = this.id.replace('zoomTask', '');
                     const img = document.getElementById('imgPreviewTask' + num);
                     if (img && img.src && img.src !== '') {
-                        // Создаем модальное окно, если его нет
-                        let modal = document.getElementById('imageModal');
-                        if (!modal) {
-                            modal = document.createElement('div');
-                            modal.id = 'imageModal';
-                            modal.className = 'modal';
-                            modal.innerHTML = '<span class="modal-close">&times;</span><img class="modal-content" id="modalImage">';
-                            document.body.appendChild(modal);
-                            
-                            modal.querySelector('.modal-close').onclick = function() {
-                                modal.style.display = 'none';
-                            };
-                            window.onclick = function(e) {
-                                if (e.target === modal) modal.style.display = 'none';
-                            };
-                        }
-                        const modalImg = document.getElementById('modalImage');
                         modalImg.src = img.src;
                         modal.style.display = 'block';
+                    } else {
+                        alert('Сначала загрузите изображение');
                     }
                 });
             }
         });
+
+        // ----- ЗУМ ДЛЯ ГЛАВНОЙ КАРТИНКИ -----
+        const zoomMainBtn = document.getElementById('graphZoomBtn');
+        if (zoomMainBtn && !zoomMainBtn._hasZoomMainListener) {
+            zoomMainBtn._hasZoomMainListener = true;
+            zoomMainBtn.addEventListener('click', function() {
+                const mainImg = document.getElementById('graphImagePreview');
+                if (mainImg && mainImg.src) {
+                    modalImg.src = mainImg.src;
+                    modal.style.display = 'block';
+                }
+            });
+        }
+
+        // ----- ЗАМЕНА ГЛАВНОЙ КАРТИНКИ -----
+        const replaceMainBtn = document.getElementById('graphReplaceBtn');
+        const mainFileInput = document.getElementById('graphFileInput');
+        if (replaceMainBtn && mainFileInput && !replaceMainBtn._hasReplaceMainListener) {
+            replaceMainBtn._hasReplaceMainListener = true;
+            replaceMainBtn.addEventListener('click', function() {
+                mainFileInput.click();
+            });
+        }
+
+        if (mainFileInput && !mainFileInput._hasMainFileListener) {
+            mainFileInput._hasMainFileListener = true;
+            mainFileInput.addEventListener('change', function(e) {
+                const mainImg = document.getElementById('graphImagePreview');
+                if (e.target.files && e.target.files[0] && mainImg) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        mainImg.src = e.target.result;
+                        mainImg.style.display = 'block';
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+        }
     }
 
     // ===== ЗАПУСК ПОСЛЕ ЗАГРУЗКИ СТРАНИЦЫ =====
@@ -945,5 +992,4 @@ x + 0,75x = 350 → 1,75x = 350 → x = 200 руб.</div>
     }
 })();
 </script>
-
 </body></html>
