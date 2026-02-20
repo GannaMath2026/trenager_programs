@@ -15,7 +15,7 @@
             height: 100vh;
             overflow: hidden;
             margin: 0;
-            padding: 12px;
+            padding: 0;
             box-sizing: border-box;
         }
 
@@ -25,6 +25,41 @@
             font-family: Segoe UI, Tahoma, sans-serif;
             display: flex;
             flex-direction: column;
+            padding: 12px;
+            padding-top: 0;
+            box-sizing: border-box;
+        }
+
+        /* Контейнер для верхней части с прокруткой */
+        .top-section {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 4px;
+            margin-bottom: 10px;
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 8px;
+            border: 1px solid #334155;
+            flex-shrink: 0;
+        }
+
+        /* Стилизация скроллбара */
+        .top-section::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .top-section::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        
+        .top-section::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        
+        .top-section::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
         }
 
         .welcome-modal {
@@ -1073,6 +1108,25 @@
             .print-task a { color: #1e293b; text-decoration: underline; }
             button, input, .toolbar, #printDialog, #printContent > style, .task-list-panel { display: none !important; }
         }
+.welcome-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 14px;
+}
+.welcome-content td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #334155;
+}
+.welcome-content td:first-child {
+    color: #facc15;
+    font-weight: bold;
+    width: 140px;
+}
+.welcome-content h4 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+}
     </style>
 </head>
 <body>
@@ -1081,27 +1135,74 @@
 <div id="welcomeModal" class="welcome-modal" style="display: none;">
     <div class="welcome-content">
         <h2>🎯 Python Runner + Объяснение кода</h2>
-        <h3>Инструкция по работе:</h3>
-        <ul style="text-align: left; font-size: 16px; line-height: 1.6;">
-            <li><strong>👨‍🏫 Режимы Учитель/Ученик:</strong> Учитель может создавать и редактировать задачи, Ученик - только выполнять.</li>
-            <li><strong>📚 Загрузка с GitHub:</strong> Выберите задачу из списка (Информатика 1-27) и загрузите код и данные.</li>
-            <li><strong>⚠️ При импорте нового JSON:</strong> Система спросит, сохранили ли вы старые задачи, и предложит очистить или добавить.</li>
-            <li><strong>📋 Условие (img/текст):</strong> Вставьте из буфера обмена картинку или текст задачи (числа подсветятся красным).</li>
-            <li><strong>🎨 Палитра:</strong> Выберите цвет и толщину → рисуйте мышкой по экрану (Esc для выхода).</li>
-            <li><strong>▶ Run:</strong> Запустите Python код (Pyodide загружается автоматически).</li>
-            <li><strong>🎬 Объяснение кода:</strong> Показывает анимированный вывод кода построчно. Комментарии (#) подсвечиваются оранжевым. Нажмите любую клавишу для продолжения, Esc - выход.</li>
-            <li><strong>👨‍💻 Помощь программера:</strong> Готовые функции с объяснением и анимацией работы.</li>
-            <li><strong>📁 Ссылка на файл:</strong> У каждой задачи может быть ссылка на файл с данными (GitHub, Google Drive и т.д.)</li>
-            <li><strong>📋 Копировать код:</strong> Скопировать код в буфер.</li>
-            <li><strong>↩ Undo / 🧹 Очистить:</strong> Отменить последнее действие / очистить весь холст.</li>
-            <li><strong>🔗 Видео:</strong> Вставьте ссылку YouTube/Rutube → ▶️ воспроизвести в модальном окне.</li>
-            <li><strong>✅ Решено:</strong> Отметить задачу как решённую (зелёная подсветка).</li>
-            <li><strong>⬆⬇ Импорт/Экспорт:</strong> Сохранить/загрузить все задачи в JSON (оба варианта кода сохраняются).</li>
-            <li><strong>🖨️ Печать:</strong> Выберите задачи галочками → напечатать условия + ответы + ссылки на видео и файлы.</li>
-            <li><strong>📝 Режимы вставки:</strong> Переключайтесь между кодом с комментариями и без (оба варианта хранятся в задаче).</li>
-            <li><strong>❓ Помощь:</strong> Показать это окно с инструкцией.</li>
-        </ul>
-        <button class="close-welcome" onclick="closeWelcome()">Начать работу!</button>
+        
+        <!-- ИНСТРУКЦИЯ ДЛЯ УЧЕНИКА (ДОБАВЛЯЕМ СЮДА) -->
+        <div style="background: #0f172a; border-radius: 12px; padding: 20px; margin: 20px 0; border-left: 5px solid #10b981;">
+            <h3 style="color: #10b981; margin-top: 0;">📘 ИНСТРУКЦИЯ ДЛЯ УЧЕНИКА</h3>
+            
+            <!-- ВИДЕО РЕЖИМ -->
+            <div style="background: #1e293b; border-radius: 8px; padding: 15px; margin-bottom: 20px; border-left: 5px solid #ef4444;">
+                <h4 style="color: #ef4444; margin-top: 0;">🎬 РЕЖИМ ПРОСМОТРА ВИДЕО</h4>
+                <table style="width: 100%;">
+                    <tr><td style="width: 200px;">Вставка ссылки</td><td>Вставьте ссылку на YouTube/Rutube в поле 🔗 YouTube/Rutube</td></tr>
+                    <tr><td>Кнопка воспроизведения</td><td>Нажмите кнопку ▶️ рядом с полем ввода</td></tr>
+                    <tr><td>Управление</td><td>Пробел - пауза, Esc - выход, F11 - полный экран, ←→ - перемотка</td></tr>
+                </table>
+            </div>
+            
+            <!-- РИСОВАНИЕ -->
+            <div style="background: #1e293b; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <h4 style="color: #facc15; margin-top: 0;">🎨 РЕЖИМ РИСОВАНИЯ</h4>
+                <table style="width: 100%;">
+                    <tr><td>Включение</td><td>Выберите цвет или толщину пера в палитре</td></tr>
+                    <tr><td>Рисование</td><td>Зажмите левую кнопку мыши и двигайте курсор</td></tr>
+                    <tr><td>Отмена</td><td>Кнопка ↩ Undo или Ctrl+Z</td></tr>
+                    <tr><td>Очистить</td><td>Кнопка 🧹 Очистить</td></tr>
+                    <tr><td>Выход</td><td>Нажмите Esc</td></tr>
+                </table>
+                <p style="color: #ef4444; margin-top: 10px;"><strong>⚠️ ВНИМАНИЕ:</strong> Во время рисования все остальные кнопки становятся неактивными!</p>
+            </div>
+            
+            <!-- АНИМАЦИЯ КОДА -->
+            <div style="background: #1e293b; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <h4 style="color: #f59e0b; margin-top: 0;">🎬 АНИМАЦИЯ ОБЪЯСНЕНИЯ КОДА</h4>
+                <table style="width: 100%;">
+                    <tr><td>Запуск</td><td>Кнопка 🎬 Объяснение кода</td></tr>
+                    <tr><td>Продолжить</td><td>Нажмите Пробел</td></tr>
+                    <tr><td>Остановить</td><td>Нажмите Esc</td></tr>
+                </table>
+                <p>Комментарии подсвечиваются <span style="color: #ff8c00;">оранжевым</span></p>
+            </div>
+            
+            <!-- СПИСОК ЗАДАЧ -->
+            <div style="background: #1e293b; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <h4 style="color: #3b82f6; margin-top: 0;">📋 РАБОТА СО СПИСКОМ ЗАДАЧ</h4>
+                <table style="width: 100%;">
+                    <tr><td>Выбор задачи</td><td>Кликните по названию в правой панели</td></tr>
+                    <tr><td>Решено</td><td>Поставьте галочку ✅</td></tr>
+                    <tr><td>Избранное</td><td>Кликните по звездочке ★</td></tr>
+                    <tr><td>Фильтрация</td><td>Кнопки над списком: Все, ✅ Решено, ⏳ Не решено, ⭐ Избранное</td></tr>
+                </table>
+            </div>
+            
+            <!-- ЗАГРУЗКА ФАЙЛА -->
+            <div style="background: #1e293b; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <h4 style="color: #94a3b8; margin-top: 0;">📁 ЗАГРУЗКА ФАЙЛА</h4>
+                <table style="width: 100%;">
+                    <tr><td>Кнопка</td><td>📁 Загрузить файл</td></tr>
+                    <tr><td>Использование</td><td>Переменная file_content содержит текст файла</td></tr>
+                </table>
+            </div>
+            
+            <!-- РЕЖИМ УЧЕНИК -->
+            <div style="background: #1e293b; border-radius: 8px; padding: 15px;">
+                <h4 style="color: #16a34a; margin-top: 0;">👨‍🎓 РЕЖИМ УЧЕНИК</h4>
+                <p><strong>Доступно:</strong> Запуск кода, анимация, рисование, видео, отметка "Решено", избранное, импорт задач</p>
+                <p><strong>НЕ доступно:</strong> Создание/редактирование задач, вставка условий, сохранение, экспорт</p>
+            </div>
+        </div>
+        
+              <button class="close-welcome" onclick="closeWelcome()">Начать работу!</button>
     </div>
 </div>
 
@@ -1187,121 +1288,106 @@ for k in range(1, 100):
     </div>
 </div>
 
-<div class="toolbar">
-    <!-- Кнопки выбора режима -->
-    <button class="mode-btn student-active" id="studentModeBtn" onclick="setMode('student')">👨‍🎓 Ученик</button>
-    <button class="mode-btn" id="teacherModeBtn" onclick="setMode('teacher')">👨‍🏫 Учитель</button>
-    
-    <!-- Кнопки учителя (будут скрыты в режиме ученика) -->
-    <span id="teacherButtons" style="display: inline;">
-        <button onclick="pasteImage()">📋 Условие (img)</button>
-        <button onclick="pasteText()">📄 Условие (текст)</button>
-        <button class="gray" onclick="showSaveDialog()">💾 Сохранить</button>
-        <button class="gray" onclick="exportTasks()">⬇ Экспорт</button>
-        <button class="print" onclick="showPrintDialog()">🖨️ Печать</button>
-    </span>
-    
-    <!-- Общие кнопки -->
-    <button class="gray" onclick="importTasks()">⬆ Импорт</button>
-    <button class="help" onclick="showWelcomeModal()">❓ Помощь</button>
-    <button class="programmer-help-btn" onclick="showProgrammerModal()">👨‍💻 Помощь программера</button>
+<!-- Верхняя часть с прокруткой -->
+<div class="top-section">
+    <div class="toolbar">
+        <!-- Кнопки выбора режима -->
+        <button class="mode-btn student-active" id="studentModeBtn" onclick="setMode('student')">👨‍🎓 Ученик</button>
+        <button class="mode-btn" id="teacherModeBtn" onclick="setMode('teacher')">👨‍🏫 Учитель</button>
+        
+        <!-- Кнопки учителя (будут скрыты в режиме ученика) -->
+        <span id="teacherButtons" style="display: inline;">
+            <button onclick="pasteImage()">📋 Условие (img)</button>
+            <button onclick="pasteText()">📄 Условие (текст)</button>
+            <button class="gray" onclick="showSaveDialog()">💾 Сохранить</button>
+            <button class="gray" onclick="exportTasks()">⬇ Экспорт</button>
+            <button class="print" onclick="showPrintDialog()">🖨️ Печать</button>
+        </span>
+        
+        <!-- Общие кнопки -->
+        <button class="gray" onclick="importTasks()">⬆ Импорт</button>
+        <button class="help" onclick="showWelcomeModal()">❓ Помощь</button>
+        <button class="programmer-help-btn" onclick="showProgrammerModal()">👨‍💻 Помощь программера</button>
 
-    <!-- Кнопки выбора режима кода -->
-    <button class="code-mode-btn" id="codeModeNoComments" onclick="setCodeMode('noComments')">📝 Без комментариев</button>
-    <button class="code-mode-btn active" id="codeModeWithComments" onclick="setCodeMode('withComments')">📝 С комментариями</button>
+        <!-- Кнопки выбора режима кода -->
+        <button class="code-mode-btn" id="codeModeNoComments" onclick="setCodeMode('noComments')">📝 Без комментариев</button>
+        <button class="code-mode-btn active" id="codeModeWithComments" onclick="setCodeMode('withComments')">📝 С комментариями</button>
 
-    <button class="green" onclick="runPython()">▶ Run</button>
-    <button class="orange" onclick="startCodeAnimation()">🎬 Объяснение кода</button>
-    <button class="gray" onclick="copyCode()">📋 Копировать код</button>
-    <button class="green" onclick="runWithFile()">📁 Запустить с файлом</button>
-    
-    <div class="palette-row">
-        <button class="color-btn" style="background:#ffff00" onclick="setColor('#ffff00')"></button>
-        <button class="color-btn" style="background:#ff0000" onclick="setColor('#ff0000')"></button>
-        <button class="color-btn" style="background:#00ff00" onclick="setColor('#00ff00')"></button>
-        <button class="color-btn" style="background:#0000ff" onclick="setColor('#0000ff')"></button>
-        <button class="color-btn" style="background:#ffffff" onclick="setColor('#ffffff')"></button>
-        <button class="pen-size-btn" onclick="setPenSize(2)">─</button>
-        <button class="pen-size-btn" onclick="setPenSize(6)">━</button>
-        <button class="pen-size-btn" onclick="setPenSize(12)">⬤</button>
+        <button class="green" onclick="runPython()">▶ Run</button>
+        <button class="orange" onclick="startCodeAnimation()">🎬 Объяснение кода</button>
+        <button class="gray" onclick="copyCode()">📋 Копировать код</button>
+        <button class="green" onclick="runWithFile()">📁 Запустить с файлом</button>
+        
+        <div class="palette-row">
+            <button class="color-btn" style="background:#ffff00" onclick="setColor('#ffff00')"></button>
+            <button class="color-btn" style="background:#ff0000" onclick="setColor('#ff0000')"></button>
+            <button class="color-btn" style="background:#00ff00" onclick="setColor('#00ff00')"></button>
+            <button class="color-btn" style="background:#0000ff" onclick="setColor('#0000ff')"></button>
+            <button class="color-btn" style="background:#ffffff" onclick="setColor('#ffffff')"></button>
+            <button class="pen-size-btn" onclick="setPenSize(2)">─</button>
+            <button class="pen-size-btn" onclick="setPenSize(6)">━</button>
+            <button class="pen-size-btn" onclick="setPenSize(12)">⬤</button>
+        </div>
+        
+        <button class="gray" onclick="undo()">↩ Undo</button>
+        <button class="red" onclick="clearCanvas()">🧹 Очистить</button>
+        
+        <!-- Индикатор анимации (скрыт по умолчанию) -->
+        <div id="animationIndicator" class="animation-indicator" style="display: none;">
+            <span>🎬 Анимация</span>
+            <span class="key-hint">Любая клавиша → продолжить</span>
+            <span class="key-hint">Esc → выход</span>
+        </div>
     </div>
-    
-    <button class="gray" onclick="undo()">↩ Undo</button>
-    <button class="red" onclick="clearCanvas()">🧹 Очистить</button>
-    
-    <!-- Индикатор анимации (скрыт по умолчанию) -->
-    <div id="animationIndicator" class="animation-indicator" style="display: none;">
-        <span>🎬 Анимация</span>
-        <span class="key-hint">Любая клавиша → продолжить</span>
-        <span class="key-hint">Esc → выход</span>
-    </div>
-</div>
 
-<!-- Селектор задач с GitHub -->
-<div class="github-tasks-selector">
-    <select id="githubTaskSelect">
-        <option value="">-- Выберите задачу с GitHub --</option>
+    <!-- Селектор задач с GitHub -->
+    <div class="github-tasks-selector">
+        <select id="githubTaskSelect">
+            <option value="">-- Выберите задачу с GitHub --</option>
 <option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika1.json">Информатика 1</option>
 <option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika2.json">Информатика 2</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika3.json">Информатика 3</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika4.json">Информатика 4</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika5.json">Информатика 5</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika6.json">Информатика 6</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika7.json">Информатика 7</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika8.json">Информатика 8</option>
 <option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika9.json">Информатика 9</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika10.json">Информатика 10</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika11.json">Информатика 11</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika12.json">Информатика 12</option>
 <option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika13.json">Информатика 13</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika14.json">Информатика 14</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika15.json">Информатика 15</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika16.json">Информатика 16</option>
 <option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika17.json">Информатика 17</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika18.json">Информатика 18</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika19.json">Информатика 19</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika22.json">Информатика 22</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika23.json">Информатика 23</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika24.json">Информатика 24</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika25.json">Информатика 25</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika26.json">Информатика 26</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/informatika27.json">Информатика 27</option>
-    </select>
-    <button class="load-task-btn" onclick="loadGithubTask()">📥 Загрузить задачу</button>
-</div>
+<option value="https://raw.githubusercontent.com/GannaMath2026/trenager_programs/main/informatika24.json">Информатика 24</option>
 
-<div class="task-controls">
-    <div style="display: flex; gap: 8px; align-items: center;">
-        <input id="videoUrl" placeholder="🔗 YouTube/Rutube" oninput="updateVideo()">
-        <button id="videoPlayBtn" class="video-play-btn" onclick="playVideo()" style="display: none;">▶️</button>
+        </select>
+        <button class="load-task-btn" onclick="loadGithubTask()">📥 Загрузить задачу</button>
     </div>
-    <div id="solvedContainer" class="solved-container">
-        <input type="checkbox" id="solvedCheckbox">
-        <label for="solvedCheckbox">✅ Решено</label>
+
+    <div class="task-controls">
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <input id="videoUrl" placeholder="🔗 YouTube/Rutube" oninput="updateVideo()">
+            <button id="videoPlayBtn" class="video-play-btn" onclick="playVideo()" style="display: none;">▶️</button>
+        </div>
+        <div id="solvedContainer" class="solved-container">
+            <input type="checkbox" id="solvedCheckbox">
+            <label for="solvedCheckbox">✅ Решено</label>
+        </div>
+        <button class="gray" onclick="showFileLoadModal()">📁 Загрузить файл</button>
     </div>
-    <button class="gray" onclick="showFileLoadModal()">📁 Загрузить файл</button>
-</div>
 
-<!-- Инфо-панель задачи с полем для ссылки на файл -->
-<div id="taskInfoPanel" class="task-info-panel" style="display: none;">
-    <span id="taskInfoTitle" class="task-info-title"></span>
-    <span id="taskInfoAnalog" class="task-info-analog" style="display: none;"></span>
-    <span id="taskInfoVideo" class="task-info-video" style="display: none;"></span>
-    <!-- НОВОЕ ПОЛЕ для ссылки на файл -->
-    <span id="taskInfoFile" class="task-info-file" style="display: none;">
-        <span>📁</span>
-        <a href="#" id="fileLink" target="_blank"></a>
-        <button class="gray" onclick="showFileLoadModal()">⬇ Загрузить</button>
-    </span>
-</div>
+    <!-- Инфо-панель задачи с полем для ссылки на файл -->
+    <div id="taskInfoPanel" class="task-info-panel" style="display: none;">
+        <span id="taskInfoTitle" class="task-info-title"></span>
+        <span id="taskInfoAnalog" class="task-info-analog" style="display: none;"></span>
+        <span id="taskInfoVideo" class="task-info-video" style="display: none;"></span>
+        <!-- НОВОЕ ПОЛЕ для ссылки на файл -->
+        <span id="taskInfoFile" class="task-info-file" style="display: none;">
+            <span>📁</span>
+            <a href="#" id="fileLink" target="_blank"></a>
+            <button class="gray" onclick="showFileLoadModal()">⬇ Загрузить</button>
+        </span>
+    </div>
 
-<img id="taskImage">
-<div id="taskText"></div>
+    <img id="taskImage">
+    <div id="taskText"></div>
 
-<div class="answer-section" onclick="toggleAnswer()" id="answerToggle">
-    👁️ Ответ
+    <div class="answer-section" onclick="toggleAnswer()" id="answerToggle">
+        👁️ Ответ
+    </div>
+    <input id="answerInput" placeholder="Верный ответ">
 </div>
-<input id="answerInput" placeholder="Верный ответ">
 
 <!-- Диалог печати -->
 <div id="printDialog" class="print-controls" style="display: none;">
@@ -1449,9 +1535,9 @@ let currentProgrammerFunction = 0;
 /* ================= ИНИЦИАЛИЗАЦИЯ ================= */
 window.onload = function() {
     // Всегда показываем приветствие/инструкцию при загрузке
-    setTimeout(() => {
-        document.getElementById("welcomeModal").style.display = "flex";
-    }, 500);
+    //setTimeout(() => {
+    //    document.getElementById("welcomeModal").style.display = "flex";
+    //}, 500);
     
     // Нет тестовых задач при загрузке
     updateTaskList();
@@ -1998,13 +2084,16 @@ function toggleFullscreen(event) {
 /* ================= PYTHON ================= */
 async function initPy() {
     pyodide = await loadPyodide({
-        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
+        indexURL: "./assets/pyodide-full/"
     });
     ready = true;
     const output = document.getElementById("output");
     output.textContent = "Python готов.";
     output.style.overflowY = "auto";
 }
+
+
+
 initPy();
 
 async function runPython() {
@@ -2035,7 +2124,7 @@ sys.stdout = StringIO()
 
 /* ================= РАБОТА С ФАЙЛАМИ ================= */
 function setExampleUrl() {
-    document.getElementById('fileUrlInput').value = 'https://raw.githubusercontent.com/username/repo/main/24_2419.txt';
+    document.getElementById('fileUrlInput').value = 'https://raw.githubusercontent.com/username/repo/main/24_1111.txt';
 }
 
 function showFileLoadModal() {
@@ -2256,6 +2345,10 @@ function stopAnimation() {
     document.getElementById('animationIndicator').style.display = 'none';
 }
 
+
+
+
+
 function handleAnimationKey(e) {
     if (!animationActive) return;
     
@@ -2263,6 +2356,12 @@ function handleAnimationKey(e) {
         stopAnimation();
         document.getElementById('output').innerHTML += '\n\n⏸️ Объяснение остановлено';
         return;
+    }
+    
+    // Если нажат НЕ пробел - игнорируем
+    if (e.key !== " ") {
+        e.preventDefault();
+        return; // Игнорируем все остальные клавиши
     }
     
     e.preventDefault();
