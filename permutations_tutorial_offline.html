@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Туториал по коду permutations</title>
+  <style>
+    :root {
+      --bg: #10131a;
+      --panel: #181d27;
+      --line: #212938;
+      --text: #e7edf8;
+      --muted: #9fb0cb;
+      --accent: #5aa2ff;
+      --ok: #66d28c;
+      --warn: #ffcd67;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid #263148;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    h1, h2 { margin: 0 0 10px 0; }
+    p { margin: 6px 0; color: var(--muted); }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    button, select {
+      background: #222b3b;
+      color: var(--text);
+      border: 1px solid #365083;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    button:hover, select:hover { border-color: var(--accent); }
+    .btn-main { background: #1f4f95; }
+    .btn-next { background: #1f7b46; }
+    .status {
+      margin-left: auto;
+      color: var(--warn);
+      font-weight: 600;
+    }
+    .codebox {
+      border: 1px solid #2f3b56;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .code-header {
+      background: #141a25;
+      border-bottom: 1px solid #2f3b56;
+      padding: 10px 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .line {
+      display: grid;
+      grid-template-columns: 46px 1fr 36px;
+      align-items: start;
+      border-bottom: 1px solid var(--line);
+      min-height: 34px;
+    }
+    .line:last-child { border-bottom: none; }
+    .ln {
+      color: #6f83a8;
+      text-align: right;
+      padding: 8px;
+      font-size: 13px;
+      user-select: none;
+    }
+    .code {
+      white-space: pre-wrap;
+      font-family: "Consolas", "Courier New", monospace;
+      padding: 8px 0;
+    }
+    .hint-btn {
+      border: none;
+      background: transparent;
+      color: var(--warn);
+      font-size: 18px;
+      padding: 4px;
+      margin-top: 3px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.2s;
+    }
+    .line.show-hint .hint-btn {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .line.done { background: rgba(102, 210, 140, 0.08); }
+    .line.current { background: rgba(90, 162, 255, 0.12); }
+    .token {
+      color: #9ec1ff;
+      border-bottom: 1px dotted #577ec2;
+      cursor: pointer;
+    }
+    .bubble {
+      margin-top: 8px;
+      background: #1a2332;
+      border: 1px solid #34507f;
+      border-radius: 8px;
+      padding: 8px;
+      color: #c6d8f7;
+      display: none;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .bubble.open { display: block; }
+    .legend { font-size: 13px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Туториал по коду permutations</h1>
+      <p>Это школьный разбор. Код показывает как найти правильное соответствие цифр и букв в задаче про дороги.</p>
+      <p>Режим работает без сервера. Просто открой этот файл в браузере.</p>
+      <div class="controls">
+        <button class="btn-main" id="startBtn">Старт машинописи</button>
+        <button class="btn-next" id="nextBtn" disabled>Далее</button>
+        <button id="resetBtn">Сброс</button>
+        <label for="level">Подробность</label>
+        <select id="level">
+          <option value="short">Коротко</option>
+          <option value="medium" selected>Средне</option>
+          <option value="deep">Подробно</option>
+        </select>
+        <span class="status" id="statusText">Нажми старт</span>
+      </div>
+      <p class="legend">Нажми на значок справа от строки чтобы открыть комментарий. Нажми на синие команды в коде чтобы увидеть мини пример.</p>
+    </div>
+
+    <div class="card codebox">
+      <div class="code-header">Код и пошаговое объяснение</div>
+      <div id="codeArea"></div>
+    </div>
+  </div>
+
+  <script>
+    const codeLines = [
+      "from itertools import permutations",
+      "for per in permutations('ABCDEFG'):",
+      "    p1 = '31 41 42 43 51 54 62 64 72 74 75'",
+      "    p2 = 'AF AG BG BC CG CD DG DE EG EF GF'",
+      "    for c, b in zip('1234567', per):",
+      "        p1 = p1.replace(c, b)",
+      "    if all(t in p2 or t[::-1] in p2 for t in p1.split()):",
+      "        print(*'1234567')",
+      "        print(*per)",
+      "        print()"
+    ];
+
+    const comments = {
+      short: [
+        "Подключаем функцию permutations",
+        "Берем один порядок букв A B C D E F G",
+        "Это дороги из таблицы в виде цифр",
+        "Это дороги из графа в виде букв",
+        "Связываем каждую цифру с буквой",
+        "Заменяем цифру на букву в дорогах",
+        "Проверяем что каждая дорога есть в графе",
+        "Печатаем цифры",
+        "Печатаем найденные буквы",
+        "Пустая строка для разделения"
+      ],
+      medium: [
+        "Импорт. Нужна только одна функция permutations",
+        "Цикл перебирает все варианты расположения семи букв",
+        "p1 хранит связи из таблицы. Пока вершины записаны цифрами",
+        "p2 хранит связи из рисунка графа. Вершины уже буквенные",
+        "zip дает пары. Первая цифра с первой буквой и так далее",
+        "replace заменяет текущую цифру на нужную букву во всей строке",
+        "all проверяет каждый отрезок. Разрешаем прямой и обратный порядок",
+        "Показываем эталонный порядок цифр",
+        "Показываем какой букве соответствует каждая цифра",
+        "Добавляем пустую строку между ответами"
+      ],
+      deep: [
+        "Мы избегаем import звездочка. Так код понятнее и чище",
+        "permutations строит 5040 вариантов. Это полный перебор без пропусков",
+        "Строка p1 описывает ребра между вершинами 1 2 3 4 5 6 7",
+        "Строка p2 это допустимые ребра исходного графа в буквенном виде",
+        "zip проходит две последовательности синхронно и выдает пары c и b",
+        "На каждом шаге все найденные цифры c меняются на букву b",
+        "split делит p1 на отдельные ребра. all вернет истина если верны все проверки",
+        "print звездочка распаковывает строку в отдельные символы",
+        "Здесь печатается найденная перестановка букв для текущего решения",
+        "Пустая строка помогает визуально разделять несколько решений"
+      ]
+    };
+
+    const tokenHints = {
+      "permutations": "Функция строит все варианты порядка. Пример permutations ABC дает ABC ACB BAC BCA CAB CBA",
+      "zip": "zip соединяет элементы попарно. Пример 12 и AB дает пары 1 A и 2 B",
+      "replace": "replace меняет символ. Пример 31 41 с заменой 1 на A дает 3A 4A",
+      "all": "all возвращает истина если каждое условие истинно",
+      "split": "split разбивает строку по пробелам на список частей",
+      "[::-1]": "Срез с шагом минус один разворачивает строку. Пример AB становится BA",
+      "print": "print выводит текст на экран"
+    };
+
+    const codeArea = document.getElementById('codeArea');
+    const startBtn = document.getElementById('startBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const levelSel = document.getElementById('level');
+    const statusText = document.getElementById('statusText');
+
+    let currentLine = 0;
+    let typing = false;
+
+    function wrapTokens(line) {
+      const keys = Object.keys(tokenHints).sort((a, b) => b.length - a.length);
+      let out = line;
+      keys.forEach(key => {
+        const esc = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const re = new RegExp(esc, "g");
+        out = out.replace(re, `<span class=\"token\" data-token=\"${key}\">${key}</span>`);
+      });
+      return out;
+    }
+
+    function buildRows() {
+      codeArea.innerHTML = '';
+      codeLines.forEach((_, i) => {
+        const row = document.createElement('div');
+        row.className = 'line';
+        row.id = `row-${i}`;
+        row.innerHTML = `
+          <div class="ln">${i + 1}</div>
+          <div>
+            <div class="code" id="code-${i}"></div>
+            <div class="bubble" id="bubble-${i}"></div>
+          </div>
+          <button class="hint-btn" id="hint-${i}" title="Комментарий">💡</button>
+        `;
+        codeArea.appendChild(row);
+      });
+
+      codeArea.querySelectorAll('.hint-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const i = Number(btn.id.split('-')[1]);
+          openBubble(i);
+        });
+      });
+
+      codeArea.addEventListener('click', (e) => {
+        const token = e.target.closest('.token');
+        if (!token) return;
+        const key = token.dataset.token;
+        const row = token.closest('.line');
+        const idx = Number(row.id.split('-')[1]);
+        const bubble = document.getElementById(`bubble-${idx}`);
+        bubble.textContent = tokenHints[key] || '';
+        bubble.classList.add('open');
+      });
+    }
+
+    function openBubble(i) {
+      const bubble = document.getElementById(`bubble-${i}`);
+      bubble.textContent = comments[levelSel.value][i];
+      bubble.classList.toggle('open');
+    }
+
+    function typeLine(i, done) {
+      const row = document.getElementById(`row-${i}`);
+      const codeCell = document.getElementById(`code-${i}`);
+      const text = codeLines[i];
+      let pos = 0;
+      row.classList.add('current');
+      typing = true;
+      function step() {
+        if (pos > text.length) {
+          row.classList.remove('current');
+          row.classList.add('done', 'show-hint');
+          typing = false;
+          done();
+          return;
+        }
+        codeCell.textContent = text.slice(0, pos);
+        pos += 1;
+        setTimeout(step, 14);
+      }
+      step();
+    }
+
+    function finalizeLineMarkup(i) {
+      const codeCell = document.getElementById(`code-${i}`);
+      codeCell.innerHTML = wrapTokens(codeLines[i]);
+    }
+
+    function startTutorial() {
+      if (typing) return;
+      if (currentLine >= codeLines.length) return;
+      startBtn.disabled = true;
+      nextBtn.disabled = true;
+      statusText.textContent = `Печатаем строку ${currentLine + 1}`;
+      typeLine(currentLine, () => {
+        finalizeLineMarkup(currentLine);
+        statusText.textContent = `Строка ${currentLine + 1} готова. Нажми Далее`;
+        nextBtn.disabled = false;
+      });
+    }
+
+    function nextStep() {
+      if (typing) return;
+      if (currentLine >= codeLines.length) return;
+      currentLine += 1;
+      if (currentLine >= codeLines.length) {
+        nextBtn.disabled = true;
+        statusText.textContent = 'Готово. Все строки показаны';
+        return;
+      }
+      startTutorial();
+    }
+
+    function resetAll() {
+      currentLine = 0;
+      typing = false;
+      buildRows();
+      startBtn.disabled = false;
+      nextBtn.disabled = true;
+      statusText.textContent = 'Нажми старт';
+    }
+
+    startBtn.addEventListener('click', startTutorial);
+    nextBtn.addEventListener('click', nextStep);
+    resetBtn.addEventListener('click', resetAll);
+    levelSel.addEventListener('change', () => {
+      codeArea.querySelectorAll('.bubble.open').forEach((b) => {
+        const idx = Number(b.id.split('-')[1]);
+        b.textContent = comments[levelSel.value][idx] || b.textContent;
+      });
+    });
+
+    resetAll();
+  </script>
+</body>
+</html>
