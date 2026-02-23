@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Блочный редактор — демо</title>
+<style>
+  * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+  body { background: #f0f4fb; margin: 0; padding: 24px; display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+
+  .panel { background: white; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 24px; width: 480px; }
+  h2 { color: #1e3c72; margin: 0 0 16px 0; font-size: 18px; }
+
+  /* Кнопки добавления в конец */
+  .add-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .add-btn { padding: 8px 16px; border-radius: 30px; border: 1.5px dashed #7f9fd9; background: #f0f6ff; color: #1e3c72; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.15s; }
+  .add-btn:hover { background: #dce9ff; border-color: #3a7bd5; }
+
+  .blocks { display: flex; flex-direction: column; }
+
+  /* Блок */
+  .block { border: 1px solid #dde5f5; border-radius: 16px; padding: 14px; background: #fafcff; }
+  .block:hover { border-color: #7f9fd9; }
+  .block-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .block-type-icon { font-size: 16px; }
+  .block-type-label { font-size: 12px; font-weight: 700; color: #7f9fd9; text-transform: uppercase; letter-spacing: 0.5px; flex: 1; }
+  .block-actions { display: flex; gap: 4px; }
+  .bact { background: none; border: none; cursor: pointer; font-size: 15px; padding: 2px 6px; border-radius: 6px; color: #7f9fd9; }
+  .bact:hover { background: #eef3fc; color: #1e3c72; }
+  .bact.del:hover { background: #ffebee; color: #c62828; }
+
+  .block textarea { width: 100%; border: 1px solid #dde5f5; border-radius: 10px; padding: 10px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 70px; outline: none; }
+  .block textarea:focus { border-color: #3a7bd5; }
+
+  /* Таблица */
+  .tbl-controls { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .tbl-controls button { padding: 5px 12px; border-radius: 20px; border: none; background: #e8f0fe; color: #1e3c72; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .tbl-controls button:hover { background: #c8d6ee; }
+  .tbl-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid #c8d6ee; }
+  .tbl-wrap table { border-collapse: collapse; width: 100%; }
+  .tbl-wrap th input, .tbl-wrap td input { width: 100%; border: none; padding: 7px 9px; font-size: 13px; font-family: inherit; background: transparent; outline: none; min-width: 60px; }
+  .tbl-wrap th { background: #e8f0fe; border: 1px solid #c8d6ee; }
+  .tbl-wrap th input { font-weight: 700; color: #1e3c72; }
+  .tbl-wrap td { border: 1px solid #dde5f5; }
+  .tbl-wrap tr:hover td { background: #f5f8ff; }
+
+  /* Картинка */
+  .img-zone { border: 2px dashed #a0b8e0; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; min-height: 80px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; transition: 0.2s; }
+  .img-zone:hover { background: #e3edff; border-color: #3a7bd5; }
+  .img-zone img { max-width: 100%; max-height: 180px; border-radius: 8px; }
+  .img-zone .ph { color: #7f9fd9; font-size: 14px; }
+  .img-zone .lbl { font-size: 11px; color: #6b7f9a; }
+
+  /* Разделитель между блоками */
+  .divider { display: flex; align-items: center; gap: 0; margin: 6px 0; height: 28px; }
+  .div-line { flex: 1; height: 2px; background: #dde5f5; border-radius: 1px; transition: background 0.15s; }
+  .div-btn { padding: 3px 12px; border-radius: 20px; border: 1.5px solid #c8d6ee; background: white; color: #7f9fd9; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: 0.15s; opacity: 0; }
+  .divider:hover .div-btn { opacity: 1; }
+  .divider:hover .div-line { background: #a0b8e0; }
+  .div-btn:hover { background: #e8f0fe; color: #1e3c72; border-color: #3a7bd5; }
+
+  /* Inline меню вставки — заменяет divider */
+  .insert-menu { display: flex; align-items: center; gap: 8px; margin: 6px 0; background: #e8f0fe; border-radius: 12px; padding: 8px 12px; flex-wrap: wrap; }
+  .insert-menu span { font-size: 12px; color: #4a5f7a; font-weight: 600; flex: 1; }
+  .insert-menu .add-btn { font-size: 12px; padding: 5px 12px; }
+  .insert-menu .cancel-btn { padding: 5px 10px; border-radius: 20px; border: none; background: #c8d6ee; color: #4a5f7a; font-size: 12px; cursor: pointer; }
+  .insert-menu .cancel-btn:hover { background: #b0c4e0; }
+
+  /* Превью */
+  .preview { font-size: 14px; line-height: 1.75; color: #222; }
+  .preview p { margin: 0 0 10px 0; white-space: pre-wrap; }
+  .preview table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+  .preview th { background: #1e3c72; color: white; padding: 8px 12px; font-size: 13px; text-align: left; }
+  .preview td { border: 1px solid #c8d6ee; padding: 7px 12px; text-align: center; font-size: 13px; }
+  .preview tr:nth-child(even) td { background: #f5f8ff; }
+  .preview img { max-width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
+
+  .json-out { background: #1e2a3a; color: #a8d8a8; border-radius: 12px; padding: 14px; font-family: monospace; font-size: 12px; max-height: 180px; overflow-y: auto; white-space: pre; margin-top: 16px; }
+  .upd-btn { margin-top: 12px; padding: 10px 24px; border-radius: 30px; border: none; background: #1e3c72; color: white; font-weight: 600; cursor: pointer; font-size: 14px; }
+  .upd-btn:hover { background: #162d57; }
+  .empty-hint { color: #aaa; font-size: 13px; text-align: center; padding: 20px; }
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <h2>✏️ Редактор блоков</h2>
+  <div class="add-bar">
+    <button class="add-btn" onclick="addBlock('text')">📝 Текст</button>
+    <button class="add-btn" onclick="addBlock('table')">📊 Таблица</button>
+    <button class="add-btn" onclick="addBlock('image')">🖼️ Картинка</button>
+  </div>
+  <div class="blocks" id="blocks"></div>
+  <button class="upd-btn" onclick="updatePreview()">👁️ Обновить превью</button>
+  <div class="json-out" id="jsonOut">// JSON появится здесь</div>
+</div>
+
+<div class="panel">
+  <h2>👁️ Превью (режим ученика)</h2>
+  <div class="preview" id="preview"><span style="color:#aaa;font-size:13px;">Нажмите «Обновить превью»</span></div>
+</div>
+
+<script>
+(function(){
+
+let blocks = [];
+let openMenuAt = -1; // индекс разделителя, где открыто меню вставки
+
+// ── Синхронизация данных из DOM ──────────────────────────────────
+function sync() {
+  blocks.forEach((b, i) => {
+    if (b.type === 'text') {
+      const el = document.getElementById('txt_' + i);
+      if (el) b.content = el.value;
+    } else if (b.type === 'table') {
+      b.headers.forEach((_, hi) => {
+        const el = document.getElementById('th_'+i+'_'+hi);
+        if (el) b.headers[hi] = el.value;
+      });
+      b.rows.forEach((row, ri) => row.forEach((_, ci) => {
+        const el = document.getElementById('td_'+i+'_'+ri+'_'+ci);
+        if (el) b.rows[ri][ci] = el.value;
+      }));
+    }
+  });
+}
+
+// ── Добавить блок в конец ────────────────────────────────────────
+window.addBlock = function(type) {
+  sync();
+  insertAt(type, blocks.length);
+};
+
+// ── Вставить блок на конкретную позицию ─────────────────────────
+// pos = 0 → перед первым; pos = blocks.length → в конец
+function insertAt(type, pos) {
+  let block;
+  if (type === 'text')  block = { type:'text',  content:'' };
+  else if (type === 'table') block = { type:'table', headers:['Заголовок 1','Заголовок 2','Заголовок 3'], rows:[['','','']] };
+  else block = { type:'image', content:'' };
+  blocks.splice(pos, 0, block);
+  openMenuAt = -1;
+  render();
+  updatePreview();
+}
+
+// ── Удалить / переместить ────────────────────────────────────────
+window.removeBlock = function(i) { sync(); blocks.splice(i,1); openMenuAt=-1; render(); updatePreview(); };
+window.moveBlock   = function(i, d) { sync(); const j=i+d; if(j<0||j>=blocks.length) return; [blocks[i],blocks[j]]=[blocks[j],blocks[i]]; render(); updatePreview(); };
+
+// ── Таблица ──────────────────────────────────────────────────────
+window.tblAddRow    = function(i){ sync(); blocks[i].rows.push(Array(blocks[i].headers.length).fill('')); render(); };
+window.tblRemoveRow = function(i){ sync(); if(blocks[i].rows.length>1) blocks[i].rows.pop(); render(); };
+window.tblAddCol    = function(i){ sync(); blocks[i].headers.push('Заголовок'); blocks[i].rows.forEach(r=>r.push('')); render(); };
+window.tblRemoveCol = function(i){ sync(); if(blocks[i].headers.length>1){ blocks[i].headers.pop(); blocks[i].rows.forEach(r=>r.pop()); } render(); };
+
+// ── Открыть / закрыть меню вставки ──────────────────────────────
+window.toggleInsertMenu = function(pos) {
+  sync();
+  openMenuAt = (openMenuAt === pos) ? -1 : pos;
+  render();
+};
+
+// ── Вставить из меню ─────────────────────────────────────────────
+window.insertFromMenu = function(type, pos) {
+  sync();
+  insertAt(type, pos);
+};
+
+// ── Загрузка картинки ────────────────────────────────────────────
+window.imgClick      = function(i){ document.getElementById('imgfile_'+i).click(); };
+window.imgFileChange = function(e,i){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=(ev)=>{ blocks[i].content=ev.target.result; render(); updatePreview(); }; r.readAsDataURL(f);
+};
+window.imgDrop = function(e,i){
+  e.preventDefault(); const f=e.dataTransfer.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=(ev)=>{ blocks[i].content=ev.target.result; render(); updatePreview(); }; r.readAsDataURL(f);
+};
+
+// Ctrl+V — вставить картинку в последний image-блок
+document.addEventListener('paste', function(e){
+  const items=(e.clipboardData||e.originalEvent.clipboardData).items;
+  for(let k=0;k<items.length;k++){
+    if(items[k].type.indexOf('image')===0){
+      let target=-1;
+      blocks.forEach((b,bi)=>{ if(b.type==='image') target=bi; });
+      if(target!==-1){
+        const r=new FileReader(); r.onload=(ev)=>{ blocks[target].content=ev.target.result; render(); updatePreview(); }; r.readAsDataURL(items[k].getAsFile());
+        e.preventDefault(); return;
+      }
+    }
+  }
+});
+
+// ── Рендер ───────────────────────────────────────────────────────
+function render() {
+  const c = document.getElementById('blocks');
+  if (!blocks.length) { c.innerHTML='<div class="empty-hint">Добавьте первый блок ↑</div>'; return; }
+  let html = '';
+
+  for (let i = 0; i <= blocks.length; i++) {
+    // Разделитель / меню вставки
+    if (openMenuAt === i) {
+      html += `<div class="insert-menu">
+        <span>Вставить сюда:</span>
+        <button class="add-btn" onclick="insertFromMenu('text',${i})">📝 Текст</button>
+        <button class="add-btn" onclick="insertFromMenu('table',${i})">📊 Таблица</button>
+        <button class="add-btn" onclick="insertFromMenu('image',${i})">🖼️ Картинка</button>
+        <button class="cancel-btn" onclick="toggleInsertMenu(${i})">✕</button>
+      </div>`;
+    } else if (i < blocks.length) {
+      // Обычный разделитель (не после последнего — там уже кнопки вверху)
+      html += `<div class="divider">
+        <div class="div-line"></div>
+        <button class="div-btn" onclick="toggleInsertMenu(${i})">＋ вставить</button>
+        <div class="div-line"></div>
+      </div>`;
+    }
+
+    if (i === blocks.length) break; // после последнего блока разделитель не нужен
+
+    const b = blocks[i];
+    html += `<div class="block">`;
+    html += `<div class="block-header">`;
+
+    const icons = {text:'📝',table:'📊',image:'🖼️'};
+    const labels = {text:'Текст',table:'Таблица',image:'Картинка'};
+    html += `<span class="block-type-icon">${icons[b.type]}</span>`;
+    html += `<span class="block-type-label">${labels[b.type]}</span>`;
+    html += `<div class="block-actions">`;
+    html += `<button class="bact" title="Вверх"  onclick="moveBlock(${i},-1)">↑</button>`;
+    html += `<button class="bact" title="Вниз"   onclick="moveBlock(${i},1)">↓</button>`;
+    html += `<button class="bact del" title="Удалить" onclick="removeBlock(${i})">✕</button>`;
+    html += `</div></div>`; // actions, header
+
+    if (b.type === 'text') {
+      html += `<textarea id="txt_${i}" oninput="blocks[${i}].content=this.value" placeholder="Введите текст...">${esc(b.content)}</textarea>`;
+
+    } else if (b.type === 'table') {
+      html += `<div class="tbl-controls">
+        <button onclick="tblAddRow(${i})">+ строка</button>
+        <button onclick="tblRemoveRow(${i})">− строка</button>
+        <button onclick="tblAddCol(${i})">+ столбец</button>
+        <button onclick="tblRemoveCol(${i})">− столбец</button>
+      </div>`;
+      html += `<div class="tbl-wrap"><table><tr>`;
+      b.headers.forEach((h,hi) => {
+        html += `<th><input type="text" id="th_${i}_${hi}" value="${esc(h)}" oninput="blocks[${i}].headers[${hi}]=this.value" placeholder="Заголовок"></th>`;
+      });
+      html += `</tr>`;
+      b.rows.forEach((row,ri) => {
+        html += `<tr>`;
+        row.forEach((cell,ci) => {
+          html += `<td><input type="text" id="td_${i}_${ri}_${ci}" value="${esc(cell)}" oninput="blocks[${i}].rows[${ri}][${ci}]=this.value" placeholder="—"></td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</table></div>`;
+
+    } else if (b.type === 'image') {
+      html += `<div class="img-zone" onclick="imgClick(${i})" ondragover="event.preventDefault()" ondrop="imgDrop(event,${i})">`;
+      if (b.content) html += `<img src="${b.content}"><span class="lbl">Кликни чтобы заменить / Ctrl+V</span>`;
+      else html += `<span class="ph">🖼️ Кликни или перетащи файл / Ctrl+V</span><span class="lbl">PNG, JPG, GIF</span>`;
+      html += `</div>`;
+      html += `<input type="file" id="imgfile_${i}" accept="image/*" style="display:none" onchange="imgFileChange(event,${i})">`;
+    }
+
+    html += `</div>`; // .block
+  }
+
+  c.innerHTML = html;
+}
+
+// ── Превью + JSON ────────────────────────────────────────────────
+window.updatePreview = function() {
+  sync();
+  const pv = document.getElementById('preview');
+  let html = '';
+  blocks.forEach(b => {
+    if (b.type === 'text') {
+      html += `<p>${esc(b.content).replace(/\n/g,'<br>')}</p>`;
+    } else if (b.type === 'table') {
+      html += '<table><tr>';
+      b.headers.forEach(h => { html += `<th>${esc(h)}</th>`; });
+      html += '</tr>';
+      b.rows.forEach(row => {
+        html += '<tr>'; row.forEach(cell => { html += `<td>${esc(cell)}</td>`; }); html += '</tr>';
+      });
+      html += '</table>';
+    } else if (b.type === 'image' && b.content) {
+      html += `<img src="${b.content}">`;
+    }
+  });
+  pv.innerHTML = html || '<span style="color:#aaa;font-size:13px;">Нет содержимого</span>';
+
+  // JSON (base64 заменяем заглушкой для читаемости)
+  const jb = blocks.map(b => b.type==='image'&&b.content ? {...b,content:'<base64>'} : b);
+  document.getElementById('jsonOut').textContent = JSON.stringify({blocks:jb}, null, 2);
+};
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── Начальный пример ─────────────────────────────────────────────
+blocks = [
+  {type:'text', content:'Петя выбирает интернет-тариф для смартфона. Оператор предлагает следующие варианты:'},
+  {type:'table', headers:['Тариф','Абонплата (руб/мес)','Интернет (ГБ)','Звонки (мин)'],
+    rows:[['Старт','350','5','100'],['Плюс','550','15','300'],['Макс','800','40','∞']]},
+  {type:'text', content:'Петя тратит в среднем 12 ГБ интернета и 200 минут в месяц.'},
+  {type:'image', content:''},
+  {type:'text', content:'Какой тариф будет для него наиболее выгодным?'}
+];
+render();
+updatePreview();
+
+})();
+</script>
+</body>
+</html>
