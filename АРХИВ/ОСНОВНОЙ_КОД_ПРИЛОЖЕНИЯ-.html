@@ -2,7 +2,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Задачи JSON — редактирование, фильтры, печать + калькулятор + GitHub</title>
+  <title>Задачи JSON — редактирование, фильтры, печать + калькулятор</title>
   <style>
     :root { 
       --gap: 8px; 
@@ -483,66 +483,6 @@
           <button id="btnAdd" class="success">Задача</button>
         </div>
 
-        <!-- БЛОК ЗАГРУЗКИ С GITHUB (ДОБАВЛЕН) -->
-        <div>
-          <label>📦 GitHub</label>
-          <select id="githubSelect" class="dropdown" style="min-width: 150px;">
-            <optgroup label="📘 ЕГЭ математика">
-              <option value="ege-1">ЕГЭ 1</option>
-              <option value="ege-2">ЕГЭ 2</option>
-              <option value="ege-3">ЕГЭ 3</option>
-              <option value="ege-4">ЕГЭ 4</option>
-              <option value="ege-5">ЕГЭ 5</option>
-              <option value="ege-6">ЕГЭ 6</option>
-              <option value="ege-7">ЕГЭ 7</option>
-              <option value="ege-8">ЕГЭ 8</option>
-              <option value="ege-9">ЕГЭ 9</option>
-              <option value="ege-10">ЕГЭ 10</option>
-              <option value="ege-11">ЕГЭ 11</option>
-              <option value="ege-12">ЕГЭ 12</option>
-              <option value="ege-13">ЕГЭ 13</option>
-              <option value="ege-14">ЕГЭ 14</option>
-              <option value="ege-15">ЕГЭ 15</option>
-              <option value="ege-16">ЕГЭ 16</option>
-              <option value="ege-17">ЕГЭ 17</option>
-              <option value="ege-18">ЕГЭ 18</option>
-              <option value="ege-19">ЕГЭ 19</option>
-            </optgroup>
-            <optgroup label="📙 ОГЭ математика">
-              <option value="oge-1">ОГЭ 1</option>
-              <option value="oge-2">ОГЭ 2</option>
-              <option value="oge-3">ОГЭ 3</option>
-              <option value="oge-4">ОГЭ 4</option>
-              <option value="oge-5">ОГЭ 5</option>
-              <option value="oge-6">ОГЭ 6</option>
-              <option value="oge-7">ОГЭ 7</option>
-              <option value="oge-8">ОГЭ 8</option>
-              <option value="oge-9">ОГЭ 9</option>
-              <option value="oge-10">ОГЭ 10</option>
-              <option value="oge-11">ОГЭ 11</option>
-              <option value="oge-12">ОГЭ 12</option>
-              <option value="oge-13">ОГЭ 13</option>
-              <option value="oge-14">ОГЭ 14</option>
-              <option value="oge-15">ОГЭ 15</option>
-              <option value="oge-16">ОГЭ 16</option>
-              <option value="oge-17">ОГЭ 17</option>
-              <option value="oge-18">ОГЭ 18</option>
-              <option value="oge-19">ОГЭ 19</option>
-              <option value="oge-20">ОГЭ 20</option>
-              <option value="oge-21">ОГЭ 21</option>
-              <option value="oge-22">ОГЭ 22</option>
-              <option value="oge-23">ОГЭ 23</option>
-              <option value="oge-24">ОГЭ 24</option>
-              <option value="oge-25">ОГЭ 25</option>
-            </optgroup>
-          </select>
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <button id="btnLoadFromGitHub" class="primary">Загрузить с GitHub</button>
-        </div>
-        <!-- КОНЕЦ БЛОКА GITHUB -->
-
         <div class="print-options">
           <button id="btnToggleAnswers" class="toggle-answers active">Скрыть ответы</button>
           <button id="btnToggleDrawingsSolutions" class="primary">📐 Показать чертежи/решения</button>
@@ -633,11 +573,6 @@
   const fSolved = document.getElementById('fSolved');
   const fFav = document.getElementById('fFav');
   const difficultyBtns = document.querySelectorAll('.difficulty-btn');
-
-  // Элементы для GitHub
-  const btnLoadFromGitHub = document.getElementById('btnLoadFromGitHub');
-  const githubSelect = document.getElementById('githubSelect');
-  const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/GannaMath2026/trenager_programs/main/json_files/';
 
   const uid = () => Date.now() + Math.floor(Math.random() * 1000);
 
@@ -1085,37 +1020,6 @@
     sortByTitle = !sortByTitle;
     sortTitleBtn.textContent = sortByTitle ? '↓ название' : '↑ название';
     render();
-  });
-
-  // Обработчик загрузки с GitHub
-  btnLoadFromGitHub.addEventListener('click', async () => {
-    const selected = githubSelect.value;
-    if (!selected) {
-      alert('Выберите файл для загрузки');
-      return;
-    }
-
-    const url = GITHUB_RAW_BASE + selected + '.json';
-    btnLoadFromGitHub.disabled = true;
-    btnLoadFromGitHub.textContent = '⏳ Загрузка...';
-
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      
-      tasks = Array.isArray(data) ? data.map(normalizeTask) : [normalizeTask(data)];
-      
-      editingTaskId = null;
-      resetFilters();
-      render();
-      alert('Задачи успешно загружены');
-    } catch (err) {
-      alert('Ошибка загрузки: ' + err.message);
-    } finally {
-      btnLoadFromGitHub.disabled = false;
-      btnLoadFromGitHub.textContent = 'Загрузить с GitHub';
-    }
   });
 
   app.addEventListener('click', async (e) => {
