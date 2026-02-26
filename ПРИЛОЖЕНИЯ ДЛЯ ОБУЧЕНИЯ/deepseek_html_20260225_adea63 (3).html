@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌳 Визуализатор дерева Фано</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 span {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .main-panel {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .input-panel {
+            flex: 1;
+            min-width: 300px;
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+        .tree-panel {
+            flex: 2;
+            min-width: 500px;
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 1.1em;
+        }
+        .code-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        .code-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+            flex: 1;
+            min-width: 120px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #38a169;
+        }
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #dd6b20;
+        }
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .example-btn {
+            padding: 8px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        .example-btn:hover {
+            background: #cbd5e0;
+            transform: scale(1.05);
+        }
+        .info-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ebf4ff;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .info-panel h3 {
+            margin: 0 0 10px 0;
+            color: #2d3748;
+        }
+        .info-panel p {
+            margin: 5px 0;
+            color: #4a5568;
+        }
+        .fano-status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        .fano-true {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        .fano-false {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            cursor: grab;
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+        .tree-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        .tree-controls button {
+            padding: 5px 15px;
+            font-size: 0.9em;
+            min-width: auto;
+            flex: 0;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 15px;
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌳 <span>Дерево Фано</span> — визуализатор</h1>
+        
+        <div class="main-panel">
+            <!-- Панель ввода -->
+            <div class="input-panel">
+                <h2 style="margin-top: 0; color: #4a5568;">📝 Ввод кодов</h2>
+                
+                <div class="input-group">
+                    <label>Буквы и коды (формат: А=0, Б=10, ...)</label>
+                    <textarea id="codesInput" class="code-input" rows="6" placeholder="А=0
+Б=10
+В=110
+Г=111">А=0
+Б=10
+В=110
+Г=111</textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-primary" onclick="drawTree()">🔄 Построить дерево</button>
+                    <button class="btn-success" onclick="clearCanvas()">🗑️ Очистить</button>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h3 style="color: #4a5568;">📋 Примеры</h3>
+                    <div class="examples-grid">
+                        <button class="example-btn" onclick="loadExample(1)">Пример 1 (4 буквы)</button>
+                        <button class="example-btn" onclick="loadExample(2)">Пример 2 (5 букв)</button>
+                        <button class="example-btn" onclick="loadExample(3)">Пример 3 (русские)</button>
+                        <button class="example-btn" onclick="loadExample(4)">Пример 4 (с нарушением)</button>
+                    </div>
+                </div>
+                
+                <div class="info-panel" id="infoPanel">
+                    <h3>ℹ️ Информация</h3>
+                    <p>Всего букв: <span id="letterCount">4</span></p>
+                    <p>Макс. длина кода: <span id="maxCodeLength">3</span></p>
+                    <p>Условие Фано: <span id="fanoCondition" class="fano-status fano-true">✓ Выполняется</span></p>
+                    <p>Глубина дерева: <span id="treeDepth">3</span></p>
+                </div>
+                
+                <div class="stats">
+                    <span>🎯 Кликните на узле для информации</span>
+                </div>
+            </div>
+            
+            <!-- Панель дерева -->
+            <div class="tree-panel">
+                <canvas id="treeCanvas" width="700" height="500"></canvas>
+                <div class="tree-controls">
+                    <button class="btn-warning" onclick="zoomIn()">➕ Увеличить</button>
+                    <button class="btn-warning" onclick="zoomOut()">➖ Уменьшить</button>
+                    <button class="btn-warning" onclick="resetZoom()">🔄 Сброс масштаба</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Класс узла дерева
+        class Node {
+            constructor(name = null) {
+                this.name = name;      // Буква (для листьев)
+                this.left = null;       // 0
+                this.right = null;      // 1
+                this.code = "";         // Накопленный код
+                this.x = 0;             // Координата X для рисования
+                this.y = 0;              // Координата Y для рисования
+                this.parent = null;       // Родительский узел
+            }
+        }
+
+        // Переменные для canvas
+        let canvas = document.getElementById('treeCanvas');
+        let ctx = canvas.getContext('2d');
+        let root = null;
+        let scale = 1;
+        let offsetX = 0;
+        let offsetY = 0;
+        let isDragging = false;
+        let dragStartX, dragStartY;
+
+        // Инициализация обработчиков для перемещения
+        canvas.addEventListener('mousedown', startDrag);
+        canvas.addEventListener('mousemove', drag);
+        canvas.addEventListener('mouseup', endDrag);
+        canvas.addEventListener('mouseleave', endDrag);
+        canvas.addEventListener('click', onClick);
+
+        // ========== ПОСТРОЕНИЕ ДЕРЕВА ==========
+        function buildTree(codes) {
+            root = new Node();
+            
+            for (let [letter, code] of Object.entries(codes)) {
+                let current = root;
+                for (let bit of code) {
+                    if (bit === '0') {
+                        if (!current.left) {
+                            current.left = new Node();
+                            current.left.parent = current;
+                        }
+                        current = current.left;
+                    } else {
+                        if (!current.right) {
+                            current.right = new Node();
+                            current.right.parent = current;
+                        }
+                        current = current.right;
+                    }
+                    current.code += bit;
+                }
+                current.name = letter;
+            }
+            
+            return root;
+        }
+
+        // ========== РАСЧЕТ КООРДИНАТ ==========
+        function calculatePositions(node, x = 0, y = 0, level = 0, positions = {}) {
+            if (!node) return;
+            
+            node.x = x;
+            node.y = y;
+            positions[node.code] = { x, y, name: node.name };
+            
+            let offset = 150 / Math.pow(1.5, level);
+            
+            if (node.left) {
+                calculatePositions(node.left, x - offset, y + 80, level + 1, positions);
+            }
+            if (node.right) {
+                calculatePositions(node.right, x + offset, y + 80, level + 1, positions);
+            }
+            
+            return positions;
+        }
+
+        // ========== ОТРИСОВКА ДЕРЕВА ==========
+        function drawTree() {
+            // Парсим ввод
+            let input = document.getElementById('codesInput').value;
+            let codes = {};
+            let lines = input.split('\n').filter(line => line.trim() !== '');
+            
+            for (let line of lines) {
+                let parts = line.split('=').map(s => s.trim());
+                if (parts.length === 2 && parts[0] && parts[1]) {
+                    codes[parts[0]] = parts[1];
+                }
+            }
+            
+            if (Object.keys(codes).length === 0) {
+                alert('Введите коды в формате: А=0, Б=10, ...');
+                return;
+            }
+            
+            // Строим дерево
+            root = buildTree(codes);
+            
+            // Рассчитываем координаты
+            calculatePositions(root, 350, 50);
+            
+            // Обновляем информацию
+            updateInfo(codes);
+            
+            // Рисуем
+            drawCanvas();
+        }
+
+        function drawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (!root) return;
+            
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scale, scale);
+            
+            // Рисуем рёбра
+            drawEdges(root);
+            
+            // Рисуем узлы
+            drawNodes(root);
+            
+            ctx.restore();
+        }
+
+        function drawEdges(node) {
+            if (!node) return;
+            
+            ctx.beginPath();
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2 / scale;
+            
+            if (node.left) {
+                ctx.moveTo(node.x, node.y);
+                ctx.lineTo(node.left.x, node.left.y);
+                ctx.stroke();
+                
+                // Подпись бита
+                ctx.fillStyle = '#3b82f6';
+                ctx.font = `${14 / scale}px monospace`;
+                ctx.fillText('0', (node.x + node.left.x) / 2, (node.y + node.left.y) / 2 - 10/scale);
+                
+                drawEdges(node.left);
+            }
+            
+            if (node.right) {
+                ctx.moveTo(node.x, node.y);
+                ctx.lineTo(node.right.x, node.right.y);
+                ctx.stroke();
+                
+                // Подпись бита
+                ctx.fillStyle = '#3b82f6';
+                ctx.font = `${14 / scale}px monospace`;
+                ctx.fillText('1', (node.x + node.right.x) / 2, (node.y + node.right.y) / 2 - 10/scale);
+                
+                drawEdges(node.right);
+            }
+        }
+
+        function drawNodes(node) {
+            if (!node) return;
+            
+            // Узел
+            ctx.beginPath();
+            if (node.name) {
+                // Лист с буквой
+                ctx.fillStyle = '#ef4444';
+                ctx.arc(node.x, node.y, 20 / scale, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.strokeStyle = '#991b1b';
+                ctx.lineWidth = 2 / scale;
+                ctx.stroke();
+                
+                // Буква
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${16 / scale}px Arial`;
+                ctx.fillText(node.name, node.x - 8/scale, node.y + 6/scale);
+                
+                // Код под узлом
+                ctx.fillStyle = '#1e293b';
+                ctx.font = `${12 / scale}px monospace`;
+                ctx.fillText(node.code, node.x - 15/scale, node.y + 35/scale);
+            } else {
+                // Промежуточный узел
+                ctx.fillStyle = '#10b981';
+                ctx.arc(node.x, node.y, 15 / scale, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.strokeStyle = '#047857';
+                ctx.lineWidth = 2 / scale;
+                ctx.stroke();
+                
+                // Код
+                if (node.code) {
+                    ctx.fillStyle = '#1e293b';
+                    ctx.font = `${10 / scale}px monospace`;
+                    ctx.fillText(node.code, node.x - 12/scale, node.y + 25/scale);
+                }
+            }
+            
+            drawNodes(node.left);
+            drawNodes(node.right);
+        }
+
+        // ========== ПРОВЕРКА УСЛОВИЯ ФАНО ==========
+        function checkFanoCondition(codes) {
+            let codeList = Object.values(codes);
+            for (let i = 0; i < codeList.length; i++) {
+                for (let j = 0; j < codeList.length; j++) {
+                    if (i !== j && codeList[j].startsWith(codeList[i])) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // ========== ОБНОВЛЕНИЕ ИНФОРМАЦИИ ==========
+        function updateInfo(codes) {
+            let count = Object.keys(codes).length;
+            let maxLen = Math.max(...Object.values(codes).map(c => c.length));
+            let fanoOk = checkFanoCondition(codes);
+            
+            document.getElementById('letterCount').textContent = count;
+            document.getElementById('maxCodeLength').textContent = maxLen;
+            
+            let fanoSpan = document.getElementById('fanoCondition');
+            fanoSpan.textContent = fanoOk ? '✓ Выполняется' : '✗ Нарушено';
+            fanoSpan.className = 'fano-status ' + (fanoOk ? 'fano-true' : 'fano-false');
+            
+            // Глубина дерева
+            if (root) {
+                let depth = calculateDepth(root);
+                document.getElementById('treeDepth').textContent = depth;
+            }
+        }
+
+        function calculateDepth(node) {
+            if (!node) return 0;
+            return 1 + Math.max(calculateDepth(node.left), calculateDepth(node.right));
+        }
+
+        // ========== ЗАГРУЗКА ПРИМЕРОВ ==========
+        function loadExample(num) {
+            let examples = {
+                1: `А=0\nБ=10\nВ=110\nГ=111`,
+                2: `A=00\nB=01\nC=10\nD=110\nE=111`,
+                3: `А=00\nБ=01\nВ=100\nГ=101\nД=110\nЕ=111`,
+                4: `X=0\nY=01\nZ=10`
+            };
+            
+            document.getElementById('codesInput').value = examples[num];
+            drawTree();
+        }
+
+        // ========== ОЧИСТКА ==========
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            root = null;
+        }
+
+        // ========== МАСШТАБИРОВАНИЕ ==========
+        function zoomIn() {
+            scale = Math.min(scale + 0.2, 3);
+            drawCanvas();
+        }
+
+        function zoomOut() {
+            scale = Math.max(scale - 0.2, 0.5);
+            drawCanvas();
+        }
+
+        function resetZoom() {
+            scale = 1;
+            offsetX = 0;
+            offsetY = 0;
+            drawCanvas();
+        }
+
+        // ========== ПЕРЕМЕЩЕНИЕ ==========
+        function startDrag(e) {
+            isDragging = true;
+            dragStartX = e.clientX - offsetX;
+            dragStartY = e.clientY - offsetY;
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            offsetX = e.clientX - dragStartX;
+            offsetY = e.clientY - dragStartY;
+            drawCanvas();
+        }
+
+        function endDrag() {
+            isDragging = false;
+        }
+
+        // ========== КЛИК ПО УЗЛУ ==========
+        function onClick(e) {
+            if (!root) return;
+            
+            let rect = canvas.getBoundingClientRect();
+            let x = (e.clientX - rect.left - offsetX) / scale;
+            let y = (e.clientY - rect.top - offsetY) / scale;
+            
+            function findNode(node) {
+                if (!node) return null;
+                let dx = node.x - x;
+                let dy = node.y - y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < 25) return node;
+                
+                return findNode(node.left) || findNode(node.right);
+            }
+            
+            let clickedNode = findNode(root);
+            if (clickedNode) {
+                if (clickedNode.name) {
+                    alert(`📝 Лист: ${clickedNode.name}\nКод: ${clickedNode.code}`);
+                } else {
+                    alert(`🔵 Промежуточный узел\nКод: ${clickedNode.code || 'корень'}`);
+                }
+            }
+        }
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        window.onload = function() {
+            drawTree();
+        };
+    </script>
+</body>
+</html>

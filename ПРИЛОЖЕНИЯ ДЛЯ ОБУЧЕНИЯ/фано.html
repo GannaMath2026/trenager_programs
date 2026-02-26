@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌳 Дерево Фано — тренажёр по задачам</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .app {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .left-panel {
+            width: 420x;
+            min-width: 400px;
+            background: rgba(26, 32, 44, 0.98);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        
+        .left-panel h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.6em;
+            color: #e2e8f0;
+            border-bottom: 2px solid #4a5568;
+            padding-bottom: 8px;
+        }
+        
+        .left-panel h3 {
+            margin: 10px 0 5px 0;
+            font-size: 1.2em;
+            color: #a0aec0;
+        }
+        
+        .task-full-description {
+            background: #2d3748;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+            max-height: 350px;
+            overflow-y: auto;
+            font-size: 1.05em;
+            line-height: 1.6;
+            color: #f0f4fa;
+            white-space: pre-wrap;
+            font-family: 'Segoe UI', sans-serif;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            border: 1px solid #4a5568;
+        }
+        
+        .task-list-container {
+            background: #2d3748;
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 320px;
+            overflow-y: auto;
+            border: 1px solid #4a5568;
+        }
+        
+        .task-item {
+            padding: 14px 18px;
+            margin-bottom: 8px;
+            background: #4a5568;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            font-size: 1.05em;
+            border-left: 4px solid transparent;
+        }
+        
+        .task-item:hover {
+            background: #5f6b7a;
+            transform: translateX(5px);
+        }
+        
+        .task-item.active {
+            background: #434190;
+            border-left: 4px solid #fbbf24;
+        }
+        
+        .task-name {
+            font-weight: 600;
+            white-space: normal;
+            word-break: break-word;
+            max-width: 260px;
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .task-actions button {
+            padding: 5px 10px;
+            font-size: 0.9em;
+            background: #2d3748;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .task-actions button:hover {
+            background: #1e293b;
+            transform: scale(1.05);
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #cbd5e0;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 12px 15px;
+            background: #2d3748;
+            border: 2px solid #4a5568;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-size: 1.05em;
+            resize: vertical;
+            transition: all 0.2s;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        
+        .btn {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1em;
+            flex: 1;
+            min-width: 85px;
+        }
+        
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #e53e3e;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #4a5568;
+            color: #e2e8f0;
+        }
+        
+        .btn-outline:hover {
+            background: #4a5568;
+        }
+        
+        .right-panel {
+            flex: 1;
+            min-width: 500px;
+            background: #1a202c;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .task-header {
+            padding: 15px 25px;
+            background: #2d3748;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 5;
+        }
+        
+        .task-header h1 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #e2e8f0;
+            word-break: break-word;
+        }
+        
+        .task-number {
+            background: #4299e1;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.1em;
+            white-space: nowrap;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+            background: #1a202c;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
+        
+        #treeCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            min-width: 1000px;
+            min-height: 700px;
+        }
+        
+        .zoom-panel {
+            background: #2d3748;
+            padding: 15px 25px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+            z-index: 5;
+            flex-wrap: wrap;
+        }
+        
+        .zoom-panel .btn {
+            flex: 0;
+            min-width: 60px;
+            padding: 10px 18px;
+            font-size: 1.05em;
+        }
+        
+        .zoom-panel span {
+            color: #e2e8f0;
+            font-size: 1.1em;
+            background: #4a5568;
+            padding: 6px 18px;
+            border-radius: 30px;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 6px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5a67d8;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Левая панель -->
+        <div class="left-panel">
+            <h2>📚 Задачи по Фано</h2>
+            
+            <div class="task-full-description" id="taskFullDescription">
+                Выберите задачу из списка
+            </div>
+            
+            <div class="button-group">
+                <button class="btn btn-success" onclick="newTask()">➕ Новая</button>
+                <button class="btn btn-outline" onclick="exportTasks()">📤 Экспорт</button>
+                <button class="btn btn-outline" onclick="importTasks()">📥 Импорт</button>
+            </div>
+            
+            <h3>📋 Список задач</h3>
+            <div class="task-list-container">
+                <div id="taskList"></div>
+            </div>
+            
+            <h3>✏️ Редактор</h3>
+            <div class="input-group">
+                <label>Название задачи</label>
+                <input type="text" id="taskName" class="input-field" placeholder="Например: Коды с Фано">
+            </div>
+            
+            <div class="input-group">
+                <label>Коды (формат: А=0, Б=10, ...)</label>
+                <textarea id="codesInput" class="input-field" rows="4" placeholder="А=0
+Б=10
+В=110
+Г=111"></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="saveTask()">💾 Сохранить</button>
+                <button class="btn btn-danger" onclick="deleteTask()">🗑️ Удалить</button>
+            </div>
+        </div>
+        
+        <!-- Правая панель -->
+        <div class="right-panel">
+            <div class="task-header">
+                <div class="task-number" id="currentTaskId">#0</div>
+                <h1 id="currentTaskTitle">Загрузка...</h1>
+            </div>
+            
+            <div class="canvas-container">
+                <div class="canvas-wrapper">
+                    <canvas id="treeCanvas" width="1200" height="800"></canvas>
+                </div>
+            </div>
+            
+            <div class="zoom-panel">
+                <button class="btn btn-primary" onclick="zoomIn()">➕</button>
+                <button class="btn btn-primary" onclick="zoomOut()">➖</button>
+                <button class="btn btn-primary" onclick="resetZoom()">🔄 Сброс</button>
+                <button class="btn btn-primary" onclick="fitToScreen()">⤢ По размеру</button>
+                <span id="zoomLevel">100%</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== КЛАСС УЗЛА ==========
+        class Node {
+            constructor(name = null) {
+                this.name = name;
+                this.left = null;
+                this.right = null;
+                this.code = ""; // полный код от корня до этого узла
+                this.x = 0;
+                this.y = 0;
+            }
+        }
+
+        // ========== ДАННЫЕ ==========
+        let tasks = [];
+        let currentTaskId = null;
+        let root = null;
+        
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let scale = 1;
+        let offsetX = 0;
+        let offsetY = 0;
+        let isDragging = false;
+        let dragStartX, dragStartY;
+
+        // ========== ЗАГРУЗКА ЗАДАЧ ==========
+        function loadTasksFromJSON() {
+            tasks = [
+                {
+                    "id": 1,
+                    "name": "ДЕМО 2024 (практика)",
+                    "fullDescription": "Для кодирования некоторой последовательности, состоящей из букв А, Б, В, Г, Д, Е, решили использовать неравномерный двоичный код, удовлетворяющий условию Фано. Для букв известны кодовые слова: А=000, Б=001, В=0101, Г=0100, Д=011, Е=101. Определите минимальную длину закодированного сообщения.",
+                    "codes": { "А": "000", "Б": "001", "В": "0101", "Г": "0100", "Д": "011", "Е": "101" }
+                },
+                {
+                    "id": 2,
+                    "name": "6810 - буква X",
+                    "fullDescription": "По каналу связи передаются шифрованные сообщения, содержащие только двенадцать букв: А, В, С, Е, Н, К, М, О, Р, Т, X, Y. Для десяти букв кодовые слова известны: А=0, В=1, С=00, Е=01, Н=10, К=11, М=000, О=001, Р=010, Т=011. Укажите кратчайшее кодовое слово для буквы X, при котором код будет удовлетворять условию Фано. Если таких кодов несколько, укажите код с наименьшим числовым значением.",
+                    "codes": { "А": "0", "В": "1", "С": "00", "Е": "01", "Н": "10", "К": "11", "М": "000", "О": "001", "Р": "010", "Т": "011" }
+                },
+                {
+                    "id": 3,
+                    "name": "5851 - буква С",
+                    "fullDescription": "По каналу связи передаются сообщения, содержащие следующие символы: А, В, Е, Л, И, Н, О, С, У, Ф и пробел. Кодовые слова для некоторых букв известны: О=0000, У=10, А=0001, И=1101, В=0010, Н=11001, Е=0011, Ф=110001. Укажите код для буквы С такой, при котором словосочетание УСЛОВИЕ ФАНО кодируется наименьшим количеством бит. Если таких кодов несколько, укажите код с наибольшим числовым значением.",
+                    "codes": { "О": "0000", "У": "10", "А": "0001", "И": "1101", "В": "0010", "Н": "11001", "Е": "0011", "Ф": "110001" }
+                },
+                {
+                    "id": 4,
+                    "name": "6433 - буква Я",
+                    "fullDescription": "Все заглавные буквы русского алфавита закодированы неравномерным двоичным кодом, в котором никакое кодовое слово не является началом другого кодового слова. Кодовые слова для некоторых букв известны: А=10, Б=110, В=01, Г=001, Д=111. Укажите возможный код минимальной длины для буквы Я. Если таких кодов несколько, укажите тот из них, который имеет минимальное числовое значение.",
+                    "codes": { "А": "10", "Б": "110", "В": "01", "Г": "001", "Д": "111" }
+                },
+                {
+                    "id": 5,
+                    "name": "6274 - КАПИБАРА",
+                    "fullDescription": "Для передачи слов по каналу связи используется специальный шифр, который составляется согласно условию Фано. Известно, что используются буквы, взятые из набора К, Р, Б, А, И, П, причем кодовое слово любой гласной буквы короче, чем кодовое слово любой согласной. Буквы Р, Б, П, И имеют код 111, 110, 101 и 00 соответственно. Запишите слово, код которого имеет вид 10001101001100111101.",
+                    "codes": { "Р": "111", "Б": "110", "П": "101", "И": "00" }
+                },
+                {
+                    "id": 6,
+                    "name": "6371 - ГРАНАТ",
+                    "fullDescription": "Все заглавные буквы русского алфавита закодированы неравномерным двоичным кодом, в котором никакое кодовое слово не является началом другого кодового слова. Известно, что слово ГРАНАТ кодируется как 0101110100101100. Длина всех кодовых слов не превышает 3. Какой код соответствует слову ТРН?",
+                    "codes": { "Г": "010", "Р": "111", "А": "0100", "Н": "1010", "Т": "1100" }
+                },
+                {
+                    "id": 7,
+                    "name": "6531 - ПОТОК",
+                    "fullDescription": "Все заглавные буквы русского алфавита закодированы неравномерным двоичным кодом, в котором никакое кодовое слово не является началом другого кодового слова. Известно, что слово ПОТОК кодируется как 10001100011. Какой код соответствует слову КОТ?",
+                    "codes": { "П": "100", "О": "011", "Т": "000", "К": "11" }
+                },
+                {
+                    "id": 8,
+                    "name": "5122 - БАРАБАС",
+                    "fullDescription": "Для кодирования некоторой последовательности, состоящей из букв А, Б, К, Р, C, Т решили использовать неравномерный двоичный код, для которого выполняется условие Фано. Для букв Б и С использовали соответственно кодовые слова 000, 01. Найдите кодовую последовательность наименьшей длины для кодирования слова БАРАБАС и запишите полученный результат в восьмеричном коде. Если таких кодов несколько, укажите код с наименьшим числовым значением.",
+                    "codes": { "Б": "000", "С": "01" }
+                },
+                {
+                    "id": 9,
+                    "name": "5121 - КОЛОКОЛ",
+                    "fullDescription": "Для кодирования некоторой последовательности, состоящей из букв А, К, Л, О, C, Т решили использовать неравномерный двоичный код, для которого выполняется условие Фано. Для букв А и К использовали соответственно кодовые слова 10, 111. Найдите кодовую последовательность наименьшей длины для кодирования слова КОЛОКОЛ и запишите полученный результат в восьмеричном коде. Если таких кодов несколько, укажите код с наименьшим числовым значением.",
+                    "codes": { "А": "10", "К": "111" }
+                },
+                {
+                    "id": 10,
+                    "name": "6987 - сократить Р",
+                    "fullDescription": "По каналу связи передаются сообщения, содержащие только семь букв: Р, Е, К, У, С, И, Я. Кодовые слова для букв известны: Р=1001, Е=1010, К=1011, У=1100, С=1101, И=1110, Я=1111. Как можно сократить код для буквы Р, чтобы сохранялось свойство однозначности декодирования? Если таких кодов несколько, в качестве ответа указать код наименьшей длины.",
+                    "codes": { "Р": "1001", "Е": "1010", "К": "1011", "У": "1100", "С": "1101", "И": "1110", "Я": "1111" }
+                },
+                {
+                    "id": 11,
+                    "name": "3503 - сократить Н",
+                    "fullDescription": "По каналу связи передаются сообщения, содержащие только шесть букв: Т, Е, Н, С, И, В. Для передачи используется двоичный код, допускающий однозначное декодирование. Кодовые слова для букв известны: Т=010, Е=0100, Н=1100, С=01000, И=0110, В=1110. Как можно сократить код для буквы Н, чтобы сохранялось свойство однозначности декодирования? Если таких кодов несколько, в качестве ответа указать код наименьшей длины.",
+                    "codes": { "Т": "010", "Е": "0100", "Н": "1100", "С": "01000", "И": "0110", "В": "1110" }
+                },
+                {
+                    "id": 12,
+                    "name": "130 - сократить Д",
+                    "fullDescription": "Для кодирования некоторой последовательности, состоящей из букв А, Б, В, Г и Д, используется неравномерный двоичный код, позволяющий однозначно декодировать полученную двоичную последовательность. Вот этот код: А=10, Б=11, В=000, Г=001, Д=010. Как можно сократить длину кодового слова для буквы Д так, чтобы код по-прежнему можно было декодировать однозначно? Коды остальных букв меняться не должны. Если есть несколько вариантов, выберите кодовое слово с минимальным значением.",
+                    "codes": { "А": "10", "Б": "11", "В": "000", "Г": "001", "Д": "010" }
+                },
+                {
+                    "id": 13,
+                    "name": "128 - сократить Б",
+                    "fullDescription": "Для кодирования некоторой последовательности, состоящей из букв А, Б, В, Г и Д, используется неравномерный двоичный код, позволяющий однозначно декодировать полученную двоичную последовательность. Вот этот код: А=00, Б=101, В=011, Г=111, Д=110. Как можно сократить длину кодового слова для буквы Б так, чтобы код по-прежнему можно было декодировать однозначно? Коды остальных букв меняться не должны. Если есть несколько вариантов, выберите кодовое слово с минимальным значением.",
+                    "codes": { "А": "00", "Б": "101", "В": "011", "Г": "111", "Д": "110" }
+                },
+                {
+                    "id": 14,
+                    "name": "19408 - СЕРПАНТИН",
+                    "fullDescription": "По каналу связи передаются сообщения, содержащие только 8 букв: А, Е, И, Н, П, Р, С, Т. Известны коды: С=00, Е=010, Р=011, А=1010, Т=1011. Укажите, какое наименьшее количество двоичных символов потребуется, чтобы закодировать слово СЕРПАНТИН.",
+                    "codes": { "С": "00", "Е": "010", "Р": "011", "А": "1010", "Т": "1011" }
+                },
+                {
+                    "id": 15,
+                    "name": "18944 - ТЫКОТИК",
+                    "fullDescription": "Для кодирования некоторой последовательности, состоящей из букв Т, Ы, К, О, И решили использовать неравномерный двоичный код, удовлетворяющий условию Фано. Для букв Т и О использовали кодовые слова 1111 и 1010 соответственно. Какое количество двоичных знаков требуется для кодирования слова ТЫКОТИК, если известно, что оно закодировано минимально возможным количеством двоичных знаков и при этом каждое кодовое слово содержит чётное количество единиц?",
+                    "codes": { "Т": "1111", "О": "1010" }
+                }
+            ];
+        }
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        function init() {
+            loadTasksFromJSON();
+            currentTaskId = 1;
+            renderTaskList();
+            loadTask(1);
+            
+            canvas.addEventListener('mousedown', startDrag);
+            canvas.addEventListener('mousemove', drag);
+            canvas.addEventListener('mouseup', endDrag);
+            canvas.addEventListener('mouseleave', endDrag);
+            canvas.addEventListener('click', onClick);
+        }
+
+        // ========== РАБОТА С ЗАДАЧАМИ ==========
+        function renderTaskList() {
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const div = document.createElement('div');
+                div.className = `task-item ${task.id === currentTaskId ? 'active' : ''}`;
+                div.innerHTML = `
+                    <span class="task-name" onclick="loadTask(${task.id})">${task.id}. ${task.name}</span>
+                    <div class="task-actions">
+                        <button onclick="editTask(${task.id})">✏️</button>
+                        <button onclick="deleteTask(${task.id})">🗑️</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function loadTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            
+            currentTaskId = id;
+            document.getElementById('taskName').value = task.name;
+            document.getElementById('codesInput').value = formatCodesForInput(task.codes);
+            document.getElementById('currentTaskId').textContent = `#${id}`;
+            document.getElementById('currentTaskTitle').textContent = task.name;
+            document.getElementById('taskFullDescription').innerHTML = task.fullDescription || 'Нет описания';
+            
+            buildTreeFromCodes(task.codes);
+            renderTaskList();
+        }
+
+        function saveTask() {
+            const name = document.getElementById('taskName').value.trim();
+            const input = document.getElementById('codesInput').value;
+            
+            if (!name) {
+                alert('Введите название задачи');
+                return;
+            }
+            
+            const codes = parseCodes(input);
+            
+            if (currentTaskId && currentTaskId <= 15) {
+                alert('Нельзя редактировать встроенные задачи. Создайте новую.');
+                return;
+            }
+            
+            if (currentTaskId) {
+                const task = tasks.find(t => t.id === currentTaskId);
+                if (task) {
+                    task.name = name;
+                    task.codes = codes;
+                    task.fullDescription = 'Пользовательская задача';
+                }
+            } else {
+                const newId = Math.max(...tasks.map(t => t.id), 15) + 1;
+                tasks.push({ 
+                    id: newId, 
+                    name, 
+                    codes,
+                    fullDescription: 'Пользовательская задача'
+                });
+                currentTaskId = newId;
+            }
+            
+            renderTaskList();
+            loadTask(currentTaskId);
+        }
+
+        function newTask() {
+            currentTaskId = null;
+            document.getElementById('taskName').value = '';
+            document.getElementById('codesInput').value = 'А=0\nБ=10\nВ=110\nГ=111';
+            document.getElementById('currentTaskId').textContent = '#новая';
+            document.getElementById('currentTaskTitle').textContent = 'Новая задача';
+            document.getElementById('taskFullDescription').innerHTML = 'Пользовательская задача';
+            root = null;
+            drawCanvas();
+            renderTaskList();
+        }
+
+        function editTask(id) {
+            if (id <= 15) {
+                alert('Нельзя редактировать встроенные задачи. Создайте копию.');
+                return;
+            }
+            loadTask(id);
+        }
+
+        function deleteTask(id) {
+            if (id <= 15) {
+                alert('Нельзя удалить встроенные задачи');
+                return;
+            }
+            
+            if (confirm(`Удалить задачу #${id}?`)) {
+                tasks = tasks.filter(t => t.id !== id);
+                if (currentTaskId === id) {
+                    currentTaskId = 1;
+                    loadTask(1);
+                }
+                renderTaskList();
+            }
+        }
+
+        // ========== ИМПОРТ/ЭКСПОРТ ==========
+        function exportTasks() {
+            const dataStr = JSON.stringify(tasks, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'fano_tasks.json';
+            a.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        function importTasks() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(ev) {
+                    try {
+                        const imported = JSON.parse(ev.target.result);
+                        if (Array.isArray(imported)) {
+                            tasks = imported;
+                            currentTaskId = tasks[0]?.id || null;
+                            if (currentTaskId) loadTask(currentTaskId);
+                            renderTaskList();
+                        } else {
+                            alert('Неверный формат файла');
+                        }
+                    } catch (err) {
+                        alert('Ошибка чтения файла: ' + err);
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+
+        // ========== ПАРСИНГ ==========
+        function parseCodes(input) {
+            const codes = {};
+            const lines = input.split('\n').filter(line => line.trim() !== '');
+            
+            for (let line of lines) {
+                const parts = line.split('=').map(s => s.trim());
+                if (parts.length === 2 && parts[0] && parts[1]) {
+                    codes[parts[0]] = parts[1];
+                }
+            }
+            
+            return codes;
+        }
+
+        function formatCodesForInput(codes) {
+            return Object.entries(codes).map(([k, v]) => `${k}=${v}`).join('\n');
+        }
+
+        // ========== ПОСТРОЕНИЕ ДЕРЕВА ==========
+        function buildTreeFromCodes(codes) {
+            root = new Node();
+            
+            for (let [letter, code] of Object.entries(codes)) {
+                let current = root;
+                for (let bit of code) {
+                    if (bit === '0') {
+                        if (!current.left) current.left = new Node();
+                        current = current.left;
+                    } else {
+                        if (!current.right) current.right = new Node();
+                        current = current.right;
+                    }
+                    current.code += bit;
+                }
+                current.name = letter;
+            }
+            
+            calculatePositions(root, 600, 50);
+            setTimeout(() => fitToScreen(), 50);
+        }
+
+        function calculatePositions(node, x, y, level = 0) {
+            if (!node) return;
+            
+            node.x = x;
+            node.y = y;
+            
+            const offset = 100 / Math.pow(1.3, level);
+            
+            if (node.left) calculatePositions(node.left, x - offset, y + 80, level + 1);
+            if (node.right) calculatePositions(node.right, x + offset, y + 80, level + 1);
+        }
+
+        // ========== ОТРИСОВКА ==========
+        function drawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (!root) return;
+            
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scale, scale);
+            
+            drawEdges(root);
+            drawNodes(root);
+            
+            ctx.restore();
+            
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+        }
+
+        function drawEdges(node) {
+            if (!node) return;
+            
+            ctx.beginPath();
+            ctx.strokeStyle = '#4a5568';
+            ctx.lineWidth = 2 / scale;
+            
+            if (node.left) {
+                ctx.moveTo(node.x, node.y);
+                ctx.lineTo(node.left.x, node.left.y);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#4299e1';
+                ctx.font = `${16 / scale}px monospace`;
+                ctx.fillText('0', (node.x + node.left.x) / 2 - 5, (node.y + node.left.y) / 2 - 10);
+                
+                drawEdges(node.left);
+            }
+            
+            if (node.right) {
+                ctx.moveTo(node.x, node.y);
+                ctx.lineTo(node.right.x, node.right.y);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#4299e1';
+                ctx.font = `${16 / scale}px monospace`;
+                ctx.fillText('1', (node.x + node.right.x) / 2 + 5, (node.y + node.right.y) / 2 - 10);
+                
+                drawEdges(node.right);
+            }
+        }
+
+        function drawNodes(node) {
+            if (!node) return;
+            
+            const radius = node.name ? 22 : 16;
+            const color = node.name ? '#f56565' : '#48bb78';
+            
+            ctx.beginPath();
+            ctx.fillStyle = color;
+            ctx.arc(node.x, node.y, radius / scale, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.strokeStyle = node.name ? '#c53030' : '#2f855a';
+            ctx.lineWidth = 2 / scale;
+            ctx.stroke();
+            
+            if (node.name) {
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${18 / scale}px Arial`;
+                ctx.fillText(node.name, node.x - 9/scale, node.y + 7/scale);
+            }
+            
+            if (node.code) {
+                ctx.fillStyle = '#e2e8f0';
+                ctx.font = `${13 / scale}px monospace`;
+                const textWidth = ctx.measureText(node.code).width;
+                ctx.fillText(node.code, node.x - textWidth/2, node.y + 40/scale);
+            }
+            
+            drawNodes(node.left);
+            drawNodes(node.right);
+        }
+
+        // ========== УПРАВЛЕНИЕ МАСШТАБОМ ==========
+        function zoomIn() {
+            scale = Math.min(scale + 0.2, 3);
+            drawCanvas();
+        }
+
+        function zoomOut() {
+            scale = Math.max(scale - 0.2, 0.3);
+            drawCanvas();
+        }
+
+        function resetZoom() {
+            scale = 1;
+            offsetX = 0;
+            offsetY = 0;
+            drawCanvas();
+        }
+
+        function fitToScreen() {
+            if (!root) return;
+            
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            
+            function findBounds(node) {
+                if (!node) return;
+                minX = Math.min(minX, node.x);
+                maxX = Math.max(maxX, node.x);
+                minY = Math.min(minY, node.y);
+                maxY = Math.max(maxY, node.y);
+                findBounds(node.left);
+                findBounds(node.right);
+            }
+            
+            findBounds(root);
+            
+            const padding = 100;
+            const treeWidth = maxX - minX + padding * 2;
+            const treeHeight = maxY - minY + padding * 2;
+            
+            const scaleX = canvas.width / treeWidth;
+            const scaleY = canvas.height / treeHeight;
+            
+            scale = Math.min(scaleX, scaleY) * 0.9;
+            
+            offsetX = (canvas.width / 2) - (minX + maxX) / 2 * scale;
+            offsetY = (canvas.height / 2) - (minY + maxY) / 2 * scale;
+            
+            drawCanvas();
+        }
+
+        // ========== ПЕРЕМЕЩЕНИЕ ==========
+        function startDrag(e) {
+            isDragging = true;
+            dragStartX = e.clientX - offsetX;
+            dragStartY = e.clientY - offsetY;
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            offsetX = e.clientX - dragStartX;
+            offsetY = e.clientY - dragStartY;
+            drawCanvas();
+        }
+
+        function endDrag() {
+            isDragging = false;
+        }
+
+        // ========== КЛИК ПО УЗЛУ ==========
+        function onClick(e) {
+            if (!root) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left - offsetX) / scale;
+            const y = (e.clientY - rect.top - offsetY) / scale;
+            
+            function findNode(node) {
+                if (!node) return null;
+                const dx = node.x - x;
+                const dy = node.y - y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < 25) return node;
+                return findNode(node.left) || findNode(node.right);
+            }
+            
+            const clickedNode = findNode(root);
+            if (clickedNode) {
+                if (clickedNode.name) {
+                    alert(`📝 Буква: ${clickedNode.name}\nПолный код: ${clickedNode.code}`);
+                } else {
+                    alert(`🔵 Промежуточный узел\nПолный код: ${clickedNode.code || 'корень'}`);
+                }
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

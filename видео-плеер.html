@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Плеер с эффектом печатной машинки</title>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        body { padding: 20px; display: flex; justify-content: center; min-height: 100vh; transition: background 0.3s, color 0.3s; }
+        body.theme-dark { background: #0f172a; color: #e2e8f0; }
+        body.theme-light { background: #f8fafc; color: #1e293b; }
+        .container { max-width: 1400px; width: 100%; border-radius: 24px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); transition: background 0.3s; }
+        .theme-dark .container { background: #1e293b; }
+        .theme-light .container { background: #ffffff; }
+        h1 { margin: 0 0 10px; font-size: 28px; display: flex; align-items: center; gap: 10px; }
+        .theme-dark h1 { color: #f1f5f9; }
+        .theme-light h1 { color: #0f172a; }
+        .top-bar { display: flex; gap: 20px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .mode-switch { display: flex; gap: 10px; background: #334155; padding: 5px; border-radius: 40px; width: fit-content; }
+        .mode-btn { padding: 10px 25px; border: none; border-radius: 40px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .theme-dark .mode-btn { background: transparent; color: #cbd5e1; }
+        .theme-light .mode-btn { background: transparent; color: #475569; }
+        .mode-btn.active { background: #3b82f6; color: white; box-shadow: 0 4px 12px #3b82f680; }
+        .theme-switch { display: flex; gap: 5px; }
+        .theme-btn { padding: 8px 16px; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; }
+        .theme-dark .theme-btn { background: #334155; color: #e2e8f0; }
+        .theme-light .theme-btn { background: #e2e8f0; color: #1e293b; }
+        .theme-btn.active { background: #3b82f6; color: white; }
+        
+        .main-panel { display: flex; gap: 20px; }
+        .editor-panel { flex: 2; border-radius: 20px; padding: 20px; }
+        .theme-dark .editor-panel { background: #0f172a; }
+        .theme-light .editor-panel { background: #f1f5f9; }
+        .preview-panel { flex: 1; border-radius: 20px; padding: 20px; position: sticky; top: 20px; height: fit-content; max-height: 80vh; overflow-y: auto; }
+        .theme-dark .preview-panel { background: #0f172a; }
+        .theme-light .preview-panel { background: #f1f5f9; }
+        .preview-panel h3 { margin-bottom: 15px; }
+        .theme-dark .preview-panel h3 { color: #94a3b8; }
+        .theme-light .preview-panel h3 { color: #475569; }
+        .preview-content { border-radius: 12px; padding: 15px; font-size: 0.9rem; overflow-y: auto; max-height: 70vh; }
+        .theme-dark .preview-content { background: #1e293b; }
+        .theme-light .preview-content { background: #ffffff; }
+        .preview-content .stage { margin-bottom: 20px; }
+        .preview-content img { max-width: 100%; border-radius: 8px; }
+        
+        /* Плеер */
+        .player-area {
+            border: 2px solid #334155;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #0f172a;
+        }
+        .theme-light .player-area { background: #f8fafc; border-color: #cbd5e1; }
+        .player-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .player-controls button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 30px;
+            background: #3b82f6;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .player-controls button:hover { background: #2563eb; }
+        .player-controls button.secondary { background: #475569; }
+        .player-controls button.secondary:hover { background: #334155; }
+        .player-controls .speed-select {
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: #1e293b;
+            color: white;
+            border: 1px solid #3b82f6;
+        }
+        .player-slider {
+            flex: 1;
+            min-width: 200px;
+        }
+        .player-slider input {
+            width: 100%;
+            cursor: pointer;
+        }
+        .player-content {
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            border: 1px solid #334155;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+        }
+        .theme-light .player-content { background: #ffffff; border-color: #cbd5e1; }
+        .player-line {
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 8px;
+            transition: background 0.2s, opacity 0.2s;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .player-line.current-line {
+            background: #1e293b;
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .theme-light .player-line.current-line { background: #e2e8f0; border-left-color: #3b82f6; }
+        .player-line.past-line { opacity: 0.7; }
+        .player-line.future-line { opacity: 0.5; }
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: #3b82f6;
+            vertical-align: middle;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        .placeholder-stage {
+            background: #334155;
+            color: #94a3b8;
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px;
+            font-style: italic;
+            margin: 10px 0;
+        }
+        
+        button { padding: 8px 20px; border: none; border-radius: 40px; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px #00000030; }
+        .theme-dark button { background: #3b82f6; color: white; }
+        .theme-light button { background: #3b82f6; color: white; }
+        button:hover { background: #2563eb; }
+        button.secondary { background: #475569; }
+        button.secondary:hover { background: #334155; }
+        
+        .block-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .block-list { border-radius: 16px; padding: 15px; max-height: 400px; overflow-y: auto; }
+        .theme-dark .block-list { background: #1e293b; }
+        .theme-light .block-list { background: #ffffff; }
+        .block-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+        .theme-dark .block-item { background: #334155; }
+        .theme-light .block-item { background: #f1f5f9; }
+        .block-type { width: 80px; font-weight: 700; color: #3b82f6; }
+        .block-preview { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .theme-dark .block-preview { color: #cbd5e1; }
+        .theme-light .block-preview { color: #334155; }
+        .block-item button { padding: 4px 10px; font-size: 0.8rem; background: #1e293b; color: #e2e8f0; margin: 2px; }
+        
+        .import-export { margin-top: 20px; padding: 15px; border-radius: 16px; }
+        .theme-dark .import-export { background: #1e293b; }
+        .theme-light .import-export { background: #ffffff; }
+        textarea { width: 100%; height: 120px; padding: 10px; border-radius: 12px; border: 1px solid #475569; font-family: monospace; }
+        .theme-dark textarea { background: #0f172a; color: #e2e8f0; }
+        .theme-light textarea { background: #f8fafc; color: #1e293b; }
+        .stats { font-size: 0.9rem; margin: 5px 0; }
+        .theme-dark .stats { color: #94a3b8; }
+        .theme-light .stats { color: #475569; }
+        .footer { margin-top: 20px; font-size: 0.85rem; text-align: center; }
+        .theme-dark .footer { color: #64748b; }
+        .theme-light .footer { color: #94a3b8; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #00000080; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #1e293b; padding: 30px; border-radius: 24px; width: 500px; max-width: 90%; }
+        .modal-content textarea { width: 100%; height: 150px; margin: 15px 0; }
+    </style>
+</head>
+<body class="theme-dark">
+<div class="container">
+    <div class="top-bar">
+        <h1>📺 Плеер с эффектом печатной машинки</h1>
+        <div class="theme-switch">
+            <button class="theme-btn active" onclick="setTheme('dark')">🌙 Тёмная</button>
+            <button class="theme-btn" onclick="setTheme('light')">☀️ Светлая</button>
+        </div>
+    </div>
+    
+    <div class="mode-switch">
+        <button class="mode-btn active" id="modeEditBtn" onclick="setMode('edit')">✏️ Редактор</button>
+        <button class="mode-btn" id="modeDemoBtn" onclick="setMode('demo')">▶️ Плеер</button>
+    </div>
+
+    <!-- Режим редактора с превью справа -->
+    <div id="editorMode" style="display: flex; gap: 20px;">
+        <div class="editor-panel">
+            <div class="block-actions">
+                <button onclick="addTextBlock()">➕ Текст</button>
+                <button onclick="addFormulaBlock()">📐 Формула</button>
+                <button onclick="addImageBlock()">🖼️ Изображение (Ctrl+V)</button>
+                <button onclick="addPlaceholderBlock()">⬜ Заглушка</button>
+                <button class="danger" onclick="clearAll()">🗑️ Очистить</button>
+            </div>
+            
+            <div class="block-list" id="blockList">
+                <h3>Список строк решения</h3>
+                <div id="blocksContainer"></div>
+            </div>
+            
+            <div class="import-export">
+                <h3>Импорт / Экспорт</h3>
+                <textarea id="jsonArea" placeholder='[{"type":"text","content":"..."}, ...]'></textarea>
+                <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                    <button onclick="exportJSON()">📤 Экспорт в JSON</button>
+                    <button onclick="importJSON()">📥 Импорт из JSON</button>
+                    <button onclick="exportToFile()">💾 Сохранить в файл</button>
+                    <button onclick="importFromFile()">📂 Загрузить из файла</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Превью справа -->
+        <div class="preview-panel">
+            <h3>🔍 Превью решения</h3>
+            <div class="preview-content" id="previewContent"></div>
+        </div>
+    </div>
+
+    <!-- Режим плеера -->
+    <div id="demoMode" style="display: none;">
+        <div class="player-area">
+            <div class="player-controls">
+                <button onclick="play()" id="playBtn">▶ Воспроизвести</button>
+                <button onclick="pause()" id="pauseBtn">⏸️ Пауза</button>
+                <button onclick="prevStep()">⏪ Пред</button>
+                <button onclick="nextStep()">⏩ След</button>
+                <select class="speed-select" id="speedSelect" onchange="changeSpeed()">
+                    <option value="1">1 сим/сек</option>
+                    <option value="2">2 сим/сек</option>
+                    <option value="4">4 сим/сек</option>
+                    <option value="8">8 сим/сек</option>
+                    <option value="16">16 сим/сек</option>
+                    <option value="9999">Мгновенно</option>
+                </select>
+                <div class="player-slider">
+                    <input type="range" id="playerSlider" min="0" max="0" value="0" step="1" oninput="sliderChange()">
+                </div>
+                <span class="stats" id="lineCounter">0 / 0</span>
+            </div>
+            <div class="player-content" id="playerContent"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Строки печатаются посимвольно. Скорость регулируется. Бегунок и кнопки управляют подсветкой.</p>
+    </div>
+</div>
+
+<!-- Модальное окно для вставки изображения -->
+<div id="imageModal" class="modal">
+    <div class="modal-content">
+        <h3>📋 Вставьте изображение</h3>
+        <p>Нажмите Ctrl+V, чтобы вставить скриншот или изображение из буфера обмена.</p>
+        <textarea id="imagePasteArea" placeholder="Изображение появится здесь..."></textarea>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button onclick="closeImageModal()">Отмена</button>
+            <button onclick="processPastedImage()">Вставить</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- Блоки данных (строки решения) ----------
+    let blocks = [];
+    let currentIndex = 0; // текущая печатаемая строка
+    let currentMode = 'edit';
+    let currentTheme = 'dark';
+    let playInterval = null;
+    let charSpeed = 4; // символов в секунду (по умолчанию 4)
+
+    // Для посимвольной печати храним прогресс по каждой строке (сколько символов отображено)
+    let lineProgress = {}; // индекс строки -> количество отображённых символов
+
+    // Простые строки для отладки
+    const defaultBlocks = [
+        { type: 'text', content: 'Привет, это тестовая строка номер 1' },
+        { type: 'text', content: 'А это вторая строка, она немного длиннее, чем первая' },
+        { type: 'text', content: 'Третья строка с формулой: $x^2 + y^2 = z^2$ (но пока не рендерим)' },
+        { type: 'text', content: 'И четвёртая строка просто текст, чтобы было больше строк.' },
+        { type: 'text', content: 'Пятая строка для проверки переключения.' },
+        { type: 'placeholder', content: 'Здесь могла быть ваша реклама или рисунок.' }
+    ];
+
+    init();
+
+    function init() {
+        blocks = JSON.parse(JSON.stringify(defaultBlocks));
+        currentIndex = 0;
+        // Инициализируем прогресс: для первой строки 0, для остальных полная длина
+        blocks.forEach((_, idx) => {
+            lineProgress[idx] = (idx === 0) ? 0 : blocks[idx].content.length;
+        });
+        renderBlockList();
+        updatePreview();
+        updatePlayer();
+        updateCounter();
+        document.getElementById('playerSlider').max = blocks.length - 1;
+    }
+
+    // ---------- Тема ----------
+    function setTheme(theme) {
+        currentTheme = theme;
+        document.body.className = theme === 'dark' ? 'theme-dark' : 'theme-light';
+        document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+        if (theme === 'dark') document.querySelector('.theme-btn:nth-child(1)').classList.add('active');
+        else document.querySelector('.theme-btn:nth-child(2)').classList.add('active');
+    }
+
+    // ---------- Рендеринг списка блоков в редакторе ----------
+    function renderBlockList() {
+        const container = document.getElementById('blocksContainer');
+        container.innerHTML = '';
+        blocks.forEach((block, idx) => {
+            const div = document.createElement('div');
+            div.className = 'block-item';
+            let typeIcon = '';
+            if (block.type === 'text') typeIcon = '📄';
+            else if (block.type === 'formula') typeIcon = '📐';
+            else if (block.type === 'image') typeIcon = '🖼️';
+            else if (block.type === 'placeholder') typeIcon = '⬜';
+            
+            let preview = block.content;
+            if (block.type === 'image') preview = 'Изображение (base64)';
+            else if (block.type === 'placeholder') preview = 'Заглушка: ' + block.content.substring(0, 30);
+            else preview = block.content.substring(0, 40) + (block.content.length>40?'...':'');
+            
+            div.innerHTML = `
+                <span class="block-type">${typeIcon} ${block.type}</span>
+                <span class="block-preview">${preview}</span>
+                <div style="display: flex; flex-wrap: wrap;">
+                    <button onclick="insertAfter(${idx})">➕ после</button>
+                    <button onclick="editBlock(${idx})">✏️</button>
+                    <button onclick="deleteBlock(${idx})">❌</button>
+                    <button onclick="moveBlock(${idx}, 'up')">⬆️</button>
+                    <button onclick="moveBlock(${idx}, 'down')">⬇️</button>
+                    <button onclick="moveBlock(${idx}, 'top')">⏫</button>
+                    <button onclick="moveBlock(${idx}, 'bottom')">⏬</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // ---------- Вставка после указанного индекса ----------
+    function insertAfter(index) {
+        const type = prompt('Введите тип блока (text, formula, image, placeholder):', 'text');
+        if (!type) return;
+        if (type === 'image') {
+            openImageModal((content) => {
+                const newBlock = { type, content };
+                blocks.splice(index + 1, 0, newBlock);
+                // Обновляем прогресс: все строки после index сдвигаются, новые имеют прогресс = полная длина (они не текущие)
+                rebuildLineProgressAfterInsert(index + 1);
+                renderBlockList();
+                updatePreview();
+                updatePlayer();
+                document.getElementById('playerSlider').max = blocks.length - 1;
+            });
+        } else if (type === 'placeholder') {
+            const content = prompt('Введите текст заглушки (например, "Место для рисунка"):');
+            if (content === null) return;
+            blocks.splice(index + 1, 0, { type, content });
+            rebuildLineProgressAfterInsert(index + 1);
+            renderBlockList();
+            updatePreview();
+            updatePlayer();
+            document.getElementById('playerSlider').max = blocks.length - 1;
+        } else {
+            const content = prompt('Введите содержимое блока:');
+            if (content === null) return;
+            blocks.splice(index + 1, 0, { type, content });
+            rebuildLineProgressAfterInsert(index + 1);
+            renderBlockList();
+            updatePreview();
+            updatePlayer();
+            document.getElementById('playerSlider').max = blocks.length - 1;
+        }
+    }
+
+    // Перестраивает lineProgress после вставки на позицию pos
+    function rebuildLineProgressAfterInsert(pos) {
+        const newProgress = {};
+        for (let i = 0; i < blocks.length; i++) {
+            if (i < pos) {
+                newProgress[i] = lineProgress[i] !== undefined ? lineProgress[i] : blocks[i].content.length;
+            } else if (i === pos) {
+                // Новая строка: если это текущая (pos == currentIndex) ставим прогресс 0, иначе полная длина
+                newProgress[i] = (i === currentIndex) ? 0 : blocks[i].content.length;
+            } else {
+                // Старые строки, которые сдвинулись
+                newProgress[i] = lineProgress[i-1] !== undefined ? lineProgress[i-1] : blocks[i].content.length;
+            }
+        }
+        lineProgress = newProgress;
+    }
+
+    // ---------- Добавление блоков (в конец) ----------
+    function addTextBlock() {
+        const content = prompt('Введите текст блока:');
+        if (content !== null) {
+            blocks.push({ type: 'text', content });
+            lineProgress[blocks.length-1] = blocks.length-1 === currentIndex ? 0 : content.length;
+            renderBlockList();
+            updatePreview();
+            updatePlayer();
+            document.getElementById('playerSlider').max = blocks.length - 1;
+        }
+    }
+
+    function addFormulaBlock() {
+        const content = prompt('Введите формулу LaTeX (без \\[\\]):');
+        if (content !== null) {
+            blocks.push({ type: 'formula', content });
+            lineProgress[blocks.length-1] = blocks.length-1 === currentIndex ? 0 : content.length;
+            renderBlockList();
+            updatePreview();
+            updatePlayer();
+            document.getElementById('playerSlider').max = blocks.length - 1;
+        }
+    }
+
+    function addImageBlock() {
+        openImageModal((content) => {
+            blocks.push({ type: 'image', content });
+            lineProgress[blocks.length-1] = blocks.length-1 === currentIndex ? 0 : 1; // изображение показываем целиком (прогресс 1 как флаг)
+            renderBlockList();
+            updatePreview();
+            updatePlayer();
+            document.getElementById('playerSlider').max = blocks.length - 1;
+        });
+    }
+
+    function addPlaceholderBlock() {
+        const content = prompt('Введите текст заглушки (например, "Место для рисунка"):');
+        if (content !== null) {
+            blocks.push({ type: 'placeholder', content });
+            lineProgress[blocks.length-1] = blocks.length-1 === currentIndex ? 0 : content.length;
+            renderBlockList();
+            updatePreview();
+            updatePlayer();
+            document.getElementById('playerSlider').max = blocks.length - 1;
+        }
+    }
+
+    // Модальное окно для вставки изображения через Ctrl+V
+    let imageCallback = null;
+    function openImageModal(callback) {
+        imageCallback = callback;
+        const modal = document.getElementById('imageModal');
+        const textarea = document.getElementById('imagePasteArea');
+        textarea.value = '';
+        modal.style.display = 'flex';
+        textarea.focus();
+        textarea.addEventListener('paste', handlePaste);
+    }
+
+    function closeImageModal() {
+        const modal = document.getElementById('imageModal');
+        modal.style.display = 'none';
+        imageCallback = null;
+    }
+
+    function handlePaste(e) {
+        const items = (e.clipboardData || window.clipboardData).items;
+        for (let item of items) {
+            if (item.type.indexOf('image') === 0) {
+                const blob = item.getAsFile();
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('imagePasteArea').value = event.target.result;
+                };
+                reader.readAsDataURL(blob);
+                e.preventDefault();
+                break;
+            }
+        }
+    }
+
+    function processPastedImage() {
+        const content = document.getElementById('imagePasteArea').value;
+        if (content && imageCallback) {
+            imageCallback(content);
+            closeImageModal();
+        } else {
+            alert('Нет изображения или вставьте сначала.');
+        }
+    }
+
+    // ---------- Редактирование / удаление / перемещение ----------
+    function editBlock(index) {
+        const block = blocks[index];
+        if (block.type === 'image') {
+            alert('Изображение нельзя редактировать текстом. Удалите и добавьте новое.');
+            return;
+        }
+        const newContent = prompt('Редактируйте содержимое:', block.content);
+        if (newContent !== null) {
+            block.content = newContent;
+            // Сбрасываем прогресс для этой строки, если она текущая
+            if (index === currentIndex) {
+                lineProgress[index] = 0;
+            } else {
+                lineProgress[index] = newContent.length;
+            }
+            renderBlockList();
+            updatePreview();
+            updatePlayer();
+        }
+    }
+
+    function deleteBlock(index) {
+        blocks.splice(index, 1);
+        // Перестраиваем lineProgress
+        const newProgress = {};
+        for (let i = 0; i < blocks.length; i++) {
+            newProgress[i] = lineProgress[i+1] !== undefined ? lineProgress[i+1] : blocks[i].content.length;
+        }
+        lineProgress = newProgress;
+        if (currentIndex >= blocks.length) currentIndex = Math.max(0, blocks.length - 1);
+        renderBlockList();
+        updatePreview();
+        updatePlayer();
+        document.getElementById('playerSlider').max = blocks.length - 1;
+        updateCounter();
+    }
+
+    function moveBlock(index, direction) {
+        // Простое перемещение с перестроением lineProgress (опустим для краткости, но можно реализовать)
+        alert('Перемещение блоков временно отключено для упрощения отладки печати.');
+    }
+
+    function clearAll() {
+        blocks = [];
+        currentIndex = 0;
+        lineProgress = {};
+        renderBlockList();
+        updatePreview();
+        updatePlayer();
+        document.getElementById('playerSlider').max = 0;
+        updateCounter();
+    }
+
+    // ---------- Плеер: отображение всех строк с учётом прогресса печати ----------
+    function updatePlayer() {
+        const container = document.getElementById('playerContent');
+        if (blocks.length === 0) {
+            container.innerHTML = '<p style="color: #94a3b8;">Нет строк решения. Добавьте в редакторе.</p>';
+            return;
+        }
+        let html = '';
+        for (let i = 0; i < blocks.length; i++) {
+            const block = blocks[i];
+            let lineClass = 'player-line';
+            if (i === currentIndex) lineClass += ' current-line';
+            else if (i < currentIndex) lineClass += ' past-line';
+            else lineClass += ' future-line';
+            
+            if (block.type === 'text' || block.type === 'formula' || block.type === 'placeholder') {
+                let text = block.content;
+                let progress = lineProgress[i] !== undefined ? lineProgress[i] : text.length;
+                let displayedText = text.substring(0, progress);
+                // Если строка текущая и ещё не допечатана, добавляем курсор
+                if (i === currentIndex && progress < text.length) {
+                    html += `<div class="${lineClass}">${displayedText}<span class="cursor"></span></div>`;
+                } else {
+                    html += `<div class="${lineClass}">${displayedText}</div>`;
+                }
+            } else if (block.type === 'image') {
+                // Изображение показываем целиком, если прогресс > 0
+                if (lineProgress[i] > 0) {
+                    html += `<div class="${lineClass}"><img src="${block.content}" alt="график" style="max-width:100%; max-height:300px;"></div>`;
+                } else {
+                    html += `<div class="${lineClass}">[изображение загружается...]</div>`;
+                }
+            }
+        }
+        container.innerHTML = html;
+        // Для формул не запускаем MathJax, т.к. они пока отображаются как текст (для простоты)
+        // Прокрутка к текущей строке
+        const lines = container.querySelectorAll('.player-line');
+        if (lines.length > 0 && currentIndex < lines.length) {
+            const currentLine = lines[currentIndex];
+            const containerRect = container.getBoundingClientRect();
+            const lineRect = currentLine.getBoundingClientRect();
+            const scrollTop = currentLine.offsetTop - (containerRect.height / 2) + (lineRect.height / 2);
+            container.scrollTo({ top: scrollTop, behavior: 'smooth' });
+        }
+    }
+
+    function updatePreview() {
+        const preview = document.getElementById('previewContent');
+        if (blocks.length === 0) {
+            preview.innerHTML = '<p style="color: #94a3b8;">Нет блоков</p>';
+            return;
+        }
+        let html = '';
+        for (let i = 0; i <= Math.min(currentIndex, blocks.length-1); i++) {
+            const block = blocks[i];
+            if (block.type === 'text' || block.type === 'formula' || block.type === 'placeholder') {
+                html += `<div class="stage">${block.content.length > 50 ? block.content.substring(0,50)+'…' : block.content}</div>`;
+            } else if (block.type === 'image') {
+                html += `<div class="stage"><img src="${block.content}" style="max-width:100%; max-height:100px;"></div>`;
+            }
+        }
+        preview.innerHTML = html;
+        MathJax.typesetPromise([preview]).catch(err => console.log(err));
+    }
+
+    function updateCounter() {
+        document.getElementById('lineCounter').innerText = blocks.length ? `${currentIndex+1} / ${blocks.length}` : '0 / 0';
+    }
+
+    // ---------- Управление плеером ----------
+    function play() {
+        if (playInterval) clearInterval(playInterval);
+        playInterval = setInterval(() => {
+            // Печатаем текущую строку
+            if (currentIndex < blocks.length) {
+                const block = blocks[currentIndex];
+                const maxLen = block.content.length;
+                let progress = lineProgress[currentIndex] || 0;
+                if (progress < maxLen) {
+                    // Добавляем один символ
+                    lineProgress[currentIndex] = progress + 1;
+                    updatePlayer();
+                } else {
+                    // Текущая строка допечатана, переходим к следующей, если есть
+                    if (currentIndex < blocks.length - 1) {
+                        currentIndex++;
+                        // Убедимся, что для новой строки прогресс начинается с 0
+                        if (lineProgress[currentIndex] === undefined) {
+                            lineProgress[currentIndex] = 0;
+                        }
+                        document.getElementById('playerSlider').value = currentIndex;
+                        updatePlayer();
+                        updateCounter();
+                    } else {
+                        // Достигнут конец
+                        pause();
+                    }
+                }
+            }
+        }, 1000 / charSpeed);
+    }
+
+    function pause() {
+        if (playInterval) {
+            clearInterval(playInterval);
+            playInterval = null;
+        }
+    }
+
+    function nextStep() {
+        pause();
+        // Если текущая строка не допечатана, допечатываем её полностью
+        if (currentIndex < blocks.length) {
+            const block = blocks[currentIndex];
+            lineProgress[currentIndex] = block.content.length;
+            // Затем переходим к следующей, если есть
+            if (currentIndex < blocks.length - 1) {
+                currentIndex++;
+                lineProgress[currentIndex] = 0; // начинаем печатать новую строку с нуля
+            }
+            document.getElementById('playerSlider').value = currentIndex;
+            updatePlayer();
+            updateCounter();
+        }
+    }
+
+    function prevStep() {
+        pause();
+        if (currentIndex > 0) {
+            currentIndex--;
+            // Сбрасываем прогресс новой текущей строки на 0
+            lineProgress[currentIndex] = 0;
+            document.getElementById('playerSlider').value = currentIndex;
+            updatePlayer();
+            updateCounter();
+        }
+    }
+
+    function changeSpeed() {
+        const speed = parseFloat(document.getElementById('speedSelect').value);
+        charSpeed = speed;
+        if (playInterval) {
+            pause();
+            play();
+        }
+    }
+
+    function sliderChange() {
+        pause();
+        const newIndex = parseInt(document.getElementById('playerSlider').value);
+        if (newIndex >= 0 && newIndex < blocks.length) {
+            currentIndex = newIndex;
+            // Сбрасываем прогресс для новой текущей строки на 0
+            lineProgress[currentIndex] = 0;
+            updatePlayer();
+            updateCounter();
+        }
+    }
+
+    // ---------- Переключение режимов ----------
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('editorMode').style.display = mode === 'edit' ? 'flex' : 'none';
+        document.getElementById('demoMode').style.display = mode === 'demo' ? 'block' : 'none';
+        document.getElementById('modeEditBtn').classList.toggle('active', mode === 'edit');
+        document.getElementById('modeDemoBtn').classList.toggle('active', mode === 'demo');
+        if (mode === 'demo') {
+            updatePlayer();
+            updateCounter();
+            document.getElementById('playerSlider').max = blocks.length - 1;
+            document.getElementById('playerSlider').value = currentIndex;
+        } else {
+            updatePreview();
+        }
+    }
+
+    // ---------- Импорт/экспорт JSON ----------
+    function exportJSON() {
+        document.getElementById('jsonArea').value = JSON.stringify(blocks, null, 2);
+    }
+
+    function importJSON() {
+        try {
+            const json = document.getElementById('jsonArea').value;
+            const newBlocks = JSON.parse(json);
+            if (Array.isArray(newBlocks)) {
+                blocks = newBlocks;
+                currentIndex = 0;
+                // Сброс прогресса
+                lineProgress = {};
+                blocks.forEach((_, idx) => {
+                    lineProgress[idx] = (idx === 0) ? 0 : blocks[idx].content.length;
+                });
+                renderBlockList();
+                updatePreview();
+                if (currentMode === 'demo') {
+                    updatePlayer();
+                    document.getElementById('playerSlider').max = blocks.length - 1;
+                    document.getElementById('playerSlider').value = currentIndex;
+                }
+                updateCounter();
+            } else {
+                alert('Неверный формат: должен быть массив.');
+            }
+        } catch (e) {
+            alert('Ошибка парсинга JSON: ' + e);
+        }
+    }
+
+    function exportToFile() {
+        const json = JSON.stringify(blocks, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'solution.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importFromFile() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json,application/json';
+        input.onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const newBlocks = JSON.parse(ev.target.result);
+                    if (Array.isArray(newBlocks)) {
+                        blocks = newBlocks;
+                        currentIndex = 0;
+                        lineProgress = {};
+                        blocks.forEach((_, idx) => {
+                            lineProgress[idx] = (idx === 0) ? 0 : blocks[idx].content.length;
+                        });
+                        renderBlockList();
+                        updatePreview();
+                        if (currentMode === 'demo') {
+                            updatePlayer();
+                            document.getElementById('playerSlider').max = blocks.length - 1;
+                            document.getElementById('playerSlider').value = currentIndex;
+                        }
+                        updateCounter();
+                    } else {
+                        alert('Файл должен содержать массив блоков.');
+                    }
+                } catch (err) {
+                    alert('Ошибка чтения файла: ' + err);
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+
+    // ---------- Обработка пробела (в плеере: пауза/воспроизведение) ----------
+    document.addEventListener('keydown', function(e) {
+        if (e.code === 'Space' && !e.repeat && currentMode === 'demo') {
+            e.preventDefault();
+            if (playInterval) pause();
+            else play();
+        }
+    });
+
+    // Инициализация
+    setMode('edit');
+    setTheme('dark');
+</script>
+</body>
+</html>

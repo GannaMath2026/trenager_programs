@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌳 Дерево Фано — интерактивное построение</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .app {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            background: #1a202c;
+        }
+
+        .left-panel {
+            background: rgba(26, 32, 44, 0.95);
+            backdrop-filter: blur(10px);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-right: 2px solid #4a5568;
+            transition: width 0.2s;
+        }
+        .left-panel.narrow {
+            width: 280px;
+            min-width: 260px;
+        }
+        .left-panel.wide {
+            width: 500px;
+            min-width: 450px;
+        }
+
+        .panel-header {
+            padding: 15px;
+            background: #2d3748;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #4a5568;
+        }
+        .panel-header h3 {
+            font-size: 1.2em;
+            color: #e2e8f0;
+            margin: 0;
+        }
+        .panel-header button {
+            background: #4a5568;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .panel-header button:hover {
+            background: #718096;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+            background: #2d3748;
+            border-bottom: 1px solid #4a5568;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: #4a5568;
+            border: none;
+            color: #cbd5e0;
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+        .filter-btn.active {
+            background: #4299e1;
+            color: white;
+        }
+        .filter-btn:hover {
+            background: #718096;
+            color: white;
+        }
+
+        .task-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .task-item {
+            padding: 12px 10px;
+            margin-bottom: 5px;
+            background: #4a5568;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95em;
+            border-left: 3px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .task-item:hover {
+            background: #5f6b7a;
+            transform: translateX(2px);
+        }
+        .task-item.active {
+            background: #434190;
+            border-left-color: #fbbf24;
+        }
+        .task-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+        .task-icons {
+            display: flex;
+            gap: 5px;
+            margin-right: 5px;
+        }
+        .task-icons span {
+            font-size: 1.1em;
+        }
+        .task-item button {
+            background: #2d3748;
+            border: none;
+            color: white;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .task-item button:hover {
+            background: #1e293b;
+        }
+
+        .edit-panel {
+            flex: 1;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+        .edit-panel label {
+            color: #cbd5e0;
+            font-weight: 600;
+            margin-bottom: 3px;
+            display: block;
+        }
+        .edit-panel input, .edit-panel textarea {
+            width: 100%;
+            padding: 8px;
+            background: #2d3748;
+            border: 2px solid #4a5568;
+            border-radius: 6px;
+            color: white;
+            font-family: 'Courier New', monospace;
+        }
+        .edit-panel textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            background: #2d3748;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: normal;
+            color: #e2e8f0;
+        }
+        .edit-panel .solution-preview {
+            max-height: 150px;
+            overflow-y: auto;
+            background: #1a202c;
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        .edit-panel .solution-preview img {
+            max-width: 100%;
+            max-height: 120px;
+            border-radius: 4px;
+        }
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+            flex: 1;
+            min-width: 70px;
+        }
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #3182ce;
+        }
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #38a169;
+        }
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #4a5568;
+            color: #e2e8f0;
+        }
+        .btn-outline:hover {
+            background: #4a5568;
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: #1a202c;
+        }
+
+        .task-info {
+            background: #2d3748;
+            padding: 12px 20px;
+            color: white;
+            border-bottom: 2px solid #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .task-info .task-id {
+            background: #4299e1;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .task-info h2 {
+            font-size: 1.2em;
+            margin: 0;
+            color: #e2e8f0;
+        }
+        .task-info .task-condition {
+            color: #cbd5e0;
+            font-size: 0.9em;
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .task-info .code-table {
+            font-family: monospace;
+            background: #4a5568;
+            padding: 4px 8px;
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-size: 0.85em;
+            white-space: nowrap;
+        }
+        .task-info .answer-box {
+            background: #4a5568;
+            padding: 4px 8px;
+            border-radius: 6px;
+            color: #fbbf24;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        .fano-toggle {
+            display: flex;
+            gap: 5px;
+            background: #4a5568;
+            padding: 3px;
+            border-radius: 30px;
+        }
+        .fano-toggle button {
+            background: transparent;
+            border: none;
+            color: #cbd5e0;
+            padding: 4px 12px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+            font-size: 0.9em;
+        }
+        .fano-toggle button.active {
+            background: #4299e1;
+            color: white;
+        }
+        .task-info .video-link {
+            background: #e53e3e;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9em;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .task-info .video-link:hover {
+            background: #c53030;
+        }
+        .task-info .solution-button {
+            background: #48bb78;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .task-info .solution-button:hover {
+            background: #38a169;
+        }
+        .task-info .edit-button {
+            background: #4a5568;
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .task-info .edit-button:hover {
+            background: #718096;
+        }
+
+        .canvas-container {
+            flex: 1;
+            overflow: auto;
+            background: #1a202c;
+            width: 100%;
+            height: 100%;
+        }
+        .canvas-wrapper {
+            width: fit-content;
+            min-width: 100%;
+            min-height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #treeCanvas {
+            display: block;
+            width: 2000px;
+            height: 1000px;
+            background: #1a202c;
+        }
+
+        .zoom-panel {
+            background: #2d3748;
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            border-top: 2px solid #4a5568;
+            flex-wrap: wrap;
+        }
+        .zoom-panel .btn {
+            flex: 0;
+            min-width: 70px;
+            padding: 6px 12px;
+            font-size: 0.9em;
+        }
+        .zoom-panel span {
+            color: white;
+            background: #4a5568;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.9em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #2d3748;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: white;
+            position: relative;
+        }
+        .modal-content img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #a0aec0;
+        }
+        .modal-close:hover {
+            color: white;
+        }
+
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5a67d8;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Левая панель -->
+        <div class="left-panel narrow" id="leftPanel">
+            <div class="panel-header">
+                <h3 id="leftPanelTitle">📋 Задачи</h3>
+                <button id="backToListBtn" style="display: none;" onclick="showTaskList()">← Назад</button>
+            </div>
+            <div class="filter-bar" id="filterBar">
+                <button class="filter-btn active" onclick="setFilter('all')">Все</button>
+                <button class="filter-btn" onclick="setFilter('solved')">✅ Решённые</button>
+                <button class="filter-btn" onclick="setFilter('favorite')">⭐ Избранные</button>
+                <button class="filter-btn" onclick="setFilter('homework')">📚 ДЗ</button>
+            </div>
+            <div id="taskListContainer" class="task-list"></div>
+            <div id="editPanelContainer" class="edit-panel" style="display: none;">
+                <label>Номер задачи</label>
+                <input type="text" id="editId" readonly placeholder="авто">
+                <label>Название</label>
+                <input type="text" id="editName" placeholder="Введите название">
+                <label>Условие задачи</label>
+                <textarea id="editCondition" placeholder="Текст условия..." rows="2"></textarea>
+                <label>Коды (формат: А=0, Б=10, ...)</label>
+                <textarea id="editCodes" placeholder="А=0
+Б=10
+В=110" rows="3"></textarea>
+                <label>Ответ</label>
+                <input type="text" id="editAnswer" placeholder="Например: 101">
+                <label>Решение (текст или Ctrl+V для изображения)</label>
+                <textarea id="editSolution" placeholder="Вставьте текст решения или изображение (Ctrl+V)..." rows="3"></textarea>
+                <div class="solution-preview" id="solutionPreview"></div>
+                <label>Видеоразбор (ссылка на Rutube)</label>
+                <input type="url" id="editVideo" placeholder="https://rutube.ru/video/...">
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="editSolved"> ✅ Решено</label>
+                    <label><input type="checkbox" id="editFavorite"> ⭐ Избранное</label>
+                    <label><input type="checkbox" id="editHomework"> 📚 ДЗ</label>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="saveEditedTask()">Сохранить</button>
+                    <button class="btn btn-danger" onclick="deleteEditedTask()">Удалить</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая панель -->
+        <div class="right-panel">
+            <div class="task-info">
+                <span class="task-id" id="currentTaskId">#1</span>
+                <h2 id="currentTaskName">ДЕМО 2024</h2>
+                <span class="task-condition" id="currentTaskCondition">Для букв А, Б, В, Г, Д, Е известны коды: А=000, Б=001, В=0101, Г=0100, Д=011, Е=101.</span>
+                <span class="code-table" id="currentCodeTable">А=000 Б=001 В=0101 Г=0100 Д=011 Е=101</span>
+                <span class="answer-box" id="currentAnswer">?</span>
+                <div class="fano-toggle" id="fanoToggle">
+                    <button class="active" onclick="setFanoType('direct')">Прямое</button>
+                    <button onclick="setFanoType('reverse')">Обратное</button>
+                </div>
+                <a href="#" id="videoLink" class="video-link" target="_blank" style="display: none;">🎬 Видео</a>
+                <button class="solution-button" id="solutionButton" onclick="showSolution()">📄 Решение</button>
+                <button class="edit-button" id="editButton" onclick="openEditPanel()">✏️ Редактировать</button>
+            </div>
+            <div class="canvas-container">
+                <div class="canvas-wrapper">
+                    <canvas id="treeCanvas" width="2000" height="1000"></canvas>
+                </div>
+            </div>
+            <div class="zoom-panel">
+                <button class="btn btn-primary" onclick="zoomIn()">➕</button>
+                <button class="btn btn-primary" onclick="zoomOut()">➖</button>
+                <button class="btn btn-primary" onclick="resetZoom()">🔄</button>
+                <button class="btn btn-primary" onclick="fitToScreen()">⤢</button>
+                <span id="zoomLevel">100%</span>
+                <button class="btn btn-outline" onclick="exportTasks()">📤 Экспорт</button>
+                <button class="btn btn-outline" onclick="importTasks()">📥 Импорт</button>
+                <button class="btn btn-outline" onclick="newTask()">➕ Новая</button>
+                <button class="btn btn-outline" onclick="saveTaskFromTree()">💾 Сохранить</button>
+                <button class="btn btn-outline" onclick="deleteCurrentTask()">🗑️ Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для решения -->
+    <div id="solutionModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h3>Решение</h3>
+            <div id="modalSolutionContent"></div>
+        </div>
+    </div>
+
+    <script>
+        class Node {
+            constructor(name = null, originalCode = null) {
+                this.name = name;
+                this.originalCode = originalCode;
+                this.left = null;
+                this.right = null;
+                this.code = "";
+                this.x = 0;
+                this.y = 0;
+                this.isUserAdded = false; // добавлен пользователем (оранжевый)
+            }
+        }
+
+        let tasks = [];
+        let currentTaskId = 1;
+        let root = null;
+        let fanoType = 'direct';
+        let currentFilter = 'all';
+
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+        let scale = 1;
+        let offsetX = 0;
+        let offsetY = 0;
+        let isDragging = false;
+        let dragStartX, dragStartY;
+
+        const TOP_MARGIN = 40;
+        const VERTICAL_SPACING = 100;
+
+        const leftPanel = document.getElementById('leftPanel');
+        const taskListContainer = document.getElementById('taskListContainer');
+        const editPanelContainer = document.getElementById('editPanelContainer');
+        const leftPanelTitle = document.getElementById('leftPanelTitle');
+        const backToListBtn = document.getElementById('backToListBtn');
+        const fanoButtons = document.querySelectorAll('#fanoToggle button');
+        const videoLink = document.getElementById('videoLink');
+        const solutionModal = document.getElementById('solutionModal');
+        const modalContent = document.getElementById('modalSolutionContent');
+
+        // ========== ОБРАБОТКА ВСТАВКИ ИЗОБРАЖЕНИЙ ==========
+        document.getElementById('editSolution').addEventListener('paste', function(e) {
+            const items = (e.clipboardData || window.clipboardData).items;
+            for (let item of items) {
+                if (item.type.indexOf('image') === 0) {
+                    e.preventDefault();
+                    const blob = item.getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        document.getElementById('editSolution').value = event.target.result;
+                        showSolutionPreview(event.target.result);
+                    };
+                    reader.readAsDataURL(blob);
+                    break;
+                }
+            }
+        });
+
+        function showSolutionPreview(data) {
+            const preview = document.getElementById('solutionPreview');
+            if (data.startsWith('data:image')) {
+                preview.innerHTML = `<img src="${data}" alt="решение">`;
+            } else {
+                preview.innerHTML = '<div style="color:#a0aec0">Текстовое решение</div>';
+            }
+        }
+
+        // ========== АЛГОРИТМ РАВНОМЕРНОГО ПОЗИЦИОНИРОВАНИЯ ==========
+        function calculateLevels(node, level = 0, levels = []) {
+            if (!node) return levels;
+            if (!levels[level]) levels[level] = [];
+            levels[level].push(node);
+            calculateLevels(node.left, level + 1, levels);
+            calculateLevels(node.right, level + 1, levels);
+            return levels;
+        }
+
+        function positionNodesEvenly() {
+            if (!root) return;
+            const levels = calculateLevels(root);
+            const maxLevel = levels.length - 1;
+            for (let level = 0; level <= maxLevel; level++) {
+                const nodesAtLevel = levels[level];
+                const count = nodesAtLevel.length;
+                const baseSpacing = 300 - level * 30;
+                const totalWidth = count * baseSpacing;
+                const startX = (canvas.width - totalWidth) / 2 + baseSpacing / 2;
+                nodesAtLevel.forEach((node, index) => {
+                    node.x = startX + index * baseSpacing;
+                    node.y = TOP_MARGIN + level * VERTICAL_SPACING;
+                });
+            }
+        }
+
+        // ========== ОТРИСОВКА ==========
+        function drawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (!root) return;
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scale, scale);
+
+            drawEdges(root);
+            drawNodes(root);
+
+            ctx.restore();
+            document.getElementById('zoomLevel').innerText = Math.round(scale * 100) + '%';
+        }
+
+        function drawEdges(node) {
+            if (!node) return;
+            ctx.beginPath();
+            ctx.strokeStyle = '#4a5568';
+            ctx.lineWidth = 2 / scale;
+            ctx.setLineDash([]);
+
+            if (node.left) {
+                ctx.moveTo(node.x, node.y);
+                ctx.lineTo(node.left.x, node.left.y);
+                ctx.stroke();
+                ctx.fillStyle = '#4299e1';
+                ctx.font = `${16 / scale}px monospace`;
+                ctx.fillText('0', (node.x + node.left.x) / 2 - 5, (node.y + node.left.y) / 2 - 10);
+                drawEdges(node.left);
+            }
+            if (node.right) {
+                ctx.moveTo(node.x, node.y);
+                ctx.lineTo(node.right.x, node.right.y);
+                ctx.stroke();
+                ctx.fillStyle = '#4299e1';
+                ctx.font = `${16 / scale}px monospace`;
+                ctx.fillText('1', (node.x + node.right.x) / 2 + 5, (node.y + node.right.y) / 2 - 10);
+                drawEdges(node.right);
+            }
+        }
+
+        function drawNodes(node) {
+            if (!node) return;
+            const radius = node.name ? 26 : 18;
+            
+            // Основной цвет
+            let fillColor;
+            if (node.name) {
+                fillColor = '#f56565'; // красный для листьев с буквами
+            } else {
+                fillColor = node.isUserAdded ? '#fbbf24' : '#48bb78'; // жёлтый для добавленных, зелёный для обычных
+            }
+
+            ctx.beginPath();
+            ctx.fillStyle = fillColor;
+            ctx.arc(node.x, node.y, radius / scale, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Обводка
+            ctx.strokeStyle = node.name ? '#c53030' : (node.isUserAdded ? '#d97706' : '#2f855a');
+            ctx.lineWidth = 2 / scale;
+            ctx.stroke();
+
+            // Подсветка оранжевым, если есть только один потомок (и это не лист) и не добавлен пользователем
+            if (!node.name && ((!node.left && node.right) || (node.left && !node.right)) && !node.isUserAdded) {
+                ctx.beginPath();
+                ctx.strokeStyle = '#ed8936'; // оранжевый
+                ctx.lineWidth = 4 / scale;
+                ctx.arc(node.x, node.y, (radius + 3) / scale, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+
+            if (node.name) {
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${22 / scale}px Arial`;
+                ctx.fillText(node.name, node.x - 11/scale, node.y + 8/scale);
+
+                ctx.fillStyle = '#e2e8f0';
+                ctx.font = `${16 / scale}px monospace`;
+                const label = `${node.name}-${node.originalCode}`;
+                const textWidth = ctx.measureText(label).width;
+                ctx.fillText(label, node.x - textWidth/2, node.y + 50/scale);
+            } else if (node.isUserAdded) {
+                // Для добавленных узлов можно показывать код
+                ctx.fillStyle = '#e2e8f0';
+                ctx.font = `${14 / scale}px monospace`;
+                const textWidth = ctx.measureText(node.code).width;
+                ctx.fillText(node.code, node.x - textWidth/2, node.y + 35/scale);
+            }
+
+            if (node.left) drawNodes(node.left);
+            if (node.right) drawNodes(node.right);
+        }
+
+        // ========== ПОИСК УЗЛА ПО КООРДИНАТАМ ==========
+        function findNodeByXY(node, x, y) {
+            if (!node) return null;
+            const dx = node.x - x;
+            const dy = node.y - y;
+            if (Math.sqrt(dx*dx + dy*dy) < 25) return node;
+            return findNodeByXY(node.left, x, y) || findNodeByXY(node.right, x, y);
+        }
+
+        // ========== ОБРАБОТКА КЛИКА ==========
+        canvas.addEventListener('click', function(e) {
+            if (!root) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left - offsetX) / scale;
+            const y = (e.clientY - rect.top - offsetY) / scale;
+            
+            const clickedNode = findNodeByXY(root, x, y);
+            if (!clickedNode) return;
+
+            // Если это лист с буквой - ничего не делаем
+            if (clickedNode.name) return;
+
+            // Если узел добавлен пользователем - удаляем его и всех потомков
+            if (clickedNode.isUserAdded) {
+                // Найдём родителя, чтобы удалить ссылку
+                function removeNode(parent, nodeToRemove) {
+                    if (!parent) return false;
+                    if (parent.left === nodeToRemove) {
+                        parent.left = null;
+                        return true;
+                    }
+                    if (parent.right === nodeToRemove) {
+                        parent.right = null;
+                        return true;
+                    }
+                    return removeNode(parent.left, nodeToRemove) || removeNode(parent.right, nodeToRemove);
+                }
+                
+                // Проходим по всему дереву, чтобы найти родителя
+                function findAndRemove(node, target) {
+                    if (!node) return false;
+                    if (node.left === target) {
+                        node.left = null;
+                        return true;
+                    }
+                    if (node.right === target) {
+                        node.right = null;
+                        return true;
+                    }
+                    return findAndRemove(node.left, target) || findAndRemove(node.right, target);
+                }
+                
+                if (findAndRemove(root, clickedNode)) {
+                    positionNodesEvenly();
+                    drawCanvas();
+                }
+                return;
+            }
+
+            // Если узел имеет ровно одного потомка (оранжевая подсветка)
+            if ((!clickedNode.left && clickedNode.right) || (clickedNode.left && !clickedNode.right)) {
+                // Определяем, какой бит отсутствует
+                const missingBit = clickedNode.left ? '1' : '0';
+                const newCode = clickedNode.code + missingBit;
+                
+                // Создаём новый узел (пользовательский)
+                const newNode = new Node();
+                newNode.code = newCode;
+                newNode.isUserAdded = true;
+                
+                // Добавляем к текущему узлу
+                if (missingBit === '0') {
+                    clickedNode.left = newNode;
+                } else {
+                    clickedNode.right = newNode;
+                }
+                
+                // Перестраиваем позиции и перерисовываем
+                positionNodesEvenly();
+                drawCanvas();
+            }
+        });
+
+        // ========== ЗАГРУЗКА ПРИМЕРОВ ==========
+        function loadSampleTasks() {
+            tasks = [
+                { 
+                    id: 1, 
+                    name: "ДЕМО 2024", 
+                    condition: "Для букв А, Б, В, Г, Д, Е известны коды: А=000, Б=001, В=0101, Г=0100, Д=011, Е=101.", 
+                    codes: { "А": "000", "Б": "001", "В": "0101", "Г": "0100", "Д": "011", "Е": "101" }, 
+                    answer: "?",
+                    solution: "",
+                    video: "",
+                    solved: false,
+                    favorite: false,
+                    homework: false
+                }
+            ];
+        }
+
+        function init() {
+            loadSampleTasks();
+            renderTaskList();
+            loadTask(1);
+            canvas.addEventListener('mousedown', startDrag);
+            canvas.addEventListener('mousemove', drag);
+            canvas.addEventListener('mouseup', endDrag);
+            canvas.addEventListener('mouseleave', endDrag);
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTaskList();
+        }
+
+        function filterTasks() {
+            if (currentFilter === 'all') return tasks;
+            return tasks.filter(task => {
+                if (currentFilter === 'solved') return task.solved;
+                if (currentFilter === 'favorite') return task.favorite;
+                if (currentFilter === 'homework') return task.homework;
+                return true;
+            });
+        }
+
+        function renderTaskList() {
+            const filtered = filterTasks();
+            taskListContainer.innerHTML = '';
+            filtered.forEach(task => {
+                const div = document.createElement('div');
+                div.className = `task-item ${task.id === currentTaskId ? 'active' : ''}`;
+                let icons = '';
+                if (task.solved) icons += '<span title="Решено">✅</span>';
+                if (task.favorite) icons += '<span title="Избранное">⭐</span>';
+                if (task.homework) icons += '<span title="ДЗ">📚</span>';
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 5px; max-width: 160px;">
+                        <span class="task-name" onclick="loadTask(${task.id})">${task.id}. ${task.name}</span>
+                        ${icons ? `<span class="task-icons">${icons}</span>` : ''}
+                    </div>
+                    <div>
+                        <button onclick="event.stopPropagation(); openEditForTask(${task.id})">✏️</button>
+                    </div>
+                `;
+                taskListContainer.appendChild(div);
+            });
+        }
+
+        function setFanoType(type) {
+            fanoType = type;
+            fanoButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if ((type === 'direct' && btn.textContent === 'Прямое') ||
+                    (type === 'reverse' && btn.textContent === 'Обратное')) {
+                    btn.classList.add('active');
+                }
+            });
+            const task = tasks.find(t => t.id === currentTaskId);
+            if (task) buildTreeFromCodes(task.codes);
+        }
+
+        function loadTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            currentTaskId = id;
+            document.getElementById('currentTaskId').innerText = '#' + id;
+            document.getElementById('currentTaskName').innerText = task.name;
+            document.getElementById('currentTaskCondition').innerText = task.condition || '';
+            document.getElementById('currentTaskCondition').title = task.condition || '';
+            let codeStr = Object.entries(task.codes).map(([k, v]) => `${k}=${v}`).join(' ');
+            document.getElementById('currentCodeTable').innerText = codeStr;
+            document.getElementById('currentAnswer').innerText = task.answer || '?';
+
+            if (task.video) {
+                videoLink.href = task.video;
+                videoLink.style.display = 'inline-flex';
+            } else {
+                videoLink.style.display = 'none';
+            }
+
+            buildTreeFromCodes(task.codes);
+            renderTaskList();
+        }
+
+        function buildTreeFromCodes(originalCodes) {
+            let codesForBuild = originalCodes;
+            if (fanoType === 'reverse') {
+                codesForBuild = {};
+                for (let [letter, code] of Object.entries(originalCodes)) {
+                    codesForBuild[letter] = code.split('').reverse().join('');
+                }
+            }
+
+            root = new Node();
+            for (let [letter, code] of Object.entries(codesForBuild)) {
+                let current = root;
+                for (let bit of code) {
+                    if (bit === '0') {
+                        if (!current.left) current.left = new Node();
+                        current = current.left;
+                    } else {
+                        if (!current.right) current.right = new Node();
+                        current = current.right;
+                    }
+                    current.code += bit;
+                }
+                current.name = letter;
+                current.originalCode = originalCodes[letter];
+                current.isUserAdded = false; // исходные коды не пользовательские
+            }
+
+            positionNodesEvenly();
+            setTimeout(() => fitToScreen(), 50);
+        }
+
+        function zoomIn() { scale = Math.min(scale + 0.2, 3); drawCanvas(); }
+        function zoomOut() { scale = Math.max(scale - 0.2, 0.3); drawCanvas(); }
+        function resetZoom() { scale = 1; offsetX = 0; offsetY = 0; drawCanvas(); }
+
+        function fitToScreen() {
+            if (!root) return;
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            function findBounds(node) {
+                if (!node) return;
+                minX = Math.min(minX, node.x);
+                maxX = Math.max(maxX, node.x);
+                minY = Math.min(minY, node.y);
+                maxY = Math.max(maxY, node.y);
+                if (node.left) findBounds(node.left);
+                if (node.right) findBounds(node.right);
+            }
+            findBounds(root);
+            const padding = 200;
+            const treeW = maxX - minX + padding * 2;
+            const treeH = maxY - minY + padding * 2;
+            const scaleX = canvas.width / treeW;
+            const scaleY = canvas.height / treeH;
+            scale = Math.min(scaleX, scaleY) * 0.9;
+            offsetX = (canvas.width / 2) - (minX + maxX) / 2 * scale;
+            offsetY = TOP_MARGIN * scale - minY * scale;
+            drawCanvas();
+        }
+
+        function startDrag(e) { isDragging = true; dragStartX = e.clientX - offsetX; dragStartY = e.clientY - offsetY; }
+        function drag(e) { if (!isDragging) return; offsetX = e.clientX - dragStartX; offsetY = e.clientY - dragStartY; drawCanvas(); }
+        function endDrag() { isDragging = false; }
+
+        function showSolution() {
+            const task = tasks.find(t => t.id === currentTaskId);
+            if (!task || !task.solution) {
+                alert('Решение отсутствует');
+                return;
+            }
+            const solution = task.solution;
+            if (solution.startsWith('data:image')) {
+                modalContent.innerHTML = `<img src="${solution}" alt="решение">`;
+            } else {
+                modalContent.innerHTML = `<pre style="white-space: pre-wrap; color: #e2e8f0;">${solution}</pre>`;
+            }
+            solutionModal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            solutionModal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target === solutionModal) {
+                solutionModal.style.display = 'none';
+            }
+        };
+
+        function openEditPanel() {
+            leftPanel.classList.remove('narrow');
+            leftPanel.classList.add('wide');
+            taskListContainer.style.display = 'none';
+            editPanelContainer.style.display = 'flex';
+            leftPanelTitle.innerText = '✏️ Редактирование';
+            backToListBtn.style.display = 'inline-block';
+
+            const task = tasks.find(t => t.id === currentTaskId);
+            if (task) {
+                document.getElementById('editId').value = task.id;
+                document.getElementById('editName').value = task.name;
+                document.getElementById('editCondition').value = task.condition || '';
+                document.getElementById('editCodes').value = formatCodesForInput(task.codes);
+                document.getElementById('editAnswer').value = task.answer || '';
+                document.getElementById('editSolution').value = task.solution || '';
+                document.getElementById('editVideo').value = task.video || '';
+                document.getElementById('editSolved').checked = task.solved || false;
+                document.getElementById('editFavorite').checked = task.favorite || false;
+                document.getElementById('editHomework').checked = task.homework || false;
+
+                if (task.solution && task.solution.startsWith('data:image')) {
+                    showSolutionPreview(task.solution);
+                } else {
+                    document.getElementById('solutionPreview').innerHTML = '<div style="color:#a0aec0">Текстовое решение</div>';
+                }
+            }
+        }
+
+        function showTaskList() {
+            leftPanel.classList.remove('wide');
+            leftPanel.classList.add('narrow');
+            taskListContainer.style.display = 'block';
+            editPanelContainer.style.display = 'none';
+            leftPanelTitle.innerText = '📋 Задачи';
+            backToListBtn.style.display = 'none';
+        }
+
+        function openEditForTask(id) {
+            loadTask(id);
+            openEditPanel();
+        }
+
+        function saveEditedTask() {
+            const idRaw = document.getElementById('editId').value;
+            const name = document.getElementById('editName').value.trim();
+            const condition = document.getElementById('editCondition').value.trim();
+            const codesStr = document.getElementById('editCodes').value;
+            const answer = document.getElementById('editAnswer').value.trim();
+            const solution = document.getElementById('editSolution').value;
+            const video = document.getElementById('editVideo').value.trim();
+            const solved = document.getElementById('editSolved').checked;
+            const favorite = document.getElementById('editFavorite').checked;
+            const homework = document.getElementById('editHomework').checked;
+
+            if (!name) { alert('Введите название'); return; }
+            const codes = parseCodes(codesStr);
+            if (Object.keys(codes).length === 0) { alert('Введите хотя бы один код'); return; }
+
+            let id = idRaw ? parseInt(idRaw) : 0;
+            if (id && tasks.some(t => t.id === id)) {
+                const task = tasks.find(t => t.id === id);
+                task.name = name;
+                task.condition = condition;
+                task.codes = codes;
+                task.answer = answer;
+                task.solution = solution;
+                task.video = video;
+                task.solved = solved;
+                task.favorite = favorite;
+                task.homework = homework;
+            } else {
+                const newId = Math.max(...tasks.map(t => t.id), 0) + 1;
+                tasks.push({ id: newId, name, condition, codes, answer, solution, video, solved, favorite, homework });
+                id = newId;
+            }
+            currentTaskId = id;
+            renderTaskList();
+            loadTask(id);
+            showTaskList();
+        }
+
+        function deleteEditedTask() {
+            const id = parseInt(document.getElementById('editId').value);
+            if (!id) return;
+            if (confirm(`Удалить задачу #${id}?`)) {
+                tasks = tasks.filter(t => t.id !== id);
+                if (currentTaskId === id) {
+                    currentTaskId = tasks[0]?.id || null;
+                    if (currentTaskId) loadTask(currentTaskId);
+                }
+                renderTaskList();
+                showTaskList();
+            }
+        }
+
+        function newTask() {
+            currentTaskId = null;
+            document.getElementById('editId').value = '';
+            document.getElementById('editName').value = '';
+            document.getElementById('editCondition').value = '';
+            document.getElementById('editCodes').value = 'А=0\nБ=10\nВ=110';
+            document.getElementById('editAnswer').value = '';
+            document.getElementById('editSolution').value = '';
+            document.getElementById('editVideo').value = '';
+            document.getElementById('editSolved').checked = false;
+            document.getElementById('editFavorite').checked = false;
+            document.getElementById('editHomework').checked = false;
+            document.getElementById('solutionPreview').innerHTML = '';
+            openEditPanel();
+        }
+
+        function saveTaskFromTree() {
+            if (currentTaskId) {
+                alert('Задача сохранена (изменения уже в редакторе)');
+            } else {
+                alert('Сначала создайте задачу через кнопку Новая');
+            }
+        }
+
+        function deleteCurrentTask() {
+            if (!currentTaskId) return;
+            if (confirm(`Удалить задачу #${currentTaskId}?`)) {
+                tasks = tasks.filter(t => t.id !== currentTaskId);
+                currentTaskId = tasks[0]?.id || null;
+                if (currentTaskId) loadTask(currentTaskId);
+                renderTaskList();
+            }
+        }
+
+        function parseCodes(input) {
+            const codes = {};
+            input.split('\n').filter(l => l.trim()).forEach(line => {
+                const parts = line.split('=').map(s => s.trim());
+                if (parts.length === 2 && parts[0] && parts[1]) {
+                    codes[parts[0]] = parts[1];
+                }
+            });
+            return codes;
+        }
+
+        function formatCodesForInput(codes) {
+            return Object.entries(codes).map(([k, v]) => `${k}=${v}`).join('\n');
+        }
+
+        function exportTasks() {
+            const dataStr = JSON.stringify(tasks, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'fano_tasks.json';
+            a.click();
+        }
+
+        function importTasks() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    try {
+                        const imported = JSON.parse(ev.target.result);
+                        if (Array.isArray(imported)) {
+                            tasks = imported;
+                            currentTaskId = tasks[0]?.id || null;
+                            if (currentTaskId) loadTask(currentTaskId);
+                            renderTaskList();
+                        } else alert('Неверный формат');
+                    } catch { alert('Ошибка чтения'); }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
