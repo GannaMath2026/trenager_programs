@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌳 Дерево Фано — инструкция</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: linear-gradient(145deg, #0b1e33 0%, #1a2f4a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .card {
+            max-width: 1000px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+        .header {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 28px 32px;
+            border-bottom: 1px solid #334155;
+        }
+        .header h1 {
+            color: white;
+            font-size: 2.2rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header h1 span {
+            background: #3b82f6;
+            font-size: 1.2rem;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-weight: 500;
+        }
+        .content {
+            padding: 32px;
+            color: #e2e8f0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        .section {
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid #334155;
+            transition: 0.2s;
+        }
+        .section:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: #4b5563;
+        }
+        .section h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+        .section ul {
+            list-style: none;
+        }
+        .section li {
+            margin-bottom: 14px;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            line-height: 1.5;
+        }
+        .badge {
+            background: #1e293b;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 30px;
+            border: 1px solid #334155;
+            white-space: nowrap;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #3b82f6;
+            border-radius: 20px;
+            margin-top: 8px;
+            flex-shrink: 0;
+        }
+        .key {
+            background: #0f172a;
+            color: #fbbf24;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: 1px solid #fbbf24;
+        }
+        .key-small {
+            background: #1e293b;
+            color: #94a3b8;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        .legend {
+            background: #0f172a;
+            border-radius: 24px;
+            padding: 24px;
+            margin-top: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            border: 1px solid #2d3a4e;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .color-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 24px;
+        }
+        .circle-red { background: #f56565; border: 2px solid #c53030; }
+        .circle-green { background: #48bb78; border: 2px solid #2f855a; }
+        .circle-orange { background: #fbbf24; border: 2px solid #d97706; }
+        .outline-orange {
+            width: 32px;
+            height: 32px;
+            border-radius: 32px;
+            border: 3px solid #ed8936;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .outline-orange div {
+            width: 18px;
+            height: 18px;
+            background: #48bb78;
+            border-radius: 18px;
+        }
+        .footer {
+            background: #0f172a;
+            padding: 20px 32px;
+            color: #94a3b8;
+            font-size: 0.95rem;
+            border-top: 1px solid #1e293b;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .footer-note {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8rem; }
+            .content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            <h1>
+                🌳 Дерево Фано
+                <span>инструкция для ученика</span>
+            </h1>
+        </div>
+
+        <div class="content">
+            <!-- Основные разделы сеткой -->
+            <div class="grid">
+                <!-- Выбор задачи -->
+                <div class="section">
+                    <h2>📋 1. Выбор задачи</h2>
+                    <ul>
+                        <li>
+                            <span class="dot"></span>
+                            <span><span class="key">клик</span> по названию в левом списке — задача открывается справа</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span>🔍 <span class="badge">Все</span> <span class="badge">✅ Решённые</span> <span class="badge">⭐ Избранное</span> — фильтры над списком</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span>активная задача подсвечена синим</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Управление деревом -->
+                <div class="section">
+                    <h2>🎨 2. Редактирование дерева</h2>
+                    <ul>
+                        <li>
+                            <span class="dot"></span>
+                            <span><span class="key">клик</span> по зелёному или оранжевому кружку — добавить две ветки (0 и 1)</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span><span class="key">двойной клик</span> по оранжевому кружку — удалить узел и все его ветки</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span>🟠 оранжевая обводка — у узла только одна ветка (можно достроить)</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span>🔴 красные узлы — буквы, рядом показан их код</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Навигация и масштаб -->
+                <div class="section">
+                    <h2>🖱️ 3. Движение и масштаб</h2>
+                    <ul>
+                        <li>
+                            <span class="dot"></span>
+                            <span><span class="key">зажать и тащить</span> мышкой — двигать холст</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span><span class="key">➕ / ➖</span> — приблизить / отдалить</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span><span class="key">⤢</span> — подогнать дерево под экран</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span><span class="key">🔄</span> — сбросить масштаб и положение</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Прямое / обратное -->
+                <div class="section">
+                    <h2>🔄 4. Условие Фано</h2>
+                    <ul>
+                        <li>
+                            <span class="dot"></span>
+                            <span>переключатель вверху справа:</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span><span class="badge">Прямое</span> — коды как в условии</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span><span class="badge">Обратное</span> — коды перевёрнуты (для обратного условия)</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Ответ и решение -->
+                <div class="section">
+                    <h2>❓ 5. Ответ и решение</h2>
+                    <ul>
+                        <li>
+                            <span class="dot"></span>
+                            <span><span class="key">клик по «?»</span> — показать ответ (ещё раз — скрыть)</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span><span class="key">📄 Решение</span> — открыть окно с подробным решением</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span>окно закрывается <span class="key-small">✕</span> или кликом вне его</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Коротко о цветах -->
+                <div class="section">
+                    <h2>🎨 6. Цвета узлов</h2>
+                    <ul>
+                        <li>
+                            <span class="dot"></span>
+                            <span>🔴 красный — буква (код фиксирован)</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span>🟢 зелёный — обычный узел (можно развить)</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span>🟠 оранжевый — узел, созданный вами (можно удалить)</span>
+                        </li>
+                        <li>
+                            <span class="dot"></span>
+                            <span>🟠 оранжевая обводка — узел с одной веткой (рекомендуется достроить)</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Легенда цветов и подсказки -->
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="color-circle circle-red"></div>
+                    <span>буква (код)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-circle circle-green"></div>
+                    <span>обычный узел</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-circle circle-orange"></div>
+                    <span>добавленный узел</span>
+                </div>
+                <div class="legend-item">
+                    <div class="outline-orange"><div></div></div>
+                    <span>можно достроить</span>
+                </div>
+            </div>
+
+            <!-- Важные замечания -->
+            <div style="margin-top: 28px; background: #1a2a3a; border-radius: 20px; padding: 20px; color: #cbd5e0;">
+                <p style="display: flex; gap: 12px; align-items: flex-start;">
+                    <span style="font-size: 1.4rem;">💡</span>
+                    <span><strong style="color:white;">Советы:</strong> дерево можно двигать в любую сторону; если случайно удалили нужный узел — просто выберите задачу заново в списке; оранжевые узлы можно удалять двойным кликом, зелёные — только развивать.</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div>🌳 Дерево Фано · учебный режим</div>
+            <div class="footer-note">
+                <span>✔️ только просмотр и эксперименты</span>
+                <span style="color:#fbbf24;">|</span>
+                <span>клик ➕ двойной клик</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
