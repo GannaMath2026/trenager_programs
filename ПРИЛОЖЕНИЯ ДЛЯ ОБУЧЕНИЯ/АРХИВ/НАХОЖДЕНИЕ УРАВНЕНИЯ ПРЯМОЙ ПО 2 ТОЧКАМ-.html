@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Прямая по двум точкам</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 20px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 25px;
+            max-width: 750px;
+            width: 100%;
+        }
+        h2 {
+            margin: 0 0 20px;
+            color: #1e293b;
+            text-align: center;
+            font-weight: 500;
+        }
+        .points {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .point {
+            background-color: #f1f5f9;
+            border-radius: 10px;
+            padding: 15px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .point h3 {
+            margin: 0 0 12px;
+            font-size: 1.1rem;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .point label {
+            display: block;
+            margin: 8px 0;
+            color: #334155;
+        }
+        .point input {
+            width: 90px;
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-left: 8px;
+        }
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto 25px;
+            transition: background 0.2s;
+            box-shadow: 0 4px 6px rgba(59,130,246,0.3);
+        }
+        button:hover {
+            background-color: #2563eb;
+        }
+        .result {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 18px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+        }
+        .result div {
+            margin: 8px 0;
+        }
+        .formula {
+            color: #1e293b;
+            font-weight: 600;
+        }
+        .system {
+            color: #0f172a;
+            background-color: #e6f7ff;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+        }
+        canvas {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+            background-color: white;
+            width: 100%;
+            height: auto;
+            max-width: 450px;
+        }
+        .info {
+            color: #64748b;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📐 Прямая через две точки</h2>
+        <div class="points">
+            <div class="point">
+                <h3>🔴 Точка A</h3>
+                <label>x₁: <input type="number" id="x1" value="2" step="any"></label>
+                <label>y₁: <input type="number" id="y1" value="3" step="any"></label>
+            </div>
+            <div class="point">
+                <h3>🔵 Точка B</h3>
+                <label>x₂: <input type="number" id="x2" value="5" step="any"></label>
+                <label>y₂: <input type="number" id="y2" value="7" step="any"></label>
+            </div>
+        </div>
+        <button id="calcBtn">⟳ Вычислить и построить</button>
+
+        <div class="result" id="result">
+            <div class="formula" id="general">Уравнение прямой в общем виде: y = k·x + b</div>
+            <div class="system" id="substitution">
+                Подставляем точки:<br>
+                <span id="point1">y₁ = k·x₁ + b  →  3 = k·2 + b</span><br>
+                <span id="point2">y₂ = k·x₂ + b  →  7 = k·5 + b</span>
+            </div>
+            <div id="systemEq">Система: { 3 = 2k + b ; 7 = 5k + b }</div>
+            <div id="coeff">k = 1.333 , b = 0.333</div>
+            <div id="equation">Уравнение: y = 1.333 x + 0.333</div>
+        </div>
+
+        <canvas id="graphCanvas" width="450" height="450"></canvas>
+        <div class="info">● Красные точки — заданные, синяя линия — прямая</div>
+    </div>
+
+    <script>
+        const x1Input = document.getElementById('x1');
+        const y1Input = document.getElementById('y1');
+        const x2Input = document.getElementById('x2');
+        const y2Input = document.getElementById('y2');
+        const generalDiv = document.getElementById('general');
+        const point1Span = document.getElementById('point1');
+        const point2Span = document.getElementById('point2');
+        const systemDiv = document.getElementById('systemEq');
+        const coeffDiv = document.getElementById('coeff');
+        const equationDiv = document.getElementById('equation');
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = 450, height = 450;
+
+        function formatNumber(num) {
+            return Math.abs(num) < 0.001 ? '0' : num.toFixed(3);
+        }
+
+        function drawGridAndAxes(xMin, xMax, yMin, yMax) {
+            ctx.clearRect(0, 0, width, height);
+            // сетка
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 0.6;
+            for (let i = 0; i <= 10; i++) {
+                let x = xMin + i * (xMax - xMin) / 10;
+                let y = yMin + i * (yMax - yMin) / 10;
+                let sx = (x - xMin) / (xMax - xMin) * width;
+                let sy = height - (y - yMin) / (yMax - yMin) * height;
+                ctx.beginPath();
+                ctx.moveTo(sx, 0);
+                ctx.lineTo(sx, height);
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, sy);
+                ctx.lineTo(width, sy);
+                ctx.stroke();
+            }
+            // оси
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            if (xMin <= 0 && xMax >= 0) {
+                let zeroX = (0 - xMin) / (xMax - xMin) * width;
+                ctx.moveTo(zeroX, 0);
+                ctx.lineTo(zeroX, height);
+            }
+            if (yMin <= 0 && yMax >= 0) {
+                let zeroY = height - (0 - yMin) / (yMax - yMin) * height;
+                ctx.moveTo(0, zeroY);
+                ctx.lineTo(width, zeroY);
+            }
+            ctx.stroke();
+        }
+
+        function plot(x1, y1, x2, y2, k, b, isVertical) {
+            let xMin = Math.min(x1, x2);
+            let xMax = Math.max(x1, x2);
+            let yMin = Math.min(y1, y2);
+            let yMax = Math.max(y1, y2);
+            let dx = (xMax - xMin) || 1;
+            let dy = (yMax - yMin) || 1;
+            xMin -= dx * 0.3;
+            xMax += dx * 0.3;
+            yMin -= dy * 0.3;
+            yMax += dy * 0.3;
+            if (Math.abs(xMin - xMax) < 1e-10) { xMin -= 1; xMax += 1; }
+            if (Math.abs(yMin - yMax) < 1e-10) { yMin -= 1; yMax += 1; }
+
+            drawGridAndAxes(xMin, xMax, yMin, yMax);
+
+            // прямая
+            ctx.strokeStyle = '#2563eb';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            if (isVertical) {
+                let sx = (x1 - xMin) / (xMax - xMin) * width;
+                ctx.moveTo(sx, 0);
+                ctx.lineTo(sx, height);
+            } else {
+                let xStart = xMin;
+                let xEnd = xMax;
+                let yStart = k * xStart + b;
+                let yEnd = k * xEnd + b;
+                let sx1 = (xStart - xMin) / (xMax - xMin) * width;
+                let sy1 = height - (yStart - yMin) / (yMax - yMin) * height;
+                let sx2 = (xEnd - xMin) / (xMax - xMin) * width;
+                let sy2 = height - (yEnd - yMin) / (yMax - yMin) * height;
+                ctx.moveTo(sx1, sy1);
+                ctx.lineTo(sx2, sy2);
+            }
+            ctx.stroke();
+
+            function drawPoint(x, y, color) {
+                let sx = (x - xMin) / (xMax - xMin) * width;
+                let sy = height - (y - yMin) / (yMax - yMin) * height;
+                ctx.beginPath();
+                ctx.fillStyle = color;
+                ctx.arc(sx, sy, 6, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+            drawPoint(x1, y1, '#ef4444');
+            drawPoint(x2, y2, '#ef4444');
+        }
+
+        function update() {
+            let x1 = parseFloat(x1Input.value);
+            let y1 = parseFloat(y1Input.value);
+            let x2 = parseFloat(x2Input.value);
+            let y2 = parseFloat(y2Input.value);
+
+            if ([x1, y1, x2, y2].some(isNaN)) {
+                alert('Заполните все координаты числами');
+                return;
+            }
+
+            // Общий вид
+            generalDiv.innerHTML = 'Уравнение прямой в общем виде: y = k·x + b';
+
+            // Подстановка точек
+            point1Span.innerHTML = `y₁ = k·x₁ + b  →  ${y1} = k·${x1} + b`;
+            point2Span.innerHTML = `y₂ = k·x₂ + b  →  ${y2} = k·${x2} + b`;
+
+            // Система
+            systemDiv.innerHTML = `Система: { ${y1} = ${x1}k + b ; ${y2} = ${x2}k + b }`;
+
+            // Вычисление k и b
+            let isVertical = Math.abs(x2 - x1) < 1e-12;
+            let k, b;
+            if (isVertical) {
+                k = 'не определен';
+                b = 'не определен';
+                coeffDiv.innerHTML = `Прямая вертикальна, k и b не определены.`;
+                equationDiv.innerHTML = `Уравнение: x = ${x1.toFixed(3)}`;
+            } else {
+                k = (y2 - y1) / (x2 - x1);
+                b = y1 - k * x1;
+                coeffDiv.innerHTML = `k = ${formatNumber(k)} , b = ${formatNumber(b)}`;
+                let sign = b >= 0 ? '+' : '-';
+                equationDiv.innerHTML = `Уравнение: y = ${formatNumber(k)}x ${sign} ${formatNumber(Math.abs(b))}`;
+            }
+
+            // График
+            plot(x1, y1, x2, y2, k, b, isVertical);
+        }
+
+        document.getElementById('calcBtn').addEventListener('click', update);
+        window.onload = update;
+    </script>
+</body>
+</html>
