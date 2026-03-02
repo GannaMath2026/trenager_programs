@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✂️ Резак кода</title>
+    <style>
+        body {
+            margin: 0;
+            background: #1a202c;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', monospace;
+        }
+        .app {
+            background: #2d3748;
+            padding: 30px;
+            border-radius: 20px;
+            width: fit-content;
+            max-width: 95vw;
+            overflow-x: auto;
+        }
+        .input-section {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 12px;
+            background: #1a202c;
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            color: #fbbf24;
+            font-size: 20px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+        button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button.reset {
+            background: #718096;
+        }
+        .code-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap;
+        }
+        .bit-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 45px;
+        }
+        .bit {
+            width: 45px;
+            height: 45px;
+            background: #1a202c;
+            border: 2px solid #4a5568;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: white;
+            font-weight: bold;
+        }
+        .letter {
+            height: 28px;
+            font-size: 20px;
+            color: #fbbf24;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+        .separator {
+            width: 16px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .separator-line {
+            width: 3px;
+            height: 30px;
+            background: repeating-linear-gradient(45deg, #718096, #718096 4px, transparent 4px, transparent 8px);
+            transition: all 0.2s;
+        }
+        .separator.active .separator-line {
+            background: #f56565;
+            box-shadow: 0 0 10px #f56565;
+        }
+        .word-hint {
+            margin-top: 20px;
+            color: #a0aec0;
+            font-size: 16px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="input-section">
+            <input type="text" id="codeInput" value="0101110100101100" placeholder="Введите код">
+            <button onclick="loadCode()">Загрузить</button>
+            <button class="reset" onclick="resetCuts()">Сброс</button>
+        </div>
+
+        <div id="codeContainer" style="display: flex; flex-direction: column; align-items: center;"></div>
+        <div class="word-hint">Кликай на пунктиры - ставь буквы по порядку</div>
+    </div>
+
+    <script>
+        let code = '0101110100101100';
+        let cuts = []; // позиции разрезов
+        let wordLetters = ['г','р','а','н','а','т']; // буквы по порядку
+        
+        function loadCode() {
+            code = document.getElementById('codeInput').value.replace(/\s/g, '');
+            if (!/^[01]+$/.test(code)) {
+                alert('Только 0 и 1');
+                return;
+            }
+            resetCuts();
+        }
+
+        function resetCuts() {
+            cuts = [];
+            renderCode();
+        }
+
+        function renderCode() {
+            const container = document.getElementById('codeContainer');
+            container.innerHTML = '';
+            
+            const row = document.createElement('div');
+            row.className = 'code-row';
+            
+            const bits = code.split('');
+            
+            bits.forEach((bit, index) => {
+                // Блок с битом и местом для буквы
+                const block = document.createElement('div');
+                block.className = 'bit-block';
+                
+                const bitDiv = document.createElement('div');
+                bitDiv.className = 'bit';
+                bitDiv.textContent = bit;
+                
+                const letterDiv = document.createElement('div');
+                letterDiv.className = 'letter';
+                letterDiv.id = `letter-${index}`;
+                
+                block.appendChild(bitDiv);
+                block.appendChild(letterDiv);
+                row.appendChild(block);
+                
+                // Разделитель после каждого бита (ВКЛЮЧАЯ последний)
+                const separator = document.createElement('div');
+                separator.className = 'separator';
+                separator.setAttribute('data-pos', index);
+                
+                const line = document.createElement('div');
+                line.className = 'separator-line';
+                
+                separator.appendChild(line);
+                
+                // Проверяем, есть ли разрез в этой позиции
+                if (cuts.includes(index)) {
+                    separator.classList.add('active');
+                }
+                
+                separator.onclick = () => toggleCut(index);
+                row.appendChild(separator);
+            });
+            
+            container.appendChild(row);
+            updateLetters();
+        }
+
+        function toggleCut(pos) {
+            if (cuts.includes(pos)) {
+                // Если разрез есть - удаляем его
+                cuts = cuts.filter(p => p !== pos);
+            } else {
+                // Добавляем разрез
+                cuts.push(pos);
+                cuts.sort((a, b) => a - b);
+            }
+            
+            renderCode();
+        }
+
+        function updateLetters() {
+            // Сортируем разрезы
+            const sortedCuts = [...cuts].sort((a, b) => a - b);
+            
+            // Очищаем все буквы
+            document.querySelectorAll('.letter').forEach(el => {
+                el.textContent = '';
+            });
+            
+            let startPos = 0;
+            
+            // Для каждого разреза ставим букву
+            sortedCuts.forEach((cutPos, idx) => {
+                if (idx < wordLetters.length) {
+                    const letterDiv = document.getElementById(`letter-${cutPos}`);
+                    if (letterDiv) {
+                        letterDiv.textContent = wordLetters[idx];
+                    }
+                }
+            });
+        }
+
+        // Инициализация
+        window.onload = () => {
+            renderCode();
+        };
+    </script>
+</body>
+</html>

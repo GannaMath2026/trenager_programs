@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Префикс ОГЭ — правильно</title>
+<style>
+body{font-family:'Courier New',monospace;background:#f0f8ff;padding:30px;margin:0;font-size:22px}
+input{padding:12px;margin:5px;font-family:monospace;font-size:18px;border-radius:6px;border:2px solid #ddd;max-width:350px}
+input#s{max-width:1500px}
+button{padding:12px 24px;margin:5px;font-family:monospace;font-size:18px;border-radius:6px;cursor:pointer;border:none}
+.btn-primary{background:#4285f4;color:white}
+.btn-success{background:#0f9d58;color:white}
+.btn-orange{background:#ff9800;color:white}
+.result{background:white;padding:30px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.15);margin-top:20px}
+.table-container{border:3px solid #4285f4;border-radius:10px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:24px;font-family:'Courier New',monospace;table-layout:fixed}
+td{padding:10px 6px;text-align:center;border-bottom:1px solid #e0e0e0;width:calc(100% / 50);height:45px;vertical-align:middle;box-sizing:border-box}
+.prefix-col{background:#f8f9ff}
+.range-highlight{background:#fef3c7;box-shadow:inset 0 0 0 2px #eab308;}
+.red-text{color:#dc2626;font-weight:bold;}
+.answer{font-size:36px;color:#0f9d58;font-weight:bold;text-align:center;padding:25px;background:#e8f5e8;border-radius:12px;margin:25px 0;border:3px solid #0f9d58}
+.formula{font-size:28px;padding:20px;background:#f0f8ff;border-left:6px solid #0f9d58;border-radius:8px;margin-top:20px;font-weight:bold;text-align:center}
+</style>
+</head>
+<body>
+
+<div style="background:white;padding:30px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);margin-bottom:20px">
+<label>Строка (≤50): <input id="s" value="АБРАКАДАБРААБРАКАДАБРААБРАКАДАБРААБРАКАДАБРААБРАКАДАБРА" maxlength="50" style="width:1500px"></label><br>
+<label>Подстрока: <input id="p" value="АБ" style="width:100px"></label>
+<label style="margin-left:20px">От позиции: <input id="i" type="number" min="0" value="0" style="width:80px"></label>
+<label>До позиции: <input id="j" type="number" value="50" style="width:80px"></label><br>
+<button class="btn-primary" onclick="step1_genString()">1. Генерация строки</button>
+<button class="btn-orange" onclick="calc()">3. 🚀 РАСЧЁТ</button>
+</div>
+
+<div id="res" class="result" style="display:none">
+<div class="table-container">
+<table>
+  <tbody id="table"></tbody>
+</table>
+</div>
+<div class="answer" id="answer"></div>
+<div class="formula" id="formula"></div>
+</div>
+
+<script>
+function calc(){
+  let S  = document.getElementById('s').value.toUpperCase(),
+      P  = document.getElementById('p').value.toUpperCase(),
+      I  = Number(document.getElementById('i').value),
+      J  = Number(document.getElementById('j').value),
+      L  = P.length;
+
+  if (L === 0 || I < 0 || J <= I || J > S.length) {
+    alert('Ошибка ввода!');
+    return;
+  }
+
+  let K = Array(S.length + 1).fill(0);
+  let pos = [];
+
+  for (let i = 1; i <= S.length; i++) {
+    let start = i - L + 1;
+    if (start >= 0) {
+      let substr = S.substring(start, i + 1);
+      if (substr === P) {
+        K[i] = K[i-1] + 1;
+        if (i >= I && i < J) pos.push(i);
+      } else {
+        K[i] = K[i-1];
+      }
+    } else {
+      K[i] = K[i-1];
+    }
+  }
+
+  let cnt = K[J-1] - K[I-2+P.length];
+
+  let idxRow = `<tr>`,
+      chrRow = `<tr>`,
+      kRow   = `<tr>`;
+
+  for (let i = 0; i < S.length; i++) {
+    let isInRange = i >= I && i < J;
+    let idxCls    = isInRange ? 'range-highlight' : '';
+    let chrCls    = isInRange ? 'range-highlight' : '';
+    let kCls      = isInRange ? 'range-highlight' : '';
+
+    let inMatch = pos.some(right => i <= right && i >= right - L + 1);
+    if (inMatch) chrCls += ' red-text';
+
+    idxRow += `<td class="${idxCls}">${i}</td>`;
+    chrRow += `<td class="${chrCls}">${S[i]}</td>`;
+    kRow   += `<td class="${kCls} prefix-col">${K[i]}</td>`;
+  }
+
+  idxRow += `</tr>`;
+  chrRow += `</tr>`;
+  kRow   += `</tr>`;
+
+  document.getElementById('table').innerHTML = idxRow + chrRow + kRow;
+
+  document.getElementById('answer').innerHTML =
+    `Ответ: <strong>${cnt}</strong> вхождений "${P}"`;
+
+  document.getElementById('formula').innerHTML =
+    `K[<strong>Правый край -1</strong>] − K[<strong>Левый край - 2 + длина подстроки</strong>]<br>
+     K[<strong>${J}-1</strong>] − K[<strong>${I}-2+${P.length}</strong>] = K[<strong>${J-1}</strong>] − K[<strong>${I-2+ P.length}</strong>]= ${K[J-1]} − ${K[I-2+ P.length]} = ${cnt}`;
+
+  document.getElementById('res').style.display = 'block';
+}
+
+function step1_genString(){
+  let P = document.getElementById('p').value.toUpperCase();
+  if(P.length === 0) { alert('Сначала введи подстроку!'); return; }
+  let L = P.length;
+  if(L > 10) { alert('Подстрока слишком длинная!'); return; }
+  
+  let alphabet = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
+  let S = new Array(50).fill(0).map(() => alphabet[Math.floor(Math.random() * alphabet.length)]).join('');
+  
+  let targetCount = 5;
+  let placed = 0;
+  let attempts = 0;
+  
+  // Вставляем ≥5 в случайные позиции
+  while(placed < targetCount && attempts < 100){
+    let start = Math.floor(Math.random() * (50 - L + 1));
+    let substr = S.substring(start, start + L);
+    
+    if(substr !== P){
+      // Заменяем на P
+      for(let k = 0; k < L; k++){
+        S = S.substring(0, start + k) + P[k] + S.substring(start + k + 1);
+      }
+      placed++;
+    }
+    attempts++;
+  }
+  
+  let actualCount = (S.match(new RegExp(P, 'g')) || []).length;
+  document.getElementById('s').value = S;
+}
+
+function step2_setRange(){
+  let S = document.getElementById('s').value;
+  if(S.length === 0) { alert('Сначала сгенерируй строку!'); return; }
+  document.getElementById('i').value = '0';
+  document.getElementById('j').value = S.length;
+  alert('✅ Диапазон [0..' + S.length + '] установлен!');
+}
+
+calc();
+</script>
+</body>
+</html>
