@@ -34,17 +34,43 @@
             margin-bottom: 10px;
             background: #fafafa;
         }
-        .app-item:hover {
-            background: #f0f0f0;
+        .app-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .app-link {
             color: #0066cc;
             text-decoration: none;
             font-size: 16px;
-            flex: 1;
         }
         .app-link:hover {
             text-decoration: underline;
+        }
+        .app-url {
+            color: #666;
+            font-size: 12px;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .btn-group {
+            display: flex;
+            gap: 5px;
+        }
+        .edit-btn {
+            background: #ffc107;
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .edit-btn:hover {
+            background: #e0a800;
         }
         .delete-btn {
             background: #ff4444;
@@ -54,7 +80,6 @@
             padding: 4px 10px;
             cursor: pointer;
             font-size: 14px;
-            margin-left: 10px;
         }
         .delete-btn:hover {
             background: #cc0000;
@@ -70,6 +95,7 @@
             border-radius: 4px;
             width: 300px;
             font-size: 14px;
+            margin-right: 5px;
         }
         .btn {
             padding: 8px 16px;
@@ -79,15 +105,38 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
-            margin-left: 8px;
         }
         .btn:hover {
             background: #45a049;
+        }
+        .btn.share {
+            background: #17a2b8;
+        }
+        .btn.share:hover {
+            background: #138496;
         }
         .info {
             color: #666;
             font-size: 14px;
             margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .edit-form {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 6px;
+        }
+        .edit-form.show {
+            display: block;
+        }
+        .edit-form h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 16px;
         }
     </style>
 <style type="text/css" id="operaUserStyle"></style></head>
@@ -97,92 +146,184 @@
         
         <div id="appList" class="app-list">
                 <div class="app-item">
-                    <a href="https://gannamath2026.github.io/trenager_programs/ОСНОВНОЙ_КОД_ПРИЛОЖЕНИЯ.html" target="_blank" class="app-link">
-                        📐 Основное приложение (математика)
-                    </a>
-                    <button class="delete-btn" onclick="deleteApp(0)">Удалить</button>
+                    <div class="app-info">
+                        <a href="https://gannamath2026.github.io/trenager_programs/ОСНОВНОЙ_КОД_ПРИЛОЖЕНИЯ.html" target="_blank" class="app-link">
+                            📐 Основное приложение (математика)
+                        </a>
+                        <span class="app-url">https://gannamath2026.github.io/trenager_programs/ОСНОВНОЙ_КОД_ПРИЛОЖЕНИЯ.html</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit-btn" onclick="editApp(0)">✏️ Ред.</button>
+                        <button class="delete-btn" onclick="deleteApp(0)">🗑️ Удалить</button>
+                    </div>
                 </div>
             
                 <div class="app-item">
-                    <a href="https://gannamath2026.github.io/trenager_programs/ИНФОРМАТИКА_РАБОЧИЙ_КОД.HTML" target="_blank" class="app-link">
-                        💻 Информатика
-                    </a>
-                    <button class="delete-btn" onclick="deleteApp(1)">Удалить</button>
+                    <div class="app-info">
+                        <a href="https://gannamath2026.github.io/trenager_programs/ИНФОРМАТИКА_РАБОЧИЙ_КОД.HTML" target="_blank" class="app-link">
+                            💻 Информатика
+                        </a>
+                        <span class="app-url">https://gannamath2026.github.io/trenager_programs/ИНФОРМАТИКА_РАБОЧИЙ_КОД.HTML</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit-btn" onclick="editApp(1)">✏️ Ред.</button>
+                        <button class="delete-btn" onclick="deleteApp(1)">🗑️ Удалить</button>
+                    </div>
                 </div>
             
                 <div class="app-item">
-                    <a href="https://gannamath2026.github.io/trenager_programs/ПРИЛОЖЕНИЯ%20ДЛЯ%20ОБУЧЕНИЯ/ФАНО.html" target="_blank" class="app-link">
-                        🌳 Дерево Фано
-                    </a>
-                    <button class="delete-btn" onclick="deleteApp(2)">Удалить</button>
+                    <div class="app-info">
+                        <a href="https://gannamath2026.github.io/trenager_programs/ПРИЛОЖЕНИЯ%20ДЛЯ%20ОБУЧЕНИЯ/ФАНО.html" target="_blank" class="app-link">
+                            🌳 Дерево Фано
+                        </a>
+                        <span class="app-url">https://gannamath2026.github.io/trenager_programs/ПРИЛОЖЕНИЯ%20ДЛЯ%20ОБУЧЕНИЯ/ФАНО.html</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit-btn" onclick="editApp(2)">✏️ Ред.</button>
+                        <button class="delete-btn" onclick="deleteApp(2)">🗑️ Удалить</button>
+                    </div>
                 </div>
             
                 <div class="app-item">
-                    <a href="https://gannamath2026.github.io/trenager_programs/пьяница1.html" target="_blank" class="app-link">
-                        🍷 Пьяница - задача по вероятности
-                    </a>
-                    <button class="delete-btn" onclick="deleteApp(3)">Удалить</button>
+                    <div class="app-info">
+                        <a href="https://gannamath2026.github.io/trenager_programs/пьяница1.html" target="_blank" class="app-link">
+                            🍷 Пьяница - задача по вероятности
+                        </a>
+                        <span class="app-url">https://gannamath2026.github.io/trenager_programs/пьяница1.html</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit-btn" onclick="editApp(3)">✏️ Ред.</button>
+                        <button class="delete-btn" onclick="deleteApp(3)">🗑️ Удалить</button>
+                    </div>
                 </div>
             
                 <div class="app-item">
-                    <a href="https://gannamath2026.github.io/trenager_programs/видео-плеер.html" target="_blank" class="app-link">
-                        ▶️ Видео-плеер
-                    </a>
-                    <button class="delete-btn" onclick="deleteApp(4)">Удалить</button>
+                    <div class="app-info">
+                        <a href="https://gannamath2026.github.io/trenager_programs/видео-плеер.html" target="_blank" class="app-link">
+                            ▶️ Видео-плеер
+                        </a>
+                        <span class="app-url">https://gannamath2026.github.io/trenager_programs/видео-плеер.html</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit-btn" onclick="editApp(4)">✏️ Ред.</button>
+                        <button class="delete-btn" onclick="deleteApp(4)">🗑️ Удалить</button>
+                    </div>
                 </div>
             
                 <div class="app-item">
-                    <a href="https://gannamath2026.github.io/trenager_programs/ВЕРОЯТНСТЬ-ПОДГРУППЫ.html" target="_blank" class="app-link">
-                        👨‍👩‍👧‍👦 Подгруппы - вероятность
-                    </a>
-                    <button class="delete-btn" onclick="deleteApp(5)">Удалить</button>
+                    <div class="app-info">
+                        <a href="https://gannamath2026.github.io/trenager_programs/ВЕРОЯТНСТЬ-ПОДГРУППЫ.html" target="_blank" class="app-link">
+                            👨‍👩‍👧‍👦 Подгруппы - вероятность
+                        </a>
+                        <span class="app-url">https://gannamath2026.github.io/trenager_programs/ВЕРОЯТНСТЬ-ПОДГРУППЫ.html</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit-btn" onclick="editApp(5)">✏️ Ред.</button>
+                        <button class="delete-btn" onclick="deleteApp(5)">🗑️ Удалить</button>
+                    </div>
                 </div>
             
                 <div class="app-item">
-                    <a href="https://gannamath2026.github.io/trenager_programs/ВЕРОЯТНОСТЬ-КУБИК.html" target="_blank" class="app-link">
-                        🎲 Кубик - вероятность
-                    </a>
-                    <button class="delete-btn" onclick="deleteApp(6)">Удалить</button>
+                    <div class="app-info">
+                        <a href="https://gannamath2026.github.io/trenager_programs/ВЕРОЯТНОСТЬ-КУБИК.html" target="_blank" class="app-link">
+                            🎲 Кубик - вероятность
+                        </a>
+                        <span class="app-url">https://gannamath2026.github.io/trenager_programs/ВЕРОЯТНОСТЬ-КУБИК.html</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit-btn" onclick="editApp(6)">✏️ Ред.</button>
+                        <button class="delete-btn" onclick="deleteApp(6)">🗑️ Удалить</button>
+                    </div>
                 </div>
             
                 <div class="app-item">
-                    <a href="https://gannamath2026.github.io/trenager_programs/ВЕРОЯТНОСТЬ-ДЕТИ_ПО_КРУГУ.html" target="_blank" class="app-link">
-                        👯 ⭕ Дети по кругу - вероятность
-                    </a>
-                    <button class="delete-btn" onclick="deleteApp(7)">Удалить</button>
+                    <div class="app-info">
+                        <a href="https://gannamath2026.github.io/trenager_programs/ВЕРОЯТНОСТЬ-ДЕТИ_ПО_КРУГУ.html" target="_blank" class="app-link">
+                            👯 ⭕ Дети по кругу - вероятность
+                        </a>
+                        <span class="app-url">https://gannamath2026.github.io/trenager_programs/ВЕРОЯТНОСТЬ-ДЕТИ_ПО_КРУГУ.html</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit-btn" onclick="editApp(7)">✏️ Ред.</button>
+                        <button class="delete-btn" onclick="deleteApp(7)">🗑️ Удалить</button>
+                    </div>
                 </div>
             
                 <div class="app-item">
-                    <a href="https://gannamath2026.github.io/trenager_programs/ВЕРОЯТНОСТЬ - ДЕРЕВО.html" target="_blank" class="app-link">
-                        🌿 Дерево вероятностей
-                    </a>
-                    <button class="delete-btn" onclick="deleteApp(8)">Удалить</button>
+                    <div class="app-info">
+                        <a href="https://gannamath2026.github.io/trenager_programs/ВЕРОЯТНОСТЬ - ДЕРЕВО.html" target="_blank" class="app-link">
+                            🌿 Дерево вероятностей
+                        </a>
+                        <span class="app-url">https://gannamath2026.github.io/trenager_programs/ВЕРОЯТНОСТЬ - ДЕРЕВО.html</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit-btn" onclick="editApp(8)">✏️ Ред.</button>
+                        <button class="delete-btn" onclick="deleteApp(8)">🗑️ Удалить</button>
+                    </div>
                 </div>
             
                 <div class="app-item">
-                    <a href="https://gannamath2026.github.io/trenager_programs/ПРЕФИКСНЫЕ_СУММЫ.html" target="_blank" class="app-link">
-                        ➕ Префиксные суммы
-                    </a>
-                    <button class="delete-btn" onclick="deleteApp(9)">Удалить</button>
+                    <div class="app-info">
+                        <a href="https://gannamath2026.github.io/trenager_programs/ПРИЛОЖЕНИЯ%20ДЛЯ%20ОБУЧЕНИЯ/ПРЕФИКСНЫЕ_СУММЫ.html" target="_blank" class="app-link">
+                            ➕ Префиксные суммы
+                        </a>
+                        <span class="app-url">https://gannamath2026.github.io/trenager_programs/ПРИЛОЖЕНИЯ%20ДЛЯ%20ОБУЧЕНИЯ/ПРЕФИКСНЫЕ_СУММЫ.html</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit-btn" onclick="editApp(9)">✏️ Ред.</button>
+                        <button class="delete-btn" onclick="deleteApp(9)">🗑️ Удалить</button>
+                    </div>
                 </div>
             
                 <div class="app-item">
-                    <a href="https://gannamath2026.github.io/trenager_programs/ЕДИНИЧНАЯ_ОКРУЖНОСТЬ+андроид.html" target="_blank" class="app-link">
-                        ⊙ Единичная окружность
-                    </a>
-                    <button class="delete-btn" onclick="deleteApp(10)">Удалить</button>
+                    <div class="app-info">
+                        <a href="https://gannamath2026.github.io/trenager_programs/ПРИЛОЖЕНИЯ%20ДЛЯ%20ОБУЧЕНИЯ/ЕДИНИЧНАЯ_ОКРУЖНОСТЬ+андроид.html" target="_blank" class="app-link">
+                            ⊙ Единичная окружность
+                        </a>
+                        <span class="app-url">https://gannamath2026.github.io/trenager_programs/ПРИЛОЖЕНИЯ%20ДЛЯ%20ОБУЧЕНИЯ/ЕДИНИЧНАЯ_ОКРУЖНОСТЬ+андроид.html</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit-btn" onclick="editApp(10)">✏️ Ред.</button>
+                        <button class="delete-btn" onclick="deleteApp(10)">🗑️ Удалить</button>
+                    </div>
+                </div>
+            
+                <div class="app-item">
+                    <div class="app-info">
+                        <a href="https://gannamath2026.github.io/trenager_programs/ВСЕ МОИ ПРИЛОЖЕНИЯ.html" target="_blank" class="app-link">
+                            ВСЕ МОИ ПРИЛОЖЕНИЯ
+                        </a>
+                        <span class="app-url">https://gannamath2026.github.io/trenager_programs/ВСЕ МОИ ПРИЛОЖЕНИЯ.html</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit-btn" onclick="editApp(11)">✏️ Ред.</button>
+                        <button class="delete-btn" onclick="deleteApp(11)">🗑️ Удалить</button>
+                    </div>
                 </div>
             </div>
 
         <div class="add-section">
             <h3>➕ Добавить новое приложение</h3>
-            <input type="text" id="appName" placeholder="Название" style="margin-right: 5px;">
+            <input type="text" id="appName" placeholder="Название">
             <input type="text" id="appUrl" placeholder="https://..." style="width: 350px;">
             <button class="btn" onclick="addApp()">Добавить</button>
         </div>
 
+        <!-- Форма редактирования (скрыта по умолчанию) -->
+        <div id="editForm" class="edit-form">
+            <h3>✏️ Редактировать приложение</h3>
+            <input type="hidden" id="editIndex" value="">
+            <input type="text" id="editName" placeholder="Название" style="margin-bottom: 5px;">
+            <input type="text" id="editUrl" placeholder="https://..." style="width: 350px; margin-bottom: 5px;">
+            <div>
+                <button class="btn" onclick="saveEdit()">💾 Сохранить</button>
+                <button class="btn" style="background: #6c757d;" onclick="cancelEdit()">❌ Отмена</button>
+            </div>
+        </div>
+
         <div class="info">
-            💾 Приложения сохраняются в браузере
+            <span>💾 Ссылки сохраняются в URL - можно поделиться!</span>
+            <button class="btn share" onclick="copyShareableLink()">🔗 Скопировать ссылку</button>
         </div>
     </div>
 
@@ -193,8 +334,42 @@
             { name: '💻 Информатика', url: 'https://gannamath2026.github.io/trenager_programs/ИНФОРМАТИКА_РАБОЧИЙ_КОД.HTML' }
         ];
 
-        // Загружаем сохраненные или используем начальные
-        let apps = JSON.parse(localStorage.getItem('myApps')) || defaultApps;
+        // Получаем данные из URL
+        function getAppsFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const data = params.get('data');
+            if (data) {
+                try {
+                    const json = atob(data);
+                    return JSON.parse(json);
+                } catch (e) {
+                    console.error('Ошибка загрузки из URL', e);
+                }
+            }
+            return null;
+        }
+
+        // Сохраняем данные в URL
+        function saveAppsToURL() {
+            const json = JSON.stringify(apps);
+            const data = btoa(encodeURIComponent(json)); // Кодируем для безопасности
+            
+            const url = new URL(window.location.href);
+            url.search = ''; // Очищаем старые параметры
+            url.searchParams.set('data', data);
+            
+            window.history.pushState({}, '', url);
+        }
+
+        // Копировать ссылку
+        window.copyShareableLink = function() {
+            saveAppsToURL();
+            navigator.clipboard.writeText(window.location.href);
+            alert('✅ Ссылка скопирована! Можно поделиться.\n\nВ этой ссылке сохранены все ваши приложения.');
+        };
+
+        // Загружаем приложения
+        let apps = getAppsFromURL() || JSON.parse(localStorage.getItem('myApps')) || defaultApps;
 
         // Сохраняем в localStorage
         function saveApps() {
@@ -206,58 +381,111 @@
             const list = document.getElementById('appList');
             
             if (apps.length === 0) {
-                list.innerHTML = '<p style="color: #999; text-align: center;">Нет приложений. Добавьте новое!</p>';
+                list.innerHTML = '<p style="color: #999; text-align: center;">📭 Нет приложений. Добавьте новое!</p>';
                 return;
             }
 
             list.innerHTML = apps.map((app, index) => `
                 <div class="app-item">
-                    <a href="${app.url}" target="_blank" class="app-link">
-                        ${app.name}
-                    </a>
-                    <button class="delete-btn" onclick="deleteApp(${index})">Удалить</button>
+                    <div class="app-info">
+                        <a href="${app.url}" target="_blank" class="app-link">
+                            ${app.name}
+                        </a>
+                        <span class="app-url">${app.url}</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit-btn" onclick="editApp(${index})">✏️ Ред.</button>
+                        <button class="delete-btn" onclick="deleteApp(${index})">🗑️ Удалить</button>
+                    </div>
                 </div>
             `).join('');
         }
 
         // Добавить приложение
-        function addApp() {
+        window.addApp = function() {
             const nameInput = document.getElementById('appName');
             const urlInput = document.getElementById('appUrl');
             
-            const name = nameInput.value.trim();
+            let name = nameInput.value.trim();
             let url = urlInput.value.trim();
 
             if (!name || !url) {
-                alert('Заполните название и URL');
+                alert('❌ Заполните название и URL');
                 return;
             }
 
-            // Добавляем https:// если нет
             if (!url.startsWith('http://') && !url.startsWith('https://')) {
                 url = 'https://' + url;
             }
 
             apps.push({ name, url });
             saveApps();
+            saveAppsToURL();
             renderApps();
 
-            // Очищаем поля
             nameInput.value = '';
             urlInput.value = '';
-        }
+        };
+
+        // Редактировать приложение
+        window.editApp = function(index) {
+            const app = apps[index];
+            document.getElementById('editIndex').value = index;
+            document.getElementById('editName').value = app.name;
+            document.getElementById('editUrl').value = app.url;
+            document.getElementById('editForm').classList.add('show');
+            
+            // Прокручиваем к форме
+            document.getElementById('editForm').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        // Сохранить редактирование
+        window.saveEdit = function() {
+            const index = document.getElementById('editIndex').value;
+            const name = document.getElementById('editName').value.trim();
+            let url = document.getElementById('editUrl').value.trim();
+
+            if (!name || !url) {
+                alert('❌ Заполните название и URL');
+                return;
+            }
+
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+
+            apps[index] = { name, url };
+            saveApps();
+            saveAppsToURL();
+            renderApps();
+            cancelEdit();
+        };
+
+        // Отмена редактирования
+        window.cancelEdit = function() {
+            document.getElementById('editForm').classList.remove('show');
+            document.getElementById('editIndex').value = '';
+            document.getElementById('editName').value = '';
+            document.getElementById('editUrl').value = '';
+        };
 
         // Удалить приложение
-        function deleteApp(index) {
-            if (confirm('Удалить приложение?')) {
+        window.deleteApp = function(index) {
+            if (confirm('🗑️ Удалить приложение?')) {
                 apps.splice(index, 1);
                 saveApps();
+                saveAppsToURL();
                 renderApps();
             }
-        }
+        };
 
         // Начальный рендер
         renderApps();
+
+        // Если есть данные в URL, обновляем localStorage
+        if (getAppsFromURL()) {
+            saveApps();
+        }
     </script>
 
 </body></html>
