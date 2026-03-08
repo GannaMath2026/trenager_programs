@@ -864,23 +864,39 @@
   }
 
   // ==================== УЧЕНИКИ ====================
-  function loadStudents() {
-    const saved = localStorage.getItem('studentsData_v2');
-    if (saved) {
-      try {
-        students = JSON.parse(saved);
-      } catch (e) {
+function loadStudents() {
+  const saved = localStorage.getItem('studentsData_v2');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      // Проверяем, что parsed - это объект и он не пустой
+      if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+        students = parsed;
+      } else {
+        console.warn('Сохранённые students пусты или некорректны');
+        // Если students уже существуют - оставляем их, иначе создаём default
+        if (!students || Object.keys(students).length === 0) {
+          students = { default: { name: 'Ученик 1', solved: {}, favorites: {} } };
+        }
+      }
+    } catch (e) {
+      console.warn('Ошибка парсинга students из localStorage:', e);
+      // НЕ перезаписываем существующих students!
+      if (!students || Object.keys(students).length === 0) {
         students = { default: { name: 'Ученик 1', solved: {}, favorites: {} } };
       }
-    } else {
+    }
+  } else {
+    // Только если нет вообще никаких сохранённых данных
+    if (!students || Object.keys(students).length === 0) {
       students = { default: { name: 'Ученик 1', solved: {}, favorites: {} } };
     }
-    
-    if (!students[currentStudent]) {
-      currentStudent = Object.keys(students)[0] || 'default';
-    }
   }
-
+  
+  if (!students[currentStudent]) {
+    currentStudent = Object.keys(students)[0] || 'default';
+  }
+}
   function saveStudents() {
     localStorage.setItem('studentsData_v2', JSON.stringify(students));
   }
