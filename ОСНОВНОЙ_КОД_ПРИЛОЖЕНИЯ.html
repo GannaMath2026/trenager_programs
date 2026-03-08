@@ -2,7 +2,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Задачи JSON — редактирование, фильтры, печать + калькулятор + GitHub</title>
+  <title>Задачи JSON — ученики + навигация + GitHub + LaTeX</title>
+  
+  <!-- LATEGL ADD: Подключаем MathJax для LaTeX -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
   <style>
     :root { 
       --gap: 8px; 
@@ -21,19 +25,14 @@
       color: var(--txt); 
       background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
       line-height: 1.5;
-      padding-top: 200px;
     }
-    .fixed-controls { 
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      right: 0; 
-      z-index: 1000;
+    .top-panel { 
       background: white;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       backdrop-filter: blur(20px);
     }
     .row { display:flex; gap: var(--gap); flex-wrap: wrap; align-items: end; }
+    .row-center { display:flex; gap: var(--gap); flex-wrap: wrap; align-items: center; }
     .card { 
       border:1px solid var(--b); 
       border-radius: 12px; 
@@ -191,6 +190,7 @@
     .zone .hint { font-size: 12px; color:#94a3b8; margin-top: 8px; }
     .zone img { border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     
+    /* Увеличенный шрифт для текстовых условий и ответов */
     .zone .text-content {
       white-space: pre-wrap;
       word-break: break-word;
@@ -199,7 +199,7 @@
       background: white;
       border-radius: 8px;
       border: 1px solid #e2e8f0;
-      font-size: 15px;
+      font-size: 18px;
       line-height: 1.5;
       width: 100%;
     }
@@ -210,7 +210,7 @@
       border: 2px solid var(--accent);
       border-radius: 8px;
       font-family: inherit;
-      font-size: 14px;
+      font-size: 18px;
       resize: vertical;
     }
     .zone.empty::after { 
@@ -397,14 +397,111 @@
       width: 100%;
     }
     
+    /* Кнопки навигации */
+    .nav-buttons {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1500;
+    }
+    
+    .nav-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .nav-btn:hover {
+      transform: scale(1.1);
+      background: #2563eb;
+    }
+    
+    .nav-btn.hidden {
+      display: none;
+    }
+    
+    /* Галочка импорта задач */
+    .import-options {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: 5px;
+    }
+    
+    .import-options input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    
+    /* Стили для модального окна импорта прогресса */
+    .modal-import {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2500;
+    }
+    .modal-import-content {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .modal-import-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    .modal-import-option {
+      margin: 10px 0;
+      padding: 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+    }
+    .modal-import-option input[type="radio"] {
+      margin-right: 8px;
+    }
+    .modal-import-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: flex-end;
+    }
+    
+    /* Подсветка задачи при возврате */
+    .task-highlight {
+      box-shadow: 0 0 0 3px var(--accent) !important;
+      transition: box-shadow 0.3s;
+    }
+    
     @media (max-width: 900px) { 
       .split { grid-template-columns: 2fr 1fr; } 
-      body { padding-top: 220px; }
     }
     
     @media print {
-      body { margin: 0; background: white !important; padding-top: 0 !important; }
-      .no-print, .fixed-controls, .meta-row, .actions, .controls, .zone-actions, .image-buttons, .calc-row { display:none !important; }
+      body { margin: 0; background: white !important; }
+      .no-print, .top-panel, .meta-row, .actions, .controls, .zone-actions, .image-buttons, .calc-row, .nav-buttons { display:none !important; }
       #printRoot { display:block !important; }
       .task { break-inside: avoid; box-shadow: none; margin-bottom: 40px; page-break-inside: avoid; }
       .title { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: black !important; }
@@ -463,27 +560,46 @@
 </head>
 <body>
 
-  <div class="fixed-controls no-print">
+  <div class="top-panel no-print" id="topPanel">
     <div class="card controls">
       <div class="row">
         <div>
-          <label>📁 Импорт</label>
-          <input id="fileInput" type="file" accept="application/json,.json">
+          <label>📁 Импорт задач</label>
+          <div style="display: flex; gap: 5px;">
+            <input id="fileInput" type="file" accept="application/json,.json">
+            <div class="import-options">
+              <input type="checkbox" id="keepStudents" checked>
+              <label for="keepStudents" style="display: inline; margin: 0;">☐ Сохранить прогресс учеников</label>
+            </div>
+          </div>
         </div>
         <div>
-          <label>💾 Экспорт</label>
+          <label>💾 Экспорт задач</label>
           <button id="btnExport" class="primary">tasks.json</button>
         </div>
         <div>
-          <label>➕ Раздел</label>
-          <button id="btnAddSection" class="success">Добавить раздел</button>
-        </div>
-        <div>
-          <label>➕ Новая</label>
+          <label>➕ Новая задача</label>
           <button id="btnAdd" class="success">Задача</button>
         </div>
 
-        <!-- БЛОК ЗАГРУЗКИ С GITHUB (ДОБАВЛЕН) -->
+        <!-- БЛОК УЧЕНИКОВ И ПРОГРЕССА -->
+        <div>
+          <label>👤 Ученик</label>
+          <div class="row-center" style="gap: 5px;">
+            <select id="studentSelect" class="dropdown" style="min-width: 120px;"></select>
+            <button id="btnAddStudent" class="success" style="padding: 8px;">➕</button>
+          </div>
+        </div>
+        <div>
+          <label>📊 Прогресс</label>
+          <div class="row-center" style="gap: 5px;">
+            <button id="btnExportProgress" class="primary" style="padding: 8px 10px;">💾 Скачать</button>
+            <button id="btnImportProgress" class="primary" style="padding: 8px 10px;">📂 Загрузить</button>
+            <span style="font-size: 11px; color: #64748b;">(автосохранение 1 мин)</span>
+          </div>
+        </div>
+
+        <!-- БЛОК ЗАГРУЗКИ С GITHUB -->
         <div>
           <label>📦 GitHub</label>
           <select id="githubSelect" class="dropdown" style="min-width: 150px;">
@@ -541,7 +657,6 @@
           <label>&nbsp;</label>
           <button id="btnLoadFromGitHub" class="primary">Загрузить с GitHub</button>
         </div>
-        <!-- КОНЕЦ БЛОКА GITHUB -->
 
         <div class="print-options">
           <button id="btnToggleAnswers" class="toggle-answers active">Скрыть ответы</button>
@@ -602,26 +717,59 @@
     </div>
   </div>
 
+  <!-- Кнопки навигации -->
+  <div class="nav-buttons no-print" id="navButtons">
+    <button class="nav-btn" id="scrollToTop" title="К меню">⬆️</button>
+    <button class="nav-btn" id="scrollToLastViewed" title="К последней задаче">⬇️</button>
+  </div>
+
   <div id="app" class="grid no-print"></div>
   <div id="printRoot"></div>
 
+  <!-- Модальное окно для импорта прогресса -->
+  <div id="importProgressModal" class="modal-import" style="display: none;">
+    <div class="modal-import-content">
+      <div class="modal-import-title">📂 Загрузить прогресс учеников</div>
+      <div class="modal-import-option">
+        <input type="radio" name="importMode" id="modeReplace" value="replace" checked>
+        <label for="modeReplace">🔄 Заменить всех учеников</label>
+      </div>
+      <div class="modal-import-option">
+        <input type="radio" name="importMode" id="modeMerge" value="merge">
+        <label for="modeMerge">➕ Объединить с существующими (при совпадении имён добавится _2, _3...)</label>
+      </div>
+      <div class="modal-import-buttons">
+        <button id="confirmImport" class="primary">✅ Загрузить</button>
+        <button id="cancelImport">❌ Отмена</button>
+      </div>
+    </div>
+  </div>
+
 <script>
 (() => {
-  let availableSections = new Set([""]);
-
+  // ==================== ХРАНИЛИЩЕ УЧЕНИКОВ ====================
+  let students = {};
+  let currentStudent = 'default';
+  
+  // ==================== ЗАДАЧИ ====================
   let tasks = [];
+  let availableSections = new Set([""]);
+  
+  // ==================== СОСТОЯНИЯ ====================
   let editingTaskId = null;
   let sortByTitle = false;
   let allAnswersVisible = false;
   let allDrawingsSolutionsVisible = false;
+  let lastViewedTaskId = null; // ID последней просмотренной задачи
+  let autoSaveInterval = null;
 
+  // ==================== ЭЛЕМЕНТЫ ====================
   const app = document.getElementById('app');
   const printRoot = document.getElementById('printRoot');
   const countContainer = document.getElementById('countContainer');
   const sortTitleBtn = document.getElementById('sortTitle');
   const btnToggleAnswers = document.getElementById('btnToggleAnswers');
   const btnToggleDrawingsSolutions = document.getElementById('btnToggleDrawingsSolutions');
-  const btnAddSection = document.getElementById('btnAddSection');
   
   const fileInput = document.getElementById('fileInput');
   const btnExport = document.getElementById('btnExport');
@@ -633,14 +781,50 @@
   const fSolved = document.getElementById('fSolved');
   const fFav = document.getElementById('fFav');
   const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+  const studentSelect = document.getElementById('studentSelect');
+  const btnAddStudent = document.getElementById('btnAddStudent');
+  const keepStudentsCheck = document.getElementById('keepStudents');
 
-  // Элементы для GitHub
+  // Кнопки прогресса
+  const btnExportProgress = document.getElementById('btnExportProgress');
+  const btnImportProgress = document.getElementById('btnImportProgress');
+  const importModal = document.getElementById('importProgressModal');
+  const confirmImport = document.getElementById('confirmImport');
+  const cancelImport = document.getElementById('cancelImport');
+  const modeReplace = document.getElementById('modeReplace');
+  const modeMerge = document.getElementById('modeMerge');
+
+  // GitHub
   const btnLoadFromGitHub = document.getElementById('btnLoadFromGitHub');
   const githubSelect = document.getElementById('githubSelect');
   const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/GannaMath2026/trenager_programs/main/json_files/';
 
+  // Кнопки навигации
+  const scrollToTopBtn = document.getElementById('scrollToTop');
+  const scrollToLastViewedBtn = document.getElementById('scrollToLastViewed');
+  const navButtons = document.getElementById('navButtons');
+  const topPanel = document.getElementById('topPanel');
+
+  // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
   const uid = () => Date.now() + Math.floor(Math.random() * 1000);
 
+  function escapeHtml(s) {
+    if (s === undefined || s === null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(s);
+    return div.innerHTML;
+  }
+
+  function toDataUrlFromFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ==================== НОРМАЛИЗАЦИЯ ЗАДАЧИ ====================
   function normalizeTask(t) {
     const task = {
       id: t.id || uid(),
@@ -654,8 +838,6 @@
       drawingImage: t.drawingImage || "",
       solutionImage: t.solutionImage || "",
       isAnswerVisible: t.isAnswerVisible || false,
-      isSolved: t.isSolved || false,
-      isFavorite: t.isFavorite || false,
       difficulty: t.difficulty || "basic",
       section: t.section || "",
       sectionName: t.sectionName || "",
@@ -681,22 +863,149 @@
     return task;
   }
 
-  function escapeHtml(s) {
-    if (s === undefined || s === null) return '';
-    const div = document.createElement('div');
-    div.textContent = String(s);
-    return div.innerHTML;
+  // ==================== УЧЕНИКИ ====================
+  function loadStudents() {
+    const saved = localStorage.getItem('studentsData_v2');
+    if (saved) {
+      try {
+        students = JSON.parse(saved);
+      } catch (e) {
+        students = { default: { name: 'Ученик 1', solved: {}, favorites: {} } };
+      }
+    } else {
+      students = { default: { name: 'Ученик 1', solved: {}, favorites: {} } };
+    }
+    
+    if (!students[currentStudent]) {
+      currentStudent = Object.keys(students)[0] || 'default';
+    }
   }
 
-  function toDataUrlFromFile(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  function saveStudents() {
+    localStorage.setItem('studentsData_v2', JSON.stringify(students));
   }
 
+  function updateStudentSelect() {
+    studentSelect.innerHTML = Object.keys(students).map(id => 
+      `<option value="${id}" ${currentStudent === id ? 'selected' : ''}>${students[id].name}</option>`
+    ).join('');
+  }
+
+  // ==================== АВТОСОХРАНЕНИЕ ====================
+  function startAutoSave() {
+    if (autoSaveInterval) clearInterval(autoSaveInterval);
+    autoSaveInterval = setInterval(() => {
+      saveStudents();
+      console.log('🔄 Автосохранение в', new Date().toLocaleTimeString());
+    }, 60000); // 1 минута
+  }
+
+  // ==================== ЭКСПОРТ ПРОГРЕССА ====================
+  btnExportProgress.addEventListener('click', () => {
+    const exportData = {
+      exportDate: new Date().toISOString(),
+      students: students
+    };
+    
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `progress_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  });
+
+  // ==================== ИМПОРТ ПРОГРЕССА ====================
+  btnImportProgress.addEventListener('click', () => {
+    importModal.style.display = 'flex';
+  });
+
+  cancelImport.addEventListener('click', () => {
+    importModal.style.display = 'none';
+  });
+
+  confirmImport.addEventListener('click', () => {
+    const mode = modeReplace.checked ? 'replace' : 'merge';
+    
+    // Создаём скрытый input для выбора файла
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        
+        if (!data.students) {
+          alert('Ошибка: файл не содержит данных учеников');
+          return;
+        }
+        
+        if (mode === 'replace') {
+          // Полная замена
+          students = data.students;
+        } else {
+          // Объединение с суффиксами
+          const existingNames = new Set(Object.values(students).map(s => s.name));
+          
+          for (const [id, student] of Object.entries(data.students)) {
+            let newName = student.name;
+            let counter = 2;
+            
+            while (existingNames.has(newName)) {
+              newName = `${student.name}_${counter}`;
+              counter++;
+            }
+            
+            // Создаём нового ученика с уникальным ID
+            const newId = 'student' + Date.now() + Math.random();
+            students[newId] = {
+              name: newName,
+              solved: student.solved || {},
+              favorites: student.favorites || {}
+            };
+            existingNames.add(newName);
+          }
+        }
+        
+        saveStudents();
+        updateStudentSelect();
+        
+        // Если текущий ученик исчез, выбираем первого
+        if (!students[currentStudent]) {
+          currentStudent = Object.keys(students)[0];
+        }
+        
+        render();
+        alert('Прогресс успешно загружен');
+      } catch (err) {
+        alert('Ошибка загрузки файла: ' + err.message);
+      } finally {
+        importModal.style.display = 'none';
+      }
+    };
+    
+    input.click();
+  });
+
+  // Закрытие модального окна по клику вне его
+  window.addEventListener('click', (e) => {
+    if (e.target === importModal) {
+      importModal.style.display = 'none';
+    }
+  });
+
+  // ==================== ЗАДАЧИ ====================
   function getAllSections() {
     const sections = new Set([...availableSections]);
     tasks.forEach(task => {
@@ -717,8 +1026,11 @@
     }
   }
 
+  // ==================== ФИЛЬТРЫ ====================
   function matchesFilters(task) {
     if (task.isSectionHeader) return true;
+    
+    const studentData = students[currentStudent] || { solved: {}, favorites: {} };
     
     const search = q.value.trim().toLowerCase();
     if (search && !(task.title + ' ' + task.sectionName).toLowerCase().includes(search)) return false;
@@ -726,8 +1038,12 @@
     if (fSection.value && task.sectionName !== fSection.value) return false;
     const activeDifficulty = document.querySelector('.difficulty-btn.active')?.dataset.difficulty;
     if (activeDifficulty && activeDifficulty !== '' && task.difficulty !== activeDifficulty) return false;
-    if (fSolved.value !== '' && String(!!task.isSolved) !== fSolved.value) return false;
-    if (fFav.value !== '' && String(!!task.isFavorite) !== fFav.value) return false;
+    
+    if (fSolved.value === 'true' && !studentData.solved[task.id]) return false;
+    if (fSolved.value === 'false' && studentData.solved[task.id]) return false;
+    
+    if (fFav.value === 'true' && !studentData.favorites[task.id]) return false;
+    if (fFav.value === 'false' && studentData.favorites[task.id]) return false;
     
     return true;
   }
@@ -749,6 +1065,7 @@
     return filtered;
   }
 
+  // ==================== МОДАЛКА ====================
   function showModal(imageSrc, title) {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
@@ -775,6 +1092,7 @@
     });
   }
 
+  // ==================== КАЛЬКУЛЯТОР ====================
   function safeEvaluate(expr) {
     try {
       expr = expr.replace(/√/g, 'Math.sqrt').replace(/\^/g, '**');
@@ -796,18 +1114,21 @@
     }
   };
 
+  // ==================== РЕНДЕР ЗОНЫ ====================
   function renderZoneContent(task, zoneType, showAnswer) {
     if (zoneType === 'task') {
       if (task.taskImage) {
         return `<img src="${task.taskImage}" alt="Условие" style="max-width:100%;">`;
       } else if (task.taskText) {
-        return `<div class="text-content">${escapeHtml(task.taskText).replace(/\n/g, '<br>')}</div>`;
+        // LATEGL ADD: Добавляем класс для LaTeX
+        return `<div class="text-content latex-content">${escapeHtml(task.taskText).replace(/\n/g, '<br>')}</div>`;
       }
     } else if (zoneType === 'answer') {
       if (task.answerImage && showAnswer) {
         return `<img src="${task.answerImage}" alt="Ответ" style="max-width:100%;">`;
       } else if (task.answerText && showAnswer) {
-        return `<div class="text-content">${escapeHtml(task.answerText).replace(/\n/g, '<br>')}</div>`;
+        // LATEGL ADD: Добавляем класс для LaTeX
+        return `<div class="text-content latex-content">${escapeHtml(task.answerText).replace(/\n/g, '<br>')}</div>`;
       } else if (!showAnswer && (task.answerImage || task.answerText)) {
         return `<div class="hint">кликни чтобы открыть</div>`;
       }
@@ -815,11 +1136,13 @@
     return '';
   }
 
+  // ==================== РЕНДЕР ЗАДАЧИ ====================
   function renderTask(task) {
     const isEditing = editingTaskId === task.id;
     const showAnswer = task.isAnswerVisible || allAnswersVisible;
     const showDrawingsSolutions = allDrawingsSolutionsVisible;
     const sections = getAllSections();
+    const studentData = students[currentStudent] || { solved: {}, favorites: {} };
     
     if (task.isSectionHeader) {
       return `
@@ -846,6 +1169,9 @@
     const taskZoneClass = !task.taskImage && !task.taskText ? 'empty' : '';
     const answerZoneClass = !task.answerImage && !task.answerText ? 'empty' : '';
     
+    const isSolved = !!studentData.solved[task.id];
+    const isFav = !!studentData.favorites[task.id];
+    
     return `
       <div class="task" data-id="${task.id}">
         <div class="task-head">
@@ -858,15 +1184,15 @@
                   ${task.difficulty === 'basic' ? 'Лёгкая' : task.difficulty === 'medium' ? 'Средняя' : 'Сложная'}
                 </span>
               </span>
-              <span class="badge">${task.isSolved ? '✅ решено' : '❌ не решено'}</span>
-              <span class="badge">${task.isFavorite ? '⭐ избранное' : '☆'}</span>
+              <span class="badge">${isSolved ? '✅ решено' : '❌ не решено'}</span>
+              <span class="badge">${isFav ? '⭐ избранное' : '☆'}</span>
               ${solutionLinkHtml}
               ${videoLinkHtml}
             </div>
           </div>
           <div class="actions">
-            <button data-act="toggleSolved">${task.isSolved ? 'Снять ✅' : 'В решённые ✅'}</button>
-            <button data-act="toggleFav">${task.isFavorite ? 'Убрать ⭐' : 'В избранное ⭐'}</button>
+            <button data-act="toggleSolved">${isSolved ? 'Снять ✅' : 'В решённые ✅'}</button>
+            <button data-act="toggleFav">${isFav ? 'Убрать ⭐' : 'В избранное ⭐'}</button>
             <button data-act="edit" class="${isEditing ? '' : 'primary'}">${isEditing ? '💾 Сохранить' : '✏️ Редактировать'}</button>
             <button data-act="clearImages">🗑️ Очистить</button>
             <button data-act="delete" class="danger">🗑️ Удалить</button>
@@ -973,6 +1299,7 @@
     `;
   }
 
+  // ==================== ОСНОВНОЙ РЕНДЕР ====================
   function render() {
     updateSectionDropdown();
     const filtered = getFilteredAndSortedTasks();
@@ -982,8 +1309,73 @@
       '<div class="card" style="text-align:center;padding:40px"><div class="muted">Нет задач по фильтру</div></div>';
     
     countContainer.innerHTML = `<div class="count-badge">📊 ${filtered.length}</div>`;
+    
+    // Прячем кнопки навигации, если задач мало
+    if (filtered.length < 1) {
+      navButtons.classList.add('hidden');
+    } else {
+      navButtons.classList.remove('hidden');
+    }
+
+    // LATEGL ADD: Запускаем рендеринг LaTeX после обновления страницы
+    setTimeout(() => {
+      MathJax.typesetPromise().catch(err => {
+        console.warn('Ошибка рендеринга LaTeX:', err);
+      });
+    }, 100);
   }
 
+  // ==================== НАВИГАЦИЯ ====================
+  scrollToTopBtn.addEventListener('click', () => {
+    topPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  scrollToLastViewedBtn.addEventListener('click', () => {
+    if (lastViewedTaskId) {
+      const taskEl = document.querySelector(`.task[data-id="${lastViewedTaskId}"]`);
+      if (taskEl) {
+        taskEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Подсветка задачи
+        taskEl.classList.add('task-highlight');
+        setTimeout(() => {
+          taskEl.classList.remove('task-highlight');
+        }, 1000);
+        return;
+      }
+    }
+    // Если задачи нет - скроллим немного вниз
+    window.scrollBy({
+      top: 300,
+      behavior: 'smooth'
+    });
+  });
+
+  // ==================== ЗАПОМИНАНИЕ ПОСЛЕДНЕЙ ЗАДАЧИ ====================
+  app.addEventListener('click', (e) => {
+    const taskEl = e.target.closest('.task');
+    if (taskEl) {
+      const taskId = Number(taskEl.dataset.id);
+      const task = tasks.find(t => t.id === taskId);
+      // Не запоминаем заголовки разделов
+      if (task && !task.isSectionHeader) {
+        lastViewedTaskId = taskId;
+      }
+    }
+  });
+
+  // Также запоминаем при редактировании
+  app.addEventListener('input', (e) => {
+    const taskEl = e.target.closest('.task');
+    if (taskEl) {
+      const taskId = Number(taskEl.dataset.id);
+      const task = tasks.find(t => t.id === taskId);
+      if (task && !task.isSectionHeader) {
+        lastViewedTaskId = taskId;
+      }
+    }
+  });
+
+  // ==================== СОБЫТИЯ ====================
   btnToggleDrawingsSolutions.addEventListener('click', () => {
     allDrawingsSolutionsVisible = !allDrawingsSolutionsVisible;
     btnToggleDrawingsSolutions.textContent = allDrawingsSolutionsVisible 
@@ -992,13 +1384,39 @@
     render();
   });
 
+  // ИМПОРТ JSON (задачи)
   fileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      tasks = Array.isArray(data) ? data.map(normalizeTask) : [normalizeTask(data)];
+      
+      const keepStudents = keepStudentsCheck.checked;
+      
+      if (keepStudents) {
+        // Только задачи, учеников не трогаем
+        if (data.tasks) {
+          tasks = data.tasks.map(normalizeTask);
+        } else if (Array.isArray(data)) {
+          tasks = data.map(normalizeTask);
+        }
+      } else {
+        // Полная замена: задачи + ученики
+        if (data.tasks && data.students) {
+          tasks = data.tasks.map(normalizeTask);
+          students = data.students;
+          if (!students[currentStudent]) {
+            currentStudent = Object.keys(students)[0] || 'default';
+          }
+          saveStudents();
+          updateStudentSelect();
+        } else if (Array.isArray(data)) {
+          tasks = data.map(normalizeTask);
+        }
+      }
+      
       render();
     } catch (err) {
       alert('Ошибка JSON: ' + err.message);
@@ -1006,17 +1424,23 @@
     e.target.value = '';
   });
 
+  // ЭКСПОРТ JSON (задачи + ученики)
   btnExport.addEventListener('click', () => {
-    const jsonString = JSON.stringify(tasks.map(t => {
-      const taskCopy = {...t};
-      taskCopy.isAnswerVisible = false;
-      return taskCopy;
-    }), null, 2);
+    const exportData = {
+      tasks: tasks.map(t => {
+        const taskCopy = {...t};
+        taskCopy.isAnswerVisible = false;
+        return taskCopy;
+      }),
+      students: students
+    };
     
-    let fileName = prompt('Введите имя файла (без .json):', 'tasks');
+    const jsonString = JSON.stringify(exportData, null, 2);
+    
+    let fileName = prompt('Введите имя файла (без .json):', 'tasks_and_students');
     if (fileName === null) return;
     
-    fileName = fileName.trim().replace(/\.json$/i, '') || 'tasks';
+    fileName = fileName.trim().replace(/\.json$/i, '') || 'tasks_and_students';
     const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1028,14 +1452,6 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }, 100);
-  });
-
-  btnAddSection.addEventListener('click', () => {
-    const newSection = prompt('Название нового раздела:');
-    if (newSection && newSection.trim()) {
-      availableSections.add(newSection.trim());
-      updateSectionDropdown();
-    }
   });
 
   btnToggleAnswers.addEventListener('click', () => {
@@ -1087,7 +1503,7 @@
     render();
   });
 
-  // Обработчик загрузки с GitHub
+  // GITHUB - только задачи, ученики не трогаем
   btnLoadFromGitHub.addEventListener('click', async () => {
     const selected = githubSelect.value;
     if (!selected) {
@@ -1104,6 +1520,7 @@
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       
+      // GitHub грузит только задачи
       tasks = Array.isArray(data) ? data.map(normalizeTask) : [normalizeTask(data)];
       
       editingTaskId = null;
@@ -1118,6 +1535,25 @@
     }
   });
 
+  // УЧЕНИКИ
+  btnAddStudent.addEventListener('click', () => {
+    const name = prompt('Имя нового ученика:');
+    if (name && name.trim()) {
+      const id = 'student' + Date.now() + Math.random();
+      students[id] = { name: name.trim(), solved: {}, favorites: {} };
+      currentStudent = id;
+      saveStudents();
+      updateStudentSelect();
+      render();
+    }
+  });
+
+  studentSelect.addEventListener('change', (e) => {
+    currentStudent = e.target.value;
+    render();
+  });
+
+  // КЛИКИ ПО ЗАДАЧАМ
   app.addEventListener('click', async (e) => {
     const btn = e.target.closest('button');
     if (!btn) return;
@@ -1130,11 +1566,23 @@
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
     
+    const studentData = students[currentStudent] || { solved: {}, favorites: {} };
+    
     if (act === 'toggleSolved') {
-      task.isSolved = !task.isSolved;
+      if (studentData.solved[taskId]) {
+        delete studentData.solved[taskId];
+      } else {
+        studentData.solved[taskId] = true;
+      }
+      saveStudents();
       render();
     } else if (act === 'toggleFav') {
-      task.isFavorite = !task.isFavorite;
+      if (studentData.favorites[taskId]) {
+        delete studentData.favorites[taskId];
+      } else {
+        studentData.favorites[taskId] = true;
+      }
+      saveStudents();
       render();
     } else if (act === 'edit') {
       editingTaskId = editingTaskId === task.id ? null : task.id;
@@ -1240,6 +1688,7 @@
     }
   });
 
+  // ИЗМЕНЕНИЕ ПОЛЕЙ
   app.addEventListener('input', (e) => {
     const input = e.target.closest('[data-field]');
     if (!input || !editingTaskId) return;
@@ -1273,6 +1722,7 @@
     render();
   });
 
+  // ВСТАВКА
   document.addEventListener('paste', async (e) => {
     if (!editingTaskId) return;
     
@@ -1332,6 +1782,7 @@
     }
   });
 
+  // ПЕЧАТЬ
   function printTasks(showAnswers) {
     const ANSWER_COLUMNS = 10;
     const ANSWER_SCALE = 0.4;
@@ -1346,7 +1797,6 @@
     
     const filtered = getFilteredAndSortedTasks();
     let printContent = '';
-    let answerKey = '';
     let answerItems = '';
     let answerCount = 0;
     
@@ -1393,6 +1843,7 @@
       }
     });
     
+    let answerKey = '';
     if (!showAnswers && answerItems) {
       answerKey = `
         <div class="answer-key" style="page-break-before: always; margin-top: 40px;">
@@ -1448,10 +1899,14 @@
   btnPrintNoAnswer.addEventListener('click', () => printTasks(true));
   btnPrintWithAnswer.addEventListener('click', () => printTasks(false));
 
-  tasks = [
-    // Добавьте свои задачи здесь
-  ];
-
+  // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+  loadStudents();
+  updateStudentSelect();
+  startAutoSave();
+  
+  // Пример задач (можно убрать или оставить пустым)
+  tasks = [];
+  
   render();
 })();
 </script>
