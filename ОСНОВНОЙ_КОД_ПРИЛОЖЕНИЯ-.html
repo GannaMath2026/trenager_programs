@@ -1425,34 +1425,34 @@
   });
 
   // ЭКСПОРТ JSON (задачи + ученики)
- btnExport.addEventListener('click', () => {
-  // Экспортируем ТОЛЬКО задачи (в виде массива)
-  const exportData = tasks.map(t => {
-    const taskCopy = {...t};
-    taskCopy.isAnswerVisible = false; // сбрасываем видимость ответов
-    return taskCopy;
+  btnExport.addEventListener('click', () => {
+    const exportData = {
+      tasks: tasks.map(t => {
+        const taskCopy = {...t};
+        taskCopy.isAnswerVisible = false;
+        return taskCopy;
+      }),
+      students: students
+    };
+    
+    const jsonString = JSON.stringify(exportData, null, 2);
+    
+    let fileName = prompt('Введите имя файла (без .json):', 'tasks_and_students');
+    if (fileName === null) return;
+    
+    fileName = fileName.trim().replace(/\.json$/i, '') || 'tasks_and_students';
+    const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName + '.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
   });
-  
-  const jsonString = JSON.stringify(exportData, null, 2);
-  
-  let fileName = prompt('Введите имя файла (без .json):', 'tasks');
-  if (fileName === null) return;
-  
-  fileName = fileName.trim().replace(/\.json$/i, '') || 'tasks';
-  
-  const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName + '.json';
-  document.body.appendChild(a);
-  a.click();
-  
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 100);
-});
 
   btnToggleAnswers.addEventListener('click', () => {
     allAnswersVisible = !allAnswersVisible;
