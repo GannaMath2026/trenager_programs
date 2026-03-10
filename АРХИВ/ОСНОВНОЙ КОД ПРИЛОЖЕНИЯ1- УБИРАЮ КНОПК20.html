@@ -597,8 +597,8 @@
       padding-left: 16px;
     }
     
-    /* Классы для скрытия содержимого */
-    .answer-content-hidden {
+    /* Классы для скрытия */
+    .answer-hidden {
       display: none !important;
     }
     
@@ -794,10 +794,9 @@
         </div>
 
         <div class="print-options">
-          <!-- Кнопки управления видимостью -->
-          <button id="btnToggleAnswers" class="toggle-answers">Показать ответы</button>
-          <button id="btnToggleSolutions" class="primary">Показать решения</button>
-          <button id="btnToggleDrawings" class="primary">Показать чертежи</button>
+          <!-- Кнопка ответов скрыта -->
+          <button id="btnToggleAnswers" class="toggle-answers active" style="display: none;">Скрыть ответы</button>
+          <button id="btnToggleDrawingsSolutions" class="primary">📐 Показать графики</button>
           <button id="btnToggleAnalogs" class="toggle-analogs">📋 Показать аналоги</button>
           <button id="btnPrintNoAnswer" class="primary" title="Без ответов">🖨️ Без ответов</button>
           <button id="btnPrintWithAnswer" class="primary" title="С ответами">🖨️ С ответами</button>
@@ -883,20 +882,6 @@
     </div>
   </div>
 
-  <!-- Модальное окно для выбора ученика при импорте -->
-  <div id="importStudentModal" class="modal-import" style="display: none;">
-    <div class="modal-import-content">
-      <div class="modal-import-title">👤 Выберите ученика для импорта прогресса</div>
-      <div class="modal-import-option">
-        <select id="importStudentSelect" class="dropdown" style="width: 100%;"></select>
-      </div>
-      <div class="modal-import-buttons">
-        <button id="confirmImportStudent" class="primary">✅ Импортировать</button>
-        <button id="cancelImportStudent">❌ Отмена</button>
-      </div>
-    </div>
-  </div>
-
 <script>
 (() => {
   // ==================== ХРАНИЛИЩЕ УЧЕНИКОВ ====================
@@ -910,23 +895,17 @@
   // ==================== СОСТОЯНИЯ ====================
   let editingTaskId = null;
   let sortByTitle = false;
+  let allDrawingsSolutionsVisible = false;
   let allAnalogsVisible = true;
   let lastViewedTaskId = null;
   let autoSaveInterval = null;
-  
-  // Состояния видимости
-  let answersVisible = false;
-  let solutionsVisible = false;
-  let drawingsVisible = false;
 
   // ==================== ЭЛЕМЕНТЫ ====================
   const app = document.getElementById('app');
   const printRoot = document.getElementById('printRoot');
   const countContainer = document.getElementById('countContainer');
   const sortTitleBtn = document.getElementById('sortTitle');
-  const btnToggleAnswers = document.getElementById('btnToggleAnswers');
-  const btnToggleSolutions = document.getElementById('btnToggleSolutions');
-  const btnToggleDrawings = document.getElementById('btnToggleDrawings');
+  const btnToggleDrawingsSolutions = document.getElementById('btnToggleDrawingsSolutions');
   const btnToggleAnalogs = document.getElementById('btnToggleAnalogs');
   
   const fileInput = document.getElementById('fileInput');
@@ -951,12 +930,6 @@
   const cancelImport = document.getElementById('cancelImport');
   const modeReplace = document.getElementById('modeReplace');
   const modeMerge = document.getElementById('modeMerge');
-
-  // Модальное окно выбора ученика
-  const importStudentModal = document.getElementById('importStudentModal');
-  const importStudentSelect = document.getElementById('importStudentSelect');
-  const confirmImportStudent = document.getElementById('confirmImportStudent');
-  const cancelImportStudent = document.getElementById('cancelImportStudent');
 
   // GitHub
   const btnLoadFromGitHub = document.getElementById('btnLoadFromGitHub');
@@ -1007,14 +980,7 @@
       isSectionHeader: t.isSectionHeader || false,
       isAnalog: t.isAnalog || false,
       parentId: t.parentId || null,
-      analogId: t.analogId || null,
-      // Сохраняем оригинальный JSON для умного ввода
-      taskJSON: t.taskJSON || null,
-      answerJSON: t.answerJSON || null,
-      solutionJSON: t.solutionJSON || null,
-      // Флаги для прогресса
-      isSolved: t.isSolved || false,
-      isFavorite: t.isFavorite || false
+      analogId: t.analogId || null
     };
     
     if (task.taskImage && task.taskImage.startsWith('data:text/plain')) {
@@ -1088,12 +1054,6 @@
   function updateStudentSelect() {
     studentSelect.innerHTML = Object.keys(students).map(id => 
       `<option value="${id}" ${currentStudent === id ? 'selected' : ''}>${students[id].name}</option>`
-    ).join('');
-  }
-
-  function updateImportStudentSelect() {
-    importStudentSelect.innerHTML = Object.keys(students).map(id => 
-      `<option value="${id}">${students[id].name}</option>`
     ).join('');
   }
 
@@ -1182,7 +1142,6 @@
         
         saveStudents();
         updateStudentSelect();
-        updateImportStudentSelect();
         
         if (!students[currentStudent]) {
           currentStudent = Object.keys(students)[0];
@@ -1203,9 +1162,6 @@
   window.addEventListener('click', (e) => {
     if (e.target === importModal) {
       importModal.style.display = 'none';
-    }
-    if (e.target === importStudentModal) {
-      importStudentModal.style.display = 'none';
     }
   });
 
@@ -1319,39 +1275,55 @@
   };
 
   // ==================== РЕНДЕР КОНТЕНТА ====================
-  function renderContent(task, zoneType) {
+  function renderContent(task, zoneType, showAnswer) {
     if (zoneType === 'task') {
       if (task.taskImage && task.taskText) {
         return `
-          <div class="text-content latex-content">${task.taskText}</div>
+          <div class="text-content latex-content">${escapeHtml(task.taskText).replace(/\n/g, '<br>')}</div>
           <img src="${task.taskImage}" alt="Условие" style="max-width:100%; margin-top:10px;">
         `;
       } else if (task.taskImage) {
         return `<img src="${task.taskImage}" alt="Условие" style="max-width:100%;">`;
       } else if (task.taskText) {
-        return `<div class="text-content latex-content">${task.taskText}</div>`;
+        if (task.taskText.includes('<table')) {
+          return `<div class="text-content latex-content">${task.taskText}</div>`;
+        } else {
+          return `<div class="text-content latex-content">${escapeHtml(task.taskText).replace(/\n/g, '<br>')}</div>`;
+        }
       }
     } else if (zoneType === 'answer') {
-      if (task.answerImage && task.answerText) {
-        return `
-          <div class="text-content latex-content">${task.answerText}</div>
-          <img src="${task.answerImage}" alt="Ответ" style="max-width:100%; margin-top:10px;">
-        `;
-      } else if (task.answerImage) {
-        return `<img src="${task.answerImage}" alt="Ответ" style="max-width:100%;">`;
-      } else if (task.answerText) {
-        return `<div class="text-content latex-content">${task.answerText}</div>`;
+      if (showAnswer) {
+        if (task.answerImage && task.answerText) {
+          return `
+            <div class="text-content latex-content">${escapeHtml(task.answerText).replace(/\n/g, '<br>')}</div>
+            <img src="${task.answerImage}" alt="Ответ" style="max-width:100%; margin-top:10px;">
+          `;
+        } else if (task.answerImage) {
+          return `<img src="${task.answerImage}" alt="Ответ" style="max-width:100%;">`;
+        } else if (task.answerText) {
+          if (task.answerText.includes('<table')) {
+            return `<div class="text-content latex-content">${task.answerText}</div>`;
+          } else {
+            return `<div class="text-content latex-content">${escapeHtml(task.answerText).replace(/\n/g, '<br>')}</div>`;
+          }
+        }
+      } else {
+        return `<div class="hint">кликни чтобы открыть</div>`;
       }
     } else if (zoneType === 'solution') {
       if (task.solutionImage && task.solutionText) {
         return `
-          <div class="text-content latex-content">${task.solutionText}</div>
+          <div class="text-content latex-content">${escapeHtml(task.solutionText).replace(/\n/g, '<br>')}</div>
           <img src="${task.solutionImage}" alt="Решение" style="max-width:100%; margin-top:10px;">
         `;
       } else if (task.solutionImage) {
         return `<img src="${task.solutionImage}" alt="Решение" style="max-width:100%;">`;
       } else if (task.solutionText) {
-        return `<div class="text-content latex-content">${task.solutionText}</div>`;
+        if (task.solutionText.includes('<table')) {
+          return `<div class="text-content latex-content">${task.solutionText}</div>`;
+        } else {
+          return `<div class="text-content latex-content">${escapeHtml(task.solutionText).replace(/\n/g, '<br>')}</div>`;
+        }
       }
     }
     return '';
@@ -1360,6 +1332,7 @@
   // ==================== РЕНДЕР ЗАДАЧИ ====================
   function renderTask(task) {
     const isEditing = editingTaskId === task.id;
+    const showAnswer = false; // Управление через CSS классы
     const sections = getAllSections();
     const studentData = students[currentStudent] || { solved: {}, favorites: {} };
     
@@ -1381,7 +1354,6 @@
     
     const hasDrawing = !!task.drawingImage;
     const hasSolution = !!(task.solutionImage || task.solutionText);
-    const hasAnswer = !!(task.answerImage || task.answerText);
     const hasAnalog = !!task.analogId;
     const isAnalog = !!task.isAnalog;
     
@@ -1395,11 +1367,12 @@
       parentTask = tasks.find(t => t.id === task.parentId);
     }
     
-    const taskContent = renderContent(task, 'task');
-    const answerContent = renderContent(task, 'answer');
-    const solutionContent = renderContent(task, 'solution');
+    const taskContent = renderContent(task, 'task', showAnswer);
+    const answerContent = renderContent(task, 'answer', showAnswer);
+    const solutionContent = renderContent(task, 'solution', showAnswer);
     
     const taskZoneClass = !task.taskImage && !task.taskText ? 'empty' : '';
+    const answerZoneClass = !task.answerImage && !task.answerText ? 'empty' : '';
     
     const isSolved = !!studentData.solved[task.id];
     const isFav = !!studentData.favorites[task.id];
@@ -1407,11 +1380,6 @@
     if (isAnalog && parentTask && allAnalogsVisible) {
       return '';
     }
-    
-    // Классы видимости на основе глобальных состояний
-    const answerHiddenClass = !answersVisible ? 'answer-content-hidden' : '';
-    const solutionHiddenClass = !solutionsVisible ? 'solution-hidden' : '';
-    const drawingHiddenClass = !drawingsVisible ? 'drawing-hidden' : '';
     
     return `
       <div class="task" data-id="${task.id}">
@@ -1462,24 +1430,22 @@
               <div class="hint">Ctrl+V для вставки</div>
             </div>
             
-            ${hasAnswer ? `
-              <div class="zone answer-zone" data-zone="answer" tabindex="0">
-                <h4>💡 Ответ</h4>
-                <div class="answer-content ${answerHiddenClass}">${answerContent}</div>
-                ${isEditing ? `
-                  <div class="zone-actions">
-                    <button class="zone-action-btn" data-act="editText" data-zone="answer">📝 Редактировать текст</button>
-                    <button class="zone-action-btn" data-act="pasteImage" data-zone="answer">📋 Вставить изображение</button>
-                  </div>
-                ` : ''}
-                <div class="hint">кликни чтобы открыть/закрыть</div>
-              </div>
-            ` : ''}
+            <div class="zone answer-zone ${answerZoneClass} answer-hidden" data-zone="answer" tabindex="0">
+              <h4>💡 Ответ</h4>
+              ${answerContent}
+              ${isEditing ? `
+                <div class="zone-actions">
+                  <button class="zone-action-btn" data-act="editText" data-zone="answer">📝 Редактировать текст</button>
+                  <button class="zone-action-btn" data-act="pasteImage" data-zone="answer">📋 Вставить изображение</button>
+                </div>
+              ` : ''}
+              <div class="hint">кликни чтобы открыть/закрыть</div>
+            </div>
           </div>
           
           <!-- Зона решения -->
           ${hasSolution ? `
-            <div class="zone solution-zone ${solutionHiddenClass}" data-zone="solution" tabindex="0">
+            <div class="zone solution-zone solution-hidden" data-zone="solution" tabindex="0">
               <h4>📝 Решение ${task.solutionText && !task.solutionImage ? '(текст)' : ''}</h4>
               ${solutionContent}
               ${isEditing ? `
@@ -1488,28 +1454,39 @@
                   <button class="zone-action-btn" data-act="pasteImage" data-zone="solution">📋 Вставить изображение</button>
                 </div>
               ` : ''}
-              <div class="hint">кликни чтобы открыть/закрыть</div>
+              <div class="hint">Ctrl+V для вставки</div>
             </div>
           ` : ''}
           
           <!-- Чертеж -->
           ${hasDrawing ? `
-            <div class="drawing-section ${drawingHiddenClass}" data-zone="drawing">
+            <div class="drawing-section drawing-hidden" data-zone="drawing">
               <h4>📐 Чертеж</h4>
               <img src="${task.drawingImage}" style="max-width:100%; max-height:300px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-              <div class="hint">кликни чтобы открыть/закрыть</div>
             </div>
           ` : ''}
           
-          <!-- Кнопки управления (только в режиме редактирования) -->
-          ${isEditing ? `
-            <div class="image-buttons">
+          <!-- Кнопки управления -->
+          <div class="image-buttons">
+            ${hasDrawing ? `
+              <button class="image-btn ${hasDrawing ? 'has-image' : ''}" data-act="toggleDrawing">
+                📐 Чертеж
+              </button>
+            ` : ''}
+            
+            ${hasSolution ? `
+              <button class="image-btn ${hasSolution ? 'has-image' : ''}" data-act="toggleSolution">
+                📝 Решение
+              </button>
+            ` : ''}
+            
+            ${isEditing ? `
               <button class="image-btn" data-act="pasteDrawing">📋 Вставить чертеж</button>
               <button class="image-btn" data-act="editText" data-zone="solution">📝 Редактировать текст решения</button>
               <button class="image-btn" data-act="pasteSolution">📋 Вставить картинку решения</button>
               <button class="image-btn" data-act="clearDrawingSolution" style="background: #fef2f2; color: #dc2626;">🗑️ Очистить</button>
-            </div>
-          ` : ''}
+            ` : ''}
+          </div>
 
           ${!isEditing ? `
             <div class="calc-row" data-calc-id="${task.id}">
@@ -1559,12 +1536,13 @@
 
   // Краткий рендер задачи для отображения внутри прототипа
   function renderTaskShort(task) {
+    const showAnswer = false;
     const studentData = students[currentStudent] || { solved: {}, favorites: {} };
     const isSolved = !!studentData.solved[task.id];
     const isFav = !!studentData.favorites[task.id];
     
-    const taskContent = renderContent(task, 'task');
-    const answerContent = renderContent(task, 'answer');
+    const taskContent = renderContent(task, 'task', showAnswer);
+    const answerContent = renderContent(task, 'answer', showAnswer);
     
     return `
       <div class="task" data-id="${task.id}" style="border: 2px solid #fdba74; margin-bottom: 0;">
@@ -1585,16 +1563,14 @@
         </div>
         <div class="task-body">
           <div class="split">
-            <div class="zone task-zone" style="min-height: 60px;" data-zone="task">
+            <div class="zone task-zone" style="min-height: 60px;">
               <h4>📋 Условие</h4>
               ${taskContent}
             </div>
-            ${task.answerImage || task.answerText ? `
-              <div class="zone answer-zone" style="min-height: 60px;" data-zone="answer">
-                <h4>💡 Ответ</h4>
-                <div class="answer-content">${answerContent}</div>
-              </div>
-            ` : ''}
+            <div class="zone answer-zone" style="min-height: 60px;">
+              <h4>💡 Ответ</h4>
+              ${answerContent}
+            </div>
           </div>
           ${task.solutionLink ? `
             <div><a href="${escapeHtml(task.solutionLink)}" target="_blank" class="badge link">🔗 Решение</a></div>
@@ -1675,24 +1651,11 @@
   });
 
   // ==================== СОБЫТИЯ ====================
-  
-  // Кнопки управления видимостью
-  btnToggleAnswers.addEventListener('click', () => {
-    answersVisible = !answersVisible;
-    btnToggleAnswers.textContent = answersVisible ? 'Скрыть ответы' : 'Показать ответы';
-    btnToggleAnswers.classList.toggle('active', answersVisible);
-    render();
-  });
-
-  btnToggleSolutions.addEventListener('click', () => {
-    solutionsVisible = !solutionsVisible;
-    btnToggleSolutions.textContent = solutionsVisible ? 'Скрыть решения' : 'Показать решения';
-    render();
-  });
-
-  btnToggleDrawings.addEventListener('click', () => {
-    drawingsVisible = !drawingsVisible;
-    btnToggleDrawings.textContent = drawingsVisible ? 'Скрыть чертежи' : 'Показать чертежи';
+  btnToggleDrawingsSolutions.addEventListener('click', () => {
+    allDrawingsSolutionsVisible = !allDrawingsSolutionsVisible;
+    btnToggleDrawingsSolutions.textContent = allDrawingsSolutionsVisible 
+      ? '📐 Скрыть графики' 
+      : '📐 Показать графики';
     render();
   });
 
@@ -1716,21 +1679,26 @@
       const keepStudents = keepStudentsCheck.checked;
       
       if (keepStudents) {
-        // Обрабатываем разные форматы файлов
         if (data.tasks) {
           tasks = data.tasks.map(normalizeTask);
         } else if (Array.isArray(data)) {
           tasks = data.map(normalizeTask);
-        } else {
-          tasks = [normalizeTask(data)];
         }
         
-        // Показываем модальное окно для выбора ученика
-        updateImportStudentSelect();
-        importStudentModal.style.display = 'flex';
+        if (!students[currentStudent]) {
+          students[currentStudent] = { name: 'Ученик 1', solved: {}, favorites: {} };
+        }
         
-        // Сохраняем задачи временно
-        window.importedTasks = tasks;
+        tasks.forEach(task => {
+          if (task.isSolved) {
+            students[currentStudent].solved[task.id] = true;
+          }
+          if (task.isFavorite) {
+            students[currentStudent].favorites[task.id] = true;
+          }
+        });
+        
+        saveStudents();
         
       } else {
         if (data.tasks && data.students) {
@@ -1743,14 +1711,11 @@
           updateStudentSelect();
         } else if (Array.isArray(data)) {
           tasks = data.map(normalizeTask);
-        } else {
-          tasks = [normalizeTask(data)];
         }
-        
-        restoreAnalogLinks();
-        render();
-        alert('Задачи успешно загружены!');
       }
+      
+      restoreAnalogLinks();
+      render();
       
     } catch (err) {
       alert('Ошибка JSON: ' + err.message);
@@ -1758,56 +1723,19 @@
     e.target.value = '';
   });
 
-  // Подтверждение выбора ученика для импорта
-  confirmImportStudent.addEventListener('click', () => {
-    const selectedStudent = importStudentSelect.value;
-    
-    if (!students[selectedStudent]) {
-      students[selectedStudent] = { name: 'Ученик', solved: {}, favorites: {} };
-    }
-    
-    tasks = window.importedTasks;
-    
-    // Добавляем прогресс из задач к выбранному ученику
-    tasks.forEach(task => {
-      if (task.isSolved) {
-        students[selectedStudent].solved[task.id] = true;
-      }
-      if (task.isFavorite) {
-        students[selectedStudent].favorites[task.id] = true;
-      }
-    });
-    
-    saveStudents();
-    restoreAnalogLinks();
-    render();
-    
-    importStudentModal.style.display = 'none';
-    alert('Задачи и прогресс успешно загружены!');
-  });
-
-  cancelImportStudent.addEventListener('click', () => {
-    importStudentModal.style.display = 'none';
-    tasks = [];
-    render();
-  });
-
   // ЭКСПОРТ JSON
   btnExport.addEventListener('click', () => {
+    const studentData = students[currentStudent] || { solved: {}, favorites: {} };
+    
     const exportData = {
       tasks: tasks.map(t => {
         const taskCopy = {...t};
-        // Добавляем прогресс для всех учеников
-        taskCopy.studentsProgress = {};
-        Object.keys(students).forEach(studentId => {
-          taskCopy.studentsProgress[studentId] = {
-            solved: !!students[studentId].solved[t.id],
-            favorite: !!students[studentId].favorites[t.id]
-          };
-        });
+        taskCopy.isSolved = !!studentData.solved[t.id];
+        taskCopy.isFavorite = !!studentData.favorites[t.id];
         return taskCopy;
       }),
       students: students,
+      exportedFor: currentStudent,
       exportDate: new Date().toISOString()
     };
     
@@ -1913,7 +1841,6 @@
       currentStudent = id;
       saveStudents();
       updateStudentSelect();
-      updateImportStudentSelect();
       render();
     }
   });
@@ -2009,13 +1936,10 @@
           
           if (zoneType === 'task') {
             task.taskText = html;
-            task.taskJSON = data;
           } else if (zoneType === 'answer') {
             task.answerText = html;
-            task.answerJSON = data;
           } else if (zoneType === 'solution') {
             task.solutionText = html;
-            task.solutionJSON = data;
           }
           
           render();
@@ -2028,13 +1952,10 @@
       
       if (zoneType === 'task') {
         task.taskText = text;
-        task.taskJSON = null;
       } else if (zoneType === 'answer') {
         task.answerText = text;
-        task.answerJSON = null;
       } else if (zoneType === 'solution') {
         task.solutionText = text;
-        task.solutionJSON = null;
       }
       
       render();
@@ -2043,27 +1964,9 @@
 
   // ==================== КЛИКИ ПО ЗАДАЧАМ ====================
   app.addEventListener('click', async (e) => {
-    // Индивидуальный клик по ответу (переключает видимость только этого ответа)
     const answerZone = e.target.closest('.zone[data-zone="answer"]');
     if (answerZone && !editingTaskId) {
-      const answerContent = answerZone.querySelector('.answer-content');
-      if (answerContent) {
-        answerContent.classList.toggle('answer-content-hidden');
-      }
-      return;
-    }
-    
-    // Индивидуальный клик по решению
-    const solutionZone = e.target.closest('.zone[data-zone="solution"]');
-    if (solutionZone && !editingTaskId) {
-      solutionZone.classList.toggle('solution-hidden');
-      return;
-    }
-    
-    // Индивидуальный клик по чертежу
-    const drawingSection = e.target.closest('.drawing-section');
-    if (drawingSection && !editingTaskId) {
-      drawingSection.classList.toggle('drawing-hidden');
+      answerZone.classList.toggle('answer-hidden');
       return;
     }
     
@@ -2113,9 +2016,6 @@
       task.drawingImage = '';
       task.solutionImage = '';
       task.solutionText = '';
-      task.taskJSON = null;
-      task.answerJSON = null;
-      task.solutionJSON = null;
       render();
     }
     
@@ -2165,6 +2065,28 @@
       }
     }
     
+    else if (act === 'showDrawing' && task.drawingImage) {
+      showModal(task.drawingImage, `Чертеж: ${task.title}`);
+    }
+    
+    else if (act === 'showSolution' && task.solutionImage) {
+      showModal(task.solutionImage, `Решение: ${task.title}`);
+    }
+    
+    else if (act === 'toggleDrawing') {
+      const drawingSection = taskEl.querySelector('.drawing-section');
+      if (drawingSection) {
+        drawingSection.classList.toggle('drawing-hidden');
+      }
+    }
+    
+    else if (act === 'toggleSolution') {
+      const solutionZone = taskEl.querySelector('.zone.solution-zone');
+      if (solutionZone) {
+        solutionZone.classList.toggle('solution-hidden');
+      }
+    }
+    
     else if (act === 'pasteDrawing' && editingTaskId === taskId) {
       try {
         const items = await navigator.clipboard.read();
@@ -2207,7 +2129,6 @@
       task.drawingImage = '';
       task.solutionImage = '';
       task.solutionText = '';
-      task.solutionJSON = null;
       render();
     }
     
@@ -2215,26 +2136,14 @@
       const zone = btn.closest('.zone');
       const zoneType = btn.dataset.zone;
       
-      let currentHTML = '';
-      let currentJSON = null;
-      
-      if (zoneType === 'task') {
-        currentHTML = task.taskText || '';
-        currentJSON = task.taskJSON;
-      } else if (zoneType === 'answer') {
-        currentHTML = task.answerText || '';
-        currentJSON = task.answerJSON;
-      } else if (zoneType === 'solution') {
-        currentHTML = task.solutionText || '';
-        currentJSON = task.solutionJSON;
-      }
-      
-      // Показываем исходный HTML или JSON
-      const displayText = currentJSON ? JSON.stringify(currentJSON, null, 2) : currentHTML;
+      let currentText = '';
+      if (zoneType === 'task') currentText = task.taskText || '';
+      else if (zoneType === 'answer') currentText = task.answerText || '';
+      else if (zoneType === 'solution') currentText = task.solutionText || '';
       
       const textarea = document.createElement('textarea');
-      textarea.placeholder = 'Введите HTML или JSON с таблицами...';
-      textarea.value = displayText;
+      textarea.placeholder = 'Введите текст с LaTeX или вставьте JSON с таблицами...';
+      textarea.value = currentText.replace(/<[^>]*>/g, '');
       textarea.style.width = '100%';
       textarea.style.minHeight = '200px';
       textarea.style.fontFamily = 'monospace';
@@ -2285,28 +2194,21 @@
             
             if (zoneType === 'task') {
               task.taskText = html;
-              task.taskJSON = jsonData;
             } else if (zoneType === 'answer') {
               task.answerText = html;
-              task.answerJSON = jsonData;
             } else if (zoneType === 'solution') {
               task.solutionText = html;
-              task.solutionJSON = jsonData;
             }
           } else {
             throw new Error('Not valid JSON format');
           }
         } catch (e) {
-          // Обычный текст или HTML
           if (zoneType === 'task') {
             task.taskText = text;
-            task.taskJSON = null;
           } else if (zoneType === 'answer') {
             task.answerText = text;
-            task.answerJSON = null;
           } else if (zoneType === 'solution') {
             task.solutionText = text;
-            task.solutionJSON = null;
           }
         }
         
@@ -2380,51 +2282,47 @@
         if (task.taskImage) {
           return `<img src="${task.taskImage}" style="max-width: 100%; max-height: 400px; display: block; margin: 0;">`;
         } else if (task.taskText) {
-          return `<div style="padding: 20px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 14pt; text-align: left;">${task.taskText}</div>`;
+          let html = task.taskText;
+          if (!html.includes('<table')) {
+            html = `<div style="padding: 20px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 14pt; text-align: left;">${html.replace(/<[^>]*>/g, '')}</div>`;
+          }
+          return html;
         }
         return '<div style="padding: 40px; background: #f5f5f5; text-align: center; font-style: italic;">Нет данных</div>';
       }
       
       function getAnswerHTML() {
-        if (task.answerImage) {
+        if (task.answerImage && showAnswers) {
           return `<img src="${task.answerImage}" style="max-width: 100%; max-height: 400px; display: block; margin: 0 auto;">`;
-        } else if (task.answerText) {
-          return `<div style="padding: 20px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 14pt; text-align: center;">${task.answerText}</div>`;
+        } else if (task.answerText && showAnswers) {
+          let html = task.answerText;
+          if (!html.includes('<table')) {
+            html = `<div style="padding: 20px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 14pt; text-align: center;">${html.replace(/<[^>]*>/g, '')}</div>`;
+          }
+          return html;
         }
         return '';
       }
       
-      if (showAnswers) {
-        // С ответами - показываем всё вместе
-        printContent += `
-          <div class="print-task" style="margin-bottom: 30px; page-break-inside: avoid;">
-            <div style="font-weight: bold; font-size: 16pt; margin-bottom: 10px;">${index + 1}. ${task.title}</div>
-            <div style="margin-bottom: 20px;">${getTaskHTML()}</div>
-            ${getAnswerHTML() ? `<div style="margin-top: 20px; border-top: 2px dashed #666; padding-top: 20px;"><strong>Ответ:</strong> ${getAnswerHTML()}</div>` : ''}
+      printContent += `
+        <div class="print-task" style="margin-bottom: 30px; page-break-inside: avoid;">
+          <div style="font-weight: bold; font-size: 16pt; margin-bottom: 10px;">${index + 1}. ${task.title}</div>
+          <div style="margin-bottom: 20px;">${getTaskHTML()}</div>
+          ${getAnswerHTML() ? `<div style="margin-top: 20px; border-top: 2px dashed #666; padding-top: 20px;"><strong>Ответ:</strong> ${getAnswerHTML()}</div>` : ''}
+        </div>
+      `;
+      
+      if (!showAnswers && (task.answerImage || task.answerText)) {
+        answerItems += `
+          <div style="padding: 5px; text-align: center; border: 1px solid #ccc; page-break-inside: avoid;">
+            <div style="font-weight: bold; margin-bottom: 5px;">${index + 1}</div>
+            ${task.answerImage ? 
+              `<img src="${task.answerImage}" style="max-width: 100px; max-height: 100px; display: block; margin: 0 auto;">` :
+              `<div style="font-size: 10pt; padding: 5px;">${task.answerText.replace(/<[^>]*>/g, '')}</div>`
+            }
           </div>
         `;
-      } else {
-        // Без ответов - только условие
-        printContent += `
-          <div class="print-task" style="margin-bottom: 30px; page-break-inside: avoid;">
-            <div style="font-weight: bold; font-size: 16pt; margin-bottom: 10px;">${index + 1}. ${task.title}</div>
-            <div style="margin-bottom: 20px;">${getTaskHTML()}</div>
-          </div>
-        `;
-        
-        // Собираем ответы отдельно
-        if (task.answerImage || task.answerText) {
-          answerItems += `
-            <div style="padding: 5px; text-align: center; border: 1px solid #ccc; page-break-inside: avoid;">
-              <div style="font-weight: bold; margin-bottom: 5px;">${index + 1}</div>
-              ${task.answerImage ? 
-                `<img src="${task.answerImage}" style="max-width: 100px; max-height: 100px; display: block; margin: 0 auto;">` :
-                `<div style="font-size: 10pt; padding: 5px;">${task.answerText.replace(/<[^>]*>/g, '')}</div>`
-              }
-            </div>
-          `;
-          answerCount++;
-        }
+        answerCount++;
       }
     });
     
@@ -2489,18 +2387,17 @@
 
   btnPrintNoAnswer.addEventListener('click', (e) => {
     e.preventDefault();
-    printTasks(false);
+    printTasks(true);
   });
   
   btnPrintWithAnswer.addEventListener('click', (e) => {
     e.preventDefault();
-    printTasks(true);
+    printTasks(false);
   });
 
   // ==================== ИНИЦИАЛИЗАЦИЯ ====================
   loadStudents();
   updateStudentSelect();
-  updateImportStudentSelect();
   startAutoSave();
   
   tasks = [];
