@@ -1,0 +1,2298 @@
+<html lang="ru"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Задачи JSON — ученики + навигация + GitHub + LaTeX + Аналоги</title>
+  
+  <!-- Подключаем MathJax для LaTeX -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <style>
+    :root { 
+      --gap: 8px; 
+      --b:#e1e5e9; 
+      --bg:#f8fafc; 
+      --txt:#1e293b; 
+      --accent:#3b82f6; 
+      --success:#10b981;
+      --danger:#ef4444;
+      --basic:#6ee7b7; --medium:#facc15; --hard:#ef4444;
+      --analog-bg: #f0f9ff;
+      --analog-border: #bae6fd;
+    }
+    * { box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; 
+      margin: 0; 
+      color: var(--txt); 
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      line-height: 1.5;
+    }
+    .top-panel { 
+      background: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      backdrop-filter: blur(20px);
+    }
+    .row { display:flex; gap: var(--gap); flex-wrap: wrap; align-items: end; }
+    .row-center { display:flex; gap: var(--gap); flex-wrap: wrap; align-items: center; }
+    .card { 
+      border:1px solid var(--b); 
+      border-radius: 12px; 
+      padding: 12px; 
+      background: white; 
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .controls { background: var(--bg); }
+    .count-badge { 
+      background: var(--accent); color: white; 
+      padding: 4px 10px; border-radius: 20px; 
+      font-weight: 600; font-size: 13px;
+      box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+    }
+    label { font-size: 12px; color:#64748b; display:block; margin-bottom: 4px; font-weight: 500; }
+    input[type="text"], input[type="file"], select, textarea { 
+      padding: 8px 10px; 
+      border:1px solid var(--b); 
+      border-radius: 6px; 
+      font-size: 13px;
+      transition: border-color 0.2s;
+      min-width: 140px;
+      font-family: inherit;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    select.dropdown { 
+      background: white url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") no-repeat right 10px center;
+      background-size: 14px;
+      appearance: none;
+      cursor: pointer;
+    }
+    button { 
+      padding: 8px 12px; 
+      border:1px solid var(--b); 
+      border-radius: 6px; 
+      background: white; 
+      cursor: pointer; 
+      font-weight: 500;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    button:hover { background: #f8fafc; transform: translateY(-1px); }
+    button.primary { background:var(--accent); color:white; border-color:var(--accent); }
+    button.primary:hover { background: #2563eb; }
+    button.danger { background:var(--danger); color:white; border-color:var(--danger); }
+    button.success { background: var(--success); color: white; border-color: var(--success); }
+    button.warning { background: #f97316; color: white; border-color: #f97316; }
+    .difficulty-btn { 
+      width: 60px; height: 40px; 
+      border-radius: 8px; 
+      border: 2px solid var(--b);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: bold; color: white;
+      margin: 2px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .difficulty-btn.all { background: var(--accent); border-color: var(--accent); width: 64px; }
+    .difficulty-btn.basic { background: var(--basic); border-color: #059669; }
+    .difficulty-btn.medium { background: var(--medium); border-color: #d97706; }
+    .difficulty-btn.hard { background: var(--hard); border-color: #dc2626; }
+    .difficulty-btn.active { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .difficulty-row { display: flex; flex-wrap: wrap; gap: 4px; }
+    .sort-btn { padding: 6px 10px; font-size: 11px; min-width: 0; }
+    .toggle-answers { background: var(--success); color: white; }
+    .toggle-answers.active { background: var(--danger); }
+    .toggle-analogs { background: #f97316; color: white; }
+    .toggle-analogs.active { background: #ea580c; }
+    .muted { color:#94a3b8; font-size: 12px; }
+    .grid { display:grid; gap: var(--gap); padding: 20px var(--gap); padding-bottom: 100px; }
+    .task { 
+      border:1px solid var(--b); 
+      border-radius: 16px; 
+      overflow:hidden; 
+      background: white;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      transition: box-shadow 0.2s;
+      margin-bottom: var(--gap);
+    }
+    .task:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+    .task-head { 
+      padding: 16px 20px; 
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); 
+      display:flex; 
+      justify-content: space-between; 
+      gap:12px; 
+      align-items: center; 
+    }
+    .title { font-weight: 700; font-size: 18px; color: var(--txt); }
+    .badges { display:flex; gap: 8px; flex-wrap: wrap; font-size: 12px; }
+    .badge { 
+      border:1px solid #cbd5e1; 
+      border-radius: 20px; 
+      padding: 4px 10px; 
+      background:white; 
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .badge.section { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); color: #1e40af; }
+    .badge.difficulty { display: flex; align-items: center; gap: 4px; }
+    .badge.analog-badge { background: #fed7aa; color: #9a3412; border-color: #fdba74; }
+    .badge.prototype-badge { background: #c7d2fe; color: #3730a3; border-color: #a5b4fc; }
+    .task-body { padding: 20px; display:grid; gap: 16px; }
+    .zone { 
+      border:2px dashed #e2e8f0; 
+      border-radius: 12px; 
+      padding: 16px; 
+      background: #fafbfc; 
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      min-height: 100px;
+    }
+    .zone.task-zone {
+      align-items: flex-start;
+      text-align: left;
+    }
+    .zone.task-zone h4 {
+      text-align: left;
+      width: 100%;
+    }
+    .zone.task-zone .text-content {
+      text-align: left;
+      width: 100%;
+    }
+    .zone.task-zone img {
+      display: block;
+      margin: 0;
+    }
+    .zone.answer-zone {
+      align-items: center;
+      text-align: center;
+    }
+    .zone.answer-zone h4 {
+      text-align: center;
+      width: 100%;
+    }
+    .zone.answer-zone .text-content {
+      text-align: center;
+      width: 100%;
+    }
+    .zone.answer-zone img { 
+      max-width: 100%; 
+      max-height: 300px;
+      width: auto; 
+      height: auto; 
+      object-fit: contain;
+      transform: none;
+      display: block;
+      margin: 0 auto;
+    }
+    .zone.solution-zone {
+      align-items: flex-start;
+      text-align: left;
+      grid-column: span 2;
+    }
+    .zone.solution-zone h4 {
+      text-align: left;
+      width: 100%;
+    }
+    .zone.solution-zone .text-content {
+      text-align: left;
+      width: 100%;
+    }
+    .zone.solution-zone img {
+      display: block;
+      margin: 0;
+    }
+    .zone:hover { border-color: var(--accent); background: #f0f9ff; }
+    .zone:focus { outline: 2px solid var(--accent); }
+    .zone h4 { margin: 0 0 12px 0; font-size: 14px; color:#64748b; font-weight: 600; }
+    .zone .hint { font-size: 12px; color:#94a3b8; margin-top: 8px; }
+    .zone img { border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    
+    /* Увеличенный шрифт для текстовых условий и ответов */
+    .zone .text-content {
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-width: 100%;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      font-size: 18px;
+      line-height: 1.5;
+      width: 100%;
+    }
+    .zone textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px;
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 18px;
+      resize: vertical;
+    }
+    .zone.empty::after { 
+      content: "Нет данных"; 
+      color:#94a3b8; 
+      font-size: 13px; 
+      text-align: center;
+    }
+    
+    .zone-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      width: 100%;
+    }
+    
+    .zone-action-btn {
+      padding: 4px 8px;
+      font-size: 11px;
+      background: white;
+      border: 1px solid var(--b);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .zone-action-btn:hover {
+      background: #f0f9ff;
+      border-color: var(--accent);
+    }
+    
+    .actions { display:flex; gap: 8px; flex-wrap: wrap; }
+    .split { 
+      display:grid; 
+      grid-template-columns: 2fr 1fr;
+      gap: var(--gap); 
+    }
+    .meta-row { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 12px; 
+      margin-top: 12px; 
+      align-items: center;
+    }
+    .meta-row > div {
+      flex: 1 1 200px;
+      min-width: 150px;
+    }
+    .link { 
+      color: var(--accent); 
+      text-decoration: none; 
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(59,130,246,0.1);
+      transition: all 0.2s;
+    }
+    .link:hover { background: rgba(59,130,246,0.2); }
+    
+    .image-buttons { 
+      display: flex; 
+      gap: 8px; 
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .image-btn { 
+      padding: 6px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .image-btn:hover { 
+      background: #f1f5f9;
+      transform: translateY(-1px);
+    }
+    .image-btn.has-image { 
+      background: #dbeafe;
+      border-color: #3b82f6;
+      color: #1e40af;
+    }
+    .image-btn.has-image:hover { 
+      background: #bfdbfe;
+    }
+    
+    /* Стили для красивых таблиц */
+    .zone .text-content table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 15px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: white;
+    }
+    
+    .zone .text-content th {
+      background: #1e3c72;
+      color: white;
+      padding: 10px 12px;
+      border: 1px solid #2a4a8a;
+      font-weight: 600;
+      text-align: center;
+    }
+    
+    .zone .text-content td {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      text-align: center;
+    }
+    
+    .zone .text-content tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    
+    .zone .text-content tr:hover {
+      background: #f1f5f9;
+    }
+    
+    /* Стили для печати */
+    @media print {
+      .zone .text-content table {
+        box-shadow: none;
+      }
+      .zone .text-content th {
+        background: #1e3c72 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .zone .text-content tr:nth-child(even) {
+        background: #f8fafc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+    
+    /* Стили для пиктограмм */
+    .icon-warning {
+      background: #fff3cd;
+      border: 2px solid #ffc107;
+      padding: 20px;
+      text-align: center;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+    
+    /* Стили для калькулятора */
+    .calc-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+      padding: 8px;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+    .calc-input {
+      flex: 1;
+      padding: 6px 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .calc-btn {
+      padding: 6px 12px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .calc-btn:hover {
+      background: #2563eb;
+    }
+    .calc-result {
+      min-width: 60px;
+      padding: 6px;
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+    .modal-content {
+      max-width: 90%;
+      max-height: 90%;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+    .modal-img {
+      max-width: 100%;
+      max-height: 80vh;
+      width: auto;
+      height: auto;
+      display: block;
+    }
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-close:hover {
+      background: rgba(0,0,0,0.9);
+    }
+    
+    .inline-edit {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+    
+    /* Кнопки навигации */
+    .nav-buttons {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1500;
+    }
+    
+    .nav-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .nav-btn:hover {
+      transform: scale(1.1);
+      background: #2563eb;
+    }
+    
+    .nav-btn.hidden {
+      display: none;
+    }
+    
+    /* Галочка импорта задач */
+    .import-options {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: 5px;
+    }
+    
+    .import-options input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    
+    /* Стили для модального окна импорта прогресса */
+    .modal-import {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2500;
+    }
+    .modal-import-content {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .modal-import-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    .modal-import-option {
+      margin: 10px 0;
+      padding: 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+    }
+    .modal-import-option input[type="radio"] {
+      margin-right: 8px;
+    }
+    .modal-import-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: flex-end;
+    }
+    
+    /* Подсветка задачи при возврате */
+    .task-highlight {
+      box-shadow: 0 0 0 3px var(--accent) !important;
+      transition: box-shadow 0.3s;
+    }
+    
+    /* Стили для связи прототип-аналог */
+    .prototype-section {
+      margin-top: 20px;
+      border-top: 2px dashed var(--analog-border);
+      padding-top: 20px;
+      background: var(--analog-bg);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    
+    .prototype-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .prototype-title {
+      font-weight: 600;
+      color: #3730a3;
+      font-size: 14px;
+    }
+    
+    .analog-task {
+      margin-left: 20px;
+      border-left: 3px solid #fdba74;
+      padding-left: 16px;
+    }
+    
+    /* Класс для скрытия решения */
+    .solution-hidden {
+      display: none !important;
+    }
+    
+    @media (max-width: 900px) { 
+      .split { grid-template-columns: 2fr 1fr; }
+    }
+    
+    @media print {
+      body { margin: 0; background: white !important; }
+      .no-print, .top-panel, .meta-row, .actions, .controls, .zone-actions, .image-buttons, .calc-row, .nav-buttons { display:none !important; }
+      #printRoot { display:block !important; }
+      .task { break-inside: avoid; box-shadow: none; margin-bottom: 40px; page-break-inside: avoid; }
+      .title { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: black !important; }
+      
+      .zone.task-zone, .zone.solution-zone { 
+        border: none; 
+        padding: 0; 
+        background: transparent !important; 
+        margin-bottom: 25px;
+        align-items: flex-start !important;
+        text-align: left !important;
+      }
+      .zone.task-zone .text-content, .zone.solution-zone .text-content {
+        text-align: left !important;
+        border: none;
+        padding: 0;
+        font-size: 14pt;
+      }
+      .zone.task-zone img, .zone.solution-zone img { 
+        box-shadow: none; 
+        max-width: 100%; 
+        max-height: 600px; 
+        width: auto; 
+        height: auto; 
+        display: block;
+        margin: 0 !important;
+      }
+      
+      .zone.answer-zone { 
+        border: none; 
+        padding: 0; 
+        background: transparent !important; 
+        margin-bottom: 25px;
+        align-items: center !important;
+        text-align: center !important;
+      }
+      .zone.answer-zone .text-content {
+        text-align: center !important;
+        border: none;
+        padding: 0;
+        font-size: 14pt;
+      }
+      .zone.answer-zone img { 
+        border: 2px solid #f59e0b; 
+        margin-top: 20px;
+        max-width: 50% !important;
+        max-height: 200px !important;
+        transform: scale(0.5) !important;
+        transform-origin: center !important;
+        display: block;
+        margin: 0 auto !important;
+      }
+      
+      .prototype-section {
+        border: 2px solid #f59e0b;
+        background: transparent !important;
+      }
+    }
+    #printRoot { display:none; }
+  </style>
+</head>
+<body>
+
+  <div class="top-panel no-print" id="topPanel">
+    <div class="card controls">
+      <div class="row">
+        <div>
+          <label>📁 Импорт задач</label>
+          <div style="display: flex; gap: 5px;">
+            <input id="fileInput" type="file" accept="application/json,.json">
+            <div class="import-options">
+              <input type="checkbox" id="keepStudents" checked="">
+              <label for="keepStudents" style="display: inline; margin: 0;">☐ Сохранить прогресс учеников</label>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label>💾 Экспорт задач</label>
+          <button id="btnExport" class="primary">tasks.json</button>
+        </div>
+        <div>
+          <label>➕ Новая задача</label>
+          <button id="btnAdd" class="success">Задача</button>
+        </div>
+
+        <!-- БЛОК УЧЕНИКОВ И ПРОГРЕССА -->
+        <div>
+          <label>👤 Ученик</label>
+          <div class="row-center" style="gap: 5px;">
+            <select id="studentSelect" class="dropdown" style="min-width: 120px;"></select>
+            <button id="btnAddStudent" class="success" style="padding: 8px;">➕</button>
+          </div>
+        </div>
+        <div>
+          <label>📊 Прогресс</label>
+          <div class="row-center" style="gap: 5px;">
+            <button id="btnExportProgress" class="primary" style="padding: 8px 10px;">💾 Скачать</button>
+            <button id="btnImportProgress" class="primary" style="padding: 8px 10px;">📂 Загрузить</button>
+            <span style="font-size: 11px; color: #64748b;">(автосохранение 1 мин)</span>
+          </div>
+        </div>
+
+        <!-- БЛОК ЗАГРУЗКИ С GITHUB -->
+        <div>
+          <label>📦 GitHub</label>
+          <select id="githubSelect" class="dropdown" style="min-width: 150px;">
+            <optgroup label="📘 ЕГЭ математика">
+              <option value="ege-1">ЕГЭ 1</option>
+              <option value="ege-2">ЕГЭ 2</option>
+              <option value="ege-3">ЕГЭ 3</option>
+              <option value="ege-4">ЕГЭ 4</option>
+              <option value="ege-5">ЕГЭ 5</option>
+              <option value="ege-6">ЕГЭ 6</option>
+              <option value="ege-7">ЕГЭ 7</option>
+              <option value="ege-8">ЕГЭ 8</option>
+              <option value="ege-9">ЕГЭ 9</option>
+              <option value="ege-10">ЕГЭ 10</option>
+              <option value="ege-11">ЕГЭ 11</option>
+              <option value="ege-12">ЕГЭ 12</option>
+              <option value="ege-13">ЕГЭ 13</option>
+              <option value="ege-14">ЕГЭ 14</option>
+              <option value="ege-15">ЕГЭ 15</option>
+              <option value="ege-16">ЕГЭ 16</option>
+              <option value="ege-17">ЕГЭ 17</option>
+              <option value="ege-18">ЕГЭ 18</option>
+              <option value="ege-19">ЕГЭ 19</option>
+            </optgroup>
+            <optgroup label="📙 ОГЭ математика">
+              <option value="oge-1">ОГЭ 1</option>
+              <option value="oge-2">ОГЭ 2</option>
+              <option value="oge-3">ОГЭ 3</option>
+              <option value="oge-4">ОГЭ 4</option>
+              <option value="oge-5">ОГЭ 5</option>
+              <option value="oge-6">ОГЭ 6</option>
+              <option value="oge-7">ОГЭ 7</option>
+              <option value="oge-8">ОГЭ 8</option>
+              <option value="oge-9">ОГЭ 9</option>
+              <option value="oge-10">ОГЭ 10</option>
+              <option value="oge-11">ОГЭ 11</option>
+              <option value="oge-12">ОГЭ 12</option>
+              <option value="oge-13">ОГЭ 13</option>
+              <option value="oge-14">ОГЭ 14</option>
+              <option value="oge-15">ОГЭ 15</option>
+              <option value="oge-16">ОГЭ 16</option>
+              <option value="oge-17">ОГЭ 17</option>
+              <option value="oge-18">ОГЭ 18</option>
+              <option value="oge-19">ОГЭ 19</option>
+              <option value="oge-20">ОГЭ 20</option>
+              <option value="oge-21">ОГЭ 21</option>
+              <option value="oge-22">ОГЭ 22</option>
+              <option value="oge-23">ОГЭ 23</option>
+              <option value="oge-24">ОГЭ 24</option>
+              <option value="oge-25">ОГЭ 25</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="btnLoadFromGitHub" class="primary">Загрузить с GitHub</button>
+        </div>
+
+        <div class="print-options">
+          <button id="btnToggleAnswers" class="toggle-answers active">Скрыть ответы</button>
+          <button id="btnToggleDrawingsSolutions" class="primary">📐 Показать чертежи/решения</button>
+          <button id="btnToggleAnalogs" class="toggle-analogs">📋 Показать аналоги</button>
+          <button id="btnPrintNoAnswer" class="primary" title="Без ответов">🖨️ Без ответов</button>
+          <button id="btnPrintWithAnswer" class="primary" title="С ответами">🖨️ С ответами</button>
+        </div>
+
+        <div style="flex:1">
+          <label>🔍 Поиск</label>
+          <input id="q" type="text" placeholder="номер-тема">
+        </div>
+      </div>
+
+      <hr style="border:0;border-top:1px solid var(--b); margin: 12px 0;">
+
+      <div class="row" id="filterRow">
+        <div>
+          <label>📂 Раздел</label>
+          <select id="fSection" class="dropdown"></select>
+        </div>
+        
+        <div>
+          <label>📊 Сложность</label>
+          <div class="difficulty-row">
+            <button class="difficulty-btn all active" data-difficulty="">ВСЕ</button>
+            <button class="difficulty-btn basic" data-difficulty="basic">🟢 Лёгкая</button>
+            <button class="difficulty-btn medium" data-difficulty="medium">🟡 Средняя</button>
+            <button class="difficulty-btn hard" data-difficulty="hard">🔴 Сложная</button>
+          </div>
+        </div>
+        
+        <div>
+          <label>✅ Решенные </label>
+          <select id="fSolved" class="dropdown">
+            <option value="">Все</option>
+            <option value="true">Решённые</option>
+            <option value="false">Не решённые</option>
+          </select>
+        </div>
+        
+        <div>
+          <label>⭐ Избранное</label>
+          <select id="fFav" class="dropdown">
+            <option value="">Все</option>
+            <option value="true">Только изб.</option>
+            <option value="false">Не изб.</option>
+          </select>
+        </div>
+        
+        <div>
+          <label>🔤 Сортировка</label>
+          <button id="sortTitle" class="sort-btn primary">↑ название</button>
+        </div>
+        
+        <div id="countContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Кнопки навигации -->
+  <div class="nav-buttons no-print" id="navButtons">
+    <button class="nav-btn" id="scrollToTop" title="К меню">⬆️</button>
+    <button class="nav-btn" id="scrollToLastViewed" title="К последней задаче">⬇️</button>
+  </div>
+
+  <div id="app" class="grid no-print"></div>
+  <div id="printRoot"></div>
+
+  <!-- Модальное окно для импорта прогресса -->
+  <div id="importProgressModal" class="modal-import" style="display: none;">
+    <div class="modal-import-content">
+      <div class="modal-import-title">📂 Загрузить прогресс учеников</div>
+      <div class="modal-import-option">
+        <input type="radio" name="importMode" id="modeReplace" value="replace" checked="">
+        <label for="modeReplace">🔄 Заменить всех учеников</label>
+      </div>
+      <div class="modal-import-option">
+        <input type="radio" name="importMode" id="modeMerge" value="merge">
+        <label for="modeMerge">➕ Объединить с существующими (при совпадении имён добавится _2, _3...)</label>
+      </div>
+      <div class="modal-import-buttons">
+        <button id="confirmImport" class="primary">✅ Загрузить</button>
+        <button id="cancelImport">❌ Отмена</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ==================== ХРАНИЛИЩЕ УЧЕНИКОВ ====================
+  let students = {};
+  let currentStudent = 'default';
+  
+  // ==================== ЗАДАЧИ ====================
+  let tasks = [];
+  let availableSections = new Set([""]);
+  
+  // ==================== СОСТОЯНИЯ ====================
+  let editingTaskId = null;
+  let sortByTitle = false;
+  let allAnswersVisible = false;
+  let allDrawingsSolutionsVisible = false;
+  let allAnalogsVisible = true;
+  let lastViewedTaskId = null;
+  let autoSaveInterval = null;
+
+  // ==================== ЭЛЕМЕНТЫ ====================
+  const app = document.getElementById('app');
+  const printRoot = document.getElementById('printRoot');
+  const countContainer = document.getElementById('countContainer');
+  const sortTitleBtn = document.getElementById('sortTitle');
+  const btnToggleAnswers = document.getElementById('btnToggleAnswers');
+  const btnToggleDrawingsSolutions = document.getElementById('btnToggleDrawingsSolutions');
+  const btnToggleAnalogs = document.getElementById('btnToggleAnalogs');
+  
+  const fileInput = document.getElementById('fileInput');
+  const btnExport = document.getElementById('btnExport');
+  const btnAdd = document.getElementById('btnAdd');
+  const btnPrintNoAnswer = document.getElementById('btnPrintNoAnswer');
+  const btnPrintWithAnswer = document.getElementById('btnPrintWithAnswer');
+  const q = document.getElementById('q');
+  const fSection = document.getElementById('fSection');
+  const fSolved = document.getElementById('fSolved');
+  const fFav = document.getElementById('fFav');
+  const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+  const studentSelect = document.getElementById('studentSelect');
+  const btnAddStudent = document.getElementById('btnAddStudent');
+  const keepStudentsCheck = document.getElementById('keepStudents');
+
+  // Кнопки прогресса
+  const btnExportProgress = document.getElementById('btnExportProgress');
+  const btnImportProgress = document.getElementById('btnImportProgress');
+  const importModal = document.getElementById('importProgressModal');
+  const confirmImport = document.getElementById('confirmImport');
+  const cancelImport = document.getElementById('cancelImport');
+  const modeReplace = document.getElementById('modeReplace');
+  const modeMerge = document.getElementById('modeMerge');
+
+  // GitHub
+  const btnLoadFromGitHub = document.getElementById('btnLoadFromGitHub');
+  const githubSelect = document.getElementById('githubSelect');
+  const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/GannaMath2026/trenager_programs/main/json_files/';
+
+  // Кнопки навигации
+  const scrollToTopBtn = document.getElementById('scrollToTop');
+  const scrollToLastViewedBtn = document.getElementById('scrollToLastViewed');
+  const navButtons = document.getElementById('navButtons');
+  const topPanel = document.getElementById('topPanel');
+
+  // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+  const uid = () => Date.now() + Math.floor(Math.random() * 1000);
+
+  function escapeHtml(s) {
+    if (s === undefined || s === null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(s);
+    return div.innerHTML;
+  }
+
+  function toDataUrlFromFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ==================== НОРМАЛИЗАЦИЯ ЗАДАЧИ ====================
+  function normalizeTask(t) {
+    const task = {
+      id: t.id || uid(),
+      title: t.title || "",
+      solutionLink: t.solutionLink || "",
+      videoLink: t.videoLink || "",
+      taskImage: t.taskImage || "",
+      taskText: t.taskText || "",
+      answerImage: t.answerImage || "",
+      answerText: t.answerText || "",
+      drawingImage: t.drawingImage || "",
+      solutionImage: t.solutionImage || "",
+      solutionText: t.solutionText || "",
+      isAnswerVisible: t.isAnswerVisible || false,
+      difficulty: t.difficulty || "basic",
+      section: t.section || "",
+      sectionName: t.sectionName || "",
+      isSectionHeader: t.isSectionHeader || false,
+      isAnalog: t.isAnalog || false,
+      parentId: t.parentId || null,
+      analogId: t.analogId || null
+    };
+    
+    if (task.taskImage && task.taskImage.startsWith('data:text/plain')) {
+      try {
+        const text = atob(task.taskImage.split(',')[1]);
+        task.taskText = text;
+        task.taskImage = '';
+      } catch (e) {}
+    }
+    
+    if (task.answerImage && task.answerImage.startsWith('data:text/plain')) {
+      try {
+        const text = atob(task.answerImage.split(',')[1]);
+        task.answerText = text;
+        task.answerImage = '';
+      } catch (e) {}
+    }
+    
+    return task;
+  }
+
+  // ==================== УЧЕНИКИ ====================
+  function loadStudents() {
+    const saved = localStorage.getItem('studentsData_v2');
+    if (saved) {
+      try {
+        students = JSON.parse(saved);
+      } catch (e) {
+        students = { default: { name: 'Ученик 1', solved: {}, favorites: {} } };
+      }
+    } else {
+      students = { default: { name: 'Ученик 1', solved: {}, favorites: {} } };
+    }
+    
+    if (!students[currentStudent]) {
+      currentStudent = Object.keys(students)[0] || 'default';
+    }
+  }
+
+  function saveStudents() {
+    localStorage.setItem('studentsData_v2', JSON.stringify(students));
+  }
+
+  function updateStudentSelect() {
+    studentSelect.innerHTML = Object.keys(students).map(id => 
+      `<option value="${id}" ${currentStudent === id ? 'selected' : ''}>${students[id].name}</option>`
+    ).join('');
+  }
+
+  // ==================== АВТОСОХРАНЕНИЕ ====================
+  function startAutoSave() {
+    if (autoSaveInterval) clearInterval(autoSaveInterval);
+    autoSaveInterval = setInterval(() => {
+      saveStudents();
+      console.log('🔄 Автосохранение в', new Date().toLocaleTimeString());
+    }, 60000);
+  }
+
+  // ==================== ЭКСПОРТ ПРОГРЕССА ====================
+  btnExportProgress.addEventListener('click', () => {
+    const exportData = {
+      exportDate: new Date().toISOString(),
+      students: students
+    };
+    
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `progress_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  });
+
+  // ==================== ИМПОРТ ПРОГРЕССА ====================
+  btnImportProgress.addEventListener('click', () => {
+    importModal.style.display = 'flex';
+  });
+
+  cancelImport.addEventListener('click', () => {
+    importModal.style.display = 'none';
+  });
+
+  confirmImport.addEventListener('click', () => {
+    const mode = modeReplace.checked ? 'replace' : 'merge';
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        
+        if (!data.students) {
+          alert('Ошибка: файл не содержит данных учеников');
+          return;
+        }
+        
+        if (mode === 'replace') {
+          students = data.students;
+        } else {
+          const existingNames = new Set(Object.values(students).map(s => s.name));
+          
+          for (const [id, student] of Object.entries(data.students)) {
+            let newName = student.name;
+            let counter = 2;
+            
+            while (existingNames.has(newName)) {
+              newName = `${student.name}_${counter}`;
+              counter++;
+            }
+            
+            const newId = 'student' + Date.now() + Math.random();
+            students[newId] = {
+              name: newName,
+              solved: student.solved || {},
+              favorites: student.favorites || {}
+            };
+            existingNames.add(newName);
+          }
+        }
+        
+        saveStudents();
+        updateStudentSelect();
+        
+        if (!students[currentStudent]) {
+          currentStudent = Object.keys(students)[0];
+        }
+        
+        render();
+        alert('Прогресс успешно загружен');
+      } catch (err) {
+        alert('Ошибка загрузки файла: ' + err.message);
+      } finally {
+        importModal.style.display = 'none';
+      }
+    };
+    
+    input.click();
+  });
+
+  window.addEventListener('click', (e) => {
+    if (e.target === importModal) {
+      importModal.style.display = 'none';
+    }
+  });
+
+  // ==================== ЗАДАЧИ ====================
+  function getAllSections() {
+    const sections = new Set([...availableSections]);
+    tasks.forEach(task => {
+      if (task.sectionName && task.sectionName.trim() && !task.isSectionHeader) {
+        sections.add(task.sectionName.trim());
+      }
+    });
+    return Array.from(sections).sort();
+  }
+
+  function updateSectionDropdown() {
+    const sections = getAllSections();
+    const currentValue = fSection.value;
+    fSection.innerHTML = `<option value="">Все разделы</option>` + 
+      sections.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+    if (sections.includes(currentValue)) {
+      fSection.value = currentValue;
+    }
+  }
+
+  // ==================== ФИЛЬТРЫ ====================
+  function matchesFilters(task) {
+    if (task.isSectionHeader) return true;
+    
+    const studentData = students[currentStudent] || { solved: {}, favorites: {} };
+    
+    const search = q.value.trim().toLowerCase();
+    if (search && !(task.title + ' ' + task.sectionName).toLowerCase().includes(search)) return false;
+    
+    if (fSection.value && task.sectionName !== fSection.value) return false;
+    const activeDifficulty = document.querySelector('.difficulty-btn.active')?.dataset.difficulty;
+    if (activeDifficulty && activeDifficulty !== '' && task.difficulty !== activeDifficulty) return false;
+    
+    if (fSolved.value === 'true' && !studentData.solved[task.id]) return false;
+    if (fSolved.value === 'false' && studentData.solved[task.id]) return false;
+    
+    if (fFav.value === 'true' && !studentData.favorites[task.id]) return false;
+    if (fFav.value === 'false' && studentData.favorites[task.id]) return false;
+    
+    return true;
+  }
+
+  function getFilteredAndSortedTasks() {
+    let filtered = tasks.filter(matchesFilters);
+    
+    if (fSection.value || sortByTitle) {
+      filtered.sort((a, b) => {
+        if (a.isSectionHeader !== b.isSectionHeader) {
+          return a.isSectionHeader ? -1 : 1;
+        }
+        const titleA = (a.title || '').toString().toLowerCase();
+        const titleB = (b.title || '').toString().toLowerCase();
+        return titleA.localeCompare(titleB);
+      });
+    }
+    
+    return filtered;
+  }
+
+  // ==================== МОДАЛКА ====================
+  function showModal(imageSrc, title) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <button class="modal-close">×</button>
+        <img src="${imageSrc}" alt="${title}" class="modal-img">
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal || e.target.classList.contains('modal-close')) {
+        document.body.removeChild(modal);
+      }
+    });
+    
+    document.addEventListener('keydown', function closeModal(e) {
+      if (e.key === 'Escape') {
+        document.body.removeChild(modal);
+        document.removeEventListener('keydown', closeModal);
+      }
+    });
+  }
+
+  // ==================== КАЛЬКУЛЯТОР ====================
+  function safeEvaluate(expr) {
+    try {
+      expr = expr.replace(/√/g, 'Math.sqrt').replace(/\^/g, '**');
+      if (/[^0-9+\-*/().\sMath.sqrt]/.test(expr)) return 'недопустимо';
+      const result = new Function(`return (${expr})`)();
+      return Math.abs(result - Math.round(result)) < 1e-10 ? Math.round(result) : result;
+    } catch (e) {
+      return 'ошибка';
+    }
+  }
+
+  window.calcHandler = function(taskId) {
+    const taskEl = document.querySelector(`.task[data-id="${taskId}"]`);
+    if (!taskEl) return;
+    const input = taskEl.querySelector('.calc-input');
+    const resultSpan = taskEl.querySelector('.calc-result');
+    if (input && resultSpan) {
+      resultSpan.textContent = safeEvaluate(input.value);
+    }
+  };
+
+  // ==================== РЕНДЕР ЗОНЫ (с поддержкой решения) ====================
+  function renderZoneContent(task, zoneType, showAnswer) {
+    if (zoneType === 'task') {
+      if (task.taskImage) {
+        return `<img src="${task.taskImage}" alt="Условие" style="max-width:100%;">`;
+      } else if (task.taskText) {
+        if (task.taskText && task.taskText.includes('<table')) {
+          return `<div class="text-content latex-content">${task.taskText}</div>`;
+        } else {
+          return `<div class="text-content latex-content">${escapeHtml(task.taskText || '').replace(/\n/g, '<br>')}</div>`;
+        }
+      }
+    } else if (zoneType === 'answer') {
+      if (task.answerImage && showAnswer) {
+        return `<img src="${task.answerImage}" alt="Ответ" style="max-width:100%;">`;
+      } else if (task.answerText && showAnswer) {
+        if (task.answerText && task.answerText.includes('<table')) {
+          return `<div class="text-content latex-content">${task.answerText}</div>`;
+        } else {
+          return `<div class="text-content latex-content">${escapeHtml(task.answerText || '').replace(/\n/g, '<br>')}</div>`;
+        }
+      } else if (!showAnswer && (task.answerImage || task.answerText)) {
+        return `<div class="hint">кликни чтобы открыть</div>`;
+      }
+    } else if (zoneType === 'solution') {
+      if (task.solutionImage) {
+        return `<img src="${task.solutionImage}" alt="Решение" style="max-width:100%;">`;
+      } else if (task.solutionText) {
+        if (task.solutionText && task.solutionText.includes('<table')) {
+          return `<div class="text-content latex-content">${task.solutionText}</div>`;
+        } else {
+          return `<div class="text-content latex-content">${escapeHtml(task.solutionText || '').replace(/\n/g, '<br>')}</div>`;
+        }
+      }
+    }
+    return '';
+  }
+
+  // ==================== РЕНДЕР ЗАДАЧИ ====================
+  function renderTask(task) {
+    const isEditing = editingTaskId === task.id;
+    const showAnswer = task.isAnswerVisible || allAnswersVisible;
+    const showDrawingsSolutions = allDrawingsSolutionsVisible;
+    const sections = getAllSections();
+    const studentData = students[currentStudent] || { solved: {}, favorites: {} };
+    
+    if (task.isSectionHeader) {
+      return `
+        <div class="task" data-id="${task.id}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+          <div class="task-head" style="background: transparent; color: white;">
+            <div class="title" style="font-size: 22px;">📁 ${escapeHtml(task.title)}</div>
+          </div>
+        </div>
+      `;
+    }
+    
+    const solutionLinkHtml = task.solutionLink ? 
+      `<a href="${escapeHtml(task.solutionLink)}" target="_blank" class="badge link">🔗 Решение</a>` : '';
+    
+    const videoLinkHtml = task.videoLink ? 
+      `<a href="${escapeHtml(task.videoLink)}" target="_blank" class="badge link">📹 Видео</a>` : '';
+    
+    const hasDrawing = !!task.drawingImage;
+    const hasSolution = !!task.solutionImage;
+    const hasAnalog = !!task.analogId;
+    const isAnalog = !!task.isAnalog;
+    
+    let analogTask = null;
+    if (task.analogId && allAnalogsVisible) {
+      analogTask = tasks.find(t => t.id === task.analogId);
+    }
+    
+    let parentTask = null;
+    if (task.parentId && allAnalogsVisible) {
+      parentTask = tasks.find(t => t.id === task.parentId);
+    }
+    
+    const taskZoneContent = renderZoneContent(task, 'task', showAnswer);
+    const answerZoneContent = renderZoneContent(task, 'answer', showAnswer);
+    const solutionZoneContent = renderZoneContent(task, 'solution', showAnswer);
+    
+    const taskZoneClass = !task.taskImage && !task.taskText ? 'empty' : '';
+    const answerZoneClass = !task.answerImage && !task.answerText ? 'empty' : '';
+    const solutionZoneClass = !task.solutionImage && !task.solutionText ? 'empty' : '';
+    
+    const isSolved = !!studentData.solved[task.id];
+    const isFav = !!studentData.favorites[task.id];
+    
+    if (isAnalog && parentTask && allAnalogsVisible) {
+      return '';
+    }
+    
+    return `
+      <div class="task" data-id="${task.id}">
+        <div class="task-head">
+          <div>
+            <div class="title">${escapeHtml(task.title || '(без названия)')}</div>
+            <div class="badges">
+              <span class="badge section">📂 ${escapeHtml(task.sectionName || '-')}</span>
+              <span class="badge difficulty">📊 
+                <span style="color: ${task.difficulty === 'basic' ? '#059669' : task.difficulty === 'medium' ? '#d97706' : '#dc2626'}; font-weight: bold;">
+                  ${task.difficulty === 'basic' ? 'Лёгкая' : task.difficulty === 'medium' ? 'Средняя' : 'Сложная'}
+                </span>
+              </span>
+              <span class="badge">${isSolved ? '✅ решено' : '❌ не решено'}</span>
+              <span class="badge">${isFav ? '⭐ избранное' : '☆'}</span>
+              ${hasAnalog ? '<span class="badge analog-badge">📋 есть аналог</span>' : ''}
+              ${isAnalog ? '<span class="badge prototype-badge">📋 аналог</span>' : ''}
+              ${solutionLinkHtml}
+              ${videoLinkHtml}
+            </div>
+          </div>
+          <div class="actions">
+            <button data-act="toggleSolved">${isSolved ? 'Снять ✅' : 'В решённые ✅'}</button>
+            <button data-act="toggleFav">${isFav ? 'Убрать ⭐' : 'В избранное ⭐'}</button>
+            <button data-act="edit" class="${isEditing ? '' : 'primary'}">${isEditing ? '💾 Сохранить' : '✏️ Редактировать'}</button>
+            <button data-act="clearImages">🗑️ Очистить</button>
+            <button data-act="delete" class="danger">🗑️ Удалить</button>
+            ${!hasAnalog && !isAnalog ? `
+              <button data-act="createAnalog" class="warning">➕ Создать аналог</button>
+            ` : ''}
+            ${hasAnalog && analogTask ? `
+              <button data-act="openAnalog" class="primary">🔍 Открыть аналог</button>
+            ` : ''}
+          </div>
+        </div>
+        
+        <div class="task-body">
+          <div class="split">
+            <div class="zone task-zone ${taskZoneClass}" data-zone="task" tabindex="0">
+              <h4>📋 Условие задачи</h4>
+              ${taskZoneContent}
+              ${isEditing ? `
+                <div class="zone-actions">
+                  <button class="zone-action-btn" data-act="editText" data-zone="task">📝 Редактировать текст</button>
+                  <button class="zone-action-btn" data-act="pasteImage" data-zone="task">📋 Вставить изображение</button>
+                </div>
+              ` : ''}
+              <div class="hint">Ctrl+V для вставки</div>
+            </div>
+            
+            <div class="zone answer-zone ${answerZoneClass}" data-zone="answer" tabindex="0">
+              <h4>💡 Ответ</h4>
+              ${answerZoneContent}
+              ${isEditing ? `
+                <div class="zone-actions">
+                  <button class="zone-action-btn" data-act="editText" data-zone="answer">📝 Редактировать текст</button>
+                  <button class="zone-action-btn" data-act="pasteImage" data-zone="answer">📋 Вставить изображение</button>
+                </div>
+              ` : ''}
+              <div class="hint">Ctrl+V для вставки</div>
+            </div>
+          </div>
+          
+          <!-- Зона решения (скрывается кнопкой, но доступна для редактирования) -->
+          <div class="zone solution-zone ${solutionZoneClass} ${!showDrawingsSolutions ? 'solution-hidden' : ''}" data-zone="solution" tabindex="0">
+            <h4>📝 Решение</h4>
+            ${solutionZoneContent}
+            ${isEditing ? `
+              <div class="zone-actions">
+                <button class="zone-action-btn" data-act="editText" data-zone="solution">📝 Редактировать текст</button>
+                <button class="zone-action-btn" data-act="pasteImage" data-zone="solution">📋 Вставить изображение</button>
+              </div>
+            ` : ''}
+            <div class="hint">Ctrl+V для вставки</div>
+          </div>
+          
+          ${(hasDrawing || hasSolution) && showDrawingsSolutions ? `
+            <div class="drawings-solutions-section" style="margin-top: 20px; border-top: 2px dashed #e2e8f0; padding-top: 20px;">
+              <h4 style="margin: 0 0 12px 0; font-size: 14px; color:#64748b; font-weight: 600;">📐 Чертежи и решения:</h4>
+              <div style="display: flex; flex-wrap: wrap; gap: 16px;">
+                ${hasDrawing ? `
+                  <div style="flex: 1; min-width: 200px;">
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Чертеж:</div>
+                    <img src="${task.drawingImage}" style="max-width: 100%; max-height: 300px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                  </div>
+                ` : ''}
+                ${hasSolution ? `
+                  <div style="flex: 1; min-width: 200px;">
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Решение:</div>
+                    <img src="${task.solutionImage}" style="max-width: 100%; max-height: 300px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          ` : ''}
+          
+          <div class="image-buttons">
+            <button class="image-btn ${hasDrawing ? 'has-image' : ''}" 
+                    data-act="showDrawing" 
+                    ${!hasDrawing ? 'disabled style="opacity:0.5;"' : ''}>
+              📐 Чертеж ${hasDrawing ? '✓' : ''}
+            </button>
+            <button class="image-btn ${hasSolution ? 'has-image' : ''}" 
+                    data-act="showSolution" 
+                    ${!hasSolution ? 'disabled style="opacity:0.5;"' : ''}>
+              📝 Решение ${hasSolution ? '✓' : ''}
+            </button>
+            ${isEditing ? `
+              <button class="image-btn" data-act="pasteDrawing">📋 Вставить чертеж</button>
+              <button class="image-btn" data-act="pasteSolution">📋 Вставить решение</button>
+              <button class="image-btn" data-act="clearDrawingSolution" style="background: #fef2f2; color: #dc2626;">🗑️ Очистить оба</button>
+            ` : ''}
+          </div>
+
+          ${!isEditing ? `
+            <div class="calc-row" data-calc-id="${task.id}">
+              <input type="text" class="calc-input" placeholder="например 26/√2" value="">
+              <button class="calc-btn" onclick="window.calcHandler('${task.id}')">=</button>
+              <span class="calc-result" id="calcResult_${task.id}">0</span>
+            </div>
+          ` : ''}
+          
+          ${isEditing ? `
+            <div class="card">
+              <div class="meta-row">
+                <div><label>Название</label><input data-field="title" value="${escapeHtml(task.title)}" style="width:100%;"></div>
+                <div><label>Раздел</label>
+                  <select data-field="sectionName" class="dropdown" style="width:100%;">
+                    <option value="">➕ новый раздел</option>
+                    ${sections.map(s => `<option value="${escapeHtml(s)}" ${task.sectionName === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}
+                  </select>
+                </div>
+                <div><label>Сложность</label>
+                  <select data-field="difficulty" class="dropdown" style="width:100%;">
+                    <option value="basic" ${task.difficulty === 'basic' ? 'selected' : ''}>🟢 Лёгкая</option>
+                    <option value="medium" ${task.difficulty === 'medium' ? 'selected' : ''}>🟡 Средняя</option>
+                    <option value="hard" ${task.difficulty === 'hard' ? 'selected' : ''}>🔴 Сложная</option>
+                  </select>
+                </div>
+                <div><label>Ссылка решение</label><input data-field="solutionLink" value="${escapeHtml(task.solutionLink)}" placeholder="https://..." style="width:100%;"></div>
+                <div><label>Ссылка видео</label><input data-field="videoLink" value="${escapeHtml(task.videoLink)}" placeholder="https://..." style="width:100%;"></div>
+              </div>
+            </div>
+          ` : ''}
+          
+          ${hasAnalog && analogTask && allAnalogsVisible ? `
+            <div class="prototype-section">
+              <div class="prototype-header">
+                <span class="prototype-title">📋 Аналог</span>
+              </div>
+              <div class="analog-task">
+                ${renderTaskShort(analogTask)}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  // Краткий рендер задачи для отображения внутри прототипа
+  function renderTaskShort(task) {
+    const showAnswer = task.isAnswerVisible || allAnswersVisible;
+    const studentData = students[currentStudent] || { solved: {}, favorites: {} };
+    const isSolved = !!studentData.solved[task.id];
+    const isFav = !!studentData.favorites[task.id];
+    
+    const taskZoneContent = task.taskImage ? 
+      renderZoneContent(task.taskImage, 'image') : 
+      renderZoneContent(task.taskText, 'text');
+    
+    const answerZoneContent = showAnswer ? 
+      (task.answerImage ? 
+        renderZoneContent(task.answerImage, 'image') : 
+        renderZoneContent(task.answerText, 'text')) 
+      : '<div class="hint">кликни чтобы открыть</div>';
+    
+    return `
+      <div class="task" data-id="${task.id}" style="border: 2px solid #fdba74; margin-bottom: 0;">
+        <div class="task-head" style="background: #fff7ed;">
+          <div>
+            <div class="title">${escapeHtml(task.title || '(без названия)')}</div>
+            <div class="badges">
+              <span class="badge">${isSolved ? '✅ решено' : '❌ не решено'}</span>
+              <span class="badge">${isFav ? '⭐ избранное' : '☆'}</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button data-act="toggleSolved">${isSolved ? 'Снять ✅' : 'В решённые ✅'}</button>
+            <button data-act="toggleFav">${isFav ? 'Убрать ⭐' : 'В избранное ⭐'}</button>
+            <button data-act="edit" class="primary">✏️</button>
+            <button data-act="delete" class="danger">🗑️</button>
+          </div>
+        </div>
+        <div class="task-body">
+          <div class="split">
+            <div class="zone task-zone" style="min-height: 60px;">
+              <h4>📋 Условие</h4>
+              ${taskZoneContent}
+            </div>
+            <div class="zone answer-zone" style="min-height: 60px;">
+              <h4>💡 Ответ</h4>
+              ${answerZoneContent}
+            </div>
+          </div>
+          ${task.solutionLink ? `
+            <div><a href="${escapeHtml(task.solutionLink)}" target="_blank" class="badge link">🔗 Решение</a></div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  // ==================== ОСНОВНОЙ РЕНДЕР ====================
+  function render() {
+    updateSectionDropdown();
+    const filtered = getFilteredAndSortedTasks();
+    
+    app.innerHTML = filtered.length ? 
+      filtered.map(task => renderTask(task)).join('') : 
+      '<div class="card" style="text-align:center;padding:40px"><div class="muted">Нет задач по фильтру</div></div>';
+    
+    countContainer.innerHTML = `<div class="count-badge">📊 ${filtered.length}</div>`;
+    
+    if (filtered.length < 1) {
+      navButtons.classList.add('hidden');
+    } else {
+      navButtons.classList.remove('hidden');
+    }
+
+    setTimeout(() => {
+      MathJax.typesetPromise().catch(err => {
+        console.warn('Ошибка рендеринга LaTeX:', err);
+      });
+    }, 100);
+  }
+
+  // ==================== НАВИГАЦИЯ ====================
+  scrollToTopBtn.addEventListener('click', () => {
+    topPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  scrollToLastViewedBtn.addEventListener('click', () => {
+    if (lastViewedTaskId) {
+      const taskEl = document.querySelector(`.task[data-id="${lastViewedTaskId}"]`);
+      if (taskEl) {
+        taskEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        taskEl.classList.add('task-highlight');
+        setTimeout(() => {
+          taskEl.classList.remove('task-highlight');
+        }, 1000);
+        return;
+      }
+    }
+    window.scrollBy({
+      top: 300,
+      behavior: 'smooth'
+    });
+  });
+
+  // ==================== ЗАПОМИНАНИЕ ПОСЛЕДНЕЙ ЗАДАЧИ ====================
+  app.addEventListener('click', (e) => {
+    const taskEl = e.target.closest('.task');
+    if (taskEl) {
+      const taskId = Number(taskEl.dataset.id);
+      const task = tasks.find(t => t.id === taskId);
+      if (task && !task.isSectionHeader) {
+        lastViewedTaskId = taskId;
+      }
+    }
+  });
+
+  app.addEventListener('input', (e) => {
+    const taskEl = e.target.closest('.task');
+    if (taskEl) {
+      const taskId = Number(taskEl.dataset.id);
+      const task = tasks.find(t => t.id === taskId);
+      if (task && !task.isSectionHeader) {
+        lastViewedTaskId = taskId;
+      }
+    }
+  });
+
+  // ==================== СОБЫТИЯ ====================
+  btnToggleDrawingsSolutions.addEventListener('click', () => {
+    allDrawingsSolutionsVisible = !allDrawingsSolutionsVisible;
+    btnToggleDrawingsSolutions.textContent = allDrawingsSolutionsVisible 
+      ? '📐 Скрыть графики' 
+      : '📐 Показать графики';
+    render();
+  });
+
+  btnToggleAnalogs.addEventListener('click', () => {
+    allAnalogsVisible = !allAnalogsVisible;
+    btnToggleAnalogs.textContent = allAnalogsVisible 
+      ? '📋 Скрыть аналоги' 
+      : '📋 Показать аналоги';
+    render();
+  });
+
+  // ИМПОРТ JSON (задачи)
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      
+      const keepStudents = keepStudentsCheck.checked;
+      
+      if (keepStudents) {
+        if (data.tasks) {
+          tasks = data.tasks.map(normalizeTask);
+        } else if (Array.isArray(data)) {
+          tasks = data.map(normalizeTask);
+        }
+      } else {
+        if (data.tasks && data.students) {
+          tasks = data.tasks.map(normalizeTask);
+          students = data.students;
+          if (!students[currentStudent]) {
+            currentStudent = Object.keys(students)[0] || 'default';
+          }
+          saveStudents();
+          updateStudentSelect();
+        } else if (Array.isArray(data)) {
+          tasks = data.map(normalizeTask);
+        }
+      }
+      
+      render();
+    } catch (err) {
+      alert('Ошибка JSON: ' + err.message);
+    }
+    e.target.value = '';
+  });
+
+  // ЭКСПОРТ JSON (задачи + ученики)
+  btnExport.addEventListener('click', () => {
+    const exportData = {
+      tasks: tasks.map(t => {
+        const taskCopy = {...t};
+        taskCopy.isAnswerVisible = false;
+        return taskCopy;
+      }),
+      students: students
+    };
+    
+    const jsonString = JSON.stringify(exportData, null, 2);
+    
+    let fileName = prompt('Введите имя файла (без .json):', 'tasks_and_students');
+    if (fileName === null) return;
+    
+    fileName = fileName.trim().replace(/\.json$/i, '') || 'tasks_and_students';
+    const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName + '.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  });
+
+  btnToggleAnswers.addEventListener('click', () => {
+    allAnswersVisible = !allAnswersVisible;
+    btnToggleAnswers.textContent = allAnswersVisible ? 'Скрыть ответы' : 'Показать ответы';
+    btnToggleAnswers.classList.toggle('active');
+    render();
+  });
+
+  btnAdd.addEventListener('click', () => {
+    resetFilters();
+    const newTask = normalizeTask({ title: '', sectionName: '', difficulty: 'basic' });
+    tasks.unshift(newTask);
+    editingTaskId = newTask.id;
+    render();
+    setTimeout(() => {
+      const titleInput = app.querySelector('input[data-field="title"]');
+      titleInput?.focus();
+    }, 200);
+  });
+
+  function resetFilters() {
+    q.value = '';
+    fSection.value = '';
+    fSolved.value = '';
+    fFav.value = '';
+    difficultyBtns.forEach(b => b.classList.remove('active'));
+    document.querySelector('.difficulty-btn.all').classList.add('active');
+    sortByTitle = false;
+    sortTitleBtn.textContent = '↑ название';
+  }
+
+  difficultyBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      difficultyBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    });
+  });
+
+  [q, fSection, fSolved, fFav].forEach(el => {
+    el.addEventListener('input', render);
+    el.addEventListener('change', render);
+  });
+
+  sortTitleBtn.addEventListener('click', () => {
+    sortByTitle = !sortByTitle;
+    sortTitleBtn.textContent = sortByTitle ? '↓ название' : '↑ название';
+    render();
+  });
+
+  // GITHUB
+  btnLoadFromGitHub.addEventListener('click', async () => {
+    const selected = githubSelect.value;
+    if (!selected) {
+      alert('Выберите файл для загрузки');
+      return;
+    }
+
+    const url = GITHUB_RAW_BASE + selected + '.json';
+    btnLoadFromGitHub.disabled = true;
+    btnLoadFromGitHub.textContent = '⏳ Загрузка...';
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      
+      tasks = Array.isArray(data) ? data.map(normalizeTask) : [normalizeTask(data)];
+      
+      editingTaskId = null;
+      resetFilters();
+      render();
+      alert('Задачи успешно загружены');
+    } catch (err) {
+      alert('Ошибка загрузки: ' + err.message);
+    } finally {
+      btnLoadFromGitHub.disabled = false;
+      btnLoadFromGitHub.textContent = 'Загрузить с GitHub';
+    }
+  });
+
+  // УЧЕНИКИ
+  btnAddStudent.addEventListener('click', () => {
+    const name = prompt('Имя нового ученика:');
+    if (name && name.trim()) {
+      const id = 'student' + Date.now() + Math.random();
+      students[id] = { name: name.trim(), solved: {}, favorites: {} };
+      currentStudent = id;
+      saveStudents();
+      updateStudentSelect();
+      render();
+    }
+  });
+
+  studentSelect.addEventListener('change', (e) => {
+    currentStudent = e.target.value;
+    render();
+  });
+
+  // ==================== УМНАЯ ВСТАВКА ВО ВСЕ ПОЛЯ ====================
+  document.addEventListener('paste', async (e) => {
+    // Получаем активную зону
+    const zone = e.target.closest('.zone[data-zone]');
+    if (!zone) return;
+    
+    const taskEl = zone.closest('.task');
+    if (!taskEl) return;
+    
+    const taskId = Number(taskEl.dataset.id);
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const zoneType = zone.dataset.zone;
+    
+    // Получаем данные из буфера
+    const items = Array.from(e.clipboardData?.items || []);
+    const text = e.clipboardData.getData('text');
+    
+    // 1. Проверяем картинку
+    const imageItem = items.find(item => item.type?.startsWith('image/'));
+    if (imageItem) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const file = imageItem.getAsFile();
+      const dataUrl = await toDataUrlFromFile(file);
+      
+      if (zoneType === 'task') {
+        task.taskImage = dataUrl;
+        task.taskText = '';
+      } else if (zoneType === 'answer') {
+        task.answerImage = dataUrl;
+        task.answerText = '';
+        task.isAnswerVisible = true;
+      } else if (zoneType === 'solution') {
+        task.solutionImage = dataUrl;
+        task.solutionText = '';
+      }
+      
+      render();
+      return;
+    }
+    
+    // 2. Проверяем JSON
+    if (text && text.trim()) {
+      try {
+        const data = JSON.parse(text);
+        
+        if (data.blocks && Array.isArray(data.blocks)) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // СОЗДАЕМ КРАСИВЫЙ HTML С ТАБЛИЦАМИ
+          let html = '';
+          
+          data.blocks.forEach(block => {
+            if (block.type === 'text') {
+              html += `<p>${block.content.replace(/\n/g, '<br>')}</p>`;
+            }
+            else if (block.type === 'table') {
+              html += '<table>';
+              html += '<thead><tr>';
+              block.headers.forEach(header => {
+                html += `<th>${header}</th>`;
+              });
+              html += '</tr></thead>';
+              html += '<tbody>';
+              block.rows.forEach(row => {
+                html += '<tr>';
+                row.forEach(cell => {
+                  html += `<td>${cell}</td>`;
+                });
+                html += '</tr>';
+              });
+              html += '</tbody></table>';
+            }
+            else if (block.type === 'image' && block.content) {
+              if (block.content.startsWith('data:image')) {
+                const base64Size = block.content.length;
+                if (base64Size < 1000) {
+                  html += `<div class="icon-warning">
+                    <div style="font-size: 48px;">🖼️</div>
+                    <p><strong>Это пиктограмма/иконка</strong></p>
+                    <p style="color: #666; font-size: 12px;">Размер: ${(base64Size/1024).toFixed(2)} KB</p>
+                  </div>`;
+                } else {
+                  html += `<img src="${block.content}" style="max-width:100%; max-height:300px; border-radius:8px; margin:10px 0;">`;
+                }
+              }
+            }
+          });
+          
+          if (zoneType === 'task') {
+            task.taskText = html;
+            task.taskImage = '';
+          } else if (zoneType === 'answer') {
+            task.answerText = html;
+            task.answerImage = '';
+          } else if (zoneType === 'solution') {
+            task.solutionText = html;
+            task.solutionImage = '';
+          }
+          
+          render();
+          return;
+        }
+      } catch (jsonError) {
+        // Не JSON - продолжаем
+      }
+      
+      // 3. Обычный текст
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (zoneType === 'task') {
+        task.taskText = text;
+        task.taskImage = '';
+      } else if (zoneType === 'answer') {
+        task.answerText = text;
+        task.answerImage = '';
+      } else if (zoneType === 'solution') {
+        task.solutionText = text;
+        task.solutionImage = '';
+      }
+      
+      render();
+    }
+  }, true);
+
+  // КЛИКИ ПО ЗАДАЧАМ
+  app.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    
+    const act = btn.dataset.act;
+    const taskEl = btn.closest('.task');
+    if (!taskEl) return;
+    
+    const taskId = Number(taskEl.dataset.id);
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const studentData = students[currentStudent] || { solved: {}, favorites: {} };
+    
+    if (act === 'toggleSolved') {
+      if (studentData.solved[taskId]) {
+        delete studentData.solved[taskId];
+      } else {
+        studentData.solved[taskId] = true;
+      }
+      saveStudents();
+      render();
+    } else if (act === 'toggleFav') {
+      if (studentData.favorites[taskId]) {
+        delete studentData.favorites[taskId];
+      } else {
+        studentData.favorites[taskId] = true;
+      }
+      saveStudents();
+      render();
+    } else if (act === 'edit') {
+      editingTaskId = editingTaskId === task.id ? null : task.id;
+      render();
+    } else if (act === 'clearImages') { 
+      task.taskImage = ''; 
+      task.taskText = '';
+      task.answerImage = ''; 
+      task.answerText = '';
+      task.drawingImage = '';
+      task.solutionImage = '';
+      task.solutionText = '';
+      render();
+    } else if (act === 'delete') {
+      if (confirm('Удалить задачу?')) {
+        if (task.analogId) {
+          if (confirm('У этой задачи есть аналог. Удалить тоже?')) {
+            tasks = tasks.filter(t => t.id !== task.analogId);
+          }
+        }
+        if (task.isAnalog && task.parentId) {
+          const parent = tasks.find(t => t.id === task.parentId);
+          if (parent) {
+            parent.analogId = null;
+          }
+        }
+        tasks = tasks.filter(t => t.id !== taskId);
+        if (editingTaskId === taskId) editingTaskId = null;
+        render();
+      }
+    } else if (act === 'createAnalog') {
+      const newAnalog = {
+        ...task,
+        id: uid(),
+        title: task.title + ' (аналог)',
+        isAnalog: true,
+        parentId: task.id,
+        analogId: null
+      };
+      delete newAnalog.analogId;
+      
+      tasks.push(newAnalog);
+      task.analogId = newAnalog.id;
+      render();
+    } else if (act === 'openAnalog' && task.analogId) {
+      const analog = tasks.find(t => t.id === task.analogId);
+      if (analog) {
+        editingTaskId = analog.id;
+        render();
+        setTimeout(() => {
+          document.querySelector(`.task[data-id="${analog.id}"]`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }
+    } else if (act === 'showDrawing' && task.drawingImage) {
+      showModal(task.drawingImage, `Чертеж: ${task.title}`);
+    } else if (act === 'showSolution' && task.solutionImage) {
+      showModal(task.solutionImage, `Решение: ${task.title}`);
+    } else if (act === 'pasteDrawing' && editingTaskId === taskId) {
+      try {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+          for (const type of item.types) {
+            if (type.startsWith('image/')) {
+              const blob = await item.getType(type);
+              task.drawingImage = await toDataUrlFromFile(blob);
+              render();
+              return;
+            }
+          }
+        }
+        alert('В буфере обмена нет изображения');
+      } catch (err) {
+        alert('Ошибка доступа к буферу обмена');
+      }
+    } else if (act === 'pasteSolution' && editingTaskId === taskId) {
+      try {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+          for (const type of item.types) {
+            if (type.startsWith('image/')) {
+              const blob = await item.getType(type);
+              task.solutionImage = await toDataUrlFromFile(blob);
+              render();
+              return;
+            }
+          }
+        }
+        alert('В буфере обмена нет изображения');
+      } catch (err) {
+        alert('Ошибка доступа к буферу обмена');
+      }
+    } else if (act === 'clearDrawingSolution' && editingTaskId === taskId) {
+      task.drawingImage = '';
+      task.solutionImage = '';
+      render();
+    } else if (act === 'editText') {
+      const zone = btn.closest('.zone');
+      const zoneType = btn.dataset.zone;
+      
+      let currentText = '';
+      if (zoneType === 'task') currentText = task.taskText || '';
+      else if (zoneType === 'answer') currentText = task.answerText || '';
+      else if (zoneType === 'solution') currentText = task.solutionText || '';
+      
+      const textarea = document.createElement('textarea');
+      textarea.placeholder = 'Введите текст...';
+      textarea.value = currentText.replace(/<[^>]*>/g, '');
+      
+      zone.innerHTML = `
+        <h4>${zoneType === 'task' ? '📋 Условие задачи' : zoneType === 'answer' ? '💡 Ответ' : '📝 Решение'}</h4>
+        <div class="hint">Ctrl+Enter - сохранить, Esc - отмена</div>
+      `;
+      zone.appendChild(textarea);
+      textarea.focus();
+      
+      const saveText = () => {
+        const text = textarea.value.trim();
+        if (zoneType === 'task') {
+          task.taskText = text || '';
+          task.taskImage = '';
+        } else if (zoneType === 'answer') {
+          task.answerText = text || '';
+          task.answerImage = '';
+        } else if (zoneType === 'solution') {
+          task.solutionText = text || '';
+          task.solutionImage = '';
+        }
+        render();
+      };
+      
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && e.ctrlKey) {
+          e.preventDefault();
+          saveText();
+        } else if (e.key === 'Escape') {
+          render();
+        }
+      });
+      
+      textarea.addEventListener('blur', saveText);
+      
+    } else if (act === 'pasteImage') {
+      const zone = btn.closest('.zone');
+      zone.focus();
+      alert('Нажмите Ctrl+V для вставки изображения');
+    }
+  });
+
+  // ИЗМЕНЕНИЕ ПОЛЕЙ
+  app.addEventListener('input', (e) => {
+    const input = e.target.closest('[data-field]');
+    if (!input || !editingTaskId) return;
+    
+    const taskEl = app.querySelector(`.task[data-id="${editingTaskId}"]`);
+    const taskId = Number(taskEl.dataset.id);
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      task[input.dataset.field] = input.value;
+    }
+  });
+
+  app.addEventListener('change', (e) => {
+    const select = e.target.closest('select[data-field]');
+    if (!select || !editingTaskId) return;
+    
+    const taskEl = app.querySelector(`.task[data-id="${editingTaskId}"]`);
+    const taskId = Number(taskEl.dataset.id);
+    const task = tasks.find(t => t.id === taskId);
+    
+    if (select.dataset.field === 'sectionName' && select.value === '') {
+      const newSection = prompt('Новый раздел:');
+      if (newSection) {
+        task.sectionName = newSection.trim();
+        availableSections.add(newSection.trim());
+        select.value = newSection.trim();
+      }
+    } else {
+      task[select.dataset.field] = select.value;
+    }
+    render();
+  });
+
+  // Клик по ответу для показа/скрытия
+  app.addEventListener('click', (e) => {
+    const zone = e.target.closest('.zone[data-zone="answer"]');
+    if (zone && !editingTaskId) {
+      const taskEl = zone.closest('.task');
+      const taskId = Number(taskEl.dataset.id);
+      const task = tasks.find(t => t.id === taskId);
+      task.isAnswerVisible = !task.isAnswerVisible;
+      render();
+    }
+  });
+
+  // ПЕЧАТЬ
+  function printTasks(showAnswers) {
+    const originalVisibility = tasks.map(t => t.isAnswerVisible);
+    
+    if (showAnswers) {
+      tasks.forEach(t => t.isAnswerVisible = true);
+    }
+    
+    const filtered = getFilteredAndSortedTasks();
+    let printContent = '';
+    let answerItems = '';
+    let answerCount = 0;
+    
+    filtered.forEach((task, index) => {
+      if (task.isSectionHeader) return;
+      
+      function getTaskHTML() {
+        if (task.taskImage) {
+          return `<img src="${task.taskImage}" style="max-width: 100%; max-height: 400px; display: block; margin: 0;">`;
+        } else if (task.taskText) {
+          let html = task.taskText;
+          if (!html.includes('<table')) {
+            html = `<div style="padding: 20px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 14pt; text-align: left;">${html.replace(/<[^>]*>/g, '')}</div>`;
+          }
+          return html;
+        }
+        return '<div style="padding: 40px; background: #f5f5f5; text-align: center; font-style: italic;">Нет данных</div>';
+      }
+      
+      function getAnswerHTML() {
+        if (task.answerImage && showAnswers) {
+          return `<img src="${task.answerImage}" style="max-width: 100%; max-height: 400px; display: block; margin: 0 auto;">`;
+        } else if (task.answerText && showAnswers) {
+          let html = task.answerText;
+          if (!html.includes('<table')) {
+            html = `<div style="padding: 20px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 14pt; text-align: center;">${html.replace(/<[^>]*>/g, '')}</div>`;
+          }
+          return html;
+        }
+        return '';
+      }
+      
+      printContent += `
+        <div class="print-task" style="margin-bottom: 30px; page-break-inside: avoid;">
+          <div style="font-weight: bold; font-size: 16pt; margin-bottom: 10px;">${index + 1}. ${task.title}</div>
+          <div style="margin-bottom: 20px;">${getTaskHTML()}</div>
+          ${getAnswerHTML() ? `<div style="margin-top: 20px; border-top: 2px dashed #666; padding-top: 20px;"><strong>Ответ:</strong> ${getAnswerHTML()}</div>` : ''}
+        </div>
+      `;
+      
+      if (!showAnswers && (task.answerImage || task.answerText)) {
+        answerItems += `
+          <div style="padding: 5px; text-align: center; border: 1px solid #ccc; page-break-inside: avoid;">
+            <div style="font-weight: bold; margin-bottom: 5px;">${index + 1}</div>
+            ${task.answerImage ? 
+              `<img src="${task.answerImage}" style="max-width: 100px; max-height: 100px; display: block; margin: 0 auto;">` :
+              `<div style="font-size: 10pt; padding: 5px;">${task.answerText.replace(/<[^>]*>/g, '')}</div>`
+            }
+          </div>
+        `;
+        answerCount++;
+      }
+    });
+    
+    const printStyles = `
+      <style>
+        body { font-family: "Times New Roman", serif; margin: 15mm; }
+        .print-task { margin-bottom: 30px; page-break-inside: avoid; }
+        table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+        th { background: #1e3c72 !important; color: white !important; padding: 8px 12px; border: 1px solid #2a4a8a; }
+        td { padding: 6px 10px; border: 1px solid #ccc; }
+        tr:nth-child(even) { background: #f8fafc !important; }
+        img { max-width: 100%; }
+        .answer-grid {
+          display: grid;
+          grid-template-columns: repeat(10, 1fr);
+          gap: 10px;
+          margin-top: 30px;
+          page-break-before: always;
+        }
+        @media print {
+          th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          tr:nth-child(even) { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+      </style>
+    `;
+    
+    const answerKey = !showAnswers && answerItems ? `
+      <div class="answer-grid">
+        <div style="grid-column: span 10; text-align: center; font-size: 18pt; font-weight: bold; margin: 20px 0;">
+          Ключ ответов (${answerCount} задач)
+        </div>
+        ${answerItems}
+      </div>
+    ` : '';
+    
+    const printHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>${showAnswers ? 'Задания с ответами' : 'Задания без ответов'}</title>
+        ${printStyles}
+      </head>
+      <body>
+        ${printContent}
+        ${answerKey}
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printHTML);
+    printWindow.document.close();
+    
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+        tasks.forEach((t, i) => t.isAnswerVisible = originalVisibility[i]);
+        setTimeout(render, 100);
+      }, 500);
+    };
+  }
+
+  // Переопределяем кнопки печати
+  btnPrintNoAnswer.addEventListener('click', (e) => {
+    e.preventDefault();
+    printTasks(true);
+  });
+  
+  btnPrintWithAnswer.addEventListener('click', (e) => {
+    e.preventDefault();
+    printTasks(false);
+  });
+
+  // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+  loadStudents();
+  updateStudentSelect();
+  startAutoSave();
+  
+  tasks = [];
+  
+  render();
+})();
+</script>
+
+</body></html>
