@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>МАТЕМАТИКА — редактор задач</title>
+    <!-- KaTeX для формул -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <!-- pako для сжатия ссылок -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 30px;
+            padding: 10px 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .header-btn:hover {
+            background: white;
+            color: #764ba2;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Левая панель */
+        .left-panel {
+            width: 350px;
+            background: #f8fafd;
+            border-right: 2px solid #e0e7f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sections-header {
+            padding: 20px;
+            background: white;
+            border-bottom: 2px solid #e0e7f0;
+        }
+
+        .sections-header h2 {
+            color: #2d3748;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .add-section-btn {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .add-section-btn:hover {
+            background: #5a67d8;
+        }
+
+        .sections-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 2px solid transparent;
+        }
+
+        .section-card.active {
+            border-color: #667eea;
+        }
+
+        .section-header {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .section-action-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+
+        .section-action-btn:hover {
+            background: #f0f4fa;
+        }
+
+        .tasks-in-section {
+            padding: 0 15px 15px 15px;
+        }
+
+        .task-item {
+            background: #f8fafd;
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+
+        .task-item:hover {
+            background: #e9eef5;
+        }
+
+        .task-item.active {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .task-name {
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .task-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 6px;
+        }
+
+        .task-btn:hover {
+            background: #d0ddeb;
+        }
+
+        /* Правая панель */
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: white;
+        }
+
+        .editor-content {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e7f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Segoe UI', monospace;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .image-upload-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .image-upload-area input {
+            flex: 1;
+        }
+
+        .paste-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0 25px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .preview-image {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 2px solid #e0e7f0;
+            padding: 5px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e7f0;
+        }
+
+        .action-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .action-btn.save {
+            background: #48bb78;
+            color: white;
+        }
+
+        .action-btn.save:hover {
+            background: #38a169;
+        }
+
+        .action-btn.visualize {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn.visualize:hover {
+            background: #5a67d8;
+        }
+
+        .action-btn.share {
+            background: #9f7aea;
+            color: white;
+        }
+
+        .action-btn.share:hover {
+            background: #805ad5;
+        }
+
+        .action-btn.delete {
+            background: #f56565;
+            color: white;
+        }
+
+        .action-btn.delete:hover {
+            background: #e53e3e;
+        }
+
+        .share-url-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8fafd;
+            border-radius: 12px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .share-url-container input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e7f0;
+            border-radius: 8px;
+        }
+
+        .share-url-container button {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="header">
+        <h1>📐 МАТЕМАТИКА — редактор задач</h1>
+        <div class="header-actions">
+            <button class="header-btn" id="exportBtn">📤 Экспорт JSON</button>
+            <button class="header-btn" id="importBtn">📥 Импорт JSON</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;">
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Левая панель -->
+        <div class="left-panel">
+            <div class="sections-header">
+                <h2>📚 Разделы</h2>
+                <button class="add-section-btn" id="addSectionBtn">+ Новый раздел</button>
+            </div>
+            <div class="sections-list" id="sectionsList"></div>
+        </div>
+
+        <!-- Правая панель -->
+        <div class="right-panel">
+            <div class="editor-content">
+                <div class="input-group">
+                    <label>📌 Название задачи</label>
+                    <input type="text" id="taskNameField" placeholder="Например: Показательная функция">
+                </div>
+
+                <div class="input-group">
+                    <label>🧠 Условие (LaTeX: \(...\) или \[...\])</label>
+                    <textarea id="conditionField" rows="4">Найдем основание \(a\), подставив точку \((1; 2)\):
+
+\[f(1) = 2\]
+\[a^1 = 2\]
+\[a = 2\]
+
+Функция: \(f(x) = 2^x\).
+
+Тогда \(f(3) = 2^3 = 8\).
+
+Ответ: 8</textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>🖼️ Изображение</label>
+                    <div class="image-upload-area">
+                        <input type="text" id="imageField" placeholder="https://... или Ctrl+V">
+                        <button class="paste-btn" id="pasteImageBtn">📋 Вставить</button>
+                    </div>
+                    <img id="imagePreview" class="preview-image" style="display: none;">
+                </div>
+
+                <div class="input-group">
+                    <label>✍️ Решение (с LaTeX, # — комментарии)</label>
+                    <textarea id="solutionField" rows="8"># Подставляем координаты точки
+\(f(1) = 2\)
+\(a^1 = 2\)
+\(a = 2\)
+
+# Восстановили функцию
+\(f(x) = 2^x\)
+
+# Вычисляем значение
+\(f(3) = 2^3 = 8\)
+
+Ответ: \(8\)</textarea>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn save" id="saveTaskBtn">💾 Сохранить задачу</button>
+                    <button class="action-btn share" id="shareBtn">🔗 Получить ссылку</button>
+                    <button class="action-btn delete" id="deleteTaskBtn">🗑️ Удалить задачу</button>
+                </div>
+
+                <div id="shareUrlContainer" class="share-url-container" style="display: none;">
+                    <input type="text" id="shareUrlInput" readonly>
+                    <button id="copyShareBtn">Копировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // Данные
+        let sections = JSON.parse(localStorage.getItem('sections')) || [];
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        if (sections.length === 0) {
+            sections = [{ id: '1', name: 'Примеры функций' }];
+            tasks = [{
+                id: 't1',
+                sectionId: '1',
+                name: 'Показательная функция',
+                condition: 'Найдем основание \\(a\\), подставив точку \\((1; 2)\\):\n\n\\[f(1) = 2\\]\n\\[a^1 = 2\\]\n\\[a = 2\\]\n\nФункция: \\(f(x) = 2^x\\).\n\nТогда \\(f(3) = 2^3 = 8\\).\n\nОтвет: 8',
+                image: '',
+                solution: '# Подставляем координаты точки\n\\(f(1) = 2\\)\n\\(a^1 = 2\\)\n\\(a = 2\\)\n\n# Восстановили функцию\n\\(f(x) = 2^x\\)\n\n# Вычисляем значение\n\\(f(3) = 2^3 = 8\\)\n\nОтвет: \\(8\\)'
+            }];
+            localStorage.setItem('sections', JSON.stringify(sections));
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        let currentSectionId = sections[0]?.id || null;
+        let currentTaskId = tasks.find(t => t.sectionId === currentSectionId)?.id || null;
+
+        // Элементы
+        const sectionsList = document.getElementById('sectionsList');
+        const taskNameField = document.getElementById('taskNameField');
+        const conditionField = document.getElementById('conditionField');
+        const imageField = document.getElementById('imageField');
+        const solutionField = document.getElementById('solutionField');
+        const imagePreview = document.getElementById('imagePreview');
+        const addSectionBtn = document.getElementById('addSectionBtn');
+        const saveTaskBtn = document.getElementById('saveTaskBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const deleteTaskBtn = document.getElementById('deleteTaskBtn');
+        const pasteImageBtn = document.getElementById('pasteImageBtn');
+        const shareUrlContainer = document.getElementById('shareUrlContainer');
+        const shareUrlInput = document.getElementById('shareUrlInput');
+        const copyShareBtn = document.getElementById('copyShareBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const importFile = document.getElementById('importFile');
+
+        function saveToStorage() {
+            localStorage.setItem('sections', JSON.stringify(sections));
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function renderSections() {
+            sectionsList.innerHTML = '';
+            sections.forEach(section => {
+                const sectionTasks = tasks.filter(t => t.sectionId === section.id);
+                const sectionCard = document.createElement('div');
+                sectionCard.className = `section-card ${section.id === currentSectionId ? 'active' : ''}`;
+                
+                sectionCard.innerHTML = `
+                    <div class="section-header">
+                        <span class="section-title">📁 ${section.name}</span>
+                        <div class="section-actions">
+                            <button class="section-action-btn" onclick="window.addTask('${section.id}')">➕</button>
+                            <button class="section-action-btn" onclick="window.editSection('${section.id}')">✏️</button>
+                            <button class="section-action-btn" onclick="window.deleteSection('${section.id}')">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="tasks-in-section">
+                        ${sectionTasks.map(task => `
+                            <div class="task-item ${task.id === currentTaskId ? 'active' : ''}" onclick="window.loadTask('${task.id}')">
+                                <span class="task-name">${task.name}</span>
+                                <div class="task-actions">
+                                    <button class="task-btn" onclick="event.stopPropagation(); window.deleteTask('${task.id}')">🗑️</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                sectionsList.appendChild(sectionCard);
+            });
+        }
+
+        window.loadTask = function(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            currentTaskId = taskId;
+            currentSectionId = task.sectionId;
+            taskNameField.value = task.name || '';
+            conditionField.value = task.condition || '';
+            imageField.value = task.image || '';
+            solutionField.value = task.solution || '';
+            imagePreview.style.display = task.image ? 'block' : 'none';
+            if (task.image) imagePreview.src = task.image;
+            renderSections();
+            shareUrlContainer.style.display = 'none';
+        };
+
+        window.deleteTask = function(taskId) {
+            if (!confirm('Удалить задачу?')) return;
+            tasks = tasks.filter(t => t.id !== taskId);
+            if (currentTaskId === taskId) {
+                currentTaskId = null;
+                clearEditor();
+            }
+            saveToStorage();
+            renderSections();
+        };
+
+        window.deleteSection = function(sectionId) {
+            if (!confirm('Удалить раздел и все его задачи?')) return;
+            sections = sections.filter(s => s.id !== sectionId);
+            tasks = tasks.filter(t => t.sectionId !== sectionId);
+            if (currentSectionId === sectionId) {
+                currentSectionId = sections[0]?.id || null;
+                currentTaskId = null;
+                clearEditor();
+            }
+            saveToStorage();
+            renderSections();
+        };
+
+        window.editSection = function(sectionId) {
+            const section = sections.find(s => s.id === sectionId);
+            const newName = prompt('Новое название:', section.name);
+            if (newName?.trim()) {
+                section.name = newName.trim();
+                saveToStorage();
+                renderSections();
+            }
+        };
+
+        window.addTask = function(sectionId) {
+            currentSectionId = sectionId;
+            currentTaskId = null;
+            clearEditor();
+            renderSections();
+            taskNameField.focus();
+        };
+
+        function clearEditor() {
+            taskNameField.value = '';
+            conditionField.value = '';
+            imageField.value = '';
+            solutionField.value = '';
+            imagePreview.style.display = 'none';
+            shareUrlContainer.style.display = 'none';
+        }
+
+        function saveCurrentTask() {
+            if (!currentSectionId) {
+                alert('Сначала выберите раздел');
+                return;
+            }
+
+            const taskData = {
+                name: taskNameField.value.trim() || 'Без названия',
+                condition: conditionField.value,
+                image: imageField.value,
+                solution: solutionField.value
+            };
+
+            if (currentTaskId) {
+                const index = tasks.findIndex(t => t.id === currentTaskId);
+                if (index !== -1) tasks[index] = { ...tasks[index], ...taskData };
+            } else {
+                const newTask = {
+                    id: Date.now().toString(),
+                    sectionId: currentSectionId,
+                    ...taskData
+                };
+                tasks.push(newTask);
+                currentTaskId = newTask.id;
+            }
+            saveToStorage();
+            renderSections();
+            alert('✅ Задача сохранена');
+        }
+
+        function createViewerLink() {
+            const taskData = {
+                condition: conditionField.value,
+                image: imageField.value,
+                solution: solutionField.value
+            };
+            const json = JSON.stringify(taskData);
+            const compressed = pako.deflate(json, { to: 'string' });
+            const base64 = btoa(String.fromCharCode.apply(null, compressed));
+            const encoded = encodeURIComponent(base64);
+            return window.location.origin + window.location.pathname.replace('editor.html', 'view.html') + '?data=' + encoded;
+        }
+
+        pasteImageBtn.addEventListener('click', async () => {
+            try {
+                const items = await navigator.clipboard.read();
+                for (const item of items) {
+                    for (const type of item.types) {
+                        if (type.startsWith('image/')) {
+                            const blob = await item.getType(type);
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                imageField.value = reader.result;
+                                imagePreview.src = reader.result;
+                                imagePreview.style.display = 'block';
+                            };
+                            reader.readAsDataURL(blob);
+                            return;
+                        }
+                    }
+                }
+                alert('В буфере нет изображения');
+            } catch (e) {
+                alert('Ошибка: ' + e.message);
+            }
+        });
+
+        imageField.addEventListener('input', () => {
+            if (imageField.value) {
+                imagePreview.src = imageField.value;
+                imagePreview.style.display = 'block';
+            } else {
+                imagePreview.style.display = 'none';
+            }
+        });
+
+        addSectionBtn.addEventListener('click', () => {
+            const name = prompt('Название раздела:');
+            if (!name) return;
+            sections.push({ id: Date.now().toString(), name: name });
+            saveToStorage();
+            renderSections();
+        });
+
+        saveTaskBtn.addEventListener('click', saveCurrentTask);
+        
+        shareBtn.addEventListener('click', () => {
+            shareUrlInput.value = createViewerLink();
+            shareUrlContainer.style.display = 'flex';
+        });
+
+        copyShareBtn.addEventListener('click', () => {
+            shareUrlInput.select();
+            navigator.clipboard.writeText(shareUrlInput.value);
+            alert('✅ Ссылка скопирована');
+        });
+
+        deleteTaskBtn.addEventListener('click', () => {
+            if (!currentTaskId) return;
+            if (confirm('Удалить задачу?')) {
+                tasks = tasks.filter(t => t.id !== currentTaskId);
+                currentTaskId = null;
+                clearEditor();
+                saveToStorage();
+                renderSections();
+            }
+        });
+
+        exportBtn.addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify({ sections, tasks }, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'tasks.json';
+            a.click();
+        });
+
+        importBtn.addEventListener('click', () => importFile.click());
+        importFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.sections && data.tasks) {
+                        sections = data.sections;
+                        tasks = data.tasks;
+                        saveToStorage();
+                        currentSectionId = sections[0]?.id || null;
+                        currentTaskId = null;
+                        clearEditor();
+                        renderSections();
+                        alert('✅ Импорт выполнен');
+                    }
+                } catch (err) {
+                    alert('Ошибка парсинга JSON');
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        renderSections();
+        if (currentTaskId) window.loadTask(currentTaskId);
+
+        window.loadTask = window.loadTask;
+        window.deleteTask = window.deleteTask;
+        window.deleteSection = window.deleteSection;
+        window.editSection = window.editSection;
+        window.addTask = window.addTask;
+    })();
+</script>
+</body>
+</html>
