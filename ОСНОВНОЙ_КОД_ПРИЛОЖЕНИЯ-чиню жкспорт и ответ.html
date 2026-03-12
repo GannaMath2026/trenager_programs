@@ -1463,12 +1463,9 @@
             </div>
             
 
-<!-- Зона ответа — ВСЕГДА ВИДИМА -->
 <div class="zone answer-zone" data-zone="answer" tabindex="0">
   <h4>💡 Ответ</h4>
-  <div class="answer-content ${answersVisible ? '' : 'answer-content-hidden'}">
-    ${answerContent || (isEditing ? '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нажмите для ввода ответа</div>' : '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нет ответа</div>')}
-  </div>
+  ${answerContent || (isEditing ? '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нажмите для ввода ответа</div>' : '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нет ответа</div>')}
   ${isEditing ? `
     <div class="zone-actions">
       <button class="zone-action-btn" data-act="editText" data-zone="answer">📝 Редактировать текст</button>
@@ -1477,6 +1474,21 @@
   ` : ''}
   <div class="hint">кликни чтобы открыть/закрыть</div>
 </div>
+          
+          <!-- Зона решения -->
+          ${hasSolution ? `
+            <div class="zone solution-zone ${solutionHiddenClass}" data-zone="solution" tabindex="0">
+              <h4>📝 Решение ${task.solutionText && !task.solutionImage ? '(текст)' : ''}</h4>
+              ${solutionContent}
+              ${isEditing ? `
+                <div class="zone-actions">
+                  <button class="zone-action-btn" data-act="editText" data-zone="solution">📝 Редактировать текст</button>
+                  <button class="zone-action-btn" data-act="pasteImage" data-zone="solution">📋 Вставить изображение</button>
+                </div>
+              ` : ''}
+              <div class="hint">кликни чтобы открыть/закрыть</div>
+            </div>
+          ` : ''}
           
           <!-- Чертеж -->
           ${hasDrawing ? `
@@ -1808,25 +1820,17 @@ btnExport.addEventListener('click', () => {
   }, 100);
 });
 
-btnAdd.addEventListener('click', () => {
-  resetFilters();
-  const newTask = normalizeTask({ 
-    title: '', 
-    sectionName: '', 
-    difficulty: 'basic',
-    answerText: '',     // ← обязательно
-    answerImage: '',    // ← обязательно
-    taskText: '',
-    solutionText: ''
+  btnAdd.addEventListener('click', () => {
+    resetFilters();
+    const newTask = normalizeTask({ title: '', sectionName: '', difficulty: 'basic' });
+    tasks.unshift(newTask);
+    editingTaskId = newTask.id;
+    render();
+    setTimeout(() => {
+      const titleInput = app.querySelector('input[data-field="title"]');
+      titleInput?.focus();
+    }, 200);
   });
-  tasks.unshift(newTask);
-  editingTaskId = newTask.id;
-  render();
-  setTimeout(() => {
-    const titleInput = app.querySelector('input[data-field="title"]');
-    titleInput?.focus();
-  }, 200);
-});
 
   function resetFilters() {
     q.value = '';
