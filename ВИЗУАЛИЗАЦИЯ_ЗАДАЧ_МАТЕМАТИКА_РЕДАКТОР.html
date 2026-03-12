@@ -310,6 +310,15 @@
             background: #38a169;
         }
 
+        .action-btn.visualize {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn.visualize:hover {
+            background: #5a67d8;
+        }
+
         .action-btn.share {
             background: #9f7aea;
             color: white;
@@ -352,6 +361,128 @@
             padding: 0 20px;
             font-weight: 600;
             cursor: pointer;
+        }
+
+        /* МОДАЛЬНОЕ ОКНО ВИЗУАЛИЗАЦИИ (ВНУТРИ РЕДАКТОРА) */
+        .visual-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 2000;
+        }
+
+        .visual-modal.active {
+            display: flex;
+        }
+
+        .modal-split {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .modal-left {
+            width: 40%;
+            background: #f8fafd;
+            padding: 40px;
+            overflow-y: auto;
+            border-right: 2px solid #e0e7f0;
+        }
+
+        .modal-right {
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 25px 30px;
+            background: #f8fafd;
+            border-bottom: 2px solid #e0e7f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            color: #2d3748;
+        }
+
+        .modal-hint {
+            background: #667eea;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+        }
+
+        .modal-solution {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            line-height: 1.8;
+        }
+
+        .modal-condition {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            border-left: 6px solid #667eea;
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 16px;
+            object-fit: contain;
+        }
+
+        .code-line { 
+            color: #2c3e50; 
+            font-weight: 500; 
+            margin-bottom: 5px;
+            white-space: pre-wrap;
+        }
+        
+        .comment-line { 
+            color: #2e6b4c; 
+            font-style: italic; 
+            margin-left: 25px; 
+            padding-left: 20px; 
+            border-left: 4px solid #86b89c; 
+            background: #f3faf6; 
+            border-radius: 0 12px 12px 0; 
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+        }
+
+        .empty-message { 
+            color: #a0aec0; 
+            font-style: italic; 
+            font-size: 1.4rem; 
+            text-align: center; 
+            margin-top: 100px; 
+        }
+
+        .close-modal-btn {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: #f56565;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 28px;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 2100;
         }
     </style>
 </head>
@@ -426,6 +557,7 @@
 
                 <div class="action-buttons">
                     <button class="action-btn save" id="saveTaskBtn">💾 Сохранить задачу</button>
+                    <button class="action-btn visualize" id="visualizeBtn">👁️ Визуализировать</button>
                     <button class="action-btn share" id="shareBtn">🔗 Получить ссылку</button>
                     <button class="action-btn delete" id="deleteTaskBtn">🗑️ Удалить задачу</button>
                 </div>
@@ -435,6 +567,21 @@
                     <button id="copyShareBtn">Копировать</button>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ВИЗУАЛИЗАЦИИ (ВНУТРИ РЕДАКТОРА) -->
+<div class="visual-modal" id="visualModal">
+    <button class="close-modal-btn" id="closeModalBtn">✕ Закрыть (ESC)</button>
+    <div class="modal-split">
+        <div class="modal-left" id="modalLeft"></div>
+        <div class="modal-right">
+            <div class="modal-header">
+                <h3>🎬 Пошаговое решение</h3>
+                <span class="modal-hint">␣ пробел — дальше | ESC — выход</span>
+            </div>
+            <div class="modal-solution" id="modalSolution"></div>
         </div>
     </div>
 </div>
@@ -471,6 +618,7 @@
         const imagePreview = document.getElementById('imagePreview');
         const addSectionBtn = document.getElementById('addSectionBtn');
         const saveTaskBtn = document.getElementById('saveTaskBtn');
+        const visualizeBtn = document.getElementById('visualizeBtn');
         const shareBtn = document.getElementById('shareBtn');
         const deleteTaskBtn = document.getElementById('deleteTaskBtn');
         const pasteImageBtn = document.getElementById('pasteImageBtn');
@@ -480,6 +628,28 @@
         const exportBtn = document.getElementById('exportBtn');
         const importBtn = document.getElementById('importBtn');
         const importFile = document.getElementById('importFile');
+        
+        // Элементы модального окна
+        const modal = document.getElementById('visualModal');
+        const modalLeft = document.getElementById('modalLeft');
+        const modalSolution = document.getElementById('modalSolution');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        // Анимация
+        let solutionBlocks = [];
+        let currentBlockIndex = 0;
+
+        function renderMath(element) {
+            if (window.renderMathInElement) {
+                window.renderMathInElement(element, {
+                    delimiters: [
+                        {left: '\\(', right: '\\)', display: false},
+                        {left: '\\[', right: '\\]', display: true}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
 
         function saveToStorage() {
             localStorage.setItem('sections', JSON.stringify(sections));
@@ -613,6 +783,54 @@
             alert('✅ Задача сохранена');
         }
 
+        // ВИЗУАЛИЗАЦИЯ ВНУТРИ РЕДАКТОРА
+        function openVisualization() {
+            const taskData = {
+                condition: conditionField.value,
+                image: imageField.value,
+                solution: solutionField.value
+            };
+
+            modalLeft.innerHTML = `
+                <div class="modal-condition">${taskData.condition || '— условие не задано —'}</div>
+                ${taskData.image ? `<img class="modal-image" src="${taskData.image}" onerror="this.style.display='none'">` : ''}
+            `;
+            renderMath(modalLeft);
+
+            solutionBlocks = taskData.solution.split('\n').map(line => ({
+                type: line.trim().startsWith('#') ? 'comment' : 'code',
+                text: line
+            }));
+            currentBlockIndex = 0;
+            
+            modalSolution.innerHTML = '<div class="empty-message">✨ Нажмите пробел</div>';
+            modal.classList.add('active');
+        }
+
+        function stepAnimation() {
+            if (currentBlockIndex >= solutionBlocks.length) return;
+            
+            if (modalSolution.children.length === 1 && 
+                modalSolution.children[0].classList.contains('empty-message')) {
+                modalSolution.innerHTML = '';
+            }
+            
+            const block = solutionBlocks[currentBlockIndex];
+            const div = document.createElement('div');
+            div.className = block.type === 'code' ? 'code-line' : 'comment-line';
+            div.textContent = block.text;
+            modalSolution.appendChild(div);
+            renderMath(div);
+            
+            currentBlockIndex++;
+            modalSolution.scrollTop = modalSolution.scrollHeight;
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        // ССЫЛКА НА ВНЕШНИЙ ПРОСМОТРЩИК
         function createViewerLink() {
             const taskData = {
                 condition: conditionField.value,
@@ -624,17 +842,17 @@
             const base64 = btoa(String.fromCharCode.apply(null, compressed));
             const encoded = encodeURIComponent(base64);
             
-            // ПРАВИЛЬНОЕ название файла для просмотра
+            // Имя файла для просмотра
             const viewerFile = 'ВИЗУАЛИЗАЦИЯ_ЗАДАЧ_МАТЕМАТИКА_БЕЗ_РЕДАКТИРОВАНИЯ.html';
             
             // Получаем текущий путь
             const currentPath = window.location.pathname;
             const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
             
-            // Формируем правильную ссылку
             return window.location.origin + basePath + viewerFile + '?data=' + encoded;
         }
 
+        // Вставка картинки
         pasteImageBtn.addEventListener('click', async () => {
             try {
                 const items = await navigator.clipboard.read();
@@ -668,6 +886,7 @@
             }
         });
 
+        // Кнопки
         addSectionBtn.addEventListener('click', () => {
             const name = prompt('Название раздела:');
             if (!name) return;
@@ -677,6 +896,8 @@
         });
 
         saveTaskBtn.addEventListener('click', saveCurrentTask);
+        
+        visualizeBtn.addEventListener('click', openVisualization);
         
         shareBtn.addEventListener('click', () => {
             shareUrlInput.value = createViewerLink();
@@ -700,6 +921,22 @@
             }
         });
 
+        closeModalBtn.addEventListener('click', closeModal);
+
+        // Клавиши в модальном окне
+        document.addEventListener('keydown', (e) => {
+            if (!modal.classList.contains('active')) return;
+            
+            if (e.code === 'Space') {
+                e.preventDefault();
+                stepAnimation();
+            } else if (e.code === 'Escape') {
+                e.preventDefault();
+                closeModal();
+            }
+        });
+
+        // Экспорт/Импорт
         exportBtn.addEventListener('click', () => {
             const blob = new Blob([JSON.stringify({ sections, tasks }, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
