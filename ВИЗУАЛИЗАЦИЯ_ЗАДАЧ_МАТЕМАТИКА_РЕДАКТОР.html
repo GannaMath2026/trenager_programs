@@ -623,8 +623,16 @@
             const compressed = pako.deflate(json, { to: 'string' });
             const base64 = btoa(String.fromCharCode.apply(null, compressed));
             const encoded = encodeURIComponent(base64);
-            // Исправляем путь к viewer - теперь он называется как второй файл
-            return window.location.origin + window.location.pathname.replace('ВИЗУАЛИЗАЦИЯ_ЗАДАЧ_МАТЕМАТИКА_РЕДАКТОР.html', 'ВИЗУАЛИЗАЦИЯ_ЗАДАЧ_МАТЕМАТИКА_БЕЗ_РЕДАКТИРОВАНИЯ.html') + '?data=' + encoded;
+            
+            // ПРАВИЛЬНОЕ название файла для просмотра
+            const viewerFile = 'ВИЗУАЛИЗАЦИЯ_ЗАДАЧ_МАТЕМАТИКА_БЕЗ_РЕДАКТИРОВАНИЯ.html';
+            
+            // Получаем текущий путь
+            const currentPath = window.location.pathname;
+            const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+            
+            // Формируем правильную ссылку
+            return window.location.origin + basePath + viewerFile + '?data=' + encoded;
         }
 
         pasteImageBtn.addEventListener('click', async () => {
