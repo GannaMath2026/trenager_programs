@@ -117,6 +117,11 @@
             text-align: center; 
             margin-top: 100px; 
         }
+
+        /* Стили для формул */
+        .katex { 
+            font-size: 1.2em; 
+        }
     </style>
 </head>
 <body>
@@ -138,18 +143,23 @@
         let solutionBlocks = [];
         let currentBlockIndex = 0;
 
-        function renderMath(element) {
+        // Функция для рендеринга формул
+        function renderMathInElement(element) {
             if (window.renderMathInElement) {
                 window.renderMathInElement(element, {
                     delimiters: [
                         {left: '\\(', right: '\\)', display: false},
-                        {left: '\\[', right: '\\]', display: true}
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
                     ],
-                    throwOnError: false
+                    throwOnError: false,
+                    output: 'html'
                 });
             }
         }
 
+        // Загрузка данных из URL
         function loadTaskFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             const dataParam = urlParams.get('data');
@@ -160,30 +170,42 @@
             }
 
             try {
-                const compressed = Uint8Array.from(atob(decodeURIComponent(dataParam)), c => c.charCodeAt(0));
+                // Распаковываем данные
+                const base64 = decodeURIComponent(dataParam);
+                const compressed = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
                 const json = pako.inflate(compressed, { to: 'string' });
                 const taskData = JSON.parse(json);
 
+                // Заполняем левую панель
                 leftPanel.innerHTML = `
                     <div class="condition">${taskData.condition || '— условие не задано —'}</div>
                     ${taskData.image ? `<img class="image" src="${taskData.image}" onerror="this.style.display='none'">` : ''}
                 `;
-                renderMath(leftPanel);
+                
+                // ВАЖНО: принудительно рендерим формулы в левой панели
+                setTimeout(() => {
+                    renderMathInElement(leftPanel);
+                }, 100);
 
+                // Парсим решение
                 solutionBlocks = taskData.solution.split('\n').map(line => ({
                     type: line.trim().startsWith('#') ? 'comment' : 'code',
                     text: line
                 }));
                 
                 solutionDiv.innerHTML = '<div class="empty-message">✨ Нажмите пробел</div>';
+                
             } catch (e) {
+                console.error('Ошибка загрузки:', e);
                 leftPanel.innerHTML = '<div class="condition">Ошибка загрузки данных</div>';
             }
         }
 
+        // Шаг анимации
         function stepAnimation() {
             if (currentBlockIndex >= solutionBlocks.length) return;
             
+            // Убираем заглушку
             if (solutionDiv.children.length === 1 && 
                 solutionDiv.children[0].classList.contains('empty-message')) {
                 solutionDiv.innerHTML = '';
@@ -194,12 +216,15 @@
             div.className = block.type === 'code' ? 'code-line' : 'comment-line';
             div.textContent = block.text;
             solutionDiv.appendChild(div);
-            renderMath(div);
+            
+            // Рендерим формулы в новом блоке
+            renderMathInElement(div);
             
             currentBlockIndex++;
             solutionDiv.scrollTop = solutionDiv.scrollHeight;
         }
 
+        // Обработчик клавиш
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
                 e.preventDefault();
@@ -207,7 +232,14 @@
             }
         });
 
+        // Загружаем данные при старте
         loadTaskFromUrl();
+
+        // Дополнительная проверка: если данные уже есть, но формулы не отрендерились
+        // Запускаем рендеринг еще раз через небольшую задержку
+        setTimeout(() => {
+            renderMathInElement(leftPanel);
+        }, 500);
     })();
 </script>
 </body>
