@@ -102,6 +102,10 @@
     .difficulty-btn.active { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     .difficulty-row { display: flex; flex-wrap: wrap; gap: 4px; }
     .sort-btn { padding: 6px 10px; font-size: 11px; min-width: 0; }
+    .toggle-answers { background: var(--success); color: white; }
+    .toggle-answers.active { background: var(--danger); }
+    .toggle-analogs { background: #f97316; color: white; }
+    .toggle-analogs.active { background: #ea580c; }
     .muted { color:#94a3b8; font-size: 12px; }
     .grid { display:grid; gap: var(--gap); padding: 20px var(--gap); padding-bottom: 100px; }
     .task { 
@@ -191,7 +195,6 @@
       align-items: flex-start;
       text-align: left;
       grid-column: span 2;
-      cursor: pointer;
     }
     .zone.solution-zone h4 {
       text-align: left;
@@ -594,25 +597,16 @@
       padding-left: 16px;
     }
     
-    /* Классы для скрытия содержимого - больше не нужны, используем inline style */
-    
-    /* Кнопка для аналогов */
-    .analog-toggle-btn {
-      background: #f97316;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 13px;
+    /* Классы для скрытия содержимого */
+    .answer-content-hidden {
+      display: none !important;
     }
     
-    .analog-toggle-btn:hover {
-      background: #ea580c;
+    .solution-hidden {
+      display: none !important;
     }
     
-    .analog-hidden {
+    .drawing-hidden {
       display: none !important;
     }
     
@@ -708,6 +702,10 @@
           <label>📁 Импорт задач</label>
           <div style="display: flex; gap: 5px;">
             <input id="fileInput" type="file" accept="application/json,.json">
+            <div class="import-options">
+              <input type="checkbox" id="keepStudents" checked="">
+              <label for="keepStudents" style="display: inline; margin: 0;">☐ Сохранить прогресс учеников</label>
+            </div>
           </div>
         </div>
         <div>
@@ -796,7 +794,11 @@
         </div>
 
         <div class="print-options">
-          <button id="btnToggleAnalogs" class="analog-toggle-btn">📋 Показать аналоги</button>
+          <!-- Кнопки управления видимостью -->
+          <button id="btnToggleAnswers" class="toggle-answers">Показать ответы</button>
+          <button id="btnToggleSolutions" class="primary">Показать решения</button>
+          <button id="btnToggleDrawings" class="primary">Показать чертежи</button>
+          <button id="btnToggleAnalogs" class="toggle-analogs">📋 Показать аналоги</button>
           <button id="btnPrintNoAnswer" class="primary" title="Без ответов">🖨️ Без ответов</button>
           <button id="btnPrintWithAnswer" class="primary" title="С ответами">🖨️ С ответами</button>
         </div>
@@ -867,7 +869,12 @@
     <div class="modal-import-content">
       <div class="modal-import-title">📂 Загрузить прогресс учеников</div>
       <div class="modal-import-option">
-        <p style="margin-bottom: 10px;">Это действие заменит всех текущих учеников новыми из файла. Продолжить?</p>
+        <input type="radio" name="importMode" id="modeReplace" value="replace" checked="">
+        <label for="modeReplace">🔄 Заменить всех учеников</label>
+      </div>
+      <div class="modal-import-option">
+        <input type="radio" name="importMode" id="modeMerge" value="merge">
+        <label for="modeMerge">➕ Объединить с существующими (при совпадении имён добавится _2, _3...)</label>
       </div>
       <div class="modal-import-buttons">
         <button id="confirmImport" class="primary">✅ Загрузить</button>
@@ -876,7 +883,7 @@
     </div>
   </div>
 
-  <!-- Модальное окно для выбора ученика при импорте задач -->
+  <!-- Модальное окно для выбора ученика при импорте -->
   <div id="importStudentModal" class="modal-import" style="display: none;">
     <div class="modal-import-content">
       <div class="modal-import-title">👤 Выберите ученика для импорта прогресса</div>
@@ -886,20 +893,6 @@
       <div class="modal-import-buttons">
         <button id="confirmImportStudent" class="primary">✅ Импортировать</button>
         <button id="cancelImportStudent">❌ Отмена</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Модальное окно для подтверждения замены прогресса -->
-  <div id="confirmReplaceProgressModal" class="modal-import" style="display: none;">
-    <div class="modal-import-content">
-      <div class="modal-import-title">⚠️ Замена прогресса</div>
-      <div class="modal-import-option">
-        <p>Это действие заменит весь текущий прогресс новым из файла. Продолжить?</p>
-      </div>
-      <div class="modal-import-buttons">
-        <button id="confirmReplaceProgress" class="primary">✅ Да, заменить</button>
-        <button id="cancelReplaceProgress">❌ Отмена</button>
       </div>
     </div>
   </div>
@@ -917,17 +910,23 @@
   // ==================== СОСТОЯНИЯ ====================
   let editingTaskId = null;
   let sortByTitle = false;
-  let analogsVisible = false; // ИЗМЕНЕНО: теперь аналоги скрыты по умолчанию
+  let allAnalogsVisible = true;
   let lastViewedTaskId = null;
   let autoSaveInterval = null;
   
-  // Удаляем глобальные состояния для ответов/решений/чертежей - они теперь индивидуальны
+  // Состояния видимости
+  let answersVisible = false;
+  let solutionsVisible = false;
+  let drawingsVisible = false;
 
   // ==================== ЭЛЕМЕНТЫ ====================
   const app = document.getElementById('app');
   const printRoot = document.getElementById('printRoot');
   const countContainer = document.getElementById('countContainer');
   const sortTitleBtn = document.getElementById('sortTitle');
+  const btnToggleAnswers = document.getElementById('btnToggleAnswers');
+  const btnToggleSolutions = document.getElementById('btnToggleSolutions');
+  const btnToggleDrawings = document.getElementById('btnToggleDrawings');
   const btnToggleAnalogs = document.getElementById('btnToggleAnalogs');
   
   const fileInput = document.getElementById('fileInput');
@@ -942,6 +941,7 @@
   const difficultyBtns = document.querySelectorAll('.difficulty-btn');
   const studentSelect = document.getElementById('studentSelect');
   const btnAddStudent = document.getElementById('btnAddStudent');
+  const keepStudentsCheck = document.getElementById('keepStudents');
 
   // Кнопки прогресса
   const btnExportProgress = document.getElementById('btnExportProgress');
@@ -949,17 +949,14 @@
   const importModal = document.getElementById('importProgressModal');
   const confirmImport = document.getElementById('confirmImport');
   const cancelImport = document.getElementById('cancelImport');
+  const modeReplace = document.getElementById('modeReplace');
+  const modeMerge = document.getElementById('modeMerge');
 
   // Модальное окно выбора ученика
   const importStudentModal = document.getElementById('importStudentModal');
   const importStudentSelect = document.getElementById('importStudentSelect');
   const confirmImportStudent = document.getElementById('confirmImportStudent');
   const cancelImportStudent = document.getElementById('cancelImportStudent');
-
-  // Модальное окно подтверждения замены прогресса
-  const confirmReplaceProgressModal = document.getElementById('confirmReplaceProgressModal');
-  const confirmReplaceProgress = document.getElementById('confirmReplaceProgress');
-  const cancelReplaceProgress = document.getElementById('cancelReplaceProgress');
 
   // GitHub
   const btnLoadFromGitHub = document.getElementById('btnLoadFromGitHub');
@@ -1130,17 +1127,17 @@
     }, 100);
   });
 
-  // ==================== ИМПОРТ ПРОГРЕССА (замена всех учеников) ====================
+  // ==================== ИМПОРТ ПРОГРЕССА ====================
   btnImportProgress.addEventListener('click', () => {
-    confirmReplaceProgressModal.style.display = 'flex';
+    importModal.style.display = 'flex';
   });
 
-  cancelReplaceProgress.addEventListener('click', () => {
-    confirmReplaceProgressModal.style.display = 'none';
+  cancelImport.addEventListener('click', () => {
+    importModal.style.display = 'none';
   });
 
-  confirmReplaceProgress.addEventListener('click', () => {
-    confirmReplaceProgressModal.style.display = 'none';
+  confirmImport.addEventListener('click', () => {
+    const mode = modeReplace.checked ? 'replace' : 'merge';
     
     const input = document.createElement('input');
     input.type = 'file';
@@ -1159,29 +1156,48 @@
           return;
         }
         
-        // Полностью заменяем всех учеников
-        students = data.students;
+        if (mode === 'replace') {
+          students = data.students;
+        } else {
+          const existingNames = new Set(Object.values(students).map(s => s.name));
+          
+          for (const [id, student] of Object.entries(data.students)) {
+            let newName = student.name;
+            let counter = 2;
+            
+            while (existingNames.has(newName)) {
+              newName = `${student.name}_${counter}`;
+              counter++;
+            }
+            
+            const newId = 'student' + Date.now() + Math.random();
+            students[newId] = {
+              name: newName,
+              solved: student.solved || {},
+              favorites: student.favorites || {}
+            };
+            existingNames.add(newName);
+          }
+        }
         
         saveStudents();
         updateStudentSelect();
         updateImportStudentSelect();
         
         if (!students[currentStudent]) {
-          currentStudent = Object.keys(students)[0] || 'default';
+          currentStudent = Object.keys(students)[0];
         }
         
         render();
-        alert('Прогресс успешно загружен (все ученики заменены)');
+        alert('Прогресс успешно загружен');
       } catch (err) {
         alert('Ошибка загрузки файла: ' + err.message);
+      } finally {
+        importModal.style.display = 'none';
       }
     };
     
     input.click();
-  });
-
-  cancelImport.addEventListener('click', () => {
-    importModal.style.display = 'none';
   });
 
   window.addEventListener('click', (e) => {
@@ -1190,9 +1206,6 @@
     }
     if (e.target === importStudentModal) {
       importStudentModal.style.display = 'none';
-    }
-    if (e.target === confirmReplaceProgressModal) {
-      confirmReplaceProgressModal.style.display = 'none';
     }
   });
 
@@ -1220,9 +1233,6 @@
   // ==================== ФИЛЬТРЫ ====================
   function matchesFilters(task) {
     if (task.isSectionHeader) return true;
-    
-    // Если задача является аналогом и аналоги скрыты - не показываем
-    if (task.isAnalog && !analogsVisible) return false;
     
     const studentData = students[currentStudent] || { solved: {}, favorites: {} };
     
@@ -1363,35 +1373,6 @@
       `;
     }
     
-    // Если задача является аналогом и аналоги скрыты - не показываем
-    if (task.isAnalog && !analogsVisible) {
-      return '';
-    }
-    
-    // Создаем уникальные ключи для хранения состояний видимости
-    const solutionStateKey = `solution_${task.id}`;
-    const drawingStateKey = `drawing_${task.id}`;
-    const answerStateKey = `answer_${task.id}`;
-    
-    // По умолчанию все скрыто
-    let solutionHidden = localStorage.getItem(solutionStateKey) === 'true';
-    let drawingHidden = localStorage.getItem(drawingStateKey) === 'true';
-    let answerHidden = localStorage.getItem(answerStateKey) === 'true';
-    
-    // Если в localStorage ничего нет, то по умолчанию true (скрыто)
-    if (localStorage.getItem(solutionStateKey) === null) {
-      solutionHidden = true;
-      localStorage.setItem(solutionStateKey, 'true');
-    }
-    if (localStorage.getItem(drawingStateKey) === null) {
-      drawingHidden = true;
-      localStorage.setItem(drawingStateKey, 'true');
-    }
-    if (localStorage.getItem(answerStateKey) === null) {
-      answerHidden = true;
-      localStorage.setItem(answerStateKey, 'true');
-    }
-    
     const solutionLinkHtml = task.solutionLink ? 
       `<a href="${escapeHtml(task.solutionLink)}" target="_blank" class="badge link">🔗 Решение</a>` : '';
     
@@ -1405,12 +1386,12 @@
     const isAnalog = !!task.isAnalog;
     
     let analogTask = null;
-    if (task.analogId && analogsVisible) {
+    if (task.analogId && allAnalogsVisible) {
       analogTask = tasks.find(t => t.id === task.analogId);
     }
     
     let parentTask = null;
-    if (task.parentId && analogsVisible) {
+    if (task.parentId && allAnalogsVisible) {
       parentTask = tasks.find(t => t.id === task.parentId);
     }
     
@@ -1422,6 +1403,15 @@
     
     const isSolved = !!studentData.solved[task.id];
     const isFav = !!studentData.favorites[task.id];
+    
+    if (isAnalog && parentTask && allAnalogsVisible) {
+      return '';
+    }
+    
+    // Классы видимости на основе глобальных состояний
+    const answerHiddenClass = !answersVisible ? 'answer-content-hidden' : '';
+    const solutionHiddenClass = !solutionsVisible ? 'solution-hidden' : '';
+    const drawingHiddenClass = !drawingsVisible ? 'drawing-hidden' : '';
     
     return `
       <div class="task" data-id="${task.id}">
@@ -1472,46 +1462,27 @@
               <div class="hint">Ctrl+V для вставки</div>
             </div>
             
-            <!-- Зона ответа -->
-            <div class="zone answer-zone" data-zone="answer" data-task-id="${task.id}" tabindex="0">
-              <h4>💡 Ответ</h4>
-              <div class="answer-content" style="${answerHidden ? 'display: none;' : ''}">
-                ${answerContent || (isEditing ? '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нажмите для ввода ответа</div>' : '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нет ответа</div>')}
-              </div>
-              ${isEditing ? `
-                <div class="zone-actions">
-                  <button class="zone-action-btn" data-act="editText" data-zone="answer">📝 Редактировать текст</button>
-                  <button class="zone-action-btn" data-act="pasteImage" data-zone="answer">📋 Вставить изображение</button>
-                </div>
-              ` : ''}
-              <div class="hint">кликни чтобы открыть/закрыть</div>
-            </div>
-          </div>
+
+<!-- Зона ответа — ВСЕГДА ВИДИМА -->
+<div class="zone answer-zone" data-zone="answer" tabindex="0">
+  <h4>💡 Ответ</h4>
+  <div class="answer-content ${answersVisible ? '' : 'answer-content-hidden'}">
+    ${answerContent || (isEditing ? '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нажмите для ввода ответа</div>' : '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нет ответа</div>')}
+  </div>
+  ${isEditing ? `
+    <div class="zone-actions">
+      <button class="zone-action-btn" data-act="editText" data-zone="answer">📝 Редактировать текст</button>
+      <button class="zone-action-btn" data-act="pasteImage" data-zone="answer">📋 Вставить изображение</button>
+    </div>
+  ` : ''}
+  <div class="hint">кликни чтобы открыть/закрыть</div>
+</div>
           
-          <!-- Зона решения (если есть) -->
-          ${hasSolution ? `
-            <div class="zone solution-zone" data-zone="solution" data-task-id="${task.id}" tabindex="0">
-              <h4>📝 Решение ${task.solutionText && !task.solutionImage ? '(текст)' : ''}</h4>
-              <div class="solution-content" style="${solutionHidden ? 'display: none;' : ''}">
-                ${solutionContent}
-              </div>
-              ${isEditing ? `
-                <div class="zone-actions">
-                  <button class="zone-action-btn" data-act="editText" data-zone="solution">📝 Редактировать текст</button>
-                  <button class="zone-action-btn" data-act="pasteImage" data-zone="solution">📋 Вставить изображение</button>
-                </div>
-              ` : ''}
-              <div class="hint">кликни чтобы открыть/закрыть</div>
-            </div>
-          ` : ''}
-          
-          <!-- Чертеж (если есть) -->
+          <!-- Чертеж -->
           ${hasDrawing ? `
-            <div class="drawing-section" data-zone="drawing" data-task-id="${task.id}">
+            <div class="drawing-section ${drawingHiddenClass}" data-zone="drawing">
               <h4>📐 Чертеж</h4>
-              <div class="drawing-content" style="${drawingHidden ? 'display: none;' : ''}">
-                <img src="${task.drawingImage}" style="max-width:100%; max-height:300px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-              </div>
+              <img src="${task.drawingImage}" style="max-width:100%; max-height:300px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
               <div class="hint">кликни чтобы открыть/закрыть</div>
             </div>
           ` : ''}
@@ -1557,7 +1528,7 @@
             </div>
           ` : ''}
           
-          ${hasAnalog && analogTask && analogsVisible ? `
+          ${hasAnalog && analogTask && allAnalogsVisible ? `
             <div class="prototype-section">
               <div class="prototype-header">
                 <span class="prototype-title">📋 Аналог</span>
@@ -1691,59 +1662,54 @@
 
   // ==================== СОБЫТИЯ ====================
   
-  // Кнопка показа/скрытия аналогов
+  // Кнопки управления видимостью
+  btnToggleAnswers.addEventListener('click', () => {
+    answersVisible = !answersVisible;
+    btnToggleAnswers.textContent = answersVisible ? 'Скрыть ответы' : 'Показать ответы';
+    btnToggleAnswers.classList.toggle('active', answersVisible);
+    render();
+  });
+
+  btnToggleSolutions.addEventListener('click', () => {
+    solutionsVisible = !solutionsVisible;
+    btnToggleSolutions.textContent = solutionsVisible ? 'Скрыть решения' : 'Показать решения';
+    render();
+  });
+
+  btnToggleDrawings.addEventListener('click', () => {
+    drawingsVisible = !drawingsVisible;
+    btnToggleDrawings.textContent = drawingsVisible ? 'Скрыть чертежи' : 'Показать чертежи';
+    render();
+  });
+
   btnToggleAnalogs.addEventListener('click', () => {
-    analogsVisible = !analogsVisible;
-    btnToggleAnalogs.textContent = analogsVisible 
+    allAnalogsVisible = !allAnalogsVisible;
+    btnToggleAnalogs.textContent = allAnalogsVisible 
       ? '📋 Скрыть аналоги' 
       : '📋 Показать аналоги';
     render();
   });
 
-  // ИМПОРТ JSON
-  fileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // ИМПОРТ JSON С ВОССТАНОВЛЕНИЕМ МЕТОК ДЛЯ ТЕКУЩЕГО УЧЕНИКА
+fileInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
     
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-      
-      // Обрабатываем разные форматы файлов
-      if (Array.isArray(data)) {
-        tasks = data.map(normalizeTask);
-      } else if (data.tasks && Array.isArray(data.tasks)) {
-        tasks = data.tasks.map(normalizeTask);
-      } else {
-        tasks = [normalizeTask(data)];
-      }
-      
-      // Показываем модальное окно для выбора ученика
-      updateImportStudentSelect();
-      
-      // Сохраняем задачи временно
-      window.importedTasks = [...tasks];
-      
-      importStudentModal.style.display = 'flex';
-      
-    } catch (err) {
-      alert('Ошибка JSON: ' + err.message);
-      e.target.value = '';
-    }
-  });
-
-  // Подтверждение выбора ученика для импорта
-  confirmImportStudent.addEventListener('click', () => {
-    const selectedStudent = importStudentSelect.value;
-    
-    if (!students[selectedStudent]) {
-      students[selectedStudent] = { name: 'Ученик', solved: {}, favorites: {} };
+    // Обрабатываем разные форматы файлов
+    if (Array.isArray(data)) {
+      tasks = data.map(normalizeTask);
+    } else if (data.tasks && Array.isArray(data.tasks)) {
+      tasks = data.tasks.map(normalizeTask);
+    } else {
+      tasks = [normalizeTask(data)];
     }
     
-    tasks = window.importedTasks;
-    
-    // Восстанавливаем метки для выбранного ученика
-    const studentData = students[selectedStudent] || { solved: {}, favorites: {} };
+    // Восстанавливаем метки для текущего ученика
+    const studentData = students[currentStudent] || { solved: {}, favorites: {} };
     
     tasks.forEach(task => {
       if (task.isSolved) {
@@ -1756,15 +1722,45 @@
       }
     });
     
-    students[selectedStudent] = studentData;
-    currentStudent = selectedStudent;
+    // Сохраняем обновленные данные ученика
+    students[currentStudent] = studentData;
+    saveStudents();
+    
+    restoreAnalogLinks();
+    render();
+    alert(`✅ Загружено ${tasks.length} задач!`);
+    
+  } catch (err) {
+    alert('Ошибка JSON: ' + err.message);
+  }
+  e.target.value = '';
+});
+
+  // Подтверждение выбора ученика для импорта
+  confirmImportStudent.addEventListener('click', () => {
+    const selectedStudent = importStudentSelect.value;
+    
+    if (!students[selectedStudent]) {
+      students[selectedStudent] = { name: 'Ученик', solved: {}, favorites: {} };
+    }
+    
+    tasks = window.importedTasks;
+    
+    // Добавляем прогресс из задач к выбранному ученику
+    tasks.forEach(task => {
+      if (task.isSolved) {
+        students[selectedStudent].solved[task.id] = true;
+      }
+      if (task.isFavorite) {
+        students[selectedStudent].favorites[task.id] = true;
+      }
+    });
     
     saveStudents();
     restoreAnalogLinks();
     render();
     
     importStudentModal.style.display = 'none';
-    updateStudentSelect();
     alert('Задачи и прогресс успешно загружены!');
   });
 
@@ -1774,62 +1770,63 @@
     render();
   });
 
-  // ЭКСПОРТ JSON (только задачи с текущими метками)
-  btnExport.addEventListener('click', () => {
-    // Экспортируем задачи с текущими метками
-    const exportData = tasks.map(t => {
-      const taskCopy = { ...t };
-      
-      // Сохраняем метки "решено" и "избранное" для текущего ученика
-      const studentData = students[currentStudent] || { solved: {}, favorites: {} };
-      taskCopy.isSolved = !!studentData.solved[t.id];
-      taskCopy.isFavorite = !!studentData.favorites[t.id];
-      
-      // Удаляем все поля, связанные с несколькими учениками
-      delete taskCopy.studentsProgress;
-      
-      return taskCopy;
-    });
+  // ЭКСПОРТ JSON
+  // ЭКСПОРТ JSON (только задачи с текущими метками, без учеников)
+btnExport.addEventListener('click', () => {
+  // Экспортируем задачи с текущими метками
+  const exportData = tasks.map(t => {
+    const taskCopy = { ...t };
     
-    const jsonString = JSON.stringify(exportData, null, 2);
+    // Сохраняем метки "решено" и "избранное" для текущего ученика
+    const studentData = students[currentStudent] || { solved: {}, favorites: {} };
+    taskCopy.isSolved = !!studentData.solved[t.id];
+    taskCopy.isFavorite = !!studentData.favorites[t.id];
     
-    let fileName = prompt('Введите имя файла (без .json):', 'tasks');
-    if (fileName === null) return;
+    // Удаляем все поля, связанные с несколькими учениками
+    delete taskCopy.studentsProgress;
     
-    fileName = fileName.trim().replace(/\.json$/i, '') || 'tasks';
-    const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName + '.json';
-    document.body.appendChild(a);
-    a.click();
-    
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 100);
+    return taskCopy;
   });
+  
+  const jsonString = JSON.stringify(exportData, null, 2);
+  
+  let fileName = prompt('Введите имя файла (без .json):', 'tasks');
+  if (fileName === null) return;
+  
+  fileName = fileName.trim().replace(/\.json$/i, '') || 'tasks';
+  const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName + '.json';
+  document.body.appendChild(a);
+  a.click();
+  
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
+});
 
-  btnAdd.addEventListener('click', () => {
-    resetFilters();
-    const newTask = normalizeTask({ 
-      title: '', 
-      sectionName: '', 
-      difficulty: 'basic',
-      answerText: '',
-      answerImage: '',
-      taskText: '',
-      solutionText: ''
-    });
-    tasks.unshift(newTask);
-    editingTaskId = newTask.id;
-    render();
-    setTimeout(() => {
-      const titleInput = app.querySelector('input[data-field="title"]');
-      titleInput?.focus();
-    }, 200);
+btnAdd.addEventListener('click', () => {
+  resetFilters();
+  const newTask = normalizeTask({ 
+    title: '', 
+    sectionName: '', 
+    difficulty: 'basic',
+    answerText: '',     // ← обязательно
+    answerImage: '',    // ← обязательно
+    taskText: '',
+    solutionText: ''
   });
+  tasks.unshift(newTask);
+  editingTaskId = newTask.id;
+  render();
+  setTimeout(() => {
+    const titleInput = app.querySelector('input[data-field="title"]');
+    titleInput?.focus();
+  }, 200);
+});
 
   function resetFilters() {
     q.value = '';
@@ -2031,15 +2028,12 @@
 
   // ==================== КЛИКИ ПО ЗАДАЧАМ ====================
   app.addEventListener('click', async (e) => {
-    // Индивидуальный клик по ответу
+    // Индивидуальный клик по ответу (переключает видимость только этого ответа)
     const answerZone = e.target.closest('.zone[data-zone="answer"]');
     if (answerZone && !editingTaskId) {
-      const taskId = answerZone.dataset.taskId;
       const answerContent = answerZone.querySelector('.answer-content');
       if (answerContent) {
-        const isHidden = answerContent.style.display === 'none';
-        answerContent.style.display = isHidden ? 'block' : 'none';
-        localStorage.setItem(`answer_${taskId}`, isHidden ? 'false' : 'true');
+        answerContent.classList.toggle('answer-content-hidden');
       }
       return;
     }
@@ -2047,26 +2041,14 @@
     // Индивидуальный клик по решению
     const solutionZone = e.target.closest('.zone[data-zone="solution"]');
     if (solutionZone && !editingTaskId) {
-      const taskId = solutionZone.dataset.taskId;
-      const solutionContent = solutionZone.querySelector('.solution-content');
-      if (solutionContent) {
-        const isHidden = solutionContent.style.display === 'none';
-        solutionContent.style.display = isHidden ? 'block' : 'none';
-        localStorage.setItem(`solution_${taskId}`, isHidden ? 'false' : 'true');
-      }
+      solutionZone.classList.toggle('solution-hidden');
       return;
     }
     
     // Индивидуальный клик по чертежу
     const drawingSection = e.target.closest('.drawing-section');
     if (drawingSection && !editingTaskId) {
-      const taskId = drawingSection.dataset.taskId;
-      const drawingContent = drawingSection.querySelector('.drawing-content');
-      if (drawingContent) {
-        const isHidden = drawingContent.style.display === 'none';
-        drawingContent.style.display = isHidden ? 'block' : 'none';
-        localStorage.setItem(`drawing_${taskId}`, isHidden ? 'false' : 'true');
-      }
+      drawingSection.classList.toggle('drawing-hidden');
       return;
     }
     

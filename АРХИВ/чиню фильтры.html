@@ -594,7 +594,18 @@
       padding-left: 16px;
     }
     
-    /* Классы для скрытия содержимого - больше не нужны, используем inline style */
+    /* Классы для скрытия содержимого */
+    .answer-content-hidden {
+      display: none !important;
+    }
+    
+    .solution-hidden {
+      display: none !important;
+    }
+    
+    .drawing-hidden {
+      display: none !important;
+    }
     
     /* Кнопка для аналогов */
     .analog-toggle-btn {
@@ -917,11 +928,12 @@
   // ==================== СОСТОЯНИЯ ====================
   let editingTaskId = null;
   let sortByTitle = false;
-  let analogsVisible = false; // ИЗМЕНЕНО: теперь аналоги скрыты по умолчанию
+  let analogsVisible = true; // true = показывать аналоги, false = скрывать
   let lastViewedTaskId = null;
   let autoSaveInterval = null;
   
-  // Удаляем глобальные состояния для ответов/решений/чертежей - они теперь индивидуальны
+  // Состояния для индивидуального переключения
+  // (не глобальные, а для каждой задачи)
 
   // ==================== ЭЛЕМЕНТЫ ====================
   const app = document.getElementById('app');
@@ -1368,30 +1380,6 @@
       return '';
     }
     
-    // Создаем уникальные ключи для хранения состояний видимости
-    const solutionStateKey = `solution_${task.id}`;
-    const drawingStateKey = `drawing_${task.id}`;
-    const answerStateKey = `answer_${task.id}`;
-    
-    // По умолчанию все скрыто
-    let solutionHidden = localStorage.getItem(solutionStateKey) === 'true';
-    let drawingHidden = localStorage.getItem(drawingStateKey) === 'true';
-    let answerHidden = localStorage.getItem(answerStateKey) === 'true';
-    
-    // Если в localStorage ничего нет, то по умолчанию true (скрыто)
-    if (localStorage.getItem(solutionStateKey) === null) {
-      solutionHidden = true;
-      localStorage.setItem(solutionStateKey, 'true');
-    }
-    if (localStorage.getItem(drawingStateKey) === null) {
-      drawingHidden = true;
-      localStorage.setItem(drawingStateKey, 'true');
-    }
-    if (localStorage.getItem(answerStateKey) === null) {
-      answerHidden = true;
-      localStorage.setItem(answerStateKey, 'true');
-    }
-    
     const solutionLinkHtml = task.solutionLink ? 
       `<a href="${escapeHtml(task.solutionLink)}" target="_blank" class="badge link">🔗 Решение</a>` : '';
     
@@ -1472,10 +1460,10 @@
               <div class="hint">Ctrl+V для вставки</div>
             </div>
             
-            <!-- Зона ответа -->
-            <div class="zone answer-zone" data-zone="answer" data-task-id="${task.id}" tabindex="0">
+            <!-- Зона ответа — ВСЕГДА ВИДИМА -->
+            <div class="zone answer-zone" data-zone="answer" tabindex="0">
               <h4>💡 Ответ</h4>
-              <div class="answer-content" style="${answerHidden ? 'display: none;' : ''}">
+              <div class="answer-content">
                 ${answerContent || (isEditing ? '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нажмите для ввода ответа</div>' : '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нет ответа</div>')}
               </div>
               ${isEditing ? `
@@ -1490,9 +1478,9 @@
           
           <!-- Зона решения (если есть) -->
           ${hasSolution ? `
-            <div class="zone solution-zone" data-zone="solution" data-task-id="${task.id}" tabindex="0">
+            <div class="zone solution-zone" data-zone="solution" tabindex="0">
               <h4>📝 Решение ${task.solutionText && !task.solutionImage ? '(текст)' : ''}</h4>
-              <div class="solution-content" style="${solutionHidden ? 'display: none;' : ''}">
+              <div class="solution-content">
                 ${solutionContent}
               </div>
               ${isEditing ? `
@@ -1507,9 +1495,9 @@
           
           <!-- Чертеж (если есть) -->
           ${hasDrawing ? `
-            <div class="drawing-section" data-zone="drawing" data-task-id="${task.id}">
+            <div class="drawing-section" data-zone="drawing">
               <h4>📐 Чертеж</h4>
-              <div class="drawing-content" style="${drawingHidden ? 'display: none;' : ''}">
+              <div class="drawing-content">
                 <img src="${task.drawingImage}" style="max-width:100%; max-height:300px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
               </div>
               <div class="hint">кликни чтобы открыть/закрыть</div>
@@ -2031,15 +2019,12 @@
 
   // ==================== КЛИКИ ПО ЗАДАЧАМ ====================
   app.addEventListener('click', async (e) => {
-    // Индивидуальный клик по ответу
+    // Индивидуальный клик по ответу (переключает видимость только этого ответа)
     const answerZone = e.target.closest('.zone[data-zone="answer"]');
     if (answerZone && !editingTaskId) {
-      const taskId = answerZone.dataset.taskId;
       const answerContent = answerZone.querySelector('.answer-content');
       if (answerContent) {
-        const isHidden = answerContent.style.display === 'none';
-        answerContent.style.display = isHidden ? 'block' : 'none';
-        localStorage.setItem(`answer_${taskId}`, isHidden ? 'false' : 'true');
+        answerContent.classList.toggle('answer-content-hidden');
       }
       return;
     }
@@ -2047,12 +2032,9 @@
     // Индивидуальный клик по решению
     const solutionZone = e.target.closest('.zone[data-zone="solution"]');
     if (solutionZone && !editingTaskId) {
-      const taskId = solutionZone.dataset.taskId;
       const solutionContent = solutionZone.querySelector('.solution-content');
       if (solutionContent) {
-        const isHidden = solutionContent.style.display === 'none';
-        solutionContent.style.display = isHidden ? 'block' : 'none';
-        localStorage.setItem(`solution_${taskId}`, isHidden ? 'false' : 'true');
+        solutionContent.classList.toggle('solution-hidden');
       }
       return;
     }
@@ -2060,12 +2042,9 @@
     // Индивидуальный клик по чертежу
     const drawingSection = e.target.closest('.drawing-section');
     if (drawingSection && !editingTaskId) {
-      const taskId = drawingSection.dataset.taskId;
       const drawingContent = drawingSection.querySelector('.drawing-content');
       if (drawingContent) {
-        const isHidden = drawingContent.style.display === 'none';
-        drawingContent.style.display = isHidden ? 'block' : 'none';
-        localStorage.setItem(`drawing_${taskId}`, isHidden ? 'false' : 'true');
+        drawingContent.classList.toggle('drawing-hidden');
       }
       return;
     }
