@@ -89,108 +89,6 @@
             object-fit: contain;
             border: 2px solid #e0e7f0;
             padding: 10px;
-            margin-bottom: 20px;
-        }
-
-        /* Стили для графика */
-        .graph-container {
-            margin-top: 20px;
-            border: 2px solid #e0e7f0;
-            border-radius: 12px;
-            overflow: hidden;
-            width: 100%;
-            position: relative;
-        }
-
-        .graph-fullscreen-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255,255,255,0.9);
-            border: 2px solid #667eea;
-            border-radius: 30px;
-            padding: 8px 16px;
-            font-weight: 600;
-            color: #667eea;
-            cursor: pointer;
-            z-index: 100;
-            transition: 0.3s;
-            font-size: 0.9rem;
-        }
-
-        .graph-fullscreen-btn:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .graph-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        /* Модальное окно для полноэкранного графика */
-        .graph-fullscreen-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .graph-fullscreen-modal.active {
-            display: flex;
-        }
-
-        .graph-fullscreen-content {
-            width: 95%;
-            height: 95%;
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-        }
-
-        .graph-fullscreen-close {
-            position: absolute;
-            top: 15px;
-            right: 25px;
-            background: #f56565;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            padding: 10px 25px;
-            font-weight: 600;
-            cursor: pointer;
-            z-index: 10001;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: 0.3s;
-        }
-
-        .graph-fullscreen-close:hover {
-            background: #e53e3e;
-            transform: scale(1.05);
-        }
-
-        .graph-fullscreen-body {
-            width: 100%;
-            height: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .graph-fullscreen-body iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 12px;
         }
 
         .code-line { 
@@ -220,6 +118,7 @@
             margin-top: 100px; 
         }
 
+        /* Стили для формул */
         .katex { 
             font-size: 1.2em; 
         }
@@ -236,23 +135,10 @@
     </div>
 </div>
 
-<!-- МОДАЛЬНОЕ ОКНО ДЛЯ ПОЛНОЭКРАННОГО ГРАФИКА -->
-<div class="graph-fullscreen-modal" id="graphFullscreenModal">
-    <div class="graph-fullscreen-content">
-        <button class="graph-fullscreen-close" id="closeGraphFullscreenBtn">✕ Закрыть</button>
-        <div class="graph-fullscreen-body" id="graphFullscreenBody"></div>
-    </div>
-</div>
-
 <script>
     (function() {
         const leftPanel = document.getElementById('leftPanel');
         const solutionDiv = document.getElementById('solution');
-        
-        // Элементы модального окна для графика
-        const graphFullscreenModal = document.getElementById('graphFullscreenModal');
-        const graphFullscreenBody = document.getElementById('graphFullscreenBody');
-        const closeGraphFullscreenBtn = document.getElementById('closeGraphFullscreenBtn');
         
         let solutionBlocks = [];
         let currentBlockIndex = 0;
@@ -273,63 +159,6 @@
             }
         }
 
-        // Функция открытия полноэкранного графика
-        window.openGraphFullscreen = function(graphHtml) {
-            graphFullscreenBody.innerHTML = graphHtml;
-            graphFullscreenModal.classList.add('active');
-            
-            // Рендерим формулы, если есть
-            setTimeout(() => {
-                renderMathInElement(graphFullscreenBody);
-            }, 100);
-        };
-
-        // Закрытие полноэкранного графика
-        closeGraphFullscreenBtn.addEventListener('click', () => {
-            graphFullscreenModal.classList.remove('active');
-            graphFullscreenBody.innerHTML = '';
-        });
-
-        // Закрытие по ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Escape' && graphFullscreenModal.classList.contains('active')) {
-                graphFullscreenModal.classList.remove('active');
-                graphFullscreenBody.innerHTML = '';
-            }
-        });
-
-        // Функция для подготовки HTML графика
-        function prepareGraphHtml(html, height, useSandbox) {
-            if (!html || !html.trim()) return '';
-            
-            // Генерируем уникальный ID
-            const containerId = 'graph-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-            
-            // Если это iframe, добавляем параметры
-            if (html.includes('<iframe')) {
-                // Добавляем высоту, если не указана
-                if (!html.includes('height=')) {
-                    html = html.replace('<iframe', `<iframe height="${height}"`);
-                }
-                // Добавляем sandbox, если нужно
-                if (useSandbox && !html.includes('sandbox=')) {
-                    html = html.replace('<iframe', '<iframe sandbox="allow-scripts allow-same-origin allow-forms allow-popups"');
-                }
-                // Добавляем allowfullscreen
-                if (!html.includes('allowfullscreen')) {
-                    html = html.replace('<iframe', '<iframe allowfullscreen');
-                }
-            }
-            
-            // Экранируем HTML для передачи в onclick
-            const escapedHtml = html.replace(/"/g, '&quot;').replace(/'/g, "\\'");
-            
-            return `<div class="graph-container" id="${containerId}" style="height: ${height}px;">
-                        <button class="graph-fullscreen-btn" onclick="openGraphFullscreen('${escapedHtml}')">🔍 Открыть на весь экран</button>
-                        ${html}
-                    </div>`;
-        }
-
         // Загрузка данных из URL
         function loadTaskFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -347,33 +176,22 @@
                 const json = pako.inflate(compressed, { to: 'string' });
                 const taskData = JSON.parse(json);
 
-                // Подготавливаем график
-                let graphHtml = '';
-                if (taskData.graphHtml) {
-                    graphHtml = prepareGraphHtml(
-                        taskData.graphHtml, 
-                        taskData.graphHeight || 400, 
-                        taskData.graphSandbox !== false
-                    );
-                }
-
                 // Заполняем левую панель
                 leftPanel.innerHTML = `
                     <div class="condition">${taskData.condition || '— условие не задано —'}</div>
                     ${taskData.image ? `<img class="image" src="${taskData.image}" onerror="this.style.display='none'">` : ''}
-                    ${graphHtml}
                 `;
                 
-                // Рендерим формулы в левой панели
+                // ВАЖНО: принудительно рендерим формулы в левой панели
                 setTimeout(() => {
                     renderMathInElement(leftPanel);
                 }, 100);
 
                 // Парсим решение
-                solutionBlocks = taskData.solution ? taskData.solution.split('\n').map(line => ({
+                solutionBlocks = taskData.solution.split('\n').map(line => ({
                     type: line.trim().startsWith('#') ? 'comment' : 'code',
                     text: line
-                })) : [];
+                }));
                 
                 solutionDiv.innerHTML = '<div class="empty-message">✨ Нажмите пробел</div>';
                 
@@ -417,7 +235,8 @@
         // Загружаем данные при старте
         loadTaskFromUrl();
 
-        // Дополнительный рендеринг через небольшую задержку
+        // Дополнительная проверка: если данные уже есть, но формулы не отрендерились
+        // Запускаем рендеринг еще раз через небольшую задержку
         setTimeout(() => {
             renderMathInElement(leftPanel);
         }, 500);

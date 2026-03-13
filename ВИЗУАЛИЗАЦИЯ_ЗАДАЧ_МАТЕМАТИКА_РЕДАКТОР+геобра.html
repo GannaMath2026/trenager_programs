@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ВИЗУАЛИЗАЦИЯ ЗАДАЧ МАТЕМАТИКА - РЕДАКТОР</title>
+    <!-- KaTeX для формул -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <!-- pako для сжатия ссылок -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 30px;
+            padding: 10px 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .header-btn:hover {
+            background: white;
+            color: #764ba2;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Левая панель */
+        .left-panel {
+            width: 350px;
+            background: #f8fafd;
+            border-right: 2px solid #e0e7f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sections-header {
+            padding: 20px;
+            background: white;
+            border-bottom: 2px solid #e0e7f0;
+        }
+
+        .sections-header h2 {
+            color: #2d3748;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .add-section-btn {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .add-section-btn:hover {
+            background: #5a67d8;
+        }
+
+        .sections-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 2px solid transparent;
+        }
+
+        .section-card.active {
+            border-color: #667eea;
+        }
+
+        .section-header {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .section-action-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+
+        .section-action-btn:hover {
+            background: #f0f4fa;
+        }
+
+        .tasks-in-section {
+            padding: 0 15px 15px 15px;
+        }
+
+        .task-item {
+            background: #f8fafd;
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+
+        .task-item:hover {
+            background: #e9eef5;
+        }
+
+        .task-item.active {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .task-name {
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .task-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 6px;
+        }
+
+        .task-btn:hover {
+            background: #d0ddeb;
+        }
+
+        /* Правая панель */
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: white;
+        }
+
+        .editor-content {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e7f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Segoe UI', monospace;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .image-upload-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .image-upload-area input {
+            flex: 1;
+        }
+
+        .paste-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0 25px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .preview-image {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 2px solid #e0e7f0;
+            padding: 5px;
+        }
+
+        .graph-settings {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+            align-items: center;
+            background: #f8fafd;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .graph-settings input[type="number"] {
+            width: 100px;
+            padding: 10px;
+        }
+
+        .graph-settings label {
+            margin: 0;
+            display: inline;
+            font-weight: normal;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e7f0;
+        }
+
+        .action-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .action-btn.save {
+            background: #48bb78;
+            color: white;
+        }
+
+        .action-btn.save:hover {
+            background: #38a169;
+        }
+
+        .action-btn.visualize {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn.visualize:hover {
+            background: #5a67d8;
+        }
+
+        .action-btn.share {
+            background: #9f7aea;
+            color: white;
+        }
+
+        .action-btn.share:hover {
+            background: #805ad5;
+        }
+
+        .action-btn.delete {
+            background: #f56565;
+            color: white;
+        }
+
+        .action-btn.delete:hover {
+            background: #e53e3e;
+        }
+
+        .share-url-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8fafd;
+            border-radius: 12px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .share-url-container input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e7f0;
+            border-radius: 8px;
+        }
+
+        .share-url-container button {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* МОДАЛЬНОЕ ОКНО ВИЗУАЛИЗАЦИИ (ВНУТРИ РЕДАКТОРА) */
+        .visual-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 2000;
+        }
+
+        .visual-modal.active {
+            display: flex;
+        }
+
+        .modal-split {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .modal-left {
+            width: 40%;
+            background: #f8fafd;
+            padding: 40px;
+            overflow-y: auto;
+            border-right: 2px solid #e0e7f0;
+        }
+
+        .modal-right {
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 25px 30px;
+            background: #f8fafd;
+            border-bottom: 2px solid #e0e7f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            color: #2d3748;
+        }
+
+        .modal-hint {
+            background: #667eea;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+        }
+
+        .modal-solution {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            line-height: 1.8;
+        }
+
+        .modal-condition {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            border-left: 6px solid #667eea;
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 16px;
+            object-fit: contain;
+            margin-bottom: 20px;
+        }
+
+        /* Стили для графика в модальном окне */
+        .graph-container {
+            margin-top: 20px;
+            border: 2px solid #e0e7f0;
+            border-radius: 12px;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .graph-modal-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.9);
+            border: 2px solid #667eea;
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-weight: 600;
+            color: #667eea;
+            cursor: pointer;
+            z-index: 100;
+            transition: 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .graph-modal-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .graph-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Модальное окно для полноэкранного графика */
+        .graph-fullscreen-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .graph-fullscreen-modal.active {
+            display: flex;
+        }
+
+        .graph-fullscreen-content {
+            width: 95%;
+            height: 95%;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        .graph-fullscreen-close {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            background: #f56565;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 25px;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 10001;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: 0.3s;
+        }
+
+        .graph-fullscreen-close:hover {
+            background: #e53e3e;
+            transform: scale(1.05);
+        }
+
+        .graph-fullscreen-body {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .graph-fullscreen-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
+        }
+
+        .code-line { 
+            color: #2c3e50; 
+            font-weight: 500; 
+            margin-bottom: 5px;
+            white-space: pre-wrap;
+        }
+        
+        .comment-line { 
+            color: #2e6b4c; 
+            font-style: italic; 
+            margin-left: 25px; 
+            padding-left: 20px; 
+            border-left: 4px solid #86b89c; 
+            background: #f3faf6; 
+            border-radius: 0 12px 12px 0; 
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+        }
+
+        .empty-message { 
+            color: #a0aec0; 
+            font-style: italic; 
+            font-size: 1.4rem; 
+            text-align: center; 
+            margin-top: 100px; 
+        }
+
+        .close-modal-btn {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: #f56565;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 28px;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 2100;
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="header">
+        <h1>📐 ВИЗУАЛИЗАЦИЯ ЗАДАЧ МАТЕМАТИКА - РЕДАКТОР</h1>
+        <div class="header-actions">
+            <button class="header-btn" id="exportBtn">📤 Экспорт JSON</button>
+            <button class="header-btn" id="importBtn">📥 Импорт JSON</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;">
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Левая панель -->
+        <div class="left-panel">
+            <div class="sections-header">
+                <h2>📚 Разделы</h2>
+                <button class="add-section-btn" id="addSectionBtn">+ Новый раздел</button>
+            </div>
+            <div class="sections-list" id="sectionsList"></div>
+        </div>
+
+        <!-- Правая панель -->
+        <div class="right-panel">
+            <div class="editor-content">
+                <div class="input-group">
+                    <label>📌 Название задачи</label>
+                    <input type="text" id="taskNameField" placeholder="Например: Показательная функция">
+                </div>
+
+                <div class="input-group">
+                    <label>🧠 Условие (LaTeX: \(...\) или \[...\])</label>
+                    <textarea id="conditionField" rows="4">Найдем основание \(a\), подставив точку \((1; 2)\):
+
+\[f(1) = 2\]
+\[a^1 = 2\]
+\[a = 2\]
+
+Функция: \(f(x) = 2^x\).
+
+Тогда \(f(3) = 2^3 = 8\).
+
+Ответ: 8</textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>🖼️ Изображение</label>
+                    <div class="image-upload-area">
+                        <input type="text" id="imageField" placeholder="https://... или Ctrl+V">
+                        <button class="paste-btn" id="pasteImageBtn">📋 Вставить</button>
+                    </div>
+                    <img id="imagePreview" class="preview-image" style="display: none;">
+                </div>
+
+                <div class="input-group">
+                    <label>📊 HTML-код графика (GeoGebra, Desmos и т.п.)</label>
+                    <textarea id="graphHtmlField" rows="4" placeholder="<iframe src='https://www.geogebra.org/...'></iframe>"></textarea>
+                    <div class="graph-settings">
+                        <div>
+                            <input type="number" id="graphHeightField" value="400" min="200" max="800" step="50">
+                            <span>px высота</span>
+                        </div>
+                        <label>
+                            <input type="checkbox" id="sandboxCheckbox" checked> sandbox (безопасный режим)
+                        </label>
+                    </div>
+                    <small style="color: gray;">Вставьте iframe-код с GeoGebra или другого сервиса</small>
+                </div>
+
+                <div class="input-group">
+                    <label>✍️ Решение (с LaTeX, # — комментарии)</label>
+                    <textarea id="solutionField" rows="8"># Подставляем координаты точки
+\(f(1) = 2\)
+\(a^1 = 2\)
+\(a = 2\)
+
+# Восстановили функцию
+\(f(x) = 2^x\)
+
+# Вычисляем значение
+\(f(3) = 2^3 = 8\)
+
+Ответ: \(8\)</textarea>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn save" id="saveTaskBtn">💾 Сохранить задачу</button>
+                    <button class="action-btn visualize" id="visualizeBtn">👁️ Визуализировать</button>
+                    <button class="action-btn share" id="shareBtn">🔗 Получить ссылку</button>
+                    <button class="action-btn delete" id="deleteTaskBtn">🗑️ Удалить задачу</button>
+                </div>
+
+                <div id="shareUrlContainer" class="share-url-container" style="display: none;">
+                    <input type="text" id="shareUrlInput" readonly>
+                    <button id="copyShareBtn">Копировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ВИЗУАЛИЗАЦИИ (ВНУТРИ РЕДАКТОРА) -->
+<div class="visual-modal" id="visualModal">
+    <button class="close-modal-btn" id="closeModalBtn">✕ Закрыть (ESC)</button>
+    <div class="modal-split">
+        <div class="modal-left" id="modalLeft"></div>
+        <div class="modal-right">
+            <div class="modal-header">
+                <h3>🎬 Пошаговое решение</h3>
+                <span class="modal-hint">␣ пробел — дальше | ESC — выход</span>
+            </div>
+            <div class="modal-solution" id="modalSolution"></div>
+        </div>
+    </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ДЛЯ ПОЛНОЭКРАННОГО ГРАФИКА -->
+<div class="graph-fullscreen-modal" id="graphFullscreenModal">
+    <div class="graph-fullscreen-content">
+        <button class="graph-fullscreen-close" id="closeGraphFullscreenBtn">✕ Закрыть</button>
+        <div class="graph-fullscreen-body" id="graphFullscreenBody"></div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // Данные
+        let sections = JSON.parse(localStorage.getItem('sections')) || [];
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        if (sections.length === 0) {
+            sections = [{ id: '1', name: 'Примеры функций' }];
+            tasks = [{
+                id: 't1',
+                sectionId: '1',
+                name: 'Показательная функция',
+                condition: 'Найдем основание \\(a\\), подставив точку \\((1; 2)\\):\n\n\\[f(1) = 2\\]\n\\[a^1 = 2\\]\n\\[a = 2\\]\n\nФункция: \\(f(x) = 2^x\\).\n\nТогда \\(f(3) = 2^3 = 8\\).\n\nОтвет: 8',
+                image: '',
+                graphHtml: '',
+                graphHeight: 400,
+                graphSandbox: true,
+                solution: '# Подставляем координаты точки\n\\(f(1) = 2\\)\n\\(a^1 = 2\\)\n\\(a = 2\\)\n\n# Восстановили функцию\n\\(f(x) = 2^x\\)\n\n# Вычисляем значение\n\\(f(3) = 2^3 = 8\\)\n\nОтвет: \\(8\\)'
+            }];
+            localStorage.setItem('sections', JSON.stringify(sections));
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        let currentSectionId = sections[0]?.id || null;
+        let currentTaskId = tasks.find(t => t.sectionId === currentSectionId)?.id || null;
+
+        // Элементы
+        const sectionsList = document.getElementById('sectionsList');
+        const taskNameField = document.getElementById('taskNameField');
+        const conditionField = document.getElementById('conditionField');
+        const imageField = document.getElementById('imageField');
+        const graphHtmlField = document.getElementById('graphHtmlField');
+        const graphHeightField = document.getElementById('graphHeightField');
+        const sandboxCheckbox = document.getElementById('sandboxCheckbox');
+        const solutionField = document.getElementById('solutionField');
+        const imagePreview = document.getElementById('imagePreview');
+        const addSectionBtn = document.getElementById('addSectionBtn');
+        const saveTaskBtn = document.getElementById('saveTaskBtn');
+        const visualizeBtn = document.getElementById('visualizeBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const deleteTaskBtn = document.getElementById('deleteTaskBtn');
+        const pasteImageBtn = document.getElementById('pasteImageBtn');
+        const shareUrlContainer = document.getElementById('shareUrlContainer');
+        const shareUrlInput = document.getElementById('shareUrlInput');
+        const copyShareBtn = document.getElementById('copyShareBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const importFile = document.getElementById('importFile');
+        
+        // Элементы модального окна визуализации
+        const modal = document.getElementById('visualModal');
+        const modalLeft = document.getElementById('modalLeft');
+        const modalSolution = document.getElementById('modalSolution');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        // Элементы модального окна для графика
+        const graphFullscreenModal = document.getElementById('graphFullscreenModal');
+        const graphFullscreenBody = document.getElementById('graphFullscreenBody');
+        const closeGraphFullscreenBtn = document.getElementById('closeGraphFullscreenBtn');
+
+        // Анимация
+        let solutionBlocks = [];
+        let currentBlockIndex = 0;
+
+        function renderMath(element) {
+            if (window.renderMathInElement) {
+                window.renderMathInElement(element, {
+                    delimiters: [
+                        {left: '\\(', right: '\\)', display: false},
+                        {left: '\\[', right: '\\]', display: true}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('sections', JSON.stringify(sections));
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function renderSections() {
+            sectionsList.innerHTML = '';
+            sections.forEach(section => {
+                const sectionTasks = tasks.filter(t => t.sectionId === section.id);
+                const sectionCard = document.createElement('div');
+                sectionCard.className = `section-card ${section.id === currentSectionId ? 'active' : ''}`;
+                
+                sectionCard.innerHTML = `
+                    <div class="section-header">
+                        <span class="section-title">📁 ${section.name}</span>
+                        <div class="section-actions">
+                            <button class="section-action-btn" onclick="window.addTask('${section.id}')">➕</button>
+                            <button class="section-action-btn" onclick="window.editSection('${section.id}')">✏️</button>
+                            <button class="section-action-btn" onclick="window.deleteSection('${section.id}')">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="tasks-in-section">
+                        ${sectionTasks.map(task => `
+                            <div class="task-item ${task.id === currentTaskId ? 'active' : ''}" onclick="window.loadTask('${task.id}')">
+                                <span class="task-name">${task.name}</span>
+                                <div class="task-actions">
+                                    <button class="task-btn" onclick="event.stopPropagation(); window.deleteTask('${task.id}')">🗑️</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                sectionsList.appendChild(sectionCard);
+            });
+        }
+
+        window.loadTask = function(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            currentTaskId = taskId;
+            currentSectionId = task.sectionId;
+            taskNameField.value = task.name || '';
+            conditionField.value = task.condition || '';
+            imageField.value = task.image || '';
+            graphHtmlField.value = task.graphHtml || '';
+            graphHeightField.value = task.graphHeight || 400;
+            sandboxCheckbox.checked = task.graphSandbox !== undefined ? task.graphSandbox : true;
+            solutionField.value = task.solution || '';
+            imagePreview.style.display = task.image ? 'block' : 'none';
+            if (task.image) imagePreview.src = task.image;
+            renderSections();
+            shareUrlContainer.style.display = 'none';
+        };
+
+        window.deleteTask = function(taskId) {
+            if (!confirm('Удалить задачу?')) return;
+            tasks = tasks.filter(t => t.id !== taskId);
+            if (currentTaskId === taskId) {
+                currentTaskId = null;
+                clearEditor();
+            }
+            saveToStorage();
+            renderSections();
+        };
+
+        window.deleteSection = function(sectionId) {
+            if (!confirm('Удалить раздел и все его задачи?')) return;
+            sections = sections.filter(s => s.id !== sectionId);
+            tasks = tasks.filter(t => t.sectionId !== sectionId);
+            if (currentSectionId === sectionId) {
+                currentSectionId = sections[0]?.id || null;
+                currentTaskId = null;
+                clearEditor();
+            }
+            saveToStorage();
+            renderSections();
+        };
+
+        window.editSection = function(sectionId) {
+            const section = sections.find(s => s.id === sectionId);
+            const newName = prompt('Новое название:', section.name);
+            if (newName?.trim()) {
+                section.name = newName.trim();
+                saveToStorage();
+                renderSections();
+            }
+        };
+
+        window.addTask = function(sectionId) {
+            currentSectionId = sectionId;
+            currentTaskId = null;
+            clearEditor();
+            renderSections();
+            taskNameField.focus();
+        };
+
+        function clearEditor() {
+            taskNameField.value = '';
+            conditionField.value = '';
+            imageField.value = '';
+            graphHtmlField.value = '';
+            graphHeightField.value = 400;
+            sandboxCheckbox.checked = true;
+            solutionField.value = '';
+            imagePreview.style.display = 'none';
+            shareUrlContainer.style.display = 'none';
+        }
+
+        function saveCurrentTask() {
+            if (!currentSectionId) {
+                alert('Сначала выберите раздел');
+                return;
+            }
+
+            const taskData = {
+                name: taskNameField.value.trim() || 'Без названия',
+                condition: conditionField.value,
+                image: imageField.value,
+                graphHtml: graphHtmlField.value,
+                graphHeight: parseInt(graphHeightField.value) || 400,
+                graphSandbox: sandboxCheckbox.checked,
+                solution: solutionField.value
+            };
+
+            if (currentTaskId) {
+                const index = tasks.findIndex(t => t.id === currentTaskId);
+                if (index !== -1) tasks[index] = { ...tasks[index], ...taskData };
+            } else {
+                const newTask = {
+                    id: Date.now().toString(),
+                    sectionId: currentSectionId,
+                    ...taskData
+                };
+                tasks.push(newTask);
+                currentTaskId = newTask.id;
+            }
+            saveToStorage();
+            renderSections();
+            alert('✅ Задача сохранена');
+        }
+
+        // Функция открытия полноэкранного графика
+        window.openGraphFullscreen = function(graphHtml) {
+            graphFullscreenBody.innerHTML = graphHtml;
+            graphFullscreenModal.classList.add('active');
+            
+            // Рендерим формулы, если есть
+            setTimeout(() => {
+                renderMath(graphFullscreenBody);
+            }, 100);
+        };
+
+        // Закрытие полноэкранного графика
+        closeGraphFullscreenBtn.addEventListener('click', () => {
+            graphFullscreenModal.classList.remove('active');
+            graphFullscreenBody.innerHTML = '';
+        });
+
+        // Закрытие по ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Escape' && graphFullscreenModal.classList.contains('active')) {
+                graphFullscreenModal.classList.remove('active');
+                graphFullscreenBody.innerHTML = '';
+            }
+        });
+
+        // Функция для подготовки HTML графика
+        function prepareGraphHtml(html, height, useSandbox) {
+            if (!html || !html.trim()) return '';
+            
+            // Генерируем уникальный ID
+            const containerId = 'graph-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            
+            // Если это iframe, добавляем параметры
+            if (html.includes('<iframe')) {
+                // Добавляем высоту, если не указана
+                if (!html.includes('height=')) {
+                    html = html.replace('<iframe', `<iframe height="${height}"`);
+                }
+                // Добавляем sandbox, если нужно
+                if (useSandbox && !html.includes('sandbox=')) {
+                    html = html.replace('<iframe', '<iframe sandbox="allow-scripts allow-same-origin allow-forms allow-popups"');
+                }
+                // Добавляем allowfullscreen
+                if (!html.includes('allowfullscreen')) {
+                    html = html.replace('<iframe', '<iframe allowfullscreen');
+                }
+            }
+            
+            // Экранируем HTML для передачи в onclick
+            const escapedHtml = html.replace(/"/g, '&quot;');
+            
+            return `<div class="graph-container" id="${containerId}" style="height: ${height}px;">
+                        <button class="graph-modal-btn" onclick="openGraphFullscreen('${escapedHtml}')">🔍 Открыть на весь экран</button>
+                        ${html}
+                    </div>`;
+        }
+
+        // ВИЗУАЛИЗАЦИЯ ВНУТРИ РЕДАКТОРА
+        function openVisualization() {
+            const taskData = {
+                condition: conditionField.value,
+                image: imageField.value,
+                graphHtml: graphHtmlField.value,
+                graphHeight: parseInt(graphHeightField.value) || 400,
+                graphSandbox: sandboxCheckbox.checked,
+                solution: solutionField.value
+            };
+
+            const graphHtml = prepareGraphHtml(taskData.graphHtml, taskData.graphHeight, taskData.graphSandbox);
+
+            modalLeft.innerHTML = `
+                <div class="modal-condition">${taskData.condition || '— условие не задано —'}</div>
+                ${taskData.image ? `<img class="modal-image" src="${taskData.image}" onerror="this.style.display='none'">` : ''}
+                ${graphHtml}
+            `;
+            renderMath(modalLeft);
+
+            solutionBlocks = taskData.solution.split('\n').map(line => ({
+                type: line.trim().startsWith('#') ? 'comment' : 'code',
+                text: line
+            }));
+            currentBlockIndex = 0;
+            
+            modalSolution.innerHTML = '<div class="empty-message">✨ Нажмите пробел</div>';
+            modal.classList.add('active');
+        }
+
+        function stepAnimation() {
+            if (currentBlockIndex >= solutionBlocks.length) return;
+            
+            if (modalSolution.children.length === 1 && 
+                modalSolution.children[0].classList.contains('empty-message')) {
+                modalSolution.innerHTML = '';
+            }
+            
+            const block = solutionBlocks[currentBlockIndex];
+            const div = document.createElement('div');
+            div.className = block.type === 'code' ? 'code-line' : 'comment-line';
+            div.textContent = block.text;
+            modalSolution.appendChild(div);
+            renderMath(div);
+            
+            currentBlockIndex++;
+            modalSolution.scrollTop = modalSolution.scrollHeight;
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        // ССЫЛКА НА ВНЕШНИЙ ПРОСМОТРЩИК
+        function createViewerLink() {
+            const taskData = {
+                condition: conditionField.value,
+                image: imageField.value,
+                graphHtml: graphHtmlField.value,
+                graphHeight: parseInt(graphHeightField.value) || 400,
+                graphSandbox: sandboxCheckbox.checked,
+                solution: solutionField.value
+            };
+            const json = JSON.stringify(taskData);
+            const compressed = pako.deflate(json, { to: 'string' });
+            const base64 = btoa(String.fromCharCode.apply(null, compressed));
+            const encoded = encodeURIComponent(base64);
+            
+            // Имя файла для просмотра
+            const viewerFile = 'ВИЗУАЛИЗАЦИЯ_ЗАДАЧ_МАТЕМАТИКА_БЕЗ_РЕДАКТИРОВАНИЯ.html';
+            
+            // Получаем текущий путь
+            const currentPath = window.location.pathname;
+            const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+            
+            return window.location.origin + basePath + viewerFile + '?data=' + encoded;
+        }
+
+        // Вставка картинки
+        pasteImageBtn.addEventListener('click', async () => {
+            try {
+                const items = await navigator.clipboard.read();
+                for (const item of items) {
+                    for (const type of item.types) {
+                        if (type.startsWith('image/')) {
+                            const blob = await item.getType(type);
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                imageField.value = reader.result;
+                                imagePreview.src = reader.result;
+                                imagePreview.style.display = 'block';
+                            };
+                            reader.readAsDataURL(blob);
+                            return;
+                        }
+                    }
+                }
+                alert('В буфере нет изображения');
+            } catch (e) {
+                alert('Ошибка: ' + e.message);
+            }
+        });
+
+        imageField.addEventListener('input', () => {
+            if (imageField.value) {
+                imagePreview.src = imageField.value;
+                imagePreview.style.display = 'block';
+            } else {
+                imagePreview.style.display = 'none';
+            }
+        });
+
+        // Кнопки
+        addSectionBtn.addEventListener('click', () => {
+            const name = prompt('Название раздела:');
+            if (!name) return;
+            sections.push({ id: Date.now().toString(), name: name });
+            saveToStorage();
+            renderSections();
+        });
+
+        saveTaskBtn.addEventListener('click', saveCurrentTask);
+        
+        visualizeBtn.addEventListener('click', openVisualization);
+        
+        shareBtn.addEventListener('click', () => {
+            shareUrlInput.value = createViewerLink();
+            shareUrlContainer.style.display = 'flex';
+        });
+
+        copyShareBtn.addEventListener('click', () => {
+            shareUrlInput.select();
+            navigator.clipboard.writeText(shareUrlInput.value);
+            alert('✅ Ссылка скопирована');
+        });
+
+        deleteTaskBtn.addEventListener('click', () => {
+            if (!currentTaskId) return;
+            if (confirm('Удалить задачу?')) {
+                tasks = tasks.filter(t => t.id !== currentTaskId);
+                currentTaskId = null;
+                clearEditor();
+                saveToStorage();
+                renderSections();
+            }
+        });
+
+        closeModalBtn.addEventListener('click', closeModal);
+
+        // Клавиши в модальном окне визуализации
+        document.addEventListener('keydown', (e) => {
+            if (!modal.classList.contains('active')) return;
+            
+            if (e.code === 'Space') {
+                e.preventDefault();
+                stepAnimation();
+            } else if (e.code === 'Escape') {
+                e.preventDefault();
+                closeModal();
+            }
+        });
+
+        // Экспорт/Импорт
+        exportBtn.addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify({ sections, tasks }, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'tasks.json';
+            a.click();
+        });
+
+        importBtn.addEventListener('click', () => importFile.click());
+        importFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.sections && data.tasks) {
+                        sections = data.sections;
+                        tasks = data.tasks;
+                        saveToStorage();
+                        currentSectionId = sections[0]?.id || null;
+                        currentTaskId = null;
+                        clearEditor();
+                        renderSections();
+                        alert('✅ Импорт выполнен');
+                    }
+                } catch (err) {
+                    alert('Ошибка парсинга JSON');
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        renderSections();
+        if (currentTaskId) window.loadTask(currentTaskId);
+
+        window.loadTask = window.loadTask;
+        window.deleteTask = window.deleteTask;
+        window.deleteSection = window.deleteSection;
+        window.editSection = window.editSection;
+        window.addTask = window.addTask;
+        window.openGraphFullscreen = window.openGraphFullscreen;
+    })();
+</script>
+</body>
+</html>
