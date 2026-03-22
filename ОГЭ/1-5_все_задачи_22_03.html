@@ -928,7 +928,7 @@ var E = (function(){
                  +'<button onclick="E.tblRemRow('+i+')">− строка</button>'
                  +'<button onclick="E.tblAddCol('+i+')">+ столбец</button>'
                  +'<button onclick="E.tblRemCol('+i+')">− столбец</button>'
-                 +'</div><div class="eb-tbl-wrap">表<table><thead><tr>';
+                 +'</div><div class="eb-tbl-wrap"><table><thead><tr>';
                 b.headers.forEach(function(hv,hi){
                     h+='<th><input type="text" value="'+_e(hv)+'" oninput="E.setHeader('+i+','+hi+',this.value)"></th>';
                 });
@@ -1001,7 +1001,7 @@ function convertToV2(data){
 
 var currentTopic  = null;
 var currentTaskId = 0;
-var accessLevel   = 'study';  // ИЗМЕНЕНО: по умолчанию режим обучения
+var accessLevel   = 'control';
 var passwords     = {teacher:'1111', study:'2222'};
 var topicsData    = {};
 var progress      = {};
@@ -1493,64 +1493,13 @@ window.addEventListener('click',function(e){
     if(e.target===reportModal) reportModal.style.display='none';
 });
 
-// ── АВТОЗАГРУЗКА С GITHUB (RAW) ──
-const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/GitHub/trenager_programs/json_files/огэ_1-5.json';
-
-function loadFromGitHub() {
-    fetch(GITHUB_JSON_URL)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Данные загружены с GitHub');
-            if (!data.topicsData) {
-                throw new Error('Неверный формат: нет topicsData');
-            }
-            var converted = convertToV2(data);
-            topicsData = converted.topicsData;
-            topics = DEFAULT_ORDER.filter(id => !!topicsData[id]);
-            Object.keys(topicsData).forEach(id => {
-                if (topics.indexOf(id) === -1) topics.push(id);
-            });
-            if (converted.progress) progress = converted.progress;
-            if (converted.passwords) {
-                if (converted.passwords.teacher) passwords.teacher = converted.passwords.teacher;
-                if (converted.passwords.study) passwords.study = converted.passwords.study;
-            }
-            if (topics.length) {
-                currentTopic = topics[0];
-                currentTaskId = 0;
-            }
-            renderTopicButtons();
-            renderTask();
-            renderTaskGrid();
-            updateStats();
-            console.log('✅ Данные успешно загружены из GitHub');
-        })
-        .catch(error => {
-            console.error('Ошибка загрузки с GitHub:', error);
-            // Если не удалось загрузить, используем дефолтные данные
-            topicsData = JSON.parse(JSON.stringify(DEFAULT_DATA));
-            topics = DEFAULT_ORDER.slice();
-            currentTopic = topics[0];
-            currentTaskId = 0;
-            renderTopicButtons();
-            renderTask();
-            renderTaskGrid();
-            updateStats();
-            alert('⚠️ Не удалось загрузить данные с GitHub. Используются встроенные тестовые данные.');
-        });
-}
-
 // ── СТАРТ ──
 window.addEventListener('load',function(){
-    // Сначала загружаем данные с GitHub
-    loadFromGitHub();
-    // Устанавливаем режим обучения по умолчанию (без пароля)
-    setMode('study');
+    topicsData=JSON.parse(JSON.stringify(DEFAULT_DATA));
+    topics=DEFAULT_ORDER.slice();
+    currentTopic=topics[0]; currentTaskId=0;
+    renderTopicButtons(); renderTask(); renderTaskGrid(); updateStats();
+    setMode('control');
 });
 
 })();
