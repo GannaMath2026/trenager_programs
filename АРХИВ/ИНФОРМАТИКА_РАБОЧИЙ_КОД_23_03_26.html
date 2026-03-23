@@ -1261,9 +1261,9 @@ for k in range(1, 100):
 <option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika23.json">Информатика 23</option>
 <option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika24bc.json">Информатика 24 Базовый код+префиксы</option>
 <option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika24r.json">Информатика 24 Регулярки</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika25_маски.json">Информатика 25_маски</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika25_делители.json">Информатика 25_делители</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika25_простые_множители.json">Информатика 25_простые множители</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika25_маски.json">Информатика 25</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika25_делители.json">Информатика 25</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika25_простые_множители.json">Информатика 25</option>
 <option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika26.json">Информатика 26</option>
 <option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika27.json">Информатика 27</option>
     </select>
@@ -1307,6 +1307,12 @@ for k in range(1, 100):
 <div id="printDialog" class="print-controls" style="display: none;">
     <h3 style="margin: 0 0 20px 0; color: #facc15; text-align: center;">🖨️ Выберите задачи для печати</h3>
     <div class="print-checkboxes" id="printCheckboxes"></div>
+    <div class="print-buttons">
+        <button class="green" onclick="printSelectedTasks()">🖨️ Печатать выбранные</button>
+        <button class="gray" onclick="closePrintDialog()">❌ Отмена</button>
+        <button class="gray" onclick="selectAllForPrint()">✅ Выбрать все</button>
+        <button class="gray" onclick="deselectAllForPrint()">❌ Снять все</button>
+    </div>
 </div>
 
 <!-- Диалог сохранения -->
@@ -1842,366 +1848,92 @@ function clearCanvas() {
 }
 
 /* ================= ПЕЧАТЬ ================= */
-/* ================= ПЕЧАТЬ (ОБНОВЛЕННАЯ) ================= */
 function showPrintDialog() {
     if (tasks.length === 0) {
         alert("Сначала создайте задачи!");
         return;
     }
     
-    // Получаем отфильтрованные задачи
-    let filteredTasks = tasks;
-    
-    if (currentFilter === 'solved') {
-        filteredTasks = tasks.filter(t => t.solved);
-    } else if (currentFilter === 'unsolved') {
-        filteredTasks = tasks.filter(t => !t.solved);
-    } else if (currentFilter === 'favorite') {
-        filteredTasks = tasks.filter(t => t.favorite);
-    } else if (currentFilter === 'unfavorite') {
-        filteredTasks = tasks.filter(t => !t.favorite);
-    }
-    
-    if (filteredTasks.length === 0) {
-        alert("Нет задач в текущем фильтре!");
-        return;
-    }
-    
     const dialog = document.getElementById("printDialog");
     const checkboxes = document.getElementById("printCheckboxes");
     
-    checkboxes.innerHTML = `
-        <div style="margin-bottom: 15px; padding: 10px; background: #0f172a; border-radius: 8px;">
-            <strong style="color: #facc15;">📋 Что печатать:</strong>
-            <div style="margin-top: 10px;">
-                <label style="display: inline-block; margin-right: 15px;">
-                    <input type="checkbox" id="printNumber" checked> Номер задачи
-                </label>
-                <label style="display: inline-block; margin-right: 15px;">
-                    <input type="checkbox" id="printCondition" checked> Условие
-                </label>
-                <label style="display: inline-block; margin-right: 15px;">
-                    <input type="checkbox" id="printAnswer" checked> Ответ
-                </label>
-                <label style="display: inline-block; margin-right: 15px;">
-                    <input type="checkbox" id="printCodeShort"> Короткий код (без комментов)
-                </label>
-                <label style="display: inline-block;">
-                    <input type="checkbox" id="printCodeFull"> Код с комментариями
-                </label>
-            </div>
-            <div style="margin-top: 10px; font-size: 12px; color: #94a3b8;">
-                📌 Текущий фильтр: ${currentFilter === 'all' ? 'Все задачи' : 
-                                    currentFilter === 'solved' ? 'Решенные' : 
-                                    currentFilter === 'unsolved' ? 'Не решенные' : 
-                                    currentFilter === 'favorite' ? 'Избранные' : 'Не избранные'} (${filteredTasks.length} задач)
-            </div>
-        </div>
-        <div style="margin-bottom: 10px; font-weight: bold; color: #facc15;">📝 Выберите задачи для печати:</div>
-        <div id="tasksCheckboxesList"></div>
-        <div class="print-buttons" style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
-            <button id="printSelectAllBtn" class="gray">✅ Выбрать все</button>
-            <button id="printDeselectAllBtn" class="gray">❌ Снять все</button>
-            <button id="printExecuteBtn" class="green">🖨️ Печатать</button>
-            <button id="printCancelBtn" class="red">❌ Отмена</button>
-        </div>
-    `;
-    
-    // Добавляем задачи в отдельный контейнер
-    const tasksListContainer = document.getElementById("tasksCheckboxesList");
-    tasksListContainer.innerHTML = "";
+    checkboxes.innerHTML = "";
     printCheckboxes = {};
     
-    filteredTasks.forEach((task, idx) => {
-        const realIndex = tasks.indexOf(task);
+    tasks.forEach((task, i) => {
         const div = document.createElement("div");
         div.className = "print-task-item";
         div.innerHTML = `
-            <input type="checkbox" id="print_${realIndex}" value="${realIndex}" checked>
-            <label for="print_${realIndex}">${realIndex + 1}. ${task.name}</label>
-            ${task.solved ? '<span style="margin-left: auto; color: #10b981;">✅</span>' : ''}
-            ${task.favorite ? '<span style="margin-left: auto; color: #facc15;">★</span>' : ''}
+            <input type="checkbox" id="print_${i}" value="${i}">
+            <label for="print_${i}">${i + 1}. ${task.name}</label>
         `;
-        tasksListContainer.appendChild(div);
+        checkboxes.appendChild(div);
         
-        printCheckboxes[realIndex] = div.querySelector(`#print_${realIndex}`);
+        printCheckboxes[i] = div.querySelector(`#print_${i}`);
         div.onclick = (e) => {
             if (e.target.tagName !== 'INPUT') {
-                printCheckboxes[realIndex].checked = !printCheckboxes[realIndex].checked;
+                printCheckboxes[i].checked = !printCheckboxes[i].checked;
             }
         };
     });
     
     dialog.style.display = "flex";
-    
-    // Привязываем обработчики через addEventListener
-    const selectAllBtn = document.getElementById("printSelectAllBtn");
-    const deselectAllBtn = document.getElementById("printDeselectAllBtn");
-    const executeBtn = document.getElementById("printExecuteBtn");
-    const cancelBtn = document.getElementById("printCancelBtn");
-    
-    // Удаляем старые обработчики, если есть
-    const newSelectAllBtn = selectAllBtn.cloneNode(true);
-    const newDeselectAllBtn = deselectAllBtn.cloneNode(true);
-    const newExecuteBtn = executeBtn.cloneNode(true);
-    const newCancelBtn = cancelBtn.cloneNode(true);
-    
-    selectAllBtn.parentNode.replaceChild(newSelectAllBtn, selectAllBtn);
-    deselectAllBtn.parentNode.replaceChild(newDeselectAllBtn, deselectAllBtn);
-    executeBtn.parentNode.replaceChild(newExecuteBtn, executeBtn);
-    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-    
-    newSelectAllBtn.onclick = function() {
-        Object.values(printCheckboxes).forEach(cb => cb.checked = true);
-    };
-    
-    newDeselectAllBtn.onclick = function() {
-        Object.values(printCheckboxes).forEach(cb => cb.checked = false);
-    };
-    
-    newExecuteBtn.onclick = function() {
-        printSelectedTasksWithOptions();
-    };
-    
-    newCancelBtn.onclick = function() {
-        closePrintDialog();
-    };
-}
-
-function printSelectedTasksWithOptions() {
-    const selected = Object.keys(printCheckboxes).filter(i => printCheckboxes[i].checked);
-    if (!selected.length) {
-        alert("Выберите задачи для печати!");
-        return;
-    }
-    
-    // Получаем опции печати
-    const printNumber = document.getElementById("printNumber")?.checked !== false;
-    const printCondition = document.getElementById("printCondition")?.checked !== false;
-    const printAnswer = document.getElementById("printAnswer")?.checked !== false;
-    const printCodeShort = document.getElementById("printCodeShort")?.checked === true;
-    const printCodeFull = document.getElementById("printCodeFull")?.checked === true;
-    
-    // Создаем окно печати
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Печать задач</title>
-            <style>
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }
-                body {
-                    font-family: 'Segoe UI', 'Arial', sans-serif;
-                    font-size: 14px;
-                    line-height: 1.5;
-                    padding: 20px;
-                    background: #ffffff;
-                    color: #1e293b;
-                }
-                .print-header {
-                    text-align: center;
-                    margin-bottom: 30px;
-                    padding-bottom: 15px;
-                    border-bottom: 2px solid #e2e8f0;
-                }
-                .print-header h1 {
-                    font-size: 24px;
-                    color: #0f172a;
-                }
-                .print-header p {
-                    color: #475569;
-                    margin-top: 5px;
-                }
-                .print-task {
-                    page-break-inside: avoid;
-                    margin-bottom: 35px;
-                    padding: 20px;
-                    background: #f8fafc;
-                    border-radius: 12px;
-                    border-left: 4px solid #3b82f6;
-                }
-                .task-title {
-                    font-size: 18px;
-                    font-weight: bold;
-                    color: #0f172a;
-                    margin-bottom: 15px;
-                    padding-bottom: 8px;
-                    border-bottom: 2px solid #e2e8f0;
-                }
-                .task-section {
-                    margin: 12px 0;
-                }
-                .task-section-label {
-                    font-weight: bold;
-                    color: #2563eb;
-                    margin-bottom: 5px;
-                    font-size: 13px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                .task-condition {
-                    background: #ffffff;
-                    padding: 12px 15px;
-                    border-radius: 8px;
-                    border: 1px solid #e2e8f0;
-                    white-space: pre-wrap;
-                    font-family: inherit;
-                }
-                .task-answer {
-                    background: #ecfdf5;
-                    padding: 10px 15px;
-                    border-radius: 8px;
-                    border-left: 3px solid #10b981;
-                    font-weight: 500;
-                }
-                .task-code {
-                    background: #0f172a;
-                    color: #e5e7eb;
-                    padding: 15px;
-                    border-radius: 8px;
-                    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-                    font-size: 12px;
-                    line-height: 1.5;
-                    white-space: pre-wrap;
-                    overflow-x: auto;
-                    border: 1px solid #334155;
-                }
-                .task-code pre {
-                    margin: 0;
-                    font-family: inherit;
-                    white-space: pre-wrap;
-                    word-wrap: break-word;
-                }
-                .task-code .comment {
-                    color: #ff8c00;
-                    font-style: italic;
-                }
-                .print-footer {
-                    margin-top: 40px;
-                    text-align: center;
-                    font-size: 12px;
-                    color: #94a3b8;
-                    border-top: 1px solid #e2e8f0;
-                    padding-top: 15px;
-                }
-                hr {
-                    margin: 20px 0;
-                    border: none;
-                    border-top: 1px solid #e2e8f0;
-                }
-                @media print {
-                    body {
-                        padding: 15px;
-                    }
-                    .print-task {
-                        break-inside: avoid;
-                        page-break-inside: avoid;
-                    }
-                    .task-code {
-                        background: #0f172a;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
-                    }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="print-header">
-                <h1>📋 Задачи по информатике</h1>
-                <p>Дата печати: ${new Date().toLocaleDateString('ru-RU')} ${new Date().toLocaleTimeString('ru-RU')}</p>
-            </div>
-    `);
-    
-    selected.forEach(i => {
-        const task = tasks[i];
-        printWindow.document.write(`
-            <div class="print-task">
-                <div class="task-title">
-                    ${printNumber ? `${parseInt(i) + 1}. ` : ''}${escapeHtml(task.name) || 'Без названия'}
-                </div>
-        `);
-        
-        if (printCondition && task.text) {
-            printWindow.document.write(`
-                <div class="task-section">
-                    <div class="task-section-label">📖 УСЛОВИЕ ЗАДАЧИ</div>
-                    <div class="task-condition">${escapeHtml(task.text).replace(/\n/g, '<br>')}</div>
-                </div>
-            `);
-        }
-        
-        if (printAnswer && task.answer) {
-            printWindow.document.write(`
-                <div class="task-section">
-                    <div class="task-section-label">✅ ОТВЕТ</div>
-                    <div class="task-answer">${escapeHtml(task.answer)}</div>
-                </div>
-            `);
-        }
-        
-        if (printCodeShort && task.codeNoComments) {
-            printWindow.document.write(`
-                <div class="task-section">
-                    <div class="task-section-label">💻 КОД (без комментариев)</div>
-                    <div class="task-code"><pre>${escapeHtml(task.codeNoComments)}</pre></div>
-                </div>
-            `);
-        }
-        
-        if (printCodeFull && task.codeWithComments) {
-            // Подсветка комментариев оранжевым
-            let codeWithHighlight = escapeHtml(task.codeWithComments);
-            codeWithHighlight = codeWithHighlight.replace(/(#.*)$/gm, '<span class="comment">$1</span>');
-            printWindow.document.write(`
-                <div class="task-section">
-                    <div class="task-section-label">💬 КОД (с комментариями)</div>
-                    <div class="task-code"><pre>${codeWithHighlight}</pre></div>
-                </div>
-            `);
-        }
-        
-        printWindow.document.write(`</div>`);
-    });
-    
-    printWindow.document.write(`
-            <div class="print-footer">
-                Всего задач: ${selected.length} | Фильтр: ${currentFilter === 'all' ? 'Все' : 
-                                    currentFilter === 'solved' ? 'Решенные' : 
-                                    currentFilter === 'unsolved' ? 'Не решенные' : 
-                                    currentFilter === 'favorite' ? 'Избранные' : 'Не избранные'}
-            </div>
-        </body>
-        </html>
-    `);
-    
-    printWindow.document.close();
-    closePrintDialog();
-    
-    // Небольшая задержка перед печатью
-    setTimeout(() => {
-        printWindow.print();
-    }, 100);
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
 }
 
 function closePrintDialog() {
     document.getElementById("printDialog").style.display = "none";
 }
 
+function selectAllForPrint() {
+    Object.values(printCheckboxes).forEach(cb => cb.checked = true);
+}
+
+function deselectAllForPrint() {
+    Object.values(printCheckboxes).forEach(cb => cb.checked = false);
+}
+
+function printSelectedTasks() {
+    const selected = Object.keys(printCheckboxes).filter(i => printCheckboxes[i].checked);
+    if (!selected.length) return alert("Выберите задачи!");
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html><head><title>Задачи</title>
+        <style>
+            body { margin: 20px; font-family: Arial; font-size: 16px; line-height: 1.6; color: #333; }
+            .task { page-break-inside: avoid; margin-bottom: 40px; }
+            h3 { color: #1e293b; margin: 0 0 20px 0; font-size: 18px; }
+            .condition { background: #f8fafc; padding: 25px; border-radius: 8px; 
+                        border-left: 5px solid #3b82f6; margin: 15px 0; white-space: pre-wrap; }
+            .answer { background: #ecfdf5; padding: 20px; border-radius: 8px; 
+                     border-left: 5px solid #10b981; margin-top: 15px; }
+            .video-link { background: #e0f2fe; padding: 12px 20px; border-radius: 8px; 
+                         border-left: 5px solid #0284c7; margin: 15px 0; }
+            hr { margin: 30px 0; border: none; border-top: 2px solid #e2e8f0; }
+            a { color: #1e293b; }
+            @media print { body { margin: 15px; } }
+        </style></head><body>
+    `);
+    
+    selected.forEach(i => {
+        const task = tasks[i];
+        printWindow.document.write(`
+            <div class="task">
+                <h3>${i + 1}. ${task.name}</h3>
+                ${task.text ? `<div class="condition">${task.text.replace(/\n/g, '<br>')}</div>` : ''}
+                ${task.answer ? `<div class="answer"><strong>✅ Ответ:</strong> ${task.answer}</div>` : ''}
+                ${task.video ? `<div class="video-link"><strong>📹 Видео:</strong> <a href="${task.video}" target="_blank">${task.video}</a></div>` : ''}
+                ${task.fileUrl ? `<div class="video-link"><strong>📁 Файл:</strong> <a href="${task.fileUrl}" target="_blank">${task.fileUrl}</a></div>` : ''}
+                <hr>
+            </div>
+        `);
+    });
+    
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    closePrintDialog();
+}
 
 /* ================= ВИДЕО ================= */
 function updateVideo() {
@@ -3169,26 +2901,6 @@ document.addEventListener("keydown", e => {
         showSaveDialog();
     }
 });
-// Функции для совместимости со старыми кнопками
-function selectAllForPrint() {
-    if (printCheckboxes) {
-        Object.values(printCheckboxes).forEach(cb => {
-            if (cb) cb.checked = true;
-        });
-    }
-}
-
-function deselectAllForPrint() {
-    if (printCheckboxes) {
-        Object.values(printCheckboxes).forEach(cb => {
-            if (cb) cb.checked = false;
-        });
-    }
-}
-
-function printSelectedTasks() {
-    printSelectedTasksWithOptions();
-}
 </script>
 
 </body>
