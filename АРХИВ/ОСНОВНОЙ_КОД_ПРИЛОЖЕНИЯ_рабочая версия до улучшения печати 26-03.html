@@ -2370,7 +2370,6 @@
   });
 
   // ПЕЧАТЬ
-    // ==================== ПЕЧАТЬ С ПОДДЕРЖКОЙ LATEX (только условие: текст + картинка) ====================
   function printTasks(showAnswers) {
     const filtered = getFilteredAndSortedTasks();
     let printContent = '';
@@ -2381,78 +2380,50 @@
       if (task.isSectionHeader) return;
       
       function getTaskHTML() {
-        let html = '';
-        
-        // Добавляем текст условия, если есть
-        if (task.taskText) {
-          html += `<div style="padding: 8px 12px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 11pt; text-align: left; margin-bottom: 5px;" class="latex-content">${task.taskText}</div>`;
-        }
-        
-        // Добавляем изображение условия, если есть
         if (task.taskImage) {
-          html += `<img src="${task.taskImage}" style="max-width: 100%; max-height: 300px; display: block; margin: 8px 0;">`;
+          return `<img src="${task.taskImage}" style="max-width: 100%; max-height: 400px; display: block; margin: 0;">`;
+        } else if (task.taskText) {
+          return `<div style="padding: 20px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 14pt; text-align: left;">${task.taskText}</div>`;
         }
-        
-        // Если ничего нет
-        if (!task.taskText && !task.taskImage) {
-          html = '<div style="padding: 20px; background: #f5f5f5; text-align: center; font-style: italic;">Нет данных</div>';
-        }
-        
-        return html;
+        return '<div style="padding: 40px; background: #f5f5f5; text-align: center; font-style: italic;">Нет данных</div>';
       }
       
       function getAnswerHTML() {
-        let html = '';
-        
-        // Добавляем текст ответа, если есть
-        if (task.answerText) {
-          html += `<div style="padding: 6px 10px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 11pt; text-align: center;" class="latex-content">${task.answerText}</div>`;
-        }
-        
-        // Добавляем изображение ответа, если есть
         if (task.answerImage) {
-          html += `<img src="${task.answerImage}" style="max-width: 100%; max-height: 200px; display: block; margin: 8px auto;">`;
+          return `<img src="${task.answerImage}" style="max-width: 100%; max-height: 400px; display: block; margin: 0 auto;">`;
+        } else if (task.answerText) {
+          return `<div style="padding: 20px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 14pt; text-align: center;">${task.answerText}</div>`;
         }
-        
-        return html;
+        return '';
       }
       
       if (showAnswers) {
-        // С ответами - показываем условие + ответ
+        // С ответами - показываем всё вместе
         printContent += `
-          <div class="print-task" style="margin-bottom: 15px; page-break-inside: avoid; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
-            <div style="font-weight: bold; font-size: 12pt; margin-bottom: 6px;">${index + 1}. ${task.title}</div>
-            <div style="margin-bottom: 8px;">${getTaskHTML()}</div>
-            ${getAnswerHTML() ? `<div style="margin-top: 5px;"><strong>Ответ:</strong> ${getAnswerHTML()}</div>` : ''}
+          <div class="print-task" style="margin-bottom: 30px; page-break-inside: avoid;">
+            <div style="font-weight: bold; font-size: 16pt; margin-bottom: 10px;">${index + 1}. ${task.title}</div>
+            <div style="margin-bottom: 20px;">${getTaskHTML()}</div>
+            ${getAnswerHTML() ? `<div style="margin-top: 20px; border-top: 2px dashed #666; padding-top: 20px;"><strong>Ответ:</strong> ${getAnswerHTML()}</div>` : ''}
           </div>
         `;
       } else {
-        // Без ответов - только условие (текст + картинка)
+        // Без ответов - только условие
         printContent += `
-          <div class="print-task" style="margin-bottom: 12px; page-break-inside: avoid; border-bottom: 1px solid #eee; padding-bottom: 8px;">
-            <div style="font-weight: bold; font-size: 12pt; margin-bottom: 4px;">${index + 1}. ${task.title}</div>
-            <div style="margin-bottom: 4px;">${getTaskHTML()}</div>
+          <div class="print-task" style="margin-bottom: 30px; page-break-inside: avoid;">
+            <div style="font-weight: bold; font-size: 16pt; margin-bottom: 10px;">${index + 1}. ${task.title}</div>
+            <div style="margin-bottom: 20px;">${getTaskHTML()}</div>
           </div>
         `;
         
-        // Собираем ответы отдельно для ключа
+        // Собираем ответы отдельно
         if (task.answerImage || task.answerText) {
-          let answerDisplay = '';
-          if (task.answerText && task.answerImage) {
-            answerDisplay = `
-              <div style="font-size: 8pt; padding: 2px;" class="latex-content-small">${task.answerText.replace(/<[^>]*>/g, '').substring(0, 80)}</div>
-              <img src="${task.answerImage}" style="max-width: 50px; max-height: 50px; display: block; margin: 2px auto;">
-            `;
-          } else if (task.answerText) {
-            answerDisplay = `<div style="font-size: 8pt; padding: 2px;" class="latex-content-small">${task.answerText.replace(/<[^>]*>/g, '').substring(0, 100)}</div>`;
-          } else if (task.answerImage) {
-            answerDisplay = `<img src="${task.answerImage}" style="max-width: 60px; max-height: 60px; display: block; margin: 0 auto;">`;
-          }
-          
           answerItems += `
-            <div style="padding: 3px; text-align: center; border: 1px solid #ccc; page-break-inside: avoid;">
-              <div style="font-weight: bold; margin-bottom: 2px; font-size: 9pt;">${index + 1}</div>
-              ${answerDisplay}
+            <div style="padding: 5px; text-align: center; border: 1px solid #ccc; page-break-inside: avoid;">
+              <div style="font-weight: bold; margin-bottom: 5px;">${index + 1}</div>
+              ${task.answerImage ? 
+                `<img src="${task.answerImage}" style="max-width: 100px; max-height: 100px; display: block; margin: 0 auto;">` :
+                `<div style="font-size: 10pt; padding: 5px;">${task.answerText.replace(/<[^>]*>/g, '')}</div>`
+              }
             </div>
           `;
           answerCount++;
@@ -2462,108 +2433,30 @@
     
     const printStyles = `
       <style>
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        body { 
-          font-family: "Times New Roman", serif; 
-          margin: 8mm 5mm; 
-          line-height: 1.3;
-          font-size: 11pt;
-        }
-        .print-task { 
-          margin-bottom: 12px; 
-          page-break-inside: avoid; 
-        }
-        table { 
-          border-collapse: collapse; 
-          width: 100%; 
-          margin: 8px 0; 
-          font-size: 10pt;
-        }
-        th { 
-          background: #1e3c72 !important; 
-          color: white !important; 
-          padding: 4px 8px; 
-          border: 1px solid #2a4a8a; 
-        }
-        td { 
-          padding: 4px 8px; 
-          border: 1px solid #ccc; 
-        }
-        tr:nth-child(even) { 
-          background: #f8fafc !important; 
-        }
-        img { 
-          max-width: 100%; 
-        }
+        body { font-family: "Times New Roman", serif; margin: 15mm; }
+        .print-task { margin-bottom: 30px; page-break-inside: avoid; }
+        table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+        th { background: #1e3c72 !important; color: white !important; padding: 8px 12px; border: 1px solid #2a4a8a; }
+        td { padding: 6px 10px; border: 1px solid #ccc; }
+        tr:nth-child(even) { background: #f8fafc !important; }
+        img { max-width: 100%; }
         .answer-grid {
           display: grid;
-          grid-template-columns: repeat(12, 1fr);
-          gap: 6px;
-          margin-top: 20px;
+          grid-template-columns: repeat(10, 1fr);
+          gap: 10px;
+          margin-top: 30px;
           page-break-before: always;
         }
-        .latex-content {
-          font-size: 11pt;
-          line-height: 1.4;
-        }
-        .latex-content-small {
-          font-size: 8pt;
-          line-height: 1.3;
-        }
-        .MathJax {
-          font-size: 11pt !important;
-        }
-        .MathJax_Display {
-          overflow-x: auto;
-          overflow-y: hidden;
-          margin: 5px 0 !important;
-        }
         @media print {
-          body {
-            margin: 5mm 4mm;
-          }
-          th { 
-            -webkit-print-color-adjust: exact; 
-            print-color-adjust: exact; 
-          }
-          tr:nth-child(even) { 
-            -webkit-print-color-adjust: exact; 
-            print-color-adjust: exact; 
-          }
-          .MathJax {
-            font-size: 10pt !important;
-          }
-          .MathJax_Display {
-            font-size: 10pt !important;
-          }
+          th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          tr:nth-child(even) { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       </style>
-      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"><\/script>
-      <script>
-        window.MathJax = {
-          tex: {
-            inlineMath: [['$', '$'], ['\\(', '\\)']],
-            displayMath: [['$$', '$$'], ['\\[', '\\]']],
-            processEscapes: true
-          },
-          startup: {
-            pageReady: () => {
-              return MathJax.startup.defaultPageReady().then(() => {
-                console.log('MathJax готов к печати');
-              });
-            }
-          }
-        };
-      <\/script>
     `;
     
     const answerKey = !showAnswers && answerItems ? `
       <div class="answer-grid">
-        <div style="grid-column: span 12; text-align: center; font-size: 14pt; font-weight: bold; margin: 10px 0 8px 0;">
+        <div style="grid-column: span 10; text-align: center; font-size: 18pt; font-weight: bold; margin: 20px 0;">
           Ключ ответов (${answerCount} задач)
         </div>
         ${answerItems}
@@ -2591,34 +2484,9 @@
     
     printWindow.onload = () => {
       setTimeout(() => {
-        if (printWindow.MathJax) {
-          printWindow.MathJax.typesetPromise()
-            .then(() => {
-              setTimeout(() => {
-                printWindow.print();
-                setTimeout(() => {
-                  printWindow.close();
-                }, 1000);
-              }, 200);
-            })
-            .catch((err) => {
-              console.warn('Ошибка рендеринга LaTeX:', err);
-              setTimeout(() => {
-                printWindow.print();
-                setTimeout(() => {
-                  printWindow.close();
-                }, 1000);
-              }, 200);
-            });
-        } else {
-          setTimeout(() => {
-            printWindow.print();
-            setTimeout(() => {
-              printWindow.close();
-            }, 1000);
-          }, 200);
-        }
-      }, 600);
+        printWindow.print();
+        printWindow.close();
+      }, 500);
     };
   }
 
