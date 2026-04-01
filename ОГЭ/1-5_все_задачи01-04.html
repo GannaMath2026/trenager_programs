@@ -1340,33 +1340,13 @@ function renderTopicButtons(){
 function checkAnswer(){
     if(!currentTopic||currentTaskId===0) return;
     ensureTask(currentTaskId);
-    var ua = currentAnswerInput.value.trim().toLowerCase();
-    // Нормализуем десятичные разделители в ответе пользователя
-    ua = ua.replace(/,/g, '.');
-    var ca = topicsData[currentTopic].tasks[currentTaskId].correct || '';
-    var variants = ca.split('/').map(function(v){
-        var normalized = v.trim().toLowerCase();
-        // Нормализуем правильные ответы (на случай если там запятые)
-        normalized = normalized.replace(/,/g, '.');
-        return normalized;
-    });
-    
-    // Дополнительная проверка для чисел с плавающей точкой
-    var isCorrect = variants.some(function(v){
-        if(v === '') return false;
-        if(v === ua) return true;
-        // Проверка на числовое равенство с учётом погрешности
-        var numUser = parseFloat(ua);
-        var numVariant = parseFloat(v);
-        if(!isNaN(numUser) && !isNaN(numVariant)) {
-            return Math.abs(numUser - numVariant) < 0.000001;
-        }
-        return false;
-    });
-    
+    var ua=currentAnswerInput.value.trim().toLowerCase();
+    var ca=topicsData[currentTopic].tasks[currentTaskId].correct||'';
+    var variants=ca.split('/').map(function(v){return v.trim().toLowerCase();});
+    var isCorrect=variants.some(function(v){return v!==''&&v===ua;});
     if(!progress[currentTopic]) progress[currentTopic]={};
     if(!progress[currentTopic][currentTaskId]) progress[currentTopic][currentTaskId]={};
-    progress[currentTopic][currentTaskId].answer=currentAnswerInput.value.trim(); // сохраняем исходный ввод
+    progress[currentTopic][currentTaskId].answer=ua;
     progress[currentTopic][currentTaskId].status=isCorrect?'correct':'incorrect';
     renderTask(); renderTaskGrid(); updateStats();
 }
@@ -1499,19 +1479,9 @@ cancelReport.addEventListener('click',function(){reportModal.style.display='none
 
 // ── КАЛЬКУЛЯТОР ──
 currentCalcBtn.addEventListener('click',function(){
-    var expr = currentCalcInput.value;
-    // Заменяем запятую на точку для десятичных дробей
-    expr = expr.replace(/,/g, '.');
-    // Убираем всё, кроме цифр, операторов, скобок и точки
-    expr = expr.replace(/[^0-9+\-*/().\s]/g, '');
-    if(!expr) return;
-    try{
-        var result = new Function('return(' + expr + ')')();
-        currentCalcResult.innerText = Math.round(result * 1e6) / 1e6;
-    }
-    catch(ex){
-        currentCalcResult.innerText = 'Ошибка';
-    }
+    var expr=currentCalcInput.value.replace(/[^0-9+\-*/().\s]/g,'');if(!expr)return;
+    try{currentCalcResult.innerText=Math.round(new Function('return('+expr+')')()*1e6)/1e6;}
+    catch(ex){currentCalcResult.innerText='Ошибка';}
 });
 currentCalcInput.addEventListener('keydown',function(e){if(e.key==='Enter')currentCalcBtn.click();});
 currentCheckBtn.addEventListener('click',checkAnswer);
