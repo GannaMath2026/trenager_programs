@@ -1125,7 +1125,8 @@
     document.body.appendChild(a);
     a.click();
     setTimeout(() => {
-      renderMathForVisibleTasks();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }, 100);
   });
 
@@ -1306,29 +1307,6 @@
       resultSpan.textContent = safeEvaluate(input.value);
     }
   };
-
-  // ==================== ТОЧЕЧНЫЙ РЕНДЕРИНГ LATEX ====================
-  function renderMathForElement(element) {
-    if (!element) return;
-    if (typeof MathJax === 'undefined') return;
-    MathJax.typesetPromise([element]).catch(err => {
-      console.warn('Ошибка рендеринга LaTeX для элемента:', err);
-    });
-  }
-
-  function renderMathForTask(taskId) {
-    const taskElement = document.querySelector(`.task[data-id="${taskId}"]`);
-    if (taskElement) renderMathForElement(taskElement);
-  }
-
-  function renderMathForVisibleTasks() {
-    if (typeof MathJax === 'undefined') return;
-    const visibleTasks = document.querySelectorAll('.task:not([style*="display: none"])');
-    if (visibleTasks.length === 0) return;
-    MathJax.typesetPromise(Array.from(visibleTasks)).catch(err => {
-      console.warn('Ошибка рендеринга LaTeX для видимых задач:', err);
-    });
-  }
 
   // ==================== РЕНДЕР КОНТЕНТА ====================
   function renderContent(task, zoneType) {
@@ -1783,16 +1761,7 @@
     
     saveStudents();
     restoreAnalogLinks();
-
-
     render();
-    setTimeout(() => {
-      MathJax.typesetPromise().catch(console.warn);
-    }, 100);
-    
-    importStudentModal.style.display = 'none';
-
-
     
     importStudentModal.style.display = 'none';
     updateStudentSelect();
@@ -1856,10 +1825,9 @@
     tasks.unshift(newTask);
     editingTaskId = newTask.id;
     render();
- setTimeout(() => {
+    setTimeout(() => {
       const titleInput = app.querySelector('input[data-field="title"]');
       titleInput?.focus();
-      renderMathForTask(newTask.id);
     }, 200);
   });
 
@@ -1916,11 +1884,6 @@
       editingTaskId = null;
       resetFilters();
       render();
-
-setTimeout(() => {
-        MathJax.typesetPromise().catch(console.warn);
-      }, 100);
-
       alert('Задачи успешно загружены');
     } catch (err) {
       alert('Ошибка загрузки: ' + err.message);
@@ -2199,9 +2162,8 @@ setTimeout(() => {
       if (analog) {
         editingTaskId = analog.id;
         render();
-          setTimeout(() => {
+        setTimeout(() => {
           document.querySelector(`.task[data-id="${analog.id}"]`).scrollIntoView({ behavior: 'smooth', block: 'center' });
-          renderMathForTask(analog.id);
         }, 100);
       }
     }
@@ -2352,7 +2314,6 @@ setTimeout(() => {
         }
         
         render();
-renderMathForTask(task.id);
       };
       
       textarea.addEventListener('keydown', (e) => {
