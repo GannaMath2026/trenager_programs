@@ -42,9 +42,7 @@
             padding: 40px;
         }
 
-.task-controls {
-    display: none !important;
-}
+
 
         .welcome-content {
             max-width: 800px;
@@ -347,16 +345,17 @@
             font-size: 12px;
         }
 
-        #taskImage {
-            max-width: 100%;
-            max-height: 240px;
-            display: none;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            border: 2px solid #334155;
-            transform: scale(1.1);
-            transform-origin: top left;
-        }
+#taskImage {
+    display: block;
+    margin-left: 0;
+    margin-right: auto;
+    width: 30vw;  /* 30% от ширины окна браузера */
+    height: auto;
+    max-width: 100%;
+    border-radius: 8px;
+    border: 2px solid #334155;
+    margin-bottom: 10px;
+}
 
         #taskText {
             display: none;
@@ -1086,6 +1085,12 @@
             .print-task a { color: #1e293b; text-decoration: underline; }
             button, input, .toolbar, #printDialog, #printContent > style, .task-list-panel { display: none !important; }
         }
+
+ /* Скрываем блок "Решено" */
+        #solvedContainer {
+            display: none !important;
+        }
+
     </style>
 </head>
 <body>
@@ -1206,14 +1211,15 @@ for k in range(1, 100):
     <button class="mode-btn" id="teacherModeBtn" onclick="setMode('teacher')">👨‍🏫 Учитель</button>
     
     <!-- Кнопки учителя (будут скрыты в режиме ученика) -->
-    <span id="teacherButtons" style="display: inline;">
-<button class="gray" onclick="importTasks()">⬆ Импорт</button>
-        <!-- <button onclick="pasteImage()">📋 Условие (img)</button>-->        
-        <button onclick="pasteText()">📄 Условие (текст)</button>
-        <button class="gray" onclick="showSaveDialog()">💾 Сохранить</button>
-        <button class="gray" onclick="exportTasks()">⬇ Экспорт</button>
-        <button class="print" onclick="showPrintDialog()">🖨️ Печать</button>
-    </span>
+   <span id="teacherButtons" style="display: inline;">
+    <button class="gray" onclick="importTasks()">⬆ Импорт</button>
+    <button class="gray" onclick="pasteImage()">🖼️ Условие (img)</button>        
+    <button class="gray" onclick="pasteText()">📄 Условие (текст)</button>
+    <button class="gray" onclick="showSaveDialog()">💾 Сохранить</button>
+    <button class="gray" onclick="exportTasks()">⬇ Экспорт</button>
+    <button class="print" onclick="showPrintDialog()">🖨️ Печать</button>
+
+</span>
     
     <!-- Общие кнопки -->
    
@@ -1257,7 +1263,7 @@ for k in range(1, 100):
 <div class="github-tasks-selector">
     <select id="githubTaskSelect">
         <option value="">-- Выберите задачу с GitHub --</option>
-<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika2.1son">Информатика 1</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika1.json">Информатика 1</option>
 <option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika2.json">Информатика 2</option>
 <option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika3.json">Информатика 3</option>
 <option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika4.json">Информатика 4</option>
@@ -3207,6 +3213,13 @@ function deselectAllForPrint() {
 
 function printSelectedTasks() {
     printSelectedTasksWithOptions();
+}
+
+function updateVideoFromTeacher() {
+    const videoUrl = document.getElementById('videoUrlTeacher').value;
+    document.getElementById('videoUrl').value = videoUrl;
+    updateVideo();
+    alert('Видео добавлено!');
 }
 </script>
 
