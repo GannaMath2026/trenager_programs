@@ -1246,7 +1246,27 @@
     });
   }
 
- 
+  // ==================== КАЛЬКУЛЯТОР ====================
+  function safeEvaluate(expr) {
+    try {
+      expr = expr.replace(/√/g, 'Math.sqrt').replace(/\^/g, '**');
+      if (/[^0-9+\-*/().\sMath.sqrt]/.test(expr)) return 'недопустимо';
+      const result = new Function(`return (${expr})`)();
+      return Math.abs(result - Math.round(result)) < 1e-10 ? Math.round(result) : result;
+    } catch (e) {
+      return 'ошибка';
+    }
+  }
+
+  window.calcHandler = function(taskId) {
+    const taskEl = document.querySelector(`.task[data-id="${taskId}"]`);
+    if (!taskEl) return;
+    const input = taskEl.querySelector('.calc-input');
+    const resultSpan = taskEl.querySelector('.calc-result');
+    if (input && resultSpan) {
+      resultSpan.textContent = safeEvaluate(input.value);
+    }
+  };
 
   // ==================== ТОЧЕЧНЫЙ РЕНДЕРИНГ LATEX ====================
   function renderMathForElement(element) {
@@ -1488,7 +1508,13 @@
             </div>
           ` : ''}
 
-
+          ${!isEditing ? `
+            <div class="calc-row" data-calc-id="${task.id}">
+              <input type="text" class="calc-input" placeholder="например 26/√2" value="">
+              <button class="calc-btn" onclick="window.calcHandler('${task.id}')">=</button>
+              <span class="calc-result" id="calcResult_${task.id}">0</span>
+            </div>
+          ` : ''}
           
           ${isEditing ? `
             <div class="card">
