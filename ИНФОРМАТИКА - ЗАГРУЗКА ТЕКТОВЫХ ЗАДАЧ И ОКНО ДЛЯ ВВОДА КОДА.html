@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Учебник по информатике — задачи + код (с редактированием)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', 'Consolas', monospace;
+            background: #1e1e2e;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+        /* Панель инструментов */
+        .toolbar {
+            background: #2d2d3a;
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .toolbar button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .toolbar button:hover {
+            background: #6366f1;
+            transform: translateY(-1px);
+        }
+        .toolbar button.danger {
+            background: #dc2626;
+        }
+        .toolbar button.danger:hover {
+            background: #ef4444;
+        }
+        .toolbar button.success {
+            background: #10b981;
+        }
+        .toolbar button.success:hover {
+            background: #059669;
+        }
+        .file-name {
+            color: #aaa;
+            font-size: 13px;
+            margin-left: 10px;
+            flex: 1;
+        }
+        .info-badge {
+            background: #3a3a4a;
+            padding: 5px 12px;
+            border-radius: 20px;
+            color: #ccc;
+            font-size: 12px;
+        }
+        /* Основная область */
+        .main-area {
+            flex: 1;
+            display: flex;
+            gap: 15px;
+            min-height: 0;
+        }
+        /* Левая панель — текст задачи (редактируемый) */
+        .task-panel {
+            flex: 1;
+            background: #2d2d3a;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .task-header {
+            background: #3a3a4a;
+            padding: 10px 12px;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #4a4a5a;
+        }
+        .task-header small {
+            font-size: 11px;
+            font-weight: normal;
+            color: #aaa;
+        }
+        .task-editor {
+            flex: 1;
+            background: #1e1e2e;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 15px;
+            border: none;
+            resize: none;
+            outline: none;
+            overflow-y: auto;
+        }
+        .task-editor:focus {
+            background: #252535;
+        }
+        /* Правая панель — код */
+        .code-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 0;
+        }
+        .editor-area {
+            background: #1a1a2a;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            height: 55%;
+        }
+        .editor-header {
+            background: #0f0f1a;
+            padding: 8px 12px;
+            color: #aaa;
+            font-size: 12px;
+            border-bottom: 1px solid #3a3a4a;
+            border-radius: 12px 12px 0 0;
+        }
+        textarea {
+            flex: 1;
+            background: #1a1a2a;
+            border: none;
+            color: #e2e2e2;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            padding: 12px;
+            resize: none;
+            outline: none;
+            line-height: 1.5;
+        }
+        textarea:focus {
+            background: #202030;
+        }
+        .output-area {
+            background: #0f0f1a;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            height: 40%;
+        }
+        .output-header {
+            background: #0f0f1a;
+            padding: 8px 12px;
+            color: #aaa;
+            font-size: 12px;
+            border-bottom: 1px solid #3a3a4a;
+            border-radius: 12px 12px 0 0;
+        }
+        pre {
+            flex: 1;
+            margin: 0;
+            padding: 12px;
+            color: #e2e2e2;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow: auto;
+            white-space: pre-wrap;
+        }
+        .run-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .status {
+            font-size: 12px;
+            color: #888;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <button id="loadBtn">📂 Открыть .txt файл</button>
+    <button id="saveBtn" class="success">💾 Сохранить как .txt</button>
+    <button id="newBtn">📄 Новый файл</button>
+    <span class="file-name" id="fileName">Нет открытого файла</span>
+</div>
+
+<div class="main-area">
+    <!-- ЛЕВАЯ ПАНЕЛЬ: текст задачи (РЕДАКТИРУЕМЫЙ) -->
+    <div class="task-panel">
+        <textarea class="task-editor" id="taskEditor" placeholder='👈 Загрузите текстовый файл с задачами (.txt)
+
+Файл должен быть в кодировке UTF-8. 
+Word-файлы (.docx) не поддерживаются — используйте Блокнот.
+
+Пример содержимого:
+---
+№ 2046
+В школе 800 учащихся...
+---'></textarea>
+    </div>
+
+    <!-- ПРАВАЯ ПАНЕЛЬ: код + вывод -->
+    <div class="code-panel">
+        <div class="editor-area">
+            <div class="editor-header">🐍 Ваш код (Python)</div>
+            <textarea id="codeEditor" rows="10" placeholder='# Пишите решение здесь
+n = int(input("Введите число: "))
+print(f"Ответ: {n * 2}")'></textarea>
+            <div class="run-bar">
+                <button id="runBtn" style="background:#10b981;">▶ Выполнить код</button>
+                <button id="clearBtn" style="background:#6b7280;">🗑 Очистить вывод</button>
+                <span class="status" id="status">Готов</span>
+            </div>
+        </div>
+        
+        <div class="output-area">
+            <pre id="output">▼ Здесь будет вывод вашей программы</pre>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.3/full/pyodide.js"></script>
+<script>
+    // === РАБОТА С ФАЙЛОМ ЗАДАЧ (редактирование + сохранение) ===
+    const loadBtn = document.getElementById('loadBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const newBtn = document.getElementById('newBtn');
+    const fileNameSpan = document.getElementById('fileName');
+    const taskEditor = document.getElementById('taskEditor');
+    
+    let currentFileName = null;
+    let currentFileContent = '';
+    
+    // Загрузка файла
+    loadBtn.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.txt,.text/plain';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Проверка на .docx
+            if (file.name.toLowerCase().endsWith('.docx')) {
+                alert('❌ Файлы Word (.docx) не поддерживаются!\n\nСохраните задачу как обычный текстовый файл (.txt) через Блокнот.');
+                return;
+            }
+            
+            currentFileName = file.name;
+            fileNameSpan.textContent = currentFileName;
+            
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                currentFileContent = evt.target.result;
+                taskEditor.value = currentFileContent;
+            };
+            reader.onerror = () => {
+                alert('Ошибка чтения файла');
+            };
+            reader.readAsText(file, 'UTF-8');
+        };
+        input.click();
+    });
+    
+    // Сохранение файла
+    saveBtn.addEventListener('click', () => {
+        const content = taskEditor.value;
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        const defaultName = currentFileName ? currentFileName : 'задачи.txt';
+        link.download = defaultName;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+        fileNameSpan.textContent = defaultName;
+        currentFileName = defaultName;
+    });
+    
+    // Новый файл (очистить)
+    newBtn.addEventListener('click', () => {
+        if (confirm('Создать новый файл? Текущий текст будет потерян, если не сохранён.')) {
+            taskEditor.value = '';
+            currentFileName = null;
+            fileNameSpan.textContent = 'Нет открытого файла';
+        }
+    });
+    
+    // Автосохранение при вводе (не обязательно, но удобно)
+    taskEditor.addEventListener('input', () => {
+        // просто обновляем внутреннее содержимое, файл на диск не пишем автоматически
+    });
+    
+    // === PYTHON В БРАУЗЕРЕ ===
+    let pyodideReady = false;
+    let pyodide = null;
+    const codeEditor = document.getElementById('codeEditor');
+    const outputPre = document.getElementById('output');
+    const runBtn = document.getElementById('runBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const statusSpan = document.getElementById('status');
+    
+    function setOutput(text, isError = false) {
+        outputPre.textContent = text;
+        if (isError) statusSpan.textContent = '❌ Ошибка в коде';
+        else statusSpan.textContent = '✅ Выполнено';
+    }
+    
+    function clearOutput() {
+        outputPre.textContent = '';
+        statusSpan.textContent = 'Вывод очищен';
+    }
+    
+    clearBtn.addEventListener('click', clearOutput);
+    
+    async function initPyodide() {
+        if (pyodideReady) return;
+        statusSpan.textContent = '⏳ Загрузка Python (5-10 сек)...';
+        outputPre.textContent = 'Загрузка интерпретатора...\nПодождите, интернет нужен только в первый раз.\n';
+        try {
+            pyodide = await loadPyodide();
+            pyodide.runPython(`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+sys.stderr = StringIO()
+            `);
+            pyodideReady = true;
+            statusSpan.textContent = '✅ Python готов!';
+            outputPre.textContent = 'Python загружен. Можно выполнять код.\n';
+        } catch (err) {
+            statusSpan.textContent = '❌ Ошибка загрузки Pyodide';
+            outputPre.textContent = `Ошибка: ${err.message}\nПроверьте интернет.`;
+        }
+    }
+    
+    async function runCode() {
+        if (!pyodideReady) {
+            await initPyodide();
+            if (!pyodideReady) return;
+        }
+        
+        const code = codeEditor.value;
+        if (!code.trim()) {
+            setOutput('⚠️ Нет кода для выполнения.\nНапишите код в редакторе.');
+            return;
+        }
+        
+        statusSpan.textContent = '⏳ Выполнение...';
+        pyodide.runPython(`
+sys.stdout.seek(0); sys.stdout.truncate(0)
+sys.stderr.seek(0); sys.stderr.truncate(0)
+        `);
+        
+        try {
+            await pyodide.runPythonAsync(code);
+            const stdout = pyodide.runPython('sys.stdout.getvalue()');
+            const stderr = pyodide.runPython('sys.stderr.getvalue()');
+            
+            let output = '';
+            if (stdout) output += stdout;
+            if (stderr) output += stderr;
+            if (!stdout && !stderr) output = '✅ Код выполнен без вывода (нет print).';
+            
+            setOutput(output);
+        } catch (err) {
+            setOutput(`🔥 Ошибка:\n${err.message || err}`, true);
+        }
+    }
+    
+    runBtn.addEventListener('click', runCode);
+    
+    // Фоновая загрузка Python
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            if (!pyodideReady) {
+                statusSpan.textContent = '🔄 Фоновая загрузка Python...';
+                initPyodide();
+            }
+        }, 1000);
+    });
+</script>
+</body>
+</html>
