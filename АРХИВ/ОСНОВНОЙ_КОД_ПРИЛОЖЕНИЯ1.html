@@ -102,10 +102,6 @@
     .difficulty-btn.active { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     .difficulty-row { display: flex; flex-wrap: wrap; gap: 4px; }
     .sort-btn { padding: 6px 10px; font-size: 11px; min-width: 0; }
-    .toggle-answers { background: var(--success); color: white; }
-    .toggle-answers.active { background: var(--danger); }
-    .toggle-analogs { background: #f97316; color: white; }
-    .toggle-analogs.active { background: #ea580c; }
     .muted { color:#94a3b8; font-size: 12px; }
     .grid { display:grid; gap: var(--gap); padding: 20px var(--gap); padding-bottom: 100px; }
     .task { 
@@ -195,6 +191,7 @@
       align-items: flex-start;
       text-align: left;
       grid-column: span 2;
+      cursor: pointer;
     }
     .zone.solution-zone h4 {
       text-align: left;
@@ -374,47 +371,8 @@
       margin: 10px 0;
     }
     
-    /* Стили для калькулятора */
-    .calc-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 8px 0;
-      padding: 8px;
-      background: #f8fafc;
-      border-radius: 6px;
-      border: 1px solid #e2e8f0;
-    }
-    .calc-input {
-      flex: 1;
-      padding: 6px 8px;
-      border: 1px solid #cbd5e1;
-      border-radius: 4px;
-      font-size: 13px;
-    }
-    .calc-btn {
-      padding: 6px 12px;
-      background: #3b82f6;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-    .calc-btn:hover {
-      background: #2563eb;
-    }
-    .calc-result {
-      min-width: 60px;
-      padding: 6px;
-      background: white;
-      border: 1px solid #cbd5e1;
-      border-radius: 4px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 600;
-    }
     
+
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -597,16 +555,25 @@
       padding-left: 16px;
     }
     
-    /* Классы для скрытия содержимого */
-    .answer-content-hidden {
-      display: none !important;
+    /* Классы для скрытия содержимого - больше не нужны, используем inline style */
+    
+    /* Кнопка для аналогов */
+    .analog-toggle-btn {
+      background: #f97316;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 13px;
     }
     
-    .solution-hidden {
-      display: none !important;
+    .analog-toggle-btn:hover {
+      background: #ea580c;
     }
     
-    .drawing-hidden {
+    .analog-hidden {
       display: none !important;
     }
     
@@ -702,10 +669,6 @@
           <label>📁 Импорт задач</label>
           <div style="display: flex; gap: 5px;">
             <input id="fileInput" type="file" accept="application/json,.json">
-            <div class="import-options">
-              <input type="checkbox" id="keepStudents" checked="">
-              <label for="keepStudents" style="display: inline; margin: 0;">☐ Сохранить прогресс учеников</label>
-            </div>
           </div>
         </div>
         <div>
@@ -730,7 +693,7 @@
           <div class="row-center" style="gap: 5px;">
             <button id="btnExportProgress" class="primary" style="padding: 8px 10px;">💾 Скачать</button>
             <button id="btnImportProgress" class="primary" style="padding: 8px 10px;">📂 Загрузить</button>
-            <span style="font-size: 11px; color: #64748b;">(автосохранение 1 мин)</span>
+
           </div>
         </div>
 
@@ -794,11 +757,7 @@
         </div>
 
         <div class="print-options">
-          <!-- Кнопки управления видимостью -->
-          <button id="btnToggleAnswers" class="toggle-answers">Показать ответы</button>
-          <button id="btnToggleSolutions" class="primary">Показать решения</button>
-          <button id="btnToggleDrawings" class="primary">Показать чертежи</button>
-          <button id="btnToggleAnalogs" class="toggle-analogs">📋 Показать аналоги</button>
+          <button id="btnToggleAnalogs" class="analog-toggle-btn">📋 Показать аналоги</button>
           <button id="btnPrintNoAnswer" class="primary" title="Без ответов">🖨️ Без ответов</button>
           <button id="btnPrintWithAnswer" class="primary" title="С ответами">🖨️ С ответами</button>
         </div>
@@ -869,12 +828,7 @@
     <div class="modal-import-content">
       <div class="modal-import-title">📂 Загрузить прогресс учеников</div>
       <div class="modal-import-option">
-        <input type="radio" name="importMode" id="modeReplace" value="replace" checked="">
-        <label for="modeReplace">🔄 Заменить всех учеников</label>
-      </div>
-      <div class="modal-import-option">
-        <input type="radio" name="importMode" id="modeMerge" value="merge">
-        <label for="modeMerge">➕ Объединить с существующими (при совпадении имён добавится _2, _3...)</label>
+        <p style="margin-bottom: 10px;">Это действие заменит всех текущих учеников новыми из файла. Продолжить?</p>
       </div>
       <div class="modal-import-buttons">
         <button id="confirmImport" class="primary">✅ Загрузить</button>
@@ -883,7 +837,7 @@
     </div>
   </div>
 
-  <!-- Модальное окно для выбора ученика при импорте -->
+  <!-- Модальное окно для выбора ученика при импорте задач -->
   <div id="importStudentModal" class="modal-import" style="display: none;">
     <div class="modal-import-content">
       <div class="modal-import-title">👤 Выберите ученика для импорта прогресса</div>
@@ -893,6 +847,20 @@
       <div class="modal-import-buttons">
         <button id="confirmImportStudent" class="primary">✅ Импортировать</button>
         <button id="cancelImportStudent">❌ Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно для подтверждения замены прогресса -->
+  <div id="confirmReplaceProgressModal" class="modal-import" style="display: none;">
+    <div class="modal-import-content">
+      <div class="modal-import-title">⚠️ Замена прогресса</div>
+      <div class="modal-import-option">
+        <p>Это действие заменит весь текущий прогресс новым из файла. Продолжить?</p>
+      </div>
+      <div class="modal-import-buttons">
+        <button id="confirmReplaceProgress" class="primary">✅ Да, заменить</button>
+        <button id="cancelReplaceProgress">❌ Отмена</button>
       </div>
     </div>
   </div>
@@ -910,23 +878,17 @@
   // ==================== СОСТОЯНИЯ ====================
   let editingTaskId = null;
   let sortByTitle = false;
-  let allAnalogsVisible = true;
+  let analogsVisible = false; // ИЗМЕНЕНО: теперь аналоги скрыты по умолчанию
   let lastViewedTaskId = null;
   let autoSaveInterval = null;
   
-  // Состояния видимости
-  let answersVisible = false;
-  let solutionsVisible = false;
-  let drawingsVisible = false;
+  // Удаляем глобальные состояния для ответов/решений/чертежей - они теперь индивидуальны
 
   // ==================== ЭЛЕМЕНТЫ ====================
   const app = document.getElementById('app');
   const printRoot = document.getElementById('printRoot');
   const countContainer = document.getElementById('countContainer');
   const sortTitleBtn = document.getElementById('sortTitle');
-  const btnToggleAnswers = document.getElementById('btnToggleAnswers');
-  const btnToggleSolutions = document.getElementById('btnToggleSolutions');
-  const btnToggleDrawings = document.getElementById('btnToggleDrawings');
   const btnToggleAnalogs = document.getElementById('btnToggleAnalogs');
   
   const fileInput = document.getElementById('fileInput');
@@ -941,7 +903,6 @@
   const difficultyBtns = document.querySelectorAll('.difficulty-btn');
   const studentSelect = document.getElementById('studentSelect');
   const btnAddStudent = document.getElementById('btnAddStudent');
-  const keepStudentsCheck = document.getElementById('keepStudents');
 
   // Кнопки прогресса
   const btnExportProgress = document.getElementById('btnExportProgress');
@@ -949,14 +910,17 @@
   const importModal = document.getElementById('importProgressModal');
   const confirmImport = document.getElementById('confirmImport');
   const cancelImport = document.getElementById('cancelImport');
-  const modeReplace = document.getElementById('modeReplace');
-  const modeMerge = document.getElementById('modeMerge');
 
   // Модальное окно выбора ученика
   const importStudentModal = document.getElementById('importStudentModal');
   const importStudentSelect = document.getElementById('importStudentSelect');
   const confirmImportStudent = document.getElementById('confirmImportStudent');
   const cancelImportStudent = document.getElementById('cancelImportStudent');
+
+  // Модальное окно подтверждения замены прогресса
+  const confirmReplaceProgressModal = document.getElementById('confirmReplaceProgressModal');
+  const confirmReplaceProgress = document.getElementById('confirmReplaceProgress');
+  const cancelReplaceProgress = document.getElementById('cancelReplaceProgress');
 
   // GitHub
   const btnLoadFromGitHub = document.getElementById('btnLoadFromGitHub');
@@ -1122,22 +1086,21 @@
     document.body.appendChild(a);
     a.click();
     setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      renderMathForVisibleTasks();
     }, 100);
   });
 
-  // ==================== ИМПОРТ ПРОГРЕССА ====================
+  // ==================== ИМПОРТ ПРОГРЕССА (замена всех учеников) ====================
   btnImportProgress.addEventListener('click', () => {
-    importModal.style.display = 'flex';
+    confirmReplaceProgressModal.style.display = 'flex';
   });
 
-  cancelImport.addEventListener('click', () => {
-    importModal.style.display = 'none';
+  cancelReplaceProgress.addEventListener('click', () => {
+    confirmReplaceProgressModal.style.display = 'none';
   });
 
-  confirmImport.addEventListener('click', () => {
-    const mode = modeReplace.checked ? 'replace' : 'merge';
+  confirmReplaceProgress.addEventListener('click', () => {
+    confirmReplaceProgressModal.style.display = 'none';
     
     const input = document.createElement('input');
     input.type = 'file';
@@ -1156,48 +1119,29 @@
           return;
         }
         
-        if (mode === 'replace') {
-          students = data.students;
-        } else {
-          const existingNames = new Set(Object.values(students).map(s => s.name));
-          
-          for (const [id, student] of Object.entries(data.students)) {
-            let newName = student.name;
-            let counter = 2;
-            
-            while (existingNames.has(newName)) {
-              newName = `${student.name}_${counter}`;
-              counter++;
-            }
-            
-            const newId = 'student' + Date.now() + Math.random();
-            students[newId] = {
-              name: newName,
-              solved: student.solved || {},
-              favorites: student.favorites || {}
-            };
-            existingNames.add(newName);
-          }
-        }
+        // Полностью заменяем всех учеников
+        students = data.students;
         
         saveStudents();
         updateStudentSelect();
         updateImportStudentSelect();
         
         if (!students[currentStudent]) {
-          currentStudent = Object.keys(students)[0];
+          currentStudent = Object.keys(students)[0] || 'default';
         }
         
         render();
-        alert('Прогресс успешно загружен');
+        alert('Прогресс успешно загружен (все ученики заменены)');
       } catch (err) {
         alert('Ошибка загрузки файла: ' + err.message);
-      } finally {
-        importModal.style.display = 'none';
       }
     };
     
     input.click();
+  });
+
+  cancelImport.addEventListener('click', () => {
+    importModal.style.display = 'none';
   });
 
   window.addEventListener('click', (e) => {
@@ -1206,6 +1150,9 @@
     }
     if (e.target === importStudentModal) {
       importStudentModal.style.display = 'none';
+    }
+    if (e.target === confirmReplaceProgressModal) {
+      confirmReplaceProgressModal.style.display = 'none';
     }
   });
 
@@ -1233,6 +1180,9 @@
   // ==================== ФИЛЬТРЫ ====================
   function matchesFilters(task) {
     if (task.isSectionHeader) return true;
+    
+    // Если задача является аналогом и аналоги скрыты - не показываем
+    if (task.isAnalog && !analogsVisible) return false;
     
     const studentData = students[currentStudent] || { solved: {}, favorites: {} };
     
@@ -1296,27 +1246,30 @@
     });
   }
 
-  // ==================== КАЛЬКУЛЯТОР ====================
-  function safeEvaluate(expr) {
-    try {
-      expr = expr.replace(/√/g, 'Math.sqrt').replace(/\^/g, '**');
-      if (/[^0-9+\-*/().\sMath.sqrt]/.test(expr)) return 'недопустимо';
-      const result = new Function(`return (${expr})`)();
-      return Math.abs(result - Math.round(result)) < 1e-10 ? Math.round(result) : result;
-    } catch (e) {
-      return 'ошибка';
-    }
+ 
+
+  // ==================== ТОЧЕЧНЫЙ РЕНДЕРИНГ LATEX ====================
+  function renderMathForElement(element) {
+    if (!element) return;
+    if (typeof MathJax === 'undefined') return;
+    MathJax.typesetPromise([element]).catch(err => {
+      console.warn('Ошибка рендеринга LaTeX для элемента:', err);
+    });
   }
 
-  window.calcHandler = function(taskId) {
-    const taskEl = document.querySelector(`.task[data-id="${taskId}"]`);
-    if (!taskEl) return;
-    const input = taskEl.querySelector('.calc-input');
-    const resultSpan = taskEl.querySelector('.calc-result');
-    if (input && resultSpan) {
-      resultSpan.textContent = safeEvaluate(input.value);
-    }
-  };
+  function renderMathForTask(taskId) {
+    const taskElement = document.querySelector(`.task[data-id="${taskId}"]`);
+    if (taskElement) renderMathForElement(taskElement);
+  }
+
+  function renderMathForVisibleTasks() {
+    if (typeof MathJax === 'undefined') return;
+    const visibleTasks = document.querySelectorAll('.task:not([style*="display: none"])');
+    if (visibleTasks.length === 0) return;
+    MathJax.typesetPromise(Array.from(visibleTasks)).catch(err => {
+      console.warn('Ошибка рендеринга LaTeX для видимых задач:', err);
+    });
+  }
 
   // ==================== РЕНДЕР КОНТЕНТА ====================
   function renderContent(task, zoneType) {
@@ -1373,6 +1326,35 @@
       `;
     }
     
+    // Если задача является аналогом и аналоги скрыты - не показываем
+    if (task.isAnalog && !analogsVisible) {
+      return '';
+    }
+    
+    // Создаем уникальные ключи для хранения состояний видимости
+    const solutionStateKey = `solution_${task.id}`;
+    const drawingStateKey = `drawing_${task.id}`;
+    const answerStateKey = `answer_${task.id}`;
+    
+    // По умолчанию все скрыто
+    let solutionHidden = localStorage.getItem(solutionStateKey) === 'true';
+    let drawingHidden = localStorage.getItem(drawingStateKey) === 'true';
+    let answerHidden = localStorage.getItem(answerStateKey) === 'true';
+    
+    // Если в localStorage ничего нет, то по умолчанию true (скрыто)
+    if (localStorage.getItem(solutionStateKey) === null) {
+      solutionHidden = true;
+      localStorage.setItem(solutionStateKey, 'true');
+    }
+    if (localStorage.getItem(drawingStateKey) === null) {
+      drawingHidden = true;
+      localStorage.setItem(drawingStateKey, 'true');
+    }
+    if (localStorage.getItem(answerStateKey) === null) {
+      answerHidden = true;
+      localStorage.setItem(answerStateKey, 'true');
+    }
+    
     const solutionLinkHtml = task.solutionLink ? 
       `<a href="${escapeHtml(task.solutionLink)}" target="_blank" class="badge link">🔗 Решение</a>` : '';
     
@@ -1386,12 +1368,12 @@
     const isAnalog = !!task.isAnalog;
     
     let analogTask = null;
-    if (task.analogId && allAnalogsVisible) {
+    if (task.analogId && analogsVisible) {
       analogTask = tasks.find(t => t.id === task.analogId);
     }
     
     let parentTask = null;
-    if (task.parentId && allAnalogsVisible) {
+    if (task.parentId && analogsVisible) {
       parentTask = tasks.find(t => t.id === task.parentId);
     }
     
@@ -1403,15 +1385,6 @@
     
     const isSolved = !!studentData.solved[task.id];
     const isFav = !!studentData.favorites[task.id];
-    
-    if (isAnalog && parentTask && allAnalogsVisible) {
-      return '';
-    }
-    
-    // Классы видимости на основе глобальных состояний
-    const answerHiddenClass = !answersVisible ? 'answer-content-hidden' : '';
-    const solutionHiddenClass = !solutionsVisible ? 'solution-hidden' : '';
-    const drawingHiddenClass = !drawingsVisible ? 'drawing-hidden' : '';
     
     return `
       <div class="task" data-id="${task.id}">
@@ -1437,8 +1410,7 @@
             <button data-act="toggleSolved">${isSolved ? 'Снять ✅' : 'В решённые ✅'}</button>
             <button data-act="toggleFav">${isFav ? 'Убрать ⭐' : 'В избранное ⭐'}</button>
             <button data-act="edit" class="${isEditing ? '' : 'primary'}">${isEditing ? '💾 Сохранить' : '✏️ Редактировать'}</button>
-            <button data-act="clearImages">🗑️ Очистить</button>
-            <button data-act="delete" class="danger">🗑️ Удалить</button>
+             <button data-act="delete" class="danger">🗑️ Удалить</button>
             ${!hasAnalog && !isAnalog ? `
               <button data-act="createAnalog" class="warning">➕ Создать аналог</button>
             ` : ''}
@@ -1462,27 +1434,46 @@
               <div class="hint">Ctrl+V для вставки</div>
             </div>
             
-
-<!-- Зона ответа — ВСЕГДА ВИДИМА -->
-<div class="zone answer-zone" data-zone="answer" tabindex="0">
-  <h4>💡 Ответ</h4>
-  <div class="answer-content ${answersVisible ? '' : 'answer-content-hidden'}">
-    ${answerContent || (isEditing ? '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нажмите для ввода ответа</div>' : '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нет ответа</div>')}
-  </div>
-  ${isEditing ? `
-    <div class="zone-actions">
-      <button class="zone-action-btn" data-act="editText" data-zone="answer">📝 Редактировать текст</button>
-      <button class="zone-action-btn" data-act="pasteImage" data-zone="answer">📋 Вставить изображение</button>
-    </div>
-  ` : ''}
-  <div class="hint">кликни чтобы открыть/закрыть</div>
-</div>
+            <!-- Зона ответа -->
+            <div class="zone answer-zone" data-zone="answer" data-task-id="${task.id}" tabindex="0">
+              <h4>💡 Ответ</h4>
+              <div class="answer-content" style="${answerHidden ? 'display: none;' : ''}">
+                ${answerContent || (isEditing ? '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нажмите для ввода ответа</div>' : '<div class="text-content" style="color: #94a3b8; font-style: italic;">Нет ответа</div>')}
+              </div>
+              ${isEditing ? `
+                <div class="zone-actions">
+                  <button class="zone-action-btn" data-act="editText" data-zone="answer">📝 Редактировать текст</button>
+                  <button class="zone-action-btn" data-act="pasteImage" data-zone="answer">📋 Вставить изображение</button>
+                </div>
+              ` : ''}
+              <div class="hint">кликни чтобы открыть/закрыть</div>
+            </div>
+          </div>
           
-          <!-- Чертеж -->
+          <!-- Зона решения (если есть) -->
+          ${hasSolution ? `
+            <div class="zone solution-zone" data-zone="solution" data-task-id="${task.id}" tabindex="0">
+              <h4>📝 Решение ${task.solutionText && !task.solutionImage ? '(текст)' : ''}</h4>
+              <div class="solution-content" style="${solutionHidden ? 'display: none;' : ''}">
+                ${solutionContent}
+              </div>
+              ${isEditing ? `
+                <div class="zone-actions">
+                  <button class="zone-action-btn" data-act="editText" data-zone="solution">📝 Редактировать текст</button>
+                  <button class="zone-action-btn" data-act="pasteImage" data-zone="solution">📋 Вставить изображение</button>
+                </div>
+              ` : ''}
+              <div class="hint">кликни чтобы открыть/закрыть</div>
+            </div>
+          ` : ''}
+          
+          <!-- Чертеж (если есть) -->
           ${hasDrawing ? `
-            <div class="drawing-section ${drawingHiddenClass}" data-zone="drawing">
+            <div class="drawing-section" data-zone="drawing" data-task-id="${task.id}">
               <h4>📐 Чертеж</h4>
-              <img src="${task.drawingImage}" style="max-width:100%; max-height:300px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+              <div class="drawing-content" style="${drawingHidden ? 'display: none;' : ''}">
+                <img src="${task.drawingImage}" style="max-width:100%; max-height:300px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+              </div>
               <div class="hint">кликни чтобы открыть/закрыть</div>
             </div>
           ` : ''}
@@ -1497,13 +1488,7 @@
             </div>
           ` : ''}
 
-          ${!isEditing ? `
-            <div class="calc-row" data-calc-id="${task.id}">
-              <input type="text" class="calc-input" placeholder="например 26/√2" value="">
-              <button class="calc-btn" onclick="window.calcHandler('${task.id}')">=</button>
-              <span class="calc-result" id="calcResult_${task.id}">0</span>
-            </div>
-          ` : ''}
+
           
           ${isEditing ? `
             <div class="card">
@@ -1528,7 +1513,7 @@
             </div>
           ` : ''}
           
-          ${hasAnalog && analogTask && allAnalogsVisible ? `
+          ${hasAnalog && analogTask && analogsVisible ? `
             <div class="prototype-section">
               <div class="prototype-header">
                 <span class="prototype-title">📋 Аналог</span>
@@ -1662,54 +1647,59 @@
 
   // ==================== СОБЫТИЯ ====================
   
-  // Кнопки управления видимостью
-  btnToggleAnswers.addEventListener('click', () => {
-    answersVisible = !answersVisible;
-    btnToggleAnswers.textContent = answersVisible ? 'Скрыть ответы' : 'Показать ответы';
-    btnToggleAnswers.classList.toggle('active', answersVisible);
-    render();
-  });
-
-  btnToggleSolutions.addEventListener('click', () => {
-    solutionsVisible = !solutionsVisible;
-    btnToggleSolutions.textContent = solutionsVisible ? 'Скрыть решения' : 'Показать решения';
-    render();
-  });
-
-  btnToggleDrawings.addEventListener('click', () => {
-    drawingsVisible = !drawingsVisible;
-    btnToggleDrawings.textContent = drawingsVisible ? 'Скрыть чертежи' : 'Показать чертежи';
-    render();
-  });
-
+  // Кнопка показа/скрытия аналогов
   btnToggleAnalogs.addEventListener('click', () => {
-    allAnalogsVisible = !allAnalogsVisible;
-    btnToggleAnalogs.textContent = allAnalogsVisible 
+    analogsVisible = !analogsVisible;
+    btnToggleAnalogs.textContent = analogsVisible 
       ? '📋 Скрыть аналоги' 
       : '📋 Показать аналоги';
     render();
   });
 
-  // ИМПОРТ JSON С ВОССТАНОВЛЕНИЕМ МЕТОК ДЛЯ ТЕКУЩЕГО УЧЕНИКА
-fileInput.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  
-  try {
-    const text = await file.text();
-    const data = JSON.parse(text);
+  // ИМПОРТ JSON
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
     
-    // Обрабатываем разные форматы файлов
-    if (Array.isArray(data)) {
-      tasks = data.map(normalizeTask);
-    } else if (data.tasks && Array.isArray(data.tasks)) {
-      tasks = data.tasks.map(normalizeTask);
-    } else {
-      tasks = [normalizeTask(data)];
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      
+      // Обрабатываем разные форматы файлов
+      if (Array.isArray(data)) {
+        tasks = data.map(normalizeTask);
+      } else if (data.tasks && Array.isArray(data.tasks)) {
+        tasks = data.tasks.map(normalizeTask);
+      } else {
+        tasks = [normalizeTask(data)];
+      }
+      
+      // Показываем модальное окно для выбора ученика
+      updateImportStudentSelect();
+      
+      // Сохраняем задачи временно
+      window.importedTasks = [...tasks];
+      
+      importStudentModal.style.display = 'flex';
+      
+    } catch (err) {
+      alert('Ошибка JSON: ' + err.message);
+      e.target.value = '';
+    }
+  });
+
+  // Подтверждение выбора ученика для импорта
+  confirmImportStudent.addEventListener('click', () => {
+    const selectedStudent = importStudentSelect.value;
+    
+    if (!students[selectedStudent]) {
+      students[selectedStudent] = { name: 'Ученик', solved: {}, favorites: {} };
     }
     
-    // Восстанавливаем метки для текущего ученика
-    const studentData = students[currentStudent] || { solved: {}, favorites: {} };
+    tasks = window.importedTasks;
+    
+    // Восстанавливаем метки для выбранного ученика
+    const studentData = students[selectedStudent] || { solved: {}, favorites: {} };
     
     tasks.forEach(task => {
       if (task.isSolved) {
@@ -1722,45 +1712,24 @@ fileInput.addEventListener('change', async (e) => {
       }
     });
     
-    // Сохраняем обновленные данные ученика
-    students[currentStudent] = studentData;
+    students[selectedStudent] = studentData;
+    currentStudent = selectedStudent;
+    
     saveStudents();
-    
     restoreAnalogLinks();
-    render();
-    alert(`✅ Загружено ${tasks.length} задач!`);
-    
-  } catch (err) {
-    alert('Ошибка JSON: ' + err.message);
-  }
-  e.target.value = '';
-});
 
-  // Подтверждение выбора ученика для импорта
-  confirmImportStudent.addEventListener('click', () => {
-    const selectedStudent = importStudentSelect.value;
-    
-    if (!students[selectedStudent]) {
-      students[selectedStudent] = { name: 'Ученик', solved: {}, favorites: {} };
-    }
-    
-    tasks = window.importedTasks;
-    
-    // Добавляем прогресс из задач к выбранному ученику
-    tasks.forEach(task => {
-      if (task.isSolved) {
-        students[selectedStudent].solved[task.id] = true;
-      }
-      if (task.isFavorite) {
-        students[selectedStudent].favorites[task.id] = true;
-      }
-    });
-    
-    saveStudents();
-    restoreAnalogLinks();
+
     render();
+    setTimeout(() => {
+      MathJax.typesetPromise().catch(console.warn);
+    }, 100);
     
     importStudentModal.style.display = 'none';
+
+
+    
+    importStudentModal.style.display = 'none';
+    updateStudentSelect();
     alert('Задачи и прогресс успешно загружены!');
   });
 
@@ -1770,63 +1739,63 @@ fileInput.addEventListener('change', async (e) => {
     render();
   });
 
-  // ЭКСПОРТ JSON
-  // ЭКСПОРТ JSON (только задачи с текущими метками, без учеников)
-btnExport.addEventListener('click', () => {
-  // Экспортируем задачи с текущими метками
-  const exportData = tasks.map(t => {
-    const taskCopy = { ...t };
+  // ЭКСПОРТ JSON (только задачи с текущими метками)
+  btnExport.addEventListener('click', () => {
+    // Экспортируем задачи с текущими метками
+    const exportData = tasks.map(t => {
+      const taskCopy = { ...t };
+      
+      // Сохраняем метки "решено" и "избранное" для текущего ученика
+      const studentData = students[currentStudent] || { solved: {}, favorites: {} };
+      taskCopy.isSolved = !!studentData.solved[t.id];
+      taskCopy.isFavorite = !!studentData.favorites[t.id];
+      
+      // Удаляем все поля, связанные с несколькими учениками
+      delete taskCopy.studentsProgress;
+      
+      return taskCopy;
+    });
     
-    // Сохраняем метки "решено" и "избранное" для текущего ученика
-    const studentData = students[currentStudent] || { solved: {}, favorites: {} };
-    taskCopy.isSolved = !!studentData.solved[t.id];
-    taskCopy.isFavorite = !!studentData.favorites[t.id];
+    const jsonString = JSON.stringify(exportData, null, 2);
     
-    // Удаляем все поля, связанные с несколькими учениками
-    delete taskCopy.studentsProgress;
+    let fileName = prompt('Введите имя файла (без .json):', 'tasks');
+    if (fileName === null) return;
     
-    return taskCopy;
+    fileName = fileName.trim().replace(/\.json$/i, '') || 'tasks';
+    const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName + '.json';
+    document.body.appendChild(a);
+    a.click();
+    
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
   });
-  
-  const jsonString = JSON.stringify(exportData, null, 2);
-  
-  let fileName = prompt('Введите имя файла (без .json):', 'tasks');
-  if (fileName === null) return;
-  
-  fileName = fileName.trim().replace(/\.json$/i, '') || 'tasks';
-  const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName + '.json';
-  document.body.appendChild(a);
-  a.click();
-  
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 100);
-});
 
-btnAdd.addEventListener('click', () => {
-  resetFilters();
-  const newTask = normalizeTask({ 
-    title: '', 
-    sectionName: '', 
-    difficulty: 'basic',
-    answerText: '',     // ← обязательно
-    answerImage: '',    // ← обязательно
-    taskText: '',
-    solutionText: ''
+  btnAdd.addEventListener('click', () => {
+    resetFilters();
+    const newTask = normalizeTask({ 
+      title: '', 
+      sectionName: '', 
+      difficulty: 'basic',
+      answerText: '',
+      answerImage: '',
+      taskText: '',
+      solutionText: ''
+    });
+    tasks.unshift(newTask);
+    editingTaskId = newTask.id;
+    render();
+ setTimeout(() => {
+      const titleInput = app.querySelector('input[data-field="title"]');
+      titleInput?.focus();
+      renderMathForTask(newTask.id);
+    }, 200);
   });
-  tasks.unshift(newTask);
-  editingTaskId = newTask.id;
-  render();
-  setTimeout(() => {
-    const titleInput = app.querySelector('input[data-field="title"]');
-    titleInput?.focus();
-  }, 200);
-});
 
   function resetFilters() {
     q.value = '';
@@ -1881,6 +1850,11 @@ btnAdd.addEventListener('click', () => {
       editingTaskId = null;
       resetFilters();
       render();
+
+setTimeout(() => {
+        MathJax.typesetPromise().catch(console.warn);
+      }, 100);
+
       alert('Задачи успешно загружены');
     } catch (err) {
       alert('Ошибка загрузки: ' + err.message);
@@ -2028,12 +2002,15 @@ btnAdd.addEventListener('click', () => {
 
   // ==================== КЛИКИ ПО ЗАДАЧАМ ====================
   app.addEventListener('click', async (e) => {
-    // Индивидуальный клик по ответу (переключает видимость только этого ответа)
+    // Индивидуальный клик по ответу
     const answerZone = e.target.closest('.zone[data-zone="answer"]');
     if (answerZone && !editingTaskId) {
+      const taskId = answerZone.dataset.taskId;
       const answerContent = answerZone.querySelector('.answer-content');
       if (answerContent) {
-        answerContent.classList.toggle('answer-content-hidden');
+        const isHidden = answerContent.style.display === 'none';
+        answerContent.style.display = isHidden ? 'block' : 'none';
+        localStorage.setItem(`answer_${taskId}`, isHidden ? 'false' : 'true');
       }
       return;
     }
@@ -2041,14 +2018,26 @@ btnAdd.addEventListener('click', () => {
     // Индивидуальный клик по решению
     const solutionZone = e.target.closest('.zone[data-zone="solution"]');
     if (solutionZone && !editingTaskId) {
-      solutionZone.classList.toggle('solution-hidden');
+      const taskId = solutionZone.dataset.taskId;
+      const solutionContent = solutionZone.querySelector('.solution-content');
+      if (solutionContent) {
+        const isHidden = solutionContent.style.display === 'none';
+        solutionContent.style.display = isHidden ? 'block' : 'none';
+        localStorage.setItem(`solution_${taskId}`, isHidden ? 'false' : 'true');
+      }
       return;
     }
     
     // Индивидуальный клик по чертежу
     const drawingSection = e.target.closest('.drawing-section');
     if (drawingSection && !editingTaskId) {
-      drawingSection.classList.toggle('drawing-hidden');
+      const taskId = drawingSection.dataset.taskId;
+      const drawingContent = drawingSection.querySelector('.drawing-content');
+      if (drawingContent) {
+        const isHidden = drawingContent.style.display === 'none';
+        drawingContent.style.display = isHidden ? 'block' : 'none';
+        localStorage.setItem(`drawing_${taskId}`, isHidden ? 'false' : 'true');
+      }
       return;
     }
     
@@ -2144,8 +2133,9 @@ btnAdd.addEventListener('click', () => {
       if (analog) {
         editingTaskId = analog.id;
         render();
-        setTimeout(() => {
+          setTimeout(() => {
           document.querySelector(`.task[data-id="${analog.id}"]`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+          renderMathForTask(analog.id);
         }, 100);
       }
     }
@@ -2296,6 +2286,7 @@ btnAdd.addEventListener('click', () => {
         }
         
         render();
+renderMathForTask(task.id);
       };
       
       textarea.addEventListener('keydown', (e) => {
@@ -2351,149 +2342,258 @@ btnAdd.addEventListener('click', () => {
     render();
   });
 
-
-
-
-
-
-function printTasks(showAnswers) {
-  const filtered = getFilteredAndSortedTasks();
-  let printContent = '';
-  let answerItems = '';
-  let answerCount = 0;
-  
-  filtered.forEach((task, index) => {
-    if (task.isSectionHeader) return;
+  // ПЕЧАТЬ
+    // ==================== ПЕЧАТЬ С ПОДДЕРЖКОЙ LATEX (только условие: текст + картинка) ====================
+  function printTasks(showAnswers) {
+    const filtered = getFilteredAndSortedTasks();
+    let printContent = '';
+    let answerItems = '';
+    let answerCount = 0;
     
-    function getTaskHTML() {
-      let html = '';
-      if (task.taskImage) {
-        html += `<img src="${task.taskImage}" style="max-width: 100%; max-height: 400px; display: block; margin: 0 auto 10px auto;">`;
-      }
-      if (task.taskText) {
-        html += `<div class="latex-content" style="padding: 20px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 14pt; text-align: left; margin-bottom: 10px;">${task.taskText}</div>`;
-      }
-      if (!task.taskImage && !task.taskText) {
-        html = '<div style="padding: 40px; background: #f5f5f5; text-align: center; font-style: italic;">Нет данных</div>';
-      }
-      return html;
-    }
-    
-    function getAnswerHTML() {
-      let html = '';
-      if (task.answerImage) {
-        html += `<img src="${task.answerImage}" style="max-width: 100%; max-height: 400px; display: block; margin: 0 auto 10px auto;">`;
-      }
-      if (task.answerText) {
-        html += `<div class="latex-content" style="padding: 20px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 14pt; text-align: center;">${task.answerText}</div>`;
-      }
-      return html;
-    }
-    
-    if (showAnswers) {
-      printContent += `
-        <div class="print-task" style="margin-bottom: 30px; page-break-inside: avoid;">
-          <div style="font-weight: bold; font-size: 16pt; margin-bottom: 10px;">${index + 1}. ${task.title}</div>
-          <div style="margin-bottom: 20px;">${getTaskHTML()}</div>
-          ${getAnswerHTML() ? `<div style="margin-top: 20px; border-top: 2px dashed #666; padding-top: 20px;"><strong>Ответ:</strong> ${getAnswerHTML()}</div>` : ''}
-        </div>
-      `;
-    } else {
-      printContent += `
-        <div class="print-task" style="margin-bottom: 30px; page-break-inside: avoid;">
-          <div style="font-weight: bold; font-size: 16pt; margin-bottom: 10px;">${index + 1}. ${task.title}</div>
-          <div style="margin-bottom: 20px;">${getTaskHTML()}</div>
-        </div>
-      `;
+    filtered.forEach((task, index) => {
+      if (task.isSectionHeader) return;
       
-      if (task.answerImage || task.answerText) {
-        let answerHtml = '';
-        if (task.answerImage) {
-          answerHtml += `<img src="${task.answerImage}" style="max-width: 100px; max-height: 100px; display: block; margin: 0 auto;">`;
-        }
-        if (task.answerText) {
-          answerHtml += `<div style="font-size: 10pt; padding: 5px;">${task.answerText}</div>`;
+      function getTaskHTML() {
+        let html = '';
+        
+        // Добавляем текст условия, если есть
+        if (task.taskText) {
+          html += `<div style="padding: 8px 12px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 11pt; text-align: left; margin-bottom: 5px;" class="latex-content">${task.taskText}</div>`;
         }
         
-        answerItems += `
-          <div style="padding: 5px; text-align: center; border: 1px solid #ccc; page-break-inside: avoid;">
-            <div style="font-weight: bold; margin-bottom: 5px;">${index + 1}</div>
-            ${answerHtml}
+        // Добавляем изображение условия, если есть
+        if (task.taskImage) {
+          html += `<img src="${task.taskImage}" style="max-width: 100%; max-height: 300px; display: block; margin: 8px 0;">`;
+        }
+        
+        // Если ничего нет
+        if (!task.taskText && !task.taskImage) {
+          html = '<div style="padding: 20px; background: #f5f5f5; text-align: center; font-style: italic;">Нет данных</div>';
+        }
+        
+        return html;
+      }
+      
+      function getAnswerHTML() {
+        let html = '';
+        
+        // Добавляем текст ответа, если есть
+        if (task.answerText) {
+          html += `<div style="padding: 6px 10px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 11pt; text-align: center;" class="latex-content">${task.answerText}</div>`;
+        }
+        
+        // Добавляем изображение ответа, если есть
+        if (task.answerImage) {
+          html += `<img src="${task.answerImage}" style="max-width: 100%; max-height: 200px; display: block; margin: 8px auto;">`;
+        }
+        
+        return html;
+      }
+      
+      if (showAnswers) {
+        // С ответами - показываем условие + ответ
+        printContent += `
+          <div class="print-task" style="margin-bottom: 15px; page-break-inside: avoid; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+            <div style="font-weight: bold; font-size: 12pt; margin-bottom: 6px;">${index + 1}. ${task.title}</div>
+            <div style="margin-bottom: 8px;">${getTaskHTML()}</div>
+            ${getAnswerHTML() ? `<div style="margin-top: 5px;"><strong>Ответ:</strong> ${getAnswerHTML()}</div>` : ''}
           </div>
         `;
-        answerCount++;
-      }
-    }
-  });
-  
-  const printStyles = `
-    <style>
-      body { font-family: "Times New Roman", serif; margin: 15mm; }
-      .print-task { margin-bottom: 30px; page-break-inside: avoid; }
-      table { border-collapse: collapse; width: 100%; margin: 15px 0; }
-      th { background: #1e3c72 !important; color: white !important; padding: 8px 12px; border: 1px solid #2a4a8a; }
-      td { padding: 6px 10px; border: 1px solid #ccc; }
-      tr:nth-child(even) { background: #f8fafc !important; }
-      img { max-width: 100%; }
-      .answer-grid {
-        display: grid;
-        grid-template-columns: repeat(10, 1fr);
-        gap: 10px;
-        margin-top: 30px;
-        page-break-before: always;
-      }
-      .latex-content .katex { font-size: 1.1em; }
-      .latex-content .katex-display { margin: 1em 0; }
-      @media print {
-        th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        tr:nth-child(even) { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        .latex-content { color: black; }
-        .katex { color: black; }
-      }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-  `;
-  
-  const answerKey = !showAnswers && answerItems ? `
-    <div class="answer-grid">
-      <div style="grid-column: span 10; text-align: center; font-size: 18pt; font-weight: bold; margin: 20px 0;">
-        Ключ ответов (${answerCount} задач)
-      </div>
-      ${answerItems}
-    </div>
-  ` : '';
-  
-  const printHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>${showAnswers ? 'Задания с ответами' : 'Задания без ответов'}</title>
-      ${printStyles}
-    </head>
-    <body>
-      ${printContent}
-      ${answerKey}
-      <script>
-        if (window.MathJax) {
-          MathJax.typesetPromise();
+      } else {
+        // Без ответов - только условие (текст + картинка)
+        printContent += `
+          <div class="print-task" style="margin-bottom: 12px; page-break-inside: avoid; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+            <div style="font-weight: bold; font-size: 12pt; margin-bottom: 4px;">${index + 1}. ${task.title}</div>
+            <div style="margin-bottom: 4px;">${getTaskHTML()}</div>
+          </div>
+        `;
+        
+        // Собираем ответы отдельно для ключа
+        if (task.answerImage || task.answerText) {
+          let answerDisplay = '';
+          if (task.answerText && task.answerImage) {
+            answerDisplay = `
+              <div style="font-size: 8pt; padding: 2px;" class="latex-content-small">${task.answerText.replace(/<[^>]*>/g, '').substring(0, 80)}</div>
+              <img src="${task.answerImage}" style="max-width: 50px; max-height: 50px; display: block; margin: 2px auto;">
+            `;
+          } else if (task.answerText) {
+            answerDisplay = `<div style="font-size: 8pt; padding: 2px;" class="latex-content-small">${task.answerText.replace(/<[^>]*>/g, '').substring(0, 100)}</div>`;
+          } else if (task.answerImage) {
+            answerDisplay = `<img src="${task.answerImage}" style="max-width: 60px; max-height: 60px; display: block; margin: 0 auto;">`;
+          }
+          
+          answerItems += `
+            <div style="padding: 3px; text-align: center; border: 1px solid #ccc; page-break-inside: avoid;">
+              <div style="font-weight: bold; margin-bottom: 2px; font-size: 9pt;">${index + 1}</div>
+              ${answerDisplay}
+            </div>
+          `;
+          answerCount++;
         }
-      </script>
-    </body>
-    </html>
-  `;
-  
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(printHTML);
-  printWindow.document.close();
-  
-  printWindow.onload = () => {
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 500);
-  };
-}
+      }
+    });
+    
+    const printStyles = `
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        body { 
+          font-family: "Times New Roman", serif; 
+          margin: 8mm 5mm; 
+          line-height: 1.3;
+          font-size: 11pt;
+        }
+        .print-task { 
+          margin-bottom: 12px; 
+          page-break-inside: avoid; 
+        }
+        table { 
+          border-collapse: collapse; 
+          width: 100%; 
+          margin: 8px 0; 
+          font-size: 10pt;
+        }
+        th { 
+          background: #1e3c72 !important; 
+          color: white !important; 
+          padding: 4px 8px; 
+          border: 1px solid #2a4a8a; 
+        }
+        td { 
+          padding: 4px 8px; 
+          border: 1px solid #ccc; 
+        }
+        tr:nth-child(even) { 
+          background: #f8fafc !important; 
+        }
+        img { 
+          max-width: 100%; 
+        }
+        .answer-grid {
+          display: grid;
+          grid-template-columns: repeat(12, 1fr);
+          gap: 6px;
+          margin-top: 20px;
+          page-break-before: always;
+        }
+        .latex-content {
+          font-size: 11pt;
+          line-height: 1.4;
+        }
+        .latex-content-small {
+          font-size: 8pt;
+          line-height: 1.3;
+        }
+        .MathJax {
+          font-size: 11pt !important;
+        }
+        .MathJax_Display {
+          overflow-x: auto;
+          overflow-y: hidden;
+          margin: 5px 0 !important;
+        }
+        @media print {
+          body {
+            margin: 5mm 4mm;
+          }
+          th { 
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
+          }
+          tr:nth-child(even) { 
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
+          }
+          .MathJax {
+            font-size: 10pt !important;
+          }
+          .MathJax_Display {
+            font-size: 10pt !important;
+          }
+        }
+      </style>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"><\/script>
+      <script>
+        window.MathJax = {
+          tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],
+            displayMath: [['$$', '$$'], ['\\[', '\\]']],
+            processEscapes: true
+          },
+          startup: {
+            pageReady: () => {
+              return MathJax.startup.defaultPageReady().then(() => {
+                console.log('MathJax готов к печати');
+              });
+            }
+          }
+        };
+      <\/script>
+    `;
+    
+    const answerKey = !showAnswers && answerItems ? `
+      <div class="answer-grid">
+        <div style="grid-column: span 12; text-align: center; font-size: 14pt; font-weight: bold; margin: 10px 0 8px 0;">
+          Ключ ответов (${answerCount} задач)
+        </div>
+        ${answerItems}
+      </div>
+    ` : '';
+    
+    const printHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>${showAnswers ? 'Задания с ответами' : 'Задания без ответов'}</title>
+        ${printStyles}
+      </head>
+      <body>
+        ${printContent}
+        ${answerKey}
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printHTML);
+    printWindow.document.close();
+    
+    printWindow.onload = () => {
+      setTimeout(() => {
+        if (printWindow.MathJax) {
+          printWindow.MathJax.typesetPromise()
+            .then(() => {
+              setTimeout(() => {
+                printWindow.print();
+                setTimeout(() => {
+                  printWindow.close();
+                }, 1000);
+              }, 200);
+            })
+            .catch((err) => {
+              console.warn('Ошибка рендеринга LaTeX:', err);
+              setTimeout(() => {
+                printWindow.print();
+                setTimeout(() => {
+                  printWindow.close();
+                }, 1000);
+              }, 200);
+            });
+        } else {
+          setTimeout(() => {
+            printWindow.print();
+            setTimeout(() => {
+              printWindow.close();
+            }, 1000);
+          }, 200);
+        }
+      }, 600);
+    };
+  }
 
   btnPrintNoAnswer.addEventListener('click', (e) => {
     e.preventDefault();
@@ -2515,6 +2615,80 @@ function printTasks(showAnswers) {
   
   render();
 })();
+
+function normalizeTask(t) {
+    const task = {
+      id: t.id || uid(),
+      title: t.title || "",
+      solutionLink: t.solutionLink || "",
+      videoLink: t.videoLink || "",
+      taskImage: t.taskImage || "",
+      taskText: t.taskText || "",
+      answerImage: t.answerImage || "",
+      answerText: t.answerText || "",
+      drawingImage: t.drawingImage || "",
+      solutionImage: t.solutionImage || "",
+      solutionText: t.solutionText || "",
+      difficulty: t.difficulty || "basic",
+      sectionName: t.sectionName || "",
+      isSectionHeader: t.isSectionHeader || false,
+      isAnalog: t.isAnalog || false,
+      parentId: t.parentId || null,
+      analogId: t.analogId || null,
+      // Сохраняем оригинальный JSON для умного ввода
+      taskJSON: t.taskJSON || null,
+      answerJSON: t.answerJSON || null,
+      solutionJSON: t.solutionJSON || null,
+      // Флаги для прогресса
+      isSolved: t.isSolved || false,
+      isFavorite: t.isFavorite || false
+    };
+    
+    if (task.taskImage && task.taskImage.startsWith('data:text/plain')) {
+      try {
+        const text = atob(task.taskImage.split(',')[1]);
+        task.taskText = text;
+        task.taskImage = '';
+      } catch (e) {}
+    }
+    
+    if (task.answerImage && task.answerImage.startsWith('data:text/plain')) {
+      try {
+        const text = atob(task.answerImage.split(',')[1]);
+        task.answerText = text;
+        task.answerImage = '';
+      } catch (e) {}
+    }
+    
+    if (task.solutionImage && task.solutionImage.startsWith('data:text/plain')) {
+      try {
+        const text = atob(task.solutionImage.split(',')[1]);
+        task.solutionText = text;
+        task.solutionImage = '';
+      } catch (e) {}
+    }
+    
+    return task;
+  }
+
+  // ==================== ВОССТАНОВЛЕНИЕ СВЯЗЕЙ АНАЛОГОВ ====================
+  function restoreAnalogLinks() {
+    const tasksMap = new Map();
+    tasks.forEach(task => tasksMap.set(task.id, task));
+    
+    tasks.forEach(task => {
+      if (task.parentId && !task.isAnalog) {
+        task.isAnalog = true;
+      }
+      if (task.analogId) {
+        const analog = tasksMap.get(task.analogId);
+        if (analog) {
+          analog.parentId = task.id;
+          analog.isAnalog = true;
+        }
+      }
+    });
+  }
 </script>
 
 </body>
