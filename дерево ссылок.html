@@ -1,0 +1,689 @@
+<html lang="ru"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Экзаменационный навигатор — с сохранением в HTML</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background: #f4f7fb;
+            margin: 0;
+            padding: 24px 20px;
+            color: #1a2c3e;
+        }
+
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0 0 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .sub {
+            color: #4f6f8f;
+            border-left: 4px solid #f97316;
+            padding-left: 16px;
+            margin-top: 8px;
+        }
+
+        .main-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+        }
+        .tree-panel {
+            flex: 1.2;
+            min-width: 320px;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            padding: 18px 14px;
+            height: fit-content;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .links-panel {
+            flex: 2.2;
+            min-width: 380px;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tree-node {
+            list-style: none;
+            margin: 6px 0;
+            padding-left: 0;
+        }
+        .tree-node .node-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f9fafc;
+            padding: 8px 12px;
+            border-radius: 18px;
+            margin: 4px 0;
+            transition: 0.1s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .tree-node .node-content.selected {
+            background: #fff1e6;
+            border-color: #f97316;
+            box-shadow: 0 2px 6px rgba(249,115,22,0.1);
+        }
+        .node-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-weight: 500;
+        }
+        .folder-icon, .task-icon {
+            font-size: 1.2rem;
+        }
+        .node-actions {
+            display: flex;
+            gap: 8px;
+            opacity: 0.6;
+        }
+        .node-content:hover .node-actions {
+            opacity: 1;
+        }
+        .action-btn {
+            background: transparent;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 30px;
+            color: #5e7e9e;
+        }
+        .action-btn:hover {
+            background: #eef2f8;
+            color: #f97316;
+        }
+        .children {
+            margin-left: 28px;
+            padding-left: 6px;
+            border-left: 2px dashed #dee4ec;
+        }
+
+        .inline-form {
+            margin-top: 16px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            background: #fef9f3;
+            padding: 12px;
+            border-radius: 28px;
+        }
+        .inline-form input {
+            flex: 2;
+            padding: 8px 12px;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+        }
+        .inline-form button {
+            background: #f97316;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .links-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .links-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .add-link-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .add-link-form input {
+            flex: 3;
+            padding: 10px 14px;
+            border-radius: 60px;
+            border: 1px solid #cbd5e1;
+        }
+        .link-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 480px;
+            overflow-y: auto;
+        }
+        .link-item {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            word-break: break-all;
+        }
+        .link-url {
+            color: #f97316;
+            text-decoration: none;
+            font-size: 0.9rem;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .link-url:hover {
+            text-decoration: underline;
+        }
+        .delete-link {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #94a3b8;
+        }
+        .empty-links {
+            text-align: center;
+            padding: 40px;
+            color: #8fadcc;
+        }
+        hr {
+            margin: 18px 0;
+        }
+        .badge-count {
+            background: #eef2ff;
+            border-radius: 50px;
+            padding: 2px 10px;
+            font-size: 0.7rem;
+            font-weight: normal;
+        }
+        .toolbar {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-start;
+            border-top: 1px solid #eef2f5;
+            padding-top: 20px;
+            flex-wrap: wrap;
+        }
+        .toolbar button {
+            background: #2c5f8a;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .toolbar button:nth-child(2) {
+            background: #3b82f6;
+        }
+        .toolbar button:hover {
+            opacity: 0.9;
+            transform: scale(0.98);
+        }
+        .rename-input {
+            font-size: 0.85rem;
+            padding: 4px 8px;
+            border-radius: 30px;
+            border: 1px solid #f97316;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <h1>📚 Экзаменационный навигатор <span style="font-size: 0.8rem;">ОГЭ / ЕГЭ</span></h1>
+        <div class="sub">🗂️ Дерево заданий 1–27 · Хранилище ссылок · Сохранение прямо в HTML</div>
+    </div>
+    <div class="main-layout">
+        <!-- Дерево слева -->
+        <div class="tree-panel">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <strong>📌 Разделы и задания</strong>
+                <span style="font-size: 12px;">клик для выбора</span>
+            </div>
+            <div id="treeContainer" style="margin-top: 15px;"><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">📂</span> <span class="node-name" data-id="1">📐 МАТЕМАТИКА ОГЭ</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div><ul class="children"><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="100">ЗАДАНИЯ 1-5</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="105">Задание №6</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="106">Задание №7</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="107">Задание №8</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="108">Задание №9</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="109">Задание №10</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="110">Задание №11</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="111">Задание №12</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="112">Задание №13</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="113">Задание №14</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="114">Задание №15</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="115">Задание №16</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="116">Задание №17</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="117">Задание №18</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="118">Задание №19</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="119">Задание №20</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="120">Задание №21</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="121">Задание №22</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="122">Задание №23</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="123">Задание №24</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="124">Задание №25</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li></ul></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">📂</span> <span class="node-name" data-id="2">📏 МАТЕМАТИКА ЕГЭ</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div><ul class="children"><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="125">1 часть ВСЕ ПРОТОТИПЫ</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="137">Задание №13</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="138">Задание №14</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="139">Задание №15</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="140">Задание №16</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="141">Задание №17</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="142">Задание №18</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="143">Задание №19</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="144">Задание №20</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="145">Задание №21</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="146">Задание №22</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="147">Задание №23</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="148">Задание №24</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="149">Задание №25</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="150">Задание №26</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="151">Задание №27</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li></ul></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">📂</span> <span class="node-name" data-id="3">💻 ИНФОРМАТИКА ОГЭ</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div><ul class="children"><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="152">Задание №1</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="153">Задание №2</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="154">Задание №3</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="155">Задание №4</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="156">Задание №5</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="157">Задание №6</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="158">Задание №7</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="159">Задание №8</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="160">Задание №9</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="161">Задание №10</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="162">Задание №11</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="163">Задание №12</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="164">Задание №13</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="165">Задание №14</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="166">Задание №15</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li></ul></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">📂</span> <span class="node-name" data-id="4">⌨️ ИНФОРМАТИКА ЕГЭ</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div><ul class="children"><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="167">Задание №1</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="168">Задание №2</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="169">Задание №3</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="170">Задание №4</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="171">Задание №5</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="172">Задание №6</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="173">Задание №7</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="174">Задание №8</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="175">Задание №9</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="176">Задание №10</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="177">Задание №11</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="178">Задание №12</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="179">Задание №13</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="180">Задание №14</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="181">Задание №15</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="182">Задание №16</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="183">Задание №17</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="184">Задание №18</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="185">Задание №19</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="186">Задание №20</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="187">Задание №21</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="188">Задание №22</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content selected"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="189">Задание №23</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="190">Задание №24</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="191">Задание №25</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="192">Задание №26</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">🔖</span> <span class="node-name" data-id="193">Задание №27</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li></ul></li><li class="tree-node" style="list-style: none;"><div class="node-content"><div class="node-left"><span class="folder-icon">📂</span> <span class="node-name" data-id="5">📌 ПРОЧЕЕ</span></div><div class="node-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></div></li></div>
+            <div class="inline-form">
+                <input type="text" id="newNodeName" placeholder="Название (например: Задание 15 или Новая тема)" autocomplete="off">
+                <button id="addSubBtn">➕ Добавить</button>
+            </div>
+            <div style="font-size: 12px; margin-top: 12px; color: #5f7f9e;">
+                💡 Сначала выберите папку/задание в дереве, затем нажмите «Добавить»<br>
+                ✏️ Удалить / переименовать — кнопки справа от каждого узла.
+            </div>
+        </div>
+
+        <!-- Справа: ссылки выбранного задания -->
+        <div class="links-panel">
+            <div class="links-header">
+                <div class="links-title" id="selectedNodeTitle">📄 Задание №23</div>
+                <div class="badge-count" id="linksCounter">1 ссылок</div>
+            </div>
+            <div class="add-link-form">
+                <input type="text" id="newLinkInput" placeholder="https://rutube.ru/video/... или любая ссылка" autocomplete="off">
+                <button id="addLinkBtn" style="background: #f97316; padding: 8px 20px;">➕ Добавить ссылку</button>
+            </div>
+            <ul class="link-list" id="linksList"><li class="link-item"><a href="https://rutube.ru/plst/1350138" target="_blank" class="link-url">https://rutube.ru/plst/1350138</a><button class="delete-link">✕</button></li></ul>
+            <div class="toolbar">
+                <button id="saveHtmlBtn">💾 Сохранить HTML с данными (Сохранить как...)</button>
+                <button id="exportJsonBtn">📤 Экспорт (JSON)</button>
+                <label for="importJsonInput" style="background: #3b82f6; padding: 10px 18px; border-radius: 40px; color: white; font-weight: 500; cursor: pointer;">📂 Импорт (JSON)</label>
+                <input type="file" id="importJsonInput" accept=".json" style="display: none;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // -------------------- ГЛОБАЛЬНЫЕ ДАННЫЕ --------------------
+    let treeData = [];
+    let nextId = 100;
+    let currentlySelectedNode = null;
+    let selectedNodeIdGlobal = null;
+    const STORAGE_KEY = 'exam_prep_tree_links';
+
+    // -------------------- ЗАГРУЗКА НАЧАЛЬНЫХ ДАННЫХ (из localStorage или из встроенных) --------------------
+    function loadInitialData() {
+        // Пытаемся загрузить из localStorage
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            try {
+                treeData = JSON.parse(stored);
+                if (Array.isArray(treeData)) {
+                    normalizeIds(treeData);
+                    return;
+                }
+            } catch(e) { console.warn(e); }
+        }
+        
+        // Если в localStorage пусто или данные повреждены, пробуем загрузить встроенные данные (если они есть)
+        if (window.__EMBEDDED_DATA__ && Array.isArray(window.__EMBEDDED_DATA__)) {
+            treeData = window.__EMBEDDED_DATA__;
+            normalizeIds(treeData);
+            // Сохраняем в localStorage, чтобы при следующих открытиях они были
+            saveTree();
+            console.log('Загружены встроенные данные из HTML');
+            return;
+        }
+        
+        // Иначе создаём структуру по умолчанию
+        treeData = getDefaultTree();
+        normalizeIds(treeData);
+        saveTree();
+    }
+
+    function getDefaultTree() {
+        let idCounter = 1;
+        return [
+            { id: idCounter++, name: "📐 МАТЕМАТИКА ОГЭ", children: generateTaskFolders(1, 25), links: [] },
+            { id: idCounter++, name: "📏 МАТЕМАТИКА ЕГЭ", children: generateTaskFolders(1, 27), links: [] },
+            { id: idCounter++, name: "💻 ИНФОРМАТИКА ОГЭ", children: generateTaskFolders(1, 15), links: [] },
+            { id: idCounter++, name: "⌨️ ИНФОРМАТИКА ЕГЭ", children: generateTaskFolders(1, 27), links: [] },
+            { id: idCounter++, name: "📌 ПРОЧЕЕ", children: [], links: [] }
+        ];
+    }
+
+    function generateTaskFolders(start, end) {
+        let arr = [];
+        for (let i = start; i <= end; i++) {
+            arr.push({
+                id: nextId++,
+                name: `Задание №${i}`,
+                children: [],
+                links: []
+            });
+        }
+        return arr;
+    }
+
+    function normalizeIds(nodes) {
+        for (let node of nodes) {
+            if (!node.id) { node.id = nextId++; }
+            if (node.children && node.children.length) normalizeIds(node.children);
+        }
+    }
+
+    function saveTree() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(treeData));
+    }
+
+    // -------------------- ОТРИСОВКА ДЕРЕВА --------------------
+    function renderTree() {
+        const container = document.getElementById('treeContainer');
+        if (!container) return;
+        container.innerHTML = '';
+        for (let node of treeData) {
+            const nodeElem = createNodeElement(node, 0);
+            container.appendChild(nodeElem);
+        }
+    }
+
+    function createNodeElement(node, level) {
+        const li = document.createElement('li');
+        li.className = 'tree-node';
+        li.style.listStyle = 'none';
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'node-content';
+        if (selectedNodeIdGlobal === node.id) contentDiv.classList.add('selected');
+        
+        const leftSpan = document.createElement('div');
+        leftSpan.className = 'node-left';
+        const isFolder = (node.children && node.children.length > 0) || (node.name.includes('МАТЕМАТИКА') || node.name.includes('ИНФОРМАТИКА') || node.name === '📌 ПРОЧЕЕ');
+        const icon = isFolder ? '📂' : '🔖';
+        leftSpan.innerHTML = `<span class="folder-icon">${icon}</span> <span class="node-name" data-id="${node.id}">${escapeHtml(node.name)}</span>`;
+        
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'node-actions';
+        const renameBtn = document.createElement('button');
+        renameBtn.textContent = '✏️';
+        renameBtn.className = 'action-btn';
+        renameBtn.onclick = (e) => { e.stopPropagation(); renameNode(node); };
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '🗑️';
+        delBtn.className = 'action-btn';
+        delBtn.onclick = (e) => { e.stopPropagation(); deleteNodeById(node.id); };
+        actionsDiv.appendChild(renameBtn);
+        actionsDiv.appendChild(delBtn);
+        
+        contentDiv.appendChild(leftSpan);
+        contentDiv.appendChild(actionsDiv);
+        
+        contentDiv.addEventListener('click', (e) => {
+            if (e.target.classList.contains('action-btn')) return;
+            selectNode(node.id);
+        });
+        
+        li.appendChild(contentDiv);
+        
+        if (node.children && node.children.length) {
+            const childrenUl = document.createElement('ul');
+            childrenUl.className = 'children';
+            for (let child of node.children) {
+                childrenUl.appendChild(createNodeElement(child, level+1));
+            }
+            li.appendChild(childrenUl);
+        }
+        return li;
+    }
+    
+    function findNodeById(nodes, id) {
+        for (let node of nodes) {
+            if (node.id === id) return node;
+            if (node.children) {
+                const found = findNodeById(node.children, id);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+    
+    function deleteNodeById(id) {
+        const isRoot = treeData.some(r => r.id === id);
+        const nodeToDel = findNodeById(treeData, id);
+        if (!nodeToDel) return;
+        if (isRoot && !confirm(`Удалить корневой раздел "${nodeToDel.name}" и всё внутри?`)) return;
+        if (!isRoot && !confirm(`Удалить "${nodeToDel.name}" со всеми ссылками?`)) return;
+        
+        function removeFrom(nodes) {
+            for (let i=0; i<nodes.length; i++) {
+                if (nodes[i].id === id) {
+                    nodes.splice(i,1);
+                    return true;
+                }
+                if (nodes[i].children && removeFrom(nodes[i].children)) return true;
+            }
+            return false;
+        }
+        removeFrom(treeData);
+        if (currentlySelectedNode && currentlySelectedNode.nodeId === id) {
+            currentlySelectedNode = null;
+            selectedNodeIdGlobal = null;
+            document.getElementById('selectedNodeTitle').innerText = '📄 Ничего не выбрано';
+            document.getElementById('linksCounter').innerText = '0 ссылок';
+            renderLinksList([]);
+        }
+        saveTree();
+        renderTree();
+        selectedNodeIdGlobal = null;
+    }
+    
+    function renameNode(node) {
+        const newName = prompt('Введите новое название:', node.name);
+        if (newName && newName.trim()) {
+            node.name = newName.trim();
+            saveTree();
+            renderTree();
+            if (currentlySelectedNode && currentlySelectedNode.nodeId === node.id) {
+                document.getElementById('selectedNodeTitle').innerHTML = `📄 ${escapeHtml(node.name)}`;
+            }
+        }
+    }
+    
+    function selectNode(nodeId) {
+        const node = findNodeById(treeData, nodeId);
+        if (!node) return;
+        selectedNodeIdGlobal = node.id;
+        currentlySelectedNode = { nodeId: node.id, node: node };
+        document.getElementById('selectedNodeTitle').innerHTML = `📄 ${escapeHtml(node.name)}`;
+        renderLinksList(node.links || []);
+        renderTree();
+    }
+    
+    function renderLinksList(linksArr) {
+        const container = document.getElementById('linksList');
+        const counterSpan = document.getElementById('linksCounter');
+        if (!container) return;
+        counterSpan.innerText = `${linksArr.length} ссылок`;
+        if (!linksArr.length) {
+            container.innerHTML = '<li class="empty-links">🔗 Ссылок пока нет. Добавьте через форму выше.</li>';
+            return;
+        }
+        container.innerHTML = '';
+        linksArr.forEach((link, idx) => {
+            const li = document.createElement('li');
+            li.className = 'link-item';
+            const linkUrl = typeof link === 'string' ? link : link.url;
+            const a = document.createElement('a');
+            a.href = linkUrl;
+            a.target = '_blank';
+            a.className = 'link-url';
+            a.textContent = linkUrl.length > 70 ? linkUrl.slice(0,70)+'...' : linkUrl;
+            const delBtn = document.createElement('button');
+            delBtn.textContent = '✕';
+            delBtn.className = 'delete-link';
+            delBtn.onclick = () => {
+                if (currentlySelectedNode) {
+                    currentlySelectedNode.node.links.splice(idx, 1);
+                    saveTree();
+                    renderLinksList(currentlySelectedNode.node.links);
+                    renderTree();
+                }
+            };
+            li.appendChild(a);
+            li.appendChild(delBtn);
+            container.appendChild(li);
+        });
+    }
+    
+    function addSubnodeToSelected() {
+        if (!currentlySelectedNode) {
+            alert('Сначала выберите раздел/папку в дереве');
+            return;
+        }
+        const newNodeName = document.getElementById('newNodeName').value.trim();
+        if (!newNodeName) {
+            alert('Введите название');
+            return;
+        }
+        const parentNode = currentlySelectedNode.node;
+        if (!parentNode.children) parentNode.children = [];
+        const newId = nextId++;
+        parentNode.children.push({
+            id: newId,
+            name: newNodeName,
+            children: [],
+            links: []
+        });
+        saveTree();
+        renderTree();
+        document.getElementById('newNodeName').value = '';
+        selectNode(newId);
+    }
+    
+    function addLinkToCurrentNode(linkUrl) {
+        if (!currentlySelectedNode) {
+            alert('Выберите задание/раздел слева');
+            return false;
+        }
+        if (!linkUrl.trim()) return false;
+        let url = linkUrl.trim();
+        if (!url.startsWith('http')) url = 'https://' + url;
+        const node = currentlySelectedNode.node;
+        if (!node.links) node.links = [];
+        node.links.push(url);
+        saveTree();
+        renderLinksList(node.links);
+        renderTree();
+        return true;
+    }
+    
+    function escapeHtml(str) {
+        if(!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // -------------------- СОХРАНЕНИЕ HTML С ДАННЫМИ (ГЛАВНАЯ ФИШКА) --------------------
+    function downloadHtmlWithEmbeddedData() {
+        // Получаем текущие данные дерева
+        const currentData = JSON.stringify(treeData);
+        // Получаем текущий HTML-код страницы
+        let htmlContent = document.documentElement.outerHTML;
+        // Встраиваем данные в виде JavaScript-переменной перед закрытием </body>
+        const embedScript = `<script>window.__EMBEDDED_DATA__ = ${currentData};<\/script>`;
+        // Проверяем, нет ли уже такого скрипта (чтобы не дублировать)
+        if (htmlContent.includes('__EMBEDDED_DATA__')) {
+            // Заменяем существующий блок данных
+            htmlContent = htmlContent.replace(/<script>window\.__EMBEDDED_DATA__ = .*?;<\/script>/, embedScript);
+        } else {
+            // Вставляем перед </body>
+            htmlContent = htmlContent.replace('</body>', embedScript + '\n</body>');
+        }
+        
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `exam_navigator_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert('✅ HTML-файл сохранён. Теперь в нём уже встроены все ваши данные. При следующем открытии они автоматически загрузятся в localStorage.');
+    }
+    
+    // -------------------- ЭКСПОРТ / ИМПОРТ JSON --------------------
+    function exportToJson() {
+        const dataStr = JSON.stringify(treeData, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `backup_${new Date().toISOString().slice(0,19)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+    
+    function importFromJson(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (Array.isArray(imported)) {
+                    treeData = imported;
+                    normalizeIds(treeData);
+                    saveTree();
+                    renderTree();
+                    currentlySelectedNode = null;
+                    selectedNodeIdGlobal = null;
+                    document.getElementById('selectedNodeTitle').innerText = '📄 Данные восстановлены';
+                    document.getElementById('linksList').innerHTML = '<li class="empty-links">✅ Резервная копия загружена. Выберите раздел.</li>';
+                    alert('Данные успешно импортированы!');
+                } else {
+                    alert('Неверный формат файла');
+                }
+            } catch(err) {
+                alert('Ошибка чтения JSON');
+            }
+        };
+        reader.readAsText(file);
+    }
+    
+    // -------------------- ИНИЦИАЛИЗАЦИЯ И ОБРАБОТЧИКИ --------------------
+    document.addEventListener('DOMContentLoaded', () => {
+        loadInitialData();
+        renderTree();
+        
+        document.getElementById('addSubBtn').addEventListener('click', addSubnodeToSelected);
+        document.getElementById('addLinkBtn').addEventListener('click', () => {
+            const val = document.getElementById('newLinkInput').value;
+            if (addLinkToCurrentNode(val)) document.getElementById('newLinkInput').value = '';
+        });
+        document.getElementById('newLinkInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const val = e.target.value;
+                if (addLinkToCurrentNode(val)) document.getElementById('newLinkInput').value = '';
+            }
+        });
+        document.getElementById('saveHtmlBtn').addEventListener('click', downloadHtmlWithEmbeddedData);
+        document.getElementById('exportJsonBtn').addEventListener('click', exportToJson);
+        const importInput = document.getElementById('importJsonInput');
+        importInput.addEventListener('change', (e) => {
+            if (e.target.files.length) importFromJson(e.target.files[0]);
+            importInput.value = '';
+        });
+    });
+</script>
+
+</body></html>
