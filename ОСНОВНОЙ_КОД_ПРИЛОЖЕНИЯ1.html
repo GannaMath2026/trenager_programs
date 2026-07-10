@@ -211,6 +211,7 @@
     .zone .hint { font-size: 12px; color:#94a3b8; margin-top: 8px; }
     .zone img { border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     
+    /* Увеличенный шрифт для текстовых условий и ответов */
     .zone .text-content {
       white-space: pre-wrap;
       word-break: break-word;
@@ -321,6 +322,7 @@
       background: #bfdbfe;
     }
     
+    /* Улучшенные стили для таблиц */
     .zone .text-content table {
       border-collapse: collapse;
       width: 100%;
@@ -353,11 +355,13 @@
       background-color: #e9ecef;
     }
     
+    /* Стили для LaTeX */
     .zone .text-content .latex-content {
       font-size: 18px;
       line-height: 1.6;
     }
     
+    /* Стили для пиктограмм */
     .icon-warning {
       background: #fff3cd;
       border: 2px solid #ffc107;
@@ -367,6 +371,8 @@
       margin: 10px 0;
     }
     
+    
+
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -422,6 +428,7 @@
       width: 100%;
     }
     
+    /* Кнопки навигации */
     .nav-buttons {
       position: fixed;
       bottom: 30px;
@@ -457,6 +464,7 @@
       display: none;
     }
     
+    /* Галочка импорта задач */
     .import-options {
       display: flex;
       align-items: center;
@@ -470,6 +478,7 @@
       cursor: pointer;
     }
     
+    /* Стили для модального окна импорта прогресса */
     .modal-import {
       position: fixed;
       top: 0;
@@ -511,11 +520,13 @@
       justify-content: flex-end;
     }
     
+    /* Подсветка задачи при возврате */
     .task-highlight {
       box-shadow: 0 0 0 3px var(--accent) !important;
       transition: box-shadow 0.3s;
     }
     
+    /* Стили для связи прототип-аналог */
     .prototype-section {
       margin-top: 20px;
       border-top: 2px dashed var(--analog-border);
@@ -544,6 +555,9 @@
       padding-left: 16px;
     }
     
+    /* Классы для скрытия содержимого - больше не нужны, используем inline style */
+    
+    /* Кнопка для аналогов */
     .analog-toggle-btn {
       background: #f97316;
       color: white;
@@ -561,23 +575,6 @@
     
     .analog-hidden {
       display: none !important;
-    }
-    
-    /* Кнопка рендеринга формул */
-    #btnRenderMath {
-      background: #8b5cf6;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 13px;
-      transition: all 0.2s;
-    }
-    #btnRenderMath:hover {
-      background: #7c3aed;
-      transform: translateY(-1px);
     }
     
     @media (max-width: 900px) { 
@@ -694,8 +691,9 @@
         <div>
           <label>📊 Прогресс</label>
           <div class="row-center" style="gap: 5px;">
-            <button id="btnExportProgress" class="primary" style="padding: 8px 10px;">💾 Экспорт</button>
-            <button id="btnImportProgress" class="primary" style="padding: 8px 10px;">📂 Импорт</button>
+            <button id="btnExportProgress" class="primary" style="padding: 8px 10px;">💾 Скачать</button>
+            <button id="btnImportProgress" class="primary" style="padding: 8px 10px;">📂 Загрузить</button>
+
           </div>
         </div>
 
@@ -755,12 +753,11 @@
         </div>
         <div>
           <label>&nbsp;</label>
-          <button id="btnLoadFromGitHub" class="primary">Импорт с GitHub</button>
+          <button id="btnLoadFromGitHub" class="primary">Загрузить с GitHub</button>
         </div>
 
         <div class="print-options">
-          <button id="btnToggleAnalogs" class="analog-toggle-btn">📋 Аналоги</button>
-          <button id="btnRenderMath" class="primary" style="background: #8b5cf6; border-color: #8b5cf6;">📐РЕНДЕР</button>
+          <button id="btnToggleAnalogs" class="analog-toggle-btn">📋 Показать аналоги</button>
           <button id="btnPrintNoAnswer" class="primary" title="Без ответов">🖨️ Без ответов</button>
           <button id="btnPrintWithAnswer" class="primary" title="С ответами">🖨️ С ответами</button>
         </div>
@@ -881,17 +878,18 @@
   // ==================== СОСТОЯНИЯ ====================
   let editingTaskId = null;
   let sortByTitle = false;
-  let analogsVisible = false;
+  let analogsVisible = false; // ИЗМЕНЕНО: теперь аналоги скрыты по умолчанию
   let lastViewedTaskId = null;
   let autoSaveInterval = null;
   
+  // Удаляем глобальные состояния для ответов/решений/чертежей - они теперь индивидуальны
+
   // ==================== ЭЛЕМЕНТЫ ====================
   const app = document.getElementById('app');
   const printRoot = document.getElementById('printRoot');
   const countContainer = document.getElementById('countContainer');
   const sortTitleBtn = document.getElementById('sortTitle');
   const btnToggleAnalogs = document.getElementById('btnToggleAnalogs');
-  const btnRenderMath = document.getElementById('btnRenderMath');
   
   const fileInput = document.getElementById('fileInput');
   const btnExport = document.getElementById('btnExport');
@@ -906,25 +904,30 @@
   const studentSelect = document.getElementById('studentSelect');
   const btnAddStudent = document.getElementById('btnAddStudent');
 
+  // Кнопки прогресса
   const btnExportProgress = document.getElementById('btnExportProgress');
   const btnImportProgress = document.getElementById('btnImportProgress');
   const importModal = document.getElementById('importProgressModal');
   const confirmImport = document.getElementById('confirmImport');
   const cancelImport = document.getElementById('cancelImport');
 
+  // Модальное окно выбора ученика
   const importStudentModal = document.getElementById('importStudentModal');
   const importStudentSelect = document.getElementById('importStudentSelect');
   const confirmImportStudent = document.getElementById('confirmImportStudent');
   const cancelImportStudent = document.getElementById('cancelImportStudent');
 
+  // Модальное окно подтверждения замены прогресса
   const confirmReplaceProgressModal = document.getElementById('confirmReplaceProgressModal');
   const confirmReplaceProgress = document.getElementById('confirmReplaceProgress');
   const cancelReplaceProgress = document.getElementById('cancelReplaceProgress');
 
+  // GitHub
   const btnLoadFromGitHub = document.getElementById('btnLoadFromGitHub');
   const githubSelect = document.getElementById('githubSelect');
   const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/GannaMath2026/trenager_programs/main/json_files/';
 
+  // Кнопки навигации
   const scrollToTopBtn = document.getElementById('scrollToTop');
   const scrollToLastViewedBtn = document.getElementById('scrollToLastViewed');
   const navButtons = document.getElementById('navButtons');
@@ -969,9 +972,11 @@
       isAnalog: t.isAnalog || false,
       parentId: t.parentId || null,
       analogId: t.analogId || null,
+      // Сохраняем оригинальный JSON для умного ввода
       taskJSON: t.taskJSON || null,
       answerJSON: t.answerJSON || null,
       solutionJSON: t.solutionJSON || null,
+      // Флаги для прогресса
       isSolved: t.isSolved || false,
       isFavorite: t.isFavorite || false
     };
@@ -1081,11 +1086,11 @@
     document.body.appendChild(a);
     a.click();
     setTimeout(() => {
-      // Не пересчитываем формулы автоматически
+      renderMathForVisibleTasks();
     }, 100);
   });
 
-  // ==================== ИМПОРТ ПРОГРЕССА ====================
+  // ==================== ИМПОРТ ПРОГРЕССА (замена всех учеников) ====================
   btnImportProgress.addEventListener('click', () => {
     confirmReplaceProgressModal.style.display = 'flex';
   });
@@ -1114,7 +1119,9 @@
           return;
         }
         
+        // Полностью заменяем всех учеников
         students = data.students;
+        
         saveStudents();
         updateStudentSelect();
         updateImportStudentSelect();
@@ -1173,6 +1180,8 @@
   // ==================== ФИЛЬТРЫ ====================
   function matchesFilters(task) {
     if (task.isSectionHeader) return true;
+    
+    // Если задача является аналогом и аналоги скрыты - не показываем
     if (task.isAnalog && !analogsVisible) return false;
     
     const studentData = students[currentStudent] || { solved: {}, favorites: {} };
@@ -1237,6 +1246,31 @@
     });
   }
 
+ 
+
+  // ==================== ТОЧЕЧНЫЙ РЕНДЕРИНГ LATEX ====================
+  function renderMathForElement(element) {
+    if (!element) return;
+    if (typeof MathJax === 'undefined') return;
+    MathJax.typesetPromise([element]).catch(err => {
+      console.warn('Ошибка рендеринга LaTeX для элемента:', err);
+    });
+  }
+
+  function renderMathForTask(taskId) {
+    const taskElement = document.querySelector(`.task[data-id="${taskId}"]`);
+    if (taskElement) renderMathForElement(taskElement);
+  }
+
+  function renderMathForVisibleTasks() {
+    if (typeof MathJax === 'undefined') return;
+    const visibleTasks = document.querySelectorAll('.task:not([style*="display: none"])');
+    if (visibleTasks.length === 0) return;
+    MathJax.typesetPromise(Array.from(visibleTasks)).catch(err => {
+      console.warn('Ошибка рендеринга LaTeX для видимых задач:', err);
+    });
+  }
+
   // ==================== РЕНДЕР КОНТЕНТА ====================
   function renderContent(task, zoneType) {
     if (zoneType === 'task') {
@@ -1292,18 +1326,22 @@
       `;
     }
     
+    // Если задача является аналогом и аналоги скрыты - не показываем
     if (task.isAnalog && !analogsVisible) {
       return '';
     }
     
+    // Создаем уникальные ключи для хранения состояний видимости
     const solutionStateKey = `solution_${task.id}`;
     const drawingStateKey = `drawing_${task.id}`;
     const answerStateKey = `answer_${task.id}`;
     
+    // По умолчанию все скрыто
     let solutionHidden = localStorage.getItem(solutionStateKey) === 'true';
     let drawingHidden = localStorage.getItem(drawingStateKey) === 'true';
     let answerHidden = localStorage.getItem(answerStateKey) === 'true';
     
+    // Если в localStorage ничего нет, то по умолчанию true (скрыто)
     if (localStorage.getItem(solutionStateKey) === null) {
       solutionHidden = true;
       localStorage.setItem(solutionStateKey, 'true');
@@ -1372,7 +1410,7 @@
             <button data-act="toggleSolved">${isSolved ? 'Снять ✅' : 'В решённые ✅'}</button>
             <button data-act="toggleFav">${isFav ? 'Убрать ⭐' : 'В избранное ⭐'}</button>
             <button data-act="edit" class="${isEditing ? '' : 'primary'}">${isEditing ? '💾 Сохранить' : '✏️ Редактировать'}</button>
-            <button data-act="delete" class="danger">🗑️ Удалить</button>
+             <button data-act="delete" class="danger">🗑️ Удалить</button>
             ${!hasAnalog && !isAnalog ? `
               <button data-act="createAnalog" class="warning">➕ Создать аналог</button>
             ` : ''}
@@ -1396,6 +1434,7 @@
               <div class="hint">Ctrl+V для вставки</div>
             </div>
             
+            <!-- Зона ответа -->
             <div class="zone answer-zone" data-zone="answer" data-task-id="${task.id}" tabindex="0">
               <h4>💡 Ответ</h4>
               <div class="answer-content" style="${answerHidden ? 'display: none;' : ''}">
@@ -1411,6 +1450,7 @@
             </div>
           </div>
           
+          <!-- Зона решения (если есть) -->
           ${hasSolution ? `
             <div class="zone solution-zone" data-zone="solution" data-task-id="${task.id}" tabindex="0">
               <h4>📝 Решение ${task.solutionText && !task.solutionImage ? '(текст)' : ''}</h4>
@@ -1427,6 +1467,7 @@
             </div>
           ` : ''}
           
+          <!-- Чертеж (если есть) -->
           ${hasDrawing ? `
             <div class="drawing-section" data-zone="drawing" data-task-id="${task.id}">
               <h4>📐 Чертеж</h4>
@@ -1437,6 +1478,7 @@
             </div>
           ` : ''}
           
+          <!-- Кнопки управления (только в режиме редактирования) -->
           ${isEditing ? `
             <div class="image-buttons">
               <button class="image-btn" data-act="pasteDrawing">📋 Вставить чертеж</button>
@@ -1446,6 +1488,8 @@
             </div>
           ` : ''}
 
+
+          
           ${isEditing ? `
             <div class="card">
               <div class="meta-row">
@@ -1484,7 +1528,7 @@
     `;
   }
 
-  // ==================== КРАТКИЙ РЕНДЕР ЗАДАЧИ ====================
+  // Краткий рендер задачи для отображения внутри прототипа
   function renderTaskShort(task) {
     const studentData = students[currentStudent] || { solved: {}, favorites: {} };
     const isSolved = !!studentData.solved[task.id];
@@ -1548,33 +1592,12 @@
       navButtons.classList.remove('hidden');
     }
 
-    // ============================================================
-    // ВАЖНО: НЕ ВЫЗЫВАЕМ MathJax.typesetPromise() АВТОМАТИЧЕСКИ!
-    // Формулы рендерятся ТОЛЬКО по кнопке "Обновить формулы"
-    // ============================================================
+    setTimeout(() => {
+      MathJax.typesetPromise().catch(err => {
+        console.warn('Ошибка рендеринга LaTeX:', err);
+      });
+    }, 100);
   }
-
-  // ==================== РЕНДЕРИНГ ПО КНОПКЕ ====================
-  btnRenderMath.addEventListener('click', function() {
-    console.log('🔄 Пересчет формул по кнопке...');
-    
-    if (typeof MathJax !== 'undefined') {
-      const visibleTasks = document.querySelectorAll('.task:not([style*="display: none"])');
-      if (visibleTasks.length > 0) {
-        MathJax.typesetPromise(Array.from(visibleTasks))
-          .then(() => {
-            console.log('✅ Формулы обновлены!');
-          })
-          .catch(err => {
-            console.warn('⚠️ Ошибка рендеринга:', err);
-          });
-      } else {
-        console.log('ℹ️ Нет видимых задач');
-      }
-    } else {
-      console.warn('⚠️ MathJax не загружен');
-    }
-  });
 
   // ==================== НАВИГАЦИЯ ====================
   scrollToTopBtn.addEventListener('click', () => {
@@ -1611,7 +1634,20 @@
     }
   });
 
+  app.addEventListener('input', (e) => {
+    const taskEl = e.target.closest('.task');
+    if (taskEl) {
+      const taskId = Number(taskEl.dataset.id);
+      const task = tasks.find(t => t.id === taskId);
+      if (task && !task.isSectionHeader) {
+        lastViewedTaskId = taskId;
+      }
+    }
+  });
+
   // ==================== СОБЫТИЯ ====================
+  
+  // Кнопка показа/скрытия аналогов
   btnToggleAnalogs.addEventListener('click', () => {
     analogsVisible = !analogsVisible;
     btnToggleAnalogs.textContent = analogsVisible 
@@ -1620,6 +1656,7 @@
     render();
   });
 
+  // ИМПОРТ JSON
   fileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -1628,6 +1665,7 @@
       const text = await file.text();
       const data = JSON.parse(text);
       
+      // Обрабатываем разные форматы файлов
       if (Array.isArray(data)) {
         tasks = data.map(normalizeTask);
       } else if (data.tasks && Array.isArray(data.tasks)) {
@@ -1636,8 +1674,12 @@
         tasks = [normalizeTask(data)];
       }
       
+      // Показываем модальное окно для выбора ученика
       updateImportStudentSelect();
+      
+      // Сохраняем задачи временно
       window.importedTasks = [...tasks];
+      
       importStudentModal.style.display = 'flex';
       
     } catch (err) {
@@ -1646,6 +1688,7 @@
     }
   });
 
+  // Подтверждение выбора ученика для импорта
   confirmImportStudent.addEventListener('click', () => {
     const selectedStudent = importStudentSelect.value;
     
@@ -1655,6 +1698,7 @@
     
     tasks = window.importedTasks;
     
+    // Восстанавливаем метки для выбранного ученика
     const studentData = students[selectedStudent] || { solved: {}, favorites: {} };
     
     tasks.forEach(task => {
@@ -1673,7 +1717,16 @@
     
     saveStudents();
     restoreAnalogLinks();
+
+
     render();
+    setTimeout(() => {
+      MathJax.typesetPromise().catch(console.warn);
+    }, 100);
+    
+    importStudentModal.style.display = 'none';
+
+
     
     importStudentModal.style.display = 'none';
     updateStudentSelect();
@@ -1686,13 +1739,20 @@
     render();
   });
 
+  // ЭКСПОРТ JSON (только задачи с текущими метками)
   btnExport.addEventListener('click', () => {
+    // Экспортируем задачи с текущими метками
     const exportData = tasks.map(t => {
       const taskCopy = { ...t };
+      
+      // Сохраняем метки "решено" и "избранное" для текущего ученика
       const studentData = students[currentStudent] || { solved: {}, favorites: {} };
       taskCopy.isSolved = !!studentData.solved[t.id];
       taskCopy.isFavorite = !!studentData.favorites[t.id];
+      
+      // Удаляем все поля, связанные с несколькими учениками
       delete taskCopy.studentsProgress;
+      
       return taskCopy;
     });
     
@@ -1730,9 +1790,10 @@
     tasks.unshift(newTask);
     editingTaskId = newTask.id;
     render();
-    setTimeout(() => {
+ setTimeout(() => {
       const titleInput = app.querySelector('input[data-field="title"]');
       titleInput?.focus();
+      renderMathForTask(newTask.id);
     }, 200);
   });
 
@@ -1783,10 +1844,16 @@
       const data = await response.json();
       
       tasks = Array.isArray(data) ? data.map(normalizeTask) : [normalizeTask(data)];
+      
       restoreAnalogLinks();
+      
       editingTaskId = null;
       resetFilters();
       render();
+
+setTimeout(() => {
+        MathJax.typesetPromise().catch(console.warn);
+      }, 100);
 
       alert('Задачи успешно загружены');
     } catch (err) {
@@ -1935,6 +2002,7 @@
 
   // ==================== КЛИКИ ПО ЗАДАЧАМ ====================
   app.addEventListener('click', async (e) => {
+    // Индивидуальный клик по ответу
     const answerZone = e.target.closest('.zone[data-zone="answer"]');
     if (answerZone && !editingTaskId) {
       const taskId = answerZone.dataset.taskId;
@@ -1947,6 +2015,7 @@
       return;
     }
     
+    // Индивидуальный клик по решению
     const solutionZone = e.target.closest('.zone[data-zone="solution"]');
     if (solutionZone && !editingTaskId) {
       const taskId = solutionZone.dataset.taskId;
@@ -1959,6 +2028,7 @@
       return;
     }
     
+    // Индивидуальный клик по чертежу
     const drawingSection = e.target.closest('.drawing-section');
     if (drawingSection && !editingTaskId) {
       const taskId = drawingSection.dataset.taskId;
@@ -2063,8 +2133,9 @@
       if (analog) {
         editingTaskId = analog.id;
         render();
-        setTimeout(() => {
+          setTimeout(() => {
           document.querySelector(`.task[data-id="${analog.id}"]`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+          renderMathForTask(analog.id);
         }, 100);
       }
     }
@@ -2133,6 +2204,7 @@
         currentJSON = task.solutionJSON;
       }
       
+      // Показываем исходный HTML или JSON
       const displayText = currentJSON ? JSON.stringify(currentJSON, null, 2) : currentHTML;
       
       const textarea = document.createElement('textarea');
@@ -2200,6 +2272,7 @@
             throw new Error('Not valid JSON format');
           }
         } catch (e) {
+          // Обычный текст или HTML
           if (zoneType === 'task') {
             task.taskText = text;
             task.taskJSON = null;
@@ -2213,6 +2286,7 @@
         }
         
         render();
+renderMathForTask(task.id);
       };
       
       textarea.addEventListener('keydown', (e) => {
@@ -2234,7 +2308,7 @@
     }
   });
 
-  // ==================== ИЗМЕНЕНИЕ ПОЛЕЙ ====================
+  // ИЗМЕНЕНИЕ ПОЛЕЙ
   app.addEventListener('input', (e) => {
     const input = e.target.closest('[data-field]');
     if (!input || !editingTaskId) return;
@@ -2268,7 +2342,8 @@
     render();
   });
 
-  // ==================== ПЕЧАТЬ ====================
+  // ПЕЧАТЬ
+    // ==================== ПЕЧАТЬ С ПОДДЕРЖКОЙ LATEX (только условие: текст + картинка) ====================
   function printTasks(showAnswers) {
     const filtered = getFilteredAndSortedTasks();
     let printContent = '';
@@ -2280,30 +2355,43 @@
       
       function getTaskHTML() {
         let html = '';
+        
+        // Добавляем текст условия, если есть
         if (task.taskText) {
           html += `<div style="padding: 8px 12px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 11pt; text-align: left; margin-bottom: 5px;" class="latex-content">${task.taskText}</div>`;
         }
+        
+        // Добавляем изображение условия, если есть
         if (task.taskImage) {
           html += `<img src="${task.taskImage}" style="max-width: 100%; max-height: 300px; display: block; margin: 8px 0;">`;
         }
+        
+        // Если ничего нет
         if (!task.taskText && !task.taskImage) {
           html = '<div style="padding: 20px; background: #f5f5f5; text-align: center; font-style: italic;">Нет данных</div>';
         }
+        
         return html;
       }
       
       function getAnswerHTML() {
         let html = '';
+        
+        // Добавляем текст ответа, если есть
         if (task.answerText) {
           html += `<div style="padding: 6px 10px; background: #f9f9f9; border: 1px solid #ddd; white-space: pre-wrap; font-size: 11pt; text-align: center;" class="latex-content">${task.answerText}</div>`;
         }
+        
+        // Добавляем изображение ответа, если есть
         if (task.answerImage) {
           html += `<img src="${task.answerImage}" style="max-width: 100%; max-height: 200px; display: block; margin: 8px auto;">`;
         }
+        
         return html;
       }
       
       if (showAnswers) {
+        // С ответами - показываем условие + ответ
         printContent += `
           <div class="print-task" style="margin-bottom: 15px; page-break-inside: avoid; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
             <div style="font-weight: bold; font-size: 12pt; margin-bottom: 6px;">${index + 1}. ${task.title}</div>
@@ -2312,6 +2400,7 @@
           </div>
         `;
       } else {
+        // Без ответов - только условие (текст + картинка)
         printContent += `
           <div class="print-task" style="margin-bottom: 12px; page-break-inside: avoid; border-bottom: 1px solid #eee; padding-bottom: 8px;">
             <div style="font-weight: bold; font-size: 12pt; margin-bottom: 4px;">${index + 1}. ${task.title}</div>
@@ -2319,6 +2408,7 @@
           </div>
         `;
         
+        // Собираем ответы отдельно для ключа
         if (task.answerImage || task.answerText) {
           let answerDisplay = '';
           if (task.answerText && task.answerImage) {
@@ -2345,32 +2435,101 @@
     
     const printStyles = `
       <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: "Times New Roman", serif; margin: 8mm 5mm; line-height: 1.3; font-size: 11pt; }
-        .print-task { margin-bottom: 12px; page-break-inside: avoid; }
-        table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 10pt; }
-        th { background: #1e3c72 !important; color: white !important; padding: 4px 8px; border: 1px solid #2a4a8a; }
-        td { padding: 4px 8px; border: 1px solid #ccc; }
-        tr:nth-child(even) { background: #f8fafc !important; }
-        img { max-width: 100%; }
-        .answer-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; margin-top: 20px; page-break-before: always; }
-        .latex-content { font-size: 11pt; line-height: 1.4; }
-        .latex-content-small { font-size: 8pt; line-height: 1.3; }
-        .MathJax { font-size: 11pt !important; }
-        .MathJax_Display { overflow-x: auto; overflow-y: hidden; margin: 5px 0 !important; }
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        body { 
+          font-family: "Times New Roman", serif; 
+          margin: 8mm 5mm; 
+          line-height: 1.3;
+          font-size: 11pt;
+        }
+        .print-task { 
+          margin-bottom: 12px; 
+          page-break-inside: avoid; 
+        }
+        table { 
+          border-collapse: collapse; 
+          width: 100%; 
+          margin: 8px 0; 
+          font-size: 10pt;
+        }
+        th { 
+          background: #1e3c72 !important; 
+          color: white !important; 
+          padding: 4px 8px; 
+          border: 1px solid #2a4a8a; 
+        }
+        td { 
+          padding: 4px 8px; 
+          border: 1px solid #ccc; 
+        }
+        tr:nth-child(even) { 
+          background: #f8fafc !important; 
+        }
+        img { 
+          max-width: 100%; 
+        }
+        .answer-grid {
+          display: grid;
+          grid-template-columns: repeat(12, 1fr);
+          gap: 6px;
+          margin-top: 20px;
+          page-break-before: always;
+        }
+        .latex-content {
+          font-size: 11pt;
+          line-height: 1.4;
+        }
+        .latex-content-small {
+          font-size: 8pt;
+          line-height: 1.3;
+        }
+        .MathJax {
+          font-size: 11pt !important;
+        }
+        .MathJax_Display {
+          overflow-x: auto;
+          overflow-y: hidden;
+          margin: 5px 0 !important;
+        }
         @media print {
-          body { margin: 5mm 4mm; }
-          th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          tr:nth-child(even) { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .MathJax { font-size: 10pt !important; }
-          .MathJax_Display { font-size: 10pt !important; }
+          body {
+            margin: 5mm 4mm;
+          }
+          th { 
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
+          }
+          tr:nth-child(even) { 
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
+          }
+          .MathJax {
+            font-size: 10pt !important;
+          }
+          .MathJax_Display {
+            font-size: 10pt !important;
+          }
         }
       </style>
       <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"><\/script>
       <script>
         window.MathJax = {
-          tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
-          startup: { pageReady: () => { return MathJax.startup.defaultPageReady().then(() => { console.log('MathJax готов к печати'); }); } }
+          tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],
+            displayMath: [['$$', '$$'], ['\\[', '\\]']],
+            processEscapes: true
+          },
+          startup: {
+            pageReady: () => {
+              return MathJax.startup.defaultPageReady().then(() => {
+                console.log('MathJax готов к печати');
+              });
+            }
+          }
         };
       <\/script>
     `;
@@ -2387,8 +2546,15 @@
     const printHTML = `
       <!DOCTYPE html>
       <html>
-      <head><meta charset="UTF-8"><title>${showAnswers ? 'Задания с ответами' : 'Задания без ответов'}</title>${printStyles}</head>
-      <body>${printContent}${answerKey}</body>
+      <head>
+        <meta charset="UTF-8">
+        <title>${showAnswers ? 'Задания с ответами' : 'Задания без ответов'}</title>
+        ${printStyles}
+      </head>
+      <body>
+        ${printContent}
+        ${answerKey}
+      </body>
       </html>
     `;
     
@@ -2401,20 +2567,43 @@
         if (printWindow.MathJax) {
           printWindow.MathJax.typesetPromise()
             .then(() => {
-              setTimeout(() => { printWindow.print(); setTimeout(() => { printWindow.close(); }, 1000); }, 200);
+              setTimeout(() => {
+                printWindow.print();
+                setTimeout(() => {
+                  printWindow.close();
+                }, 1000);
+              }, 200);
             })
-            .catch(() => {
-              setTimeout(() => { printWindow.print(); setTimeout(() => { printWindow.close(); }, 1000); }, 200);
+            .catch((err) => {
+              console.warn('Ошибка рендеринга LaTeX:', err);
+              setTimeout(() => {
+                printWindow.print();
+                setTimeout(() => {
+                  printWindow.close();
+                }, 1000);
+              }, 200);
             });
         } else {
-          setTimeout(() => { printWindow.print(); setTimeout(() => { printWindow.close(); }, 1000); }, 200);
+          setTimeout(() => {
+            printWindow.print();
+            setTimeout(() => {
+              printWindow.close();
+            }, 1000);
+          }, 200);
         }
       }, 600);
     };
   }
 
-  btnPrintNoAnswer.addEventListener('click', (e) => { e.preventDefault(); printTasks(false); });
-  btnPrintWithAnswer.addEventListener('click', (e) => { e.preventDefault(); printTasks(true); });
+  btnPrintNoAnswer.addEventListener('click', (e) => {
+    e.preventDefault();
+    printTasks(false);
+  });
+  
+  btnPrintWithAnswer.addEventListener('click', (e) => {
+    e.preventDefault();
+    printTasks(true);
+  });
 
   // ==================== ИНИЦИАЛИЗАЦИЯ ====================
   loadStudents();
@@ -2425,8 +2614,6 @@
   tasks = [];
   
   render();
-  
-  console.log('✅ Приложение загружено. Формулы рендерятся ТОЛЬКО по кнопке "Обновить формулы"');
 })();
 </script>
 
