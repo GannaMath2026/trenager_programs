@@ -826,7 +826,7 @@
   <div id="app" class="grid no-print"></div>
   <div id="printRoot"></div>
 
-  <!-- Модальные окна -->
+  <!-- Модальное окно для импорта прогресса -->
   <div id="importProgressModal" class="modal-import" style="display: none;">
     <div class="modal-import-content">
       <div class="modal-import-title">📂 Загрузить прогресс учеников</div>
@@ -840,6 +840,7 @@
     </div>
   </div>
 
+  <!-- Модальное окно для выбора ученика при импорте задач -->
   <div id="importStudentModal" class="modal-import" style="display: none;">
     <div class="modal-import-content">
       <div class="modal-import-title">👤 Выберите ученика для импорта прогресса</div>
@@ -853,6 +854,7 @@
     </div>
   </div>
 
+  <!-- Модальное окно для подтверждения замены прогресса -->
   <div id="confirmReplaceProgressModal" class="modal-import" style="display: none;">
     <div class="modal-import-content">
       <div class="modal-import-title">⚠️ Замена прогресса</div>
@@ -882,30 +884,7 @@
   let analogsVisible = false;
   let lastViewedTaskId = null;
   let autoSaveInterval = null;
-
-  // ====== УПРАВЛЕНИЕ РЕНДЕРИНГОМ MATHJAX ======
-  let renderTimeout = null;
-
-  function renderAllVisibleMath() {
-    if (typeof MathJax === 'undefined') return;
-    const visibleTasks = document.querySelectorAll('.task:not([style*="display: none"])');
-    if (visibleTasks.length > 0) {
-      MathJax.typesetPromise(Array.from(visibleTasks))
-        .then(() => {
-          console.log('✅ Формулы обновлены для всех видимых задач');
-        })
-        .catch(err => console.warn('⚠️ Ошибка рендеринга:', err));
-    }
-  }
-
-  function scheduleRenderAllVisible() {
-    if (renderTimeout) clearTimeout(renderTimeout);
-    renderTimeout = setTimeout(() => {
-      renderAllVisibleMath();
-      renderTimeout = null;
-    }, 150);
-  }
-
+  
   // ==================== ЭЛЕМЕНТЫ ====================
   const app = document.getElementById('app');
   const printRoot = document.getElementById('printRoot');
@@ -1102,8 +1081,7 @@
     document.body.appendChild(a);
     a.click();
     setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Не пересчитываем формулы автоматически
     }, 100);
   });
 
@@ -1570,14 +1548,32 @@
       navButtons.classList.remove('hidden');
     }
 
-    // Запланировать рендеринг всех видимых формул через небольшую задержку
-    scheduleRenderAllVisible();
+    // ============================================================
+    // ВАЖНО: НЕ ВЫЗЫВАЕМ MathJax.typesetPromise() АВТОМАТИЧЕСКИ!
+    // Формулы рендерятся ТОЛЬКО по кнопке "Обновить формулы"
+    // ============================================================
   }
 
-  // ==================== РЕНДЕРИНГ ПО КНОПКЕ (принудительно все) ====================
+  // ==================== РЕНДЕРИНГ ПО КНОПКЕ ====================
   btnRenderMath.addEventListener('click', function() {
-    console.log('🔄 Принудительный пересчет всех формул по кнопке...');
-    renderAllVisibleMath();
+    console.log('🔄 Пересчет формул по кнопке...');
+    
+    if (typeof MathJax !== 'undefined') {
+      const visibleTasks = document.querySelectorAll('.task:not([style*="display: none"])');
+      if (visibleTasks.length > 0) {
+        MathJax.typesetPromise(Array.from(visibleTasks))
+          .then(() => {
+            console.log('✅ Формулы обновлены!');
+          })
+          .catch(err => {
+            console.warn('⚠️ Ошибка рендеринга:', err);
+          });
+      } else {
+        console.log('ℹ️ Нет видимых задач');
+      }
+    } else {
+      console.warn('⚠️ MathJax не загружен');
+    }
   });
 
   // ==================== НАВИГАЦИЯ ====================
@@ -2430,7 +2426,7 @@
   
   render();
   
-  console.log('✅ Приложение загружено. Формулы обновляются автоматически с задержкой после каждого изменения. Для принудительного обновления всех формул используйте кнопку "📐РЕНДЕР".');
+  console.log('✅ Приложение загружено. Формулы рендерятся ТОЛЬКО по кнопке "Обновить формулы"');
 })();
 </script>
 
