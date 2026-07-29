@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ЕГЭ — ссылки</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; padding: 0 15px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ccc; padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #f0f0f0; }
+    input { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 6px 12px; cursor: pointer; border: 1px solid #aaa; border-radius: 4px; background: #f5f5f5; }
+    button:hover { background: #e0e0e0; }
+    .del { background: #ffdddd; border-color: #dd8888; }
+    .del:hover { background: #ffbbbb; }
+    .add-row { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .save-status { color: green; font-size: 14px; margin-left: 10px; }
+    .export-area { margin-top: 15px; padding: 10px; background: #f9f9f9; border: 1px dashed #aaa; border-radius: 6px; display: none; }
+    .export-area textarea { width: 100%; height: 120px; font-size: 12px; font-family: monospace; }
+  </style>
+</head>
+<body>
+
+<h2>📘 ЕГЭ — ссылки по заданиям</h2>
+
+<table id="table">
+  <thead>
+    <tr>
+      <th style="width:60px;">№</th>
+      <th>🎥 Видеоразбор</th>
+      <th>📄 ДЗ</th>
+      <th>📝 Решения</th>
+      <th style="width:50px;"></th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+
+<div class="add-row">
+  <button id="addBtn">➕ Добавить задание</button>
+  <button id="exportBtn">📤 Экспорт (JSON)</button>
+  <button id="importBtn">📥 Импорт (JSON)</button>
+  <span id="status" class="save-status"></span>
+</div>
+
+<!-- Поле для ручного копирования при экспорте -->
+<div class="export-area" id="exportArea">
+  <p><strong>📋 Скопируйте текст ниже и сохраните в файл <code>ege_links.json</code>:</strong></p>
+  <textarea id="exportText" readonly></textarea>
+  <button id="copyBtn" style="margin-top:5px;">📋 Копировать</button>
+</div>
+
+<input type="file" id="fileInput" accept=".json" style="display:none;">
+
+<script>
+// ===== Хранилище =====
+let tasks = [];
+
+// ===== Загрузка из localStorage =====
+function load() {
+  const raw = localStorage.getItem('ege_links');
+  if (raw) {
+    try { tasks = JSON.parse(raw); } catch (e) { tasks = []; }
+  }
+  if (!tasks.length) {
+    tasks = [
+      { id: 1, video: 'https://youtu.be/...', hw: 'https://...', solutions: 'https://...' },
+      { id: 2, video: '', hw: '', solutions: '' }
+    ];
+  }
+  render();
+}
+
+// ===== Сохранение в localStorage =====
+function save() {
+  localStorage.setItem('ege_links', JSON.stringify(tasks));
+  showStatus('✅ Сохранено');
+}
+
+// ===== Рендер таблицы =====
+function render() {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  tasks.forEach((t, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" value="${t.id}" data-idx="${idx}" data-field="id" style="width:50px;"></td>
+      <td><input type="text" value="${esc(t.video)}" data-idx="${idx}" data-field="video" placeholder="https://..."></td>
+      <td><input type="text" value="${esc(t.hw)}" data-idx="${idx}" data-field="hw" placeholder="https://..."></td>
+      <td><input type="text" value="${esc(t.solutions)}" data-idx="${idx}" data-field="solutions" placeholder="https://..."></td>
+      <td><button class="del" data-idx="${idx}">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  save();
+}
+
+// ===== Эскейп для HTML =====
+function esc(s) { return (s || '').replace(/"/g, '&quot;'); }
+
+// ===== Показать статус =====
+function showStatus(msg) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => { el.textContent = ''; }, 2000);
+}
+
+// ===== События =====
+
+// Добавить строку
+document.getElementById('addBtn').addEventListener('click', () => {
+  const maxId = tasks.reduce((m, t) => Math.max(m, Number(t.id) || 0), 0);
+  tasks.push({ id: maxId + 1, video: '', hw: '', solutions: '' });
+  render();
+});
+
+// Удалить строку (делегирование)
+document.getElementById('tbody').addEventListener('click', (e) => {
+  if (e.target.classList.contains('del')) {
+    const idx = e.target.dataset.idx;
+    if (confirm('Удалить задание?')) {
+      tasks.splice(idx, 1);
+      render();
+    }
+  }
+});
+
+// Изменение полей (делегирование)
+document.getElementById('tbody').addEventListener('input', (e) => {
+  if (e.target.tagName === 'INPUT') {
+    const idx = e.target.dataset.idx;
+    const field = e.target.dataset.field;
+    tasks[idx][field] = e.target.value;
+    save();
+  }
+});
+
+// ===== ЭКСПОРТ — показывает JSON в текстовом поле =====
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const json = JSON.stringify(tasks, null, 2);
+  const area = document.getElementById('exportArea');
+  const textarea = document.getElementById('exportText');
+  textarea.value = json;
+  area.style.display = 'block';
+  showStatus('📤 JSON готов к копированию');
+});
+
+// Кнопка "Копировать"
+document.getElementById('copyBtn').addEventListener('click', () => {
+  const textarea = document.getElementById('exportText');
+  textarea.select();
+  navigator.clipboard.writeText(textarea.value).then(() => {
+    showStatus('📋 Скопировано в буфер!');
+  }).catch(() => {
+    document.execCommand('copy');
+    showStatus('📋 Скопировано!');
+  });
+});
+
+// ===== ИМПОРТ (загрузка файла) =====
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (Array.isArray(data)) {
+        tasks = data;
+        render();
+        showStatus('📥 Импортировано');
+      } else {
+        alert('Неверный формат: нужен массив');
+      }
+    } catch (err) {
+      alert('Ошибка чтения файла');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+// ===== Запуск =====
+load();
+</script>
+</body>
+</html>
