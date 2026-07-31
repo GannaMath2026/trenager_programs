@@ -2281,12 +2281,23 @@
                     try {
                         const data = JSON.parse(e.target.result);
                         const newTasks = Array.isArray(data) ? data.map(normalizeTask) : [normalizeTask(data)];
+
+
+// ✅ СОРТИРУЕМ ЗАДАЧИ ПЕРЕД СОХРАНЕНИЕМ
+            const sortMode = sortByTitle || 'asc'; // используем текущую сортировку или asc по умолчанию
+            newTasks.sort((a, b) => {
+                const ta = (a.title || '').toLowerCase();
+                const tb = (b.title || '').toLowerCase();
+                return sortMode === 'asc' ? ta.localeCompare(tb) : tb.localeCompare(ta);
+            });
+
+
                         tasks = newTasks;
                         saveTasks();
                         updateSectionDropdown();
                         markDirty();
-                        render(true);
-                        setTimeout(renderMathForAll, 200);
+                        //render(true);
+                        //setTimeout(renderMathForAll, 200);
                         alert(`Загружено ${tasks.length} задач`);
                     } catch (err) {
                         alert('Ошибка чтения файла: ' + err.message);
@@ -2314,8 +2325,8 @@
                     saveTasks();
                     updateSectionDropdown();
                     markDirty();
-                    render(true);
-                    setTimeout(renderMathForAll, 200);
+                    // render(true);
+                    // setTimeout(renderMathForAll, 200);
                     alert(`Загружено ${tasks.length} задач с GitHub`);
                 } catch (err) {
                     alert('Ошибка загрузки: ' + err.message);
