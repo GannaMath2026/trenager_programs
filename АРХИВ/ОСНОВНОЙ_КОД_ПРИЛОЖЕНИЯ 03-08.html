@@ -2420,82 +2420,84 @@
                 let answerItems = [];
 
                 filtered.forEach((task, index) => {
-    const num = index + 1;
-    html += `<div class="task-print">`;
-    html += `<div class="task-title">${num}. ${escapeHtml(task.title || '(без названия)')}</div>`;
+                    const num = index + 1;
+                    html += `<div class="task-print">`;
+                    html +=
+                        `<div class="task-title">${num}. ${escapeHtml(task.title || '(без названия)')}</div>`;
 
-    // ---------- УСЛОВИЕ ----------
-    html += `<div class="task-content">`;
-    if (task.taskText) {
-        html += `<div class="text-content latex-content">${task.taskText.replace(/\n/g, '<br>')}</div>`;
-    }
-    if (task.taskImage) {
-        html += `<img src="${task.taskImage}" alt="Условие">`;
-    }
-    if (!task.taskText && !task.taskImage) {
-        html += `<div style="color:#999;font-style:italic;">(условие не задано)</div>`;
-    }
-    html += `</div>`;
+                    html += `<div class="task-content">`;
+                    if (task.taskText) {
+                        html += `<div class="text-content latex-content">${task.taskText}</div>`;
+                    }
+                    if (task.taskImage) {
+                        html += `<img src="${task.taskImage}" alt="Условие">`;
+                    }
+                    if (!task.taskText && !task.taskImage) {
+                        html += `<div style="color:#999;font-style:italic;">(условие не задано)</div>`;
+                    }
+                    html += `</div>`;
 
-    // ---------- ОТВЕТ ----------
-    if (mode === 'condition+answer' || mode === 'full') {
-        if (task.answerText || task.answerImage) {
-            html += `<div style="margin-top:6px;"><strong>Ответ:</strong>`;
-            if (task.answerText) {
-                html += `<div class="text-content latex-content" style="font-size:11pt;">${task.answerText.replace(/\n/g, '<br>')}</div>`;
-            }
-            if (task.answerImage) {
-                html += `<img src="${task.answerImage}" alt="Ответ">`;
-            }
-            html += `</div>`;
-        }
-        let answerDisplay = '';
-        if (task.answerText) {
-            answerDisplay += `<div class="text-content" style="font-size:9pt;">${task.answerText.replace(/<[^>]*>/g,'').replace(/\n/g, '<br>').substring(0,100)}</div>`;
-        }
-        if (task.answerImage) {
-            answerDisplay += `<img src="${task.answerImage}" style="max-width:80px;max-height:80px;">`;
-        }
-        if (answerDisplay) {
-            answerItems.push(`<div class="answer-item"><strong>${num}</strong>${answerDisplay}</div>`);
-        }
-    }
+                    if (mode === 'condition+answer' || mode === 'full') {
+                        if (task.answerText || task.answerImage) {
+                            html += `<div style="margin-top:6px;"><strong>Ответ:</strong>`;
+                            if (task.answerText) {
+                                html +=
+                                    `<div class="text-content latex-content" style="font-size:11pt;">${task.answerText}</div>`;
+                            }
+                            if (task.answerImage) {
+                                html += `<img src="${task.answerImage}" alt="Ответ">`;
+                            }
+                            html += `</div>`;
+                        }
+                        let answerDisplay = '';
+                        if (task.answerText) {
+                            answerDisplay +=
+                                `<div class="text-content" style="font-size:9pt;">${task.answerText.replace(/<[^>]*>/g,'').substring(0,100)}</div>`;
+                        }
+                        if (task.answerImage) {
+                            answerDisplay += `<img src="${task.answerImage}" style="max-width:80px;max-height:80px;">`;
+                        }
+                        if (answerDisplay) {
+                            answerItems.push(
+                                `<div class="answer-item"><strong>${num}</strong>${answerDisplay}</div>`);
+                        }
+                    }
 
-    // ---------- РЕШЕНИЕ ----------
-    if (showSolutions && (mode === 'full')) {
-        const hasSol = !!(task.solutionText || task.solutionImage);
-        const hasDraw = !!(task.drawingImage);
-        if (hasSol || hasDraw) {
-            html += `<div class="solution-block">`;
-            html += `<strong>Решение:</strong>`;
-            if (task.solutionText) {
-                html += `<div class="text-content latex-content" style="font-size:11pt; margin-top:4px;">${task.solutionText.replace(/\n/g, '<br>')}</div>`;
-            }
-            if (task.solutionImage) {
-                html += `<img src="${task.solutionImage}" alt="Решение">`;
-            }
-            if (showDrawings && task.drawingImage) {
-                html += `<div style="margin-top:8px;"><strong>📐 Чертеж:</strong><br><img src="${task.drawingImage}" alt="Чертеж"></div>`;
-            }
-            html += `</div>`;
-        }
-    }
+                    if (showSolutions && (mode === 'full')) {
+                        const hasSol = !!(task.solutionText || task.solutionImage);
+                        const hasDraw = !!(task.drawingImage);
+                        if (hasSol || hasDraw) {
+                            html += `<div class="solution-block">`;
+                            html += `<strong>Решение:</strong>`;
+                            if (task.solutionText) {
+                                html +=
+                                    `<div class="text-content latex-content" style="font-size:11pt; margin-top:4px;">${task.solutionText}</div>`;
+                            }
+                            if (task.solutionImage) {
+                                html += `<img src="${task.solutionImage}" alt="Решение">`;
+                            }
+                            if (showDrawings && task.drawingImage) {
+                                html +=
+                                    `<div style="margin-top:8px;"><strong>📐 Чертеж:</strong><br><img src="${task.drawingImage}" alt="Чертеж"></div>`;
+                            }
+                            html += `</div>`;
+                        }
+                    }
 
-    // ---------- ССЫЛКИ ----------
-    if (showLinks && (task.solutionLink || task.videoLink)) {
-        html += `<div class="links">`;
-        if (task.solutionLink) {
-            html += `<a href="${escapeHtml(task.solutionLink)}" target="_blank">🔗 Решение</a>`;
-        }
-        if (task.videoLink) {
-            if (task.solutionLink) html += ` &nbsp;|&nbsp; `;
-            html += `<a href="${escapeHtml(task.videoLink)}" target="_blank">📹 Видео</a>`;
-        }
-        html += `</div>`;
-    }
+                    if (showLinks && (task.solutionLink || task.videoLink)) {
+                        html += `<div class="links">`;
+                        if (task.solutionLink) {
+                            html += `<a href="${escapeHtml(task.solutionLink)}" target="_blank">🔗 Решение</a>`;
+                        }
+                        if (task.videoLink) {
+                            if (task.solutionLink) html += ` &nbsp;|&nbsp; `;
+                            html += `<a href="${escapeHtml(task.videoLink)}" target="_blank">📹 Видео</a>`;
+                        }
+                        html += `</div>`;
+                    }
 
-    html += `</div>`;
-});
+                    html += `</div>`;
+                });
 
                 if (answerItems.length > 0 && (mode === 'condition+answer' || mode === 'full')) {
                     html +=
