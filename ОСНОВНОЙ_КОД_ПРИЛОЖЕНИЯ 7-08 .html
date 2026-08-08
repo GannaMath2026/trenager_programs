@@ -2353,307 +2353,227 @@
                 printTasks();
             });
 
-            
+            function printTasks() {
+                const mode = document.getElementById('printMode').value;
+                const showSolutions = document.getElementById('printSolutions').value === 'yes';
+                const showLinks = document.getElementById('printLinks').value === 'yes';
+                const showDrawings = document.getElementById('printDrawings').value === 'yes';
 
+                const filtered = getFilteredTasks();
+                if (filtered.length === 0) {
+                    alert('Нет задач для печати');
+                    return;
+                }
 
+                let html = `<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>Задачи</title>
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"><\/script>
+        <script>
+            window.MathJax = {
+                tex: {
+                    inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
+                    displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
+                    processEscapes: true
+                },
+                startup: {
+                    pageReady: function() {
+                        return MathJax.startup.defaultPageReady().then(function() {
+                            console.log('✅ MathJax готов к печати');
+                        });
+                    }
+                }
+            };
+        <\/script>
+        <style>
+            body { font-family: 'Times New Roman', serif; margin: 10mm; line-height: 1.4; }
+            .print-title { font-size: 20pt; font-weight: bold; text-align: center; margin-bottom: 20px; }
+            .task-print { margin-bottom: 30px; page-break-inside: avoid; border-bottom: 1px solid #ccc; padding-bottom: 15px; }
+            .task-title { font-weight: bold; font-size: 14pt; margin-bottom: 6px; }
+            .task-content { margin: 8px 0; }
+            .task-content .text-content { white-space: pre-wrap; font-size: 11pt; }
+            .task-content img { max-width: 80%; max-height: 400px; display: block; margin: 8px 0; }
+            .solution-block { margin-top: 12px; padding-top: 10px; border-top: 1px dashed #ddd; }
+            .solution-block .text-content { font-size: 11pt; }
+            .solution-block img { max-width: 80%; max-height: 400px; display: block; margin: 8px 0; }
+            .answer-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 30px; page-break-before: always; }
+            .answer-item { border: 1px solid #ccc; padding: 6px; text-align: center; font-size: 10pt; }
+            .answer-item img { max-width: 80px; max-height: 80px; }
+            .links { font-size: 10pt; margin-top: 6px; }
+            .links a { color: #2563eb; text-decoration: underline; }
+            .MathJax { font-size: 11pt !important; }
+            .MathJax_Display { overflow-x: auto; overflow-y: hidden; margin: 5px 0 !important; }
+            @media print {
+                body { margin: 8mm; }
+                .task-print { page-break-inside: avoid; }
+                .MathJax { font-size: 10pt !important; }
+            }
+        </style>
+    </head>
+    <body>`;
 
+                const title = document.querySelector('.top-panel .title')?.textContent || 'Задачи';
+                html += `<div class="print-title">${escapeHtml(title)}</div>`;
 
+                let answerItems = [];
 
+                filtered.forEach((task, index) => {
+    const num = index + 1;
+    html += `<div class="task-print">`;
+    html += `<div class="task-title">${num}. ${escapeHtml(task.title || '(без названия)')}</div>`;
 
-
-
-function printTasks() {
-    const mode = document.getElementById('printMode').value;
-    const showSolutions = document.getElementById('printSolutions').value === 'yes';
-    const showLinks = document.getElementById('printLinks').value === 'yes';
-    const showDrawings = document.getElementById('printDrawings').value === 'yes';
-
-    const filtered = getFilteredTasks();
-    if (filtered.length === 0) {
-        alert('Нет задач для печати');
-        return;
+    // ---------- УСЛОВИЕ ----------
+    html += `<div class="task-content">`;
+    if (task.taskText) {
+        html += `<div class="text-content latex-content">${task.taskText.replace(/\n/g, '<br>')}</div>`;
     }
+    if (task.taskImage) {
+        html += `<img src="${task.taskImage}" alt="Условие">`;
+    }
+    if (!task.taskText && !task.taskImage) {
+        html += `<div style="color:#999;font-style:italic;">(условие не задано)</div>`;
+    }
+    html += `</div>`;
 
-    let html = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Задачи</title>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"><\/script>
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
-                displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
-                processEscapes: true
-            },
-            startup: {
-                pageReady: function() {
-                    return MathJax.startup.defaultPageReady().then(function() {
-                        console.log('✅ MathJax готов к печати');
-                    });
-                }
-            }
-        };
-    <\/script>
-    <style>
-        /* ====== ОСНОВНЫЕ СТИЛИ ====== */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 10mm; line-height: 1.5; background: white; color: #1e293b; }
-        .print-title { font-size: 20pt; font-weight: bold; text-align: center; margin-bottom: 20px; }
-        .task-print { margin-bottom: 0px; page-break-inside: avoid; border-bottom: 0px solid #e2e8f0; padding-bottom: 0px; }
-        .task-title { font-weight: bold; font-size: 14pt; margin-bottom: 8px; }
-
-        /* ====== ТЕКСТ И ФОРМУЛЫ ====== */
-        .text-content { 
-            white-space: pre-wrap; 
-            font-size: 15px; 
-            line-height: 1.6; 
-            padding: 10px 12px; 
-            background: #fafbfc; 
-            border-radius: 6px; 
-            //border: 1px solid #e2e8f0; 
-border: none;            
-margin: 6px 0; 
-        }
-        .text-content img { 
-            max-width: 100%; 
-            max-height: 350px; 
-            display: block; 
-            margin: 8px 0; 
-            border-radius: 6px; 
-        }
-
-        /* ====== ТАБЛИЦЫ (КАК В ПРИЛОЖЕНИИ) ====== */
-        .text-content table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 12px 0;
-            font-size: 13px;
-            text-align: center;
-            background: white;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-        .text-content th {
-            background: #2c3e50;
-            color: white;
-            padding: 8px 12px;
-            border: 1px solid #34495e;
-            font-weight: 600;
-        }
-        .text-content td {
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-        }
-        .text-content tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-
-        /* ====== ОТВЕТЫ И РЕШЕНИЯ ====== */
-        .solution-block { 
-            margin-top: 10px; 
-            padding-top: 10px; 
-            border-top: 1px dashed #d1d5db; 
-        }
-        .answer-grid { 
-            display: grid; 
-            grid-template-columns: repeat(6, 1fr); 
-            gap: 6px; 
-            margin-top: 25px; 
-            page-break-before: always; 
-        }
-        .answer-item { 
-            border: 1px solid #d1d5db; 
-            padding: 6px; 
-            text-align: center; 
-            font-size: 10pt; 
-            border-radius: 4px;
-            background: #fafbfc;
-        }
-        .answer-item img { 
-            max-width: 60px; 
-            max-height: 60px; 
-            display: block; 
-            margin: 4px auto; 
-        }
-
-        .links { 
-            font-size: 10pt; 
-            margin-top: 6px; 
-        }
-        .links a { 
-            color: #2563eb; 
-            text-decoration: underline; 
-        }
-
-        /* ====== MATHJAX ====== */
-        .MathJax { font-size: 11pt !important; }
-        .MathJax_Display { 
-            overflow-x: auto; 
-            overflow-y: hidden; 
-            margin: 4px 0 !important; 
-        }
-
-        /* ====== ПЕЧАТЬ ====== */
-        @media print {
-            body { margin: 8mm; }
-            .task-print { page-break-inside: avoid; }
-            .MathJax { font-size: 15pt !important; }
-            .text-content { background: white !important; border: none !important; }
-        }
-    </style>
-</head>
-<body>`;
-
-    const title = document.querySelector('.top-panel .title')?.textContent || 'Задачи';
-    html += `<div class="print-title">${escapeHtml(title)}</div>`;
-
-    let answerItems = [];
-
-    filtered.forEach((task, index) => {
-        const num = index + 1;
-        html += `<div class="task-print">`;
-        // **************************************************************************************************************************************
-	// если не надо выводить сквозные номера - комментим следующую строку:
-	//html += `<div class="task-title">${num}. ${escapeHtml(task.title || '(без названия)')}</div>`;
-        html += `<div class="task-title">. ${escapeHtml(task.title || '(без названия)')}</div>`;
-        
-// ---------- УСЛОВИЕ ----------
-        html += `<div class="task-content">`;
-        if (task.taskText) {
-            html += `<div class="text-content latex-content">${task.taskText}</div>`;
-        }
-        if (task.taskImage) {
-            html += `<img src="${task.taskImage}" alt="Условие">`;
-        }
-        if (!task.taskText && !task.taskImage) {
-            html += `<div style="color:#94a3b8;font-style:italic;">(условие не задано)</div>`;
-        }
-        html += `</div>`;
-
-        // ---------- ОТВЕТ ----------
-        if (mode === 'condition+answer' || mode === 'full') {
-            if (task.answerText || task.answerImage) {
-                html += `<div style="margin-top:6px;"><strong>Ответ:</strong>`;
-                if (task.answerText) {
-                    html += `<div class="text-content latex-content">${task.answerText}</div>`;
-                }
-                if (task.answerImage) {
-                    html += `<img src="${task.answerImage}" alt="Ответ">`;
-                }
-                html += `</div>`;
-            }
-            let answerDisplay = '';
+    // ---------- ОТВЕТ ----------
+    if (mode === 'condition+answer' || mode === 'full') {
+        if (task.answerText || task.answerImage) {
+            html += `<div style="margin-top:6px;"><strong>Ответ:</strong>`;
             if (task.answerText) {
-                answerDisplay += `<div class="text-content" style="font-size:9pt;">${task.answerText.replace(/<[^>]*>/g,'').substring(0,100)}</div>`;
+                html += `<div class="text-content latex-content" style="font-size:11pt;">${task.answerText.replace(/\n/g, '<br>')}</div>`;
             }
             if (task.answerImage) {
-                answerDisplay += `<img src="${task.answerImage}" style="max-width:60px;max-height:60px;">`;
-            }
-            if (answerDisplay) {
-                answerItems.push(`<div class="answer-item"><strong>${num}</strong>${answerDisplay}</div>`);
-            }
-        }
-
-        // ---------- РЕШЕНИЕ ----------
-        if (showSolutions && (mode === 'full')) {
-            const hasSol = !!(task.solutionText || task.solutionImage);
-            const hasDraw = !!(task.drawingImage);
-            if (hasSol || hasDraw) {
-                html += `<div class="solution-block">`;
-                html += `<strong>Решение:</strong>`;
-                if (task.solutionText) {
-                    html += `<div class="text-content latex-content">${task.solutionText}</div>`;
-                }
-                if (task.solutionImage) {
-                    html += `<img src="${task.solutionImage}" alt="Решение">`;
-                }
-                if (showDrawings && task.drawingImage) {
-                    html += `<div style="margin-top:8px;"><strong>📐 Чертеж:</strong><br><img src="${task.drawingImage}" alt="Чертеж"></div>`;
-                }
-                html += `</div>`;
-            }
-        }
-
-        // ---------- ССЫЛКИ ----------
-        if (showLinks && (task.solutionLink || task.videoLink)) {
-            html += `<div class="links">`;
-            if (task.solutionLink) {
-                html += `<a href="${escapeHtml(task.solutionLink)}" target="_blank">🔗 Решение</a>`;
-            }
-            if (task.videoLink) {
-                if (task.solutionLink) html += ` &nbsp;|&nbsp; `;
-                html += `<a href="${escapeHtml(task.videoLink)}" target="_blank">📹 Видео</a>`;
+                html += `<img src="${task.answerImage}" alt="Ответ">`;
             }
             html += `</div>`;
         }
-
-        html += `</div>`;
-    });
-
-    if (answerItems.length > 0 && (mode === 'condition+answer' || mode === 'full')) {
-        html += `<div class="answer-grid"><div style="grid-column:span 6;text-align:center;font-size:14pt;font-weight:bold;margin-bottom:10px;">📋 Ключ ответов</div>`;
-        html += answerItems.join('');
-        html += `</div>`;
-    }
-
-    html += `</body></html>`;
-
-    const win = window.open('', '_blank');
-    if (!win) {
-        alert('Пожалуйста, разрешите всплывающие окна для этой страницы');
-        return;
-    }
-
-    win.document.write(html);
-    win.document.close();
-
-    // ---------- ПЕРЕСЧЁТ ФОРМУЛ ----------
-    let attempts = 0;
-    const maxAttempts = 30;
-
-    function tryRenderMath() {
-        attempts++;
-        if (win.MathJax && win.MathJax.typesetPromise) {
-            console.log('✅ MathJax найден, пересчитываем формулы...');
-            const elements = win.document.querySelectorAll('.latex-content');
-            if (elements.length > 0) {
-                win.MathJax.typesetPromise(Array.from(elements))
-                    .then(() => {
-                        console.log(`✅ Формулы пересчитаны (${elements.length} элементов)`);
-                        // 🖨️ Раскомментируйте для автопечати:
-                        // win.print();
-                    })
-                    .catch((err) => {
-                        console.warn('⚠️ Ошибка пересчета формул:', err);
-                    });
-            } else {
-                console.log('ℹ️ Нет формул для пересчета');
-            }
-        } else if (attempts < maxAttempts) {
-            console.log(`⏳ Ожидание MathJax... попытка ${attempts}/${maxAttempts}`);
-            setTimeout(tryRenderMath, 400);
-        } else {
-            console.warn('⚠️ MathJax не загрузился, формулы не пересчитаны');
+        let answerDisplay = '';
+        if (task.answerText) {
+            answerDisplay += `<div class="text-content" style="font-size:9pt;">${task.answerText.replace(/<[^>]*>/g,'').replace(/\n/g, '<br>').substring(0,100)}</div>`;
+        }
+        if (task.answerImage) {
+            answerDisplay += `<img src="${task.answerImage}" style="max-width:80px;max-height:80px;">`;
+        }
+        if (answerDisplay) {
+            answerItems.push(`<div class="answer-item"><strong>${num}</strong>${answerDisplay}</div>`);
         }
     }
 
-    setTimeout(tryRenderMath, 1000);
-}
+    // ---------- РЕШЕНИЕ ----------
+    if (showSolutions && (mode === 'full')) {
+        const hasSol = !!(task.solutionText || task.solutionImage);
+        const hasDraw = !!(task.drawingImage);
+        if (hasSol || hasDraw) {
+            html += `<div class="solution-block">`;
+            html += `<strong>Решение:</strong>`;
+            if (task.solutionText) {
+                html += `<div class="text-content latex-content" style="font-size:11pt; margin-top:4px;">${task.solutionText.replace(/\n/g, '<br>')}</div>`;
+            }
+            if (task.solutionImage) {
+                html += `<img src="${task.solutionImage}" alt="Решение">`;
+            }
+            if (showDrawings && task.drawingImage) {
+                html += `<div style="margin-top:8px;"><strong>📐 Чертеж:</strong><br><img src="${task.drawingImage}" alt="Чертеж"></div>`;
+            }
+            html += `</div>`;
+        }
+    }
 
+    // ---------- ССЫЛКИ ----------
+    if (showLinks && (task.solutionLink || task.videoLink)) {
+        html += `<div class="links">`;
+        if (task.solutionLink) {
+            html += `<a href="${escapeHtml(task.solutionLink)}" target="_blank">🔗 Решение</a>`;
+        }
+        if (task.videoLink) {
+            if (task.solutionLink) html += ` &nbsp;|&nbsp; `;
+            html += `<a href="${escapeHtml(task.videoLink)}" target="_blank">📹 Видео</a>`;
+        }
+        html += `</div>`;
+    }
 
+    html += `</div>`;
+});
 
+                if (answerItems.length > 0 && (mode === 'condition+answer' || mode === 'full')) {
+                    html +=
+                        `<div class="answer-grid"><div style="grid-column:span 6;text-align:center;font-size:14pt;font-weight:bold;margin-bottom:10px;">📋 Ключ ответов</div>`;
+                    html += answerItems.join('');
+                    html += `</div>`;
+                }
 
+                html += `</body></html>`;
 
+                const win = window.open('', '_blank');
+                if (!win) {
+                    alert('Пожалуйста, разрешите всплывающие окна для этой страницы');
+                    return;
+                }
 
+                win.document.write(html);
+                win.document.close();
 
+                let printed = false;
 
+                function doPrint() {
+                    if (printed) return;
+                    printed = true;
+                    setTimeout(() => {
+                        win.print();
+                        setTimeout(() => win.close(), 1500);
+                    }, 300);
+                }
+
+                win.onload = function() {
+                    console.log('🔄 Окно загружено, ждем MathJax...');
+                    let attempts = 0;
+                    const maxAttempts = 20;
+
+                    function checkMathJax() {
+                        attempts++;
+                        if (win.MathJax && win.MathJax.typesetPromise) {
+                            console.log('✅ MathJax найден, пересчитываем формулы...');
+                            const elements = win.document.querySelectorAll('.latex-content');
+                            if (elements.length > 0) {
+                                win.MathJax.typesetPromise(Array.from(elements))
+                                    .then(() => {
+                                        console.log(`✅ Формулы пересчитаны (${elements.length} элементов)`);
+                                        doPrint();
+                                    })
+                                    .catch((err) => {
+                                        console.warn('⚠️ Ошибка пересчета формул:', err);
+                                        doPrint();
+                                    });
+                            } else {
+                                console.log('ℹ️ Нет формул для пересчета');
+                                doPrint();
+                            }
+                        } else if (attempts < maxAttempts) {
+                            console.log(`⏳ Ожидание MathJax... попытка ${attempts}/${maxAttempts}`);
+                            setTimeout(checkMathJax, 300);
+                        } else {
+                            console.warn('⚠️ MathJax не загрузился, печатаем без формул');
+                            doPrint();
+                        }
+                    }
+
+                    setTimeout(checkMathJax, 500);
+                };
+
+                setTimeout(() => {
+                    if (!printed) {
+                        console.warn('⚠️ Таймаут, печатаем без ожидания MathJax');
+                        doPrint();
+                    }
+                }, 10000);
+            }
 
             // ---- Кнопки навигации ----
-document.getElementById('scrollToTop').addEventListener('click', function() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+            document.getElementById('scrollToTop').addEventListener('click', function() {
+                document.getElementById('topPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
 
             document.getElementById('scrollToLastViewed').addEventListener('click', function() {
                 if (lastViewedTaskId) {

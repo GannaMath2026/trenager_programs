@@ -758,164 +758,6 @@
         .task.hidden-by-filter {
             display: none !important;
         }
-
-
-table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    font-size: 16px;
-    text-align: center;
-    border: 1px solid #ddd;
-}
-    th {
-        background: #2c3e50;
-        color: white;
-        padding: 10px 15px;
-        border: 1px solid #34495e;
-    }
-    td {
-        padding: 10px 15px;
-        border: 1px solid #ddd;
-    }
-    tr:nth-child(even) {
-        background-color: #f8f9fa;
-    }
-
-   @media print {
-    /* Скрываем всё лишнее */
-    .no-print {
-        display: none !important;
-    }
-    
-    body {
-        margin: 10mm;
-        background: white !important;
-        font-size: 12pt;
-        line-height: 1.5;
-    }
-    
-    .task {
-        break-inside: avoid;
-        box-shadow: none;
-        margin-bottom: 20px;
-        page-break-inside: avoid;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 12px;
-        background: white;
-    }
-    
-    .task-head {
-        background: #f5f5f5 !important;
-        padding: 10px 16px;
-        border-radius: 8px 8px 0 0;
-    }
-    
-    .task-body {
-        padding: 12px 16px;
-    }
-    
-    .zone {
-        border: 1px solid #ddd !important;
-        background: white !important;
-        padding: 10px;
-        border-radius: 6px;
-        margin-bottom: 8px;
-    }
-    
-    .zone .text-content {
-        border: 1px solid #eee !important;
-        font-size: 11pt !important;
-        padding: 8px;
-        border-radius: 4px;
-        background: white;
-    }
-    
-    .zone img {
-        max-width: 80% !important;
-        max-height: 300px !important;
-    }
-    
-    .badges .badge {
-        border: 1px solid #ccc !important;
-        font-size: 9pt;
-    }
-    
-    .title {
-        font-size: 14pt !important;
-    }
-    
-    /* Таблицы */
-    table {
-        border-collapse: collapse;
-        width: 100%;
-        margin: 8px 0;
-        font-size: 11pt;
-        text-align: center;
-        border: 1px solid #ddd;
-    }
-    
-    th {
-        background: #2c3e50 !important;
-        color: white !important;
-        padding: 6px 10px;
-        border: 1px solid #34495e;
-        font-weight: 600;
-    }
-    
-    td {
-        padding: 6px 10px;
-        border: 1px solid #ddd;
-    }
-    
-    tr:nth-child(even) {
-        background-color: #f8f9fa;
-    }
-    
-    /* Скрываем подсказки и лишние элементы */
-    .hint {
-        display: none !important;
-    }
-    
-    p {
-        margin: 4px 0 !important;
-    }
-    
-    .split {
-        display: block !important;
-    }
-    
-    /* Ключ ответов */
-    .answer-grid {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 8px;
-        margin-top: 30px;
-        page-break-before: always;
-    }
-    
-    .answer-grid .answer-item {
-        border: 1px solid #ccc;
-        padding: 6px;
-        text-align: center;
-        font-size: 9pt;
-    }
-    
-    .answer-grid .answer-item img {
-        max-width: 60px;
-        max-height: 60px;
-    }
-    
-    .print-title {
-        font-size: 20pt;
-        font-weight: bold;
-        margin-bottom: 20px;
-        text-align: center;
-        display: block !important;
-    }
-}
     </style>
 </head>
 <body>
@@ -2511,158 +2353,218 @@ table {
                 printTasks();
             });
 
-            function printTasks() {
-                const mode = document.getElementById('printMode').value;
-                const showSolutions = document.getElementById('printSolutions').value === 'yes';
-                const showLinks = document.getElementById('printLinks').value === 'yes';
-                const showDrawings = document.getElementById('printDrawings').value === 'yes';
+            
 
-                const filtered = getFilteredTasks();
-                if (filtered.length === 0) {
-                    alert('Нет задач для печати');
-                    return;
+
+
+
+
+
+
+
+
+
+function printTasks() {
+    const mode = document.getElementById('printMode').value;
+    const showSolutions = document.getElementById('printSolutions').value === 'yes';
+    const showLinks = document.getElementById('printLinks').value === 'yes';
+    const showDrawings = document.getElementById('printDrawings').value === 'yes';
+
+    const filtered = getFilteredTasks();
+    if (filtered.length === 0) {
+        alert('Нет задач для печати');
+        return;
+    }
+
+    let html = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Задачи</title>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"><\/script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
+                displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
+                processEscapes: true
+            },
+            startup: {
+                pageReady: function() {
+                    return MathJax.startup.defaultPageReady().then(function() {
+                        console.log('✅ MathJax готов к печати');
+                    });
                 }
+            }
+        };
+    <\/script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 10mm; line-height: 1.5; background: white; }
+        .print-title { font-size: 20pt; font-weight: bold; text-align: center; margin-bottom: 20px; }
+        .task-print { margin-bottom: 30px; page-break-inside: avoid; border-bottom: 1px solid #ccc; padding-bottom: 15px; }
+        .task-title { font-weight: bold; font-size: 14pt; margin-bottom: 6px; }
 
-                let html = `<!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Задачи</title>
-        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"><\/script>
-        <script>
-            window.MathJax = {
-                tex: {
-                    inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
-                    displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
-                    processEscapes: true
-                },
-                startup: {
-                    pageReady: function() {
-                        return MathJax.startup.defaultPageReady().then(function() {
-                            console.log('✅ MathJax готов к печати');
-                        });
-                    }
+        /* ====== СТИЛИ КАК В ПРИЛОЖЕНИИ ====== */
+        .text-content { white-space: pre-wrap; font-size: 14px; line-height: 1.5; padding: 12px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; margin: 8px 0; }
+        .text-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+            font-size: 14px;
+            text-align: center;
+            background: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .text-content th {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 15px;
+            border: 1px solid #34495e;
+            font-weight: 600;
+        }
+        .text-content td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+        }
+        .text-content tr:nth-child(even) { background-color: #f8f9fa; }
+        .text-content tr:hover { background-color: #e9ecef; }
+        .text-content img { max-width: 100%; max-height: 400px; display: block; margin: 8px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .solution-block { margin-top: 12px; padding-top: 10px; border-top: 1px dashed #ddd; }
+        .answer-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 30px; page-break-before: always; }
+        .answer-item { border: 1px solid #ccc; padding: 6px; text-align: center; font-size: 10pt; }
+        .answer-item img { max-width: 80px; max-height: 80px; }
+        .links { font-size: 10pt; margin-top: 6px; }
+        .links a { color: #2563eb; text-decoration: underline; }
+        .MathJax { font-size: 11pt !important; }
+        .MathJax_Display { overflow-x: auto; overflow-y: hidden; margin: 5px 0 !important; }
+        .zone { border: 1px solid #ddd; border-radius: 8px; padding: 12px; background: #fafbfc; margin: 6px 0; }
+        .zone h4 { margin: 0 0 8px 0; font-size: 13px; color: #64748b; font-weight: 600; }
+        .badge { display: inline-block; border: 1px solid #cbd5e1; border-radius: 20px; padding: 2px 10px; background: white; font-size: 11px; font-weight: 500; margin: 2px 4px 2px 0; }
+        .badge.section { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); color: #1e40af; }
+        @media print {
+            body { margin: 8mm; }
+            .task-print { page-break-inside: avoid; }
+            .MathJax { font-size: 10pt !important; }
+        }
+    </style>
+</head>
+<body>`;
+
+    const title = document.querySelector('.top-panel .title')?.textContent || 'Задачи';
+    html += `<div class="print-title">${escapeHtml(title)}</div>`;
+
+    let answerItems = [];
+
+    filtered.forEach((task, index) => {
+        const num = index + 1;
+
+        // Находим DOM-элементы задачи в основном приложении
+        const taskEl = document.querySelector(`.task[data-id="${task.id}"]`);
+        let taskZoneHtml = '',
+            answerZoneHtml = '',
+            solutionZoneHtml = '';
+
+        if (taskEl) {
+            const taskZone = taskEl.querySelector('.zone[data-zone="task"]');
+            const answerZone = taskEl.querySelector('.zone[data-zone="answer"]');
+            const solutionZone = taskEl.querySelector('.zone[data-zone="solution"]');
+
+            if (taskZone) {
+                const clone = taskZone.cloneNode(true);
+                clone.querySelectorAll('.zone-actions, .hint').forEach(el => el.remove());
+                taskZoneHtml = clone.innerHTML;
+            }
+            if (answerZone) {
+                const clone = answerZone.cloneNode(true);
+                clone.querySelectorAll('.zone-actions, .hint').forEach(el => el.remove());
+                answerZoneHtml = clone.innerHTML;
+                // Для ключа ответов
+                let answerDisplay = '';
+                const answerContent = clone.querySelector('.answer-content');
+                if (answerContent) {
+                    answerDisplay = answerContent.innerHTML;
                 }
-            };
-        <\/script>
-        <style>
-            body { font-family: 'Times New Roman', serif; margin: 10mm; line-height: 1.4; }
-            .print-title { font-size: 20pt; font-weight: bold; text-align: center; margin-bottom: 20px; }
-            .task-print { margin-bottom: 30px; page-break-inside: avoid; border-bottom: 1px solid #ccc; padding-bottom: 15px; }
-            .task-title { font-weight: bold; font-size: 14pt; margin-bottom: 6px; }
-            .task-content { margin: 8px 0; }
-            .task-content .text-content { white-space: pre-wrap; font-size: 11pt; }
-            .task-content img { max-width: 80%; max-height: 400px; display: block; margin: 8px 0; }
-            .solution-block { margin-top: 12px; padding-top: 10px; border-top: 1px dashed #ddd; }
-            .solution-block .text-content { font-size: 11pt; }
-            .solution-block img { max-width: 80%; max-height: 400px; display: block; margin: 8px 0; }
-            .answer-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 30px; page-break-before: always; }
-            .answer-item { border: 1px solid #ccc; padding: 6px; text-align: center; font-size: 10pt; }
-            .answer-item img { max-width: 80px; max-height: 80px; }
-            .links { font-size: 10pt; margin-top: 6px; }
-            .links a { color: #2563eb; text-decoration: underline; }
-            .MathJax { font-size: 11pt !important; }
-            .MathJax_Display { overflow-x: auto; overflow-y: hidden; margin: 5px 0 !important; }
-            @media print {
-                body { margin: 8mm; }
-                .task-print { page-break-inside: avoid; }
-                .MathJax { font-size: 10pt !important; }
+                if (answerDisplay) {
+                    answerItems.push(`<div class="answer-item"><strong>${num}</strong>${answerDisplay}</div>`);
+                }
             }
-        </style>
-    </head>
-    <body>`;
-
-                const title = document.querySelector('.top-panel .title')?.textContent || 'Задачи';
-                html += `<div class="print-title">${escapeHtml(title)}</div>`;
-
-                let answerItems = [];
-
-                filtered.forEach((task, index) => {
-    const num = index + 1;
-    html += `<div class="task-print">`;
-    html += `<div class="task-title">${num}. ${escapeHtml(task.title || '(без названия)')}</div>`;
-
-    // ---------- УСЛОВИЕ ----------
-    html += `<div class="task-content">`;
-    if (task.taskText) {
-        html += `<div class="text-content latex-content">${task.taskText.replace(/\n/g, '<br>')}</div>`;
-    }
-    if (task.taskImage) {
-        html += `<img src="${task.taskImage}" alt="Условие">`;
-    }
-    if (!task.taskText && !task.taskImage) {
-        html += `<div style="color:#999;font-style:italic;">(условие не задано)</div>`;
-    }
-    html += `</div>`;
-
-    // ---------- ОТВЕТ ----------
-    if (mode === 'condition+answer' || mode === 'full') {
-        if (task.answerText || task.answerImage) {
-            html += `<div style="margin-top:6px;"><strong>Ответ:</strong>`;
-            if (task.answerText) {
-                html += `<div class="text-content latex-content" style="font-size:11pt;">${task.answerText.replace(/\n/g, '<br>')}</div>`;
+            if (solutionZone && showSolutions) {
+                const clone = solutionZone.cloneNode(true);
+                clone.querySelectorAll('.zone-actions, .hint').forEach(el => el.remove());
+                solutionZoneHtml = clone.innerHTML;
             }
-            if (task.answerImage) {
-                html += `<img src="${task.answerImage}" alt="Ответ">`;
+        } else {
+            // fallback: если задача не найдена в DOM, используем данные
+            taskZoneHtml = `<div class="text-content">${task.taskText || '(условие не задано)'}</div>`;
+            if (task.taskImage) taskZoneHtml += `<img src="${task.taskImage}">`;
+            answerZoneHtml = `<div class="text-content">${task.answerText || ''}</div>`;
+            if (task.answerImage) answerZoneHtml += `<img src="${task.answerImage}">`;
+            if (showSolutions) {
+                solutionZoneHtml = `<div class="text-content">${task.solutionText || ''}</div>`;
+                if (task.solutionImage) solutionZoneHtml += `<img src="${task.solutionImage}">`;
+                if (showDrawings && task.drawingImage) {
+                    solutionZoneHtml += `<div style="margin-top:8px;"><strong>📐 Чертеж:</strong><br><img src="${task.drawingImage}"></div>`;
+                }
+            }
+        }
+
+        html += `<div class="task-print">`;
+        html += `<div class="task-title">${num}. ${escapeHtml(task.title || '(без названия)')}</div>`;
+
+        // ---------- УСЛОВИЕ ----------
+        html += `<div class="task-content">`;
+        if (taskZoneHtml) {
+            html += `<div class="zone">${taskZoneHtml}</div>`;
+        }
+        html += `</div>`;
+
+        // ---------- ОТВЕТ ----------
+        if (mode === 'condition+answer' || mode === 'full') {
+            if (answerZoneHtml) {
+                html += `<div style="margin-top:6px;"><strong>Ответ:</strong>`;
+                html += `<div class="zone">${answerZoneHtml}</div>`;
+                html += `</div>`;
+            }
+        }
+
+        // ---------- РЕШЕНИЕ ----------
+        if (showSolutions && (mode === 'full')) {
+            const hasSol = !!(task.solutionText || task.solutionImage || task.drawingImage);
+            if (hasSol && solutionZoneHtml) {
+                html += `<div class="solution-block">`;
+                html += `<strong>Решение:</strong>`;
+                html += `<div class="zone">${solutionZoneHtml}</div>`;
+                html += `</div>`;
+            }
+        }
+
+        // ---------- ССЫЛКИ ----------
+        if (showLinks && (task.solutionLink || task.videoLink)) {
+            html += `<div class="links">`;
+            if (task.solutionLink) {
+                html += `<a href="${escapeHtml(task.solutionLink)}" target="_blank">🔗 Решение</a>`;
+            }
+            if (task.videoLink) {
+                if (task.solutionLink) html += ` &nbsp;|&nbsp; `;
+                html += `<a href="${escapeHtml(task.videoLink)}" target="_blank">📹 Видео</a>`;
             }
             html += `</div>`;
         }
-        let answerDisplay = '';
-        if (task.answerText) {
-            answerDisplay += `<div class="text-content" style="font-size:9pt;">${task.answerText.replace(/<[^>]*>/g,'').replace(/\n/g, '<br>').substring(0,100)}</div>`;
-        }
-        if (task.answerImage) {
-            answerDisplay += `<img src="${task.answerImage}" style="max-width:80px;max-height:80px;">`;
-        }
-        if (answerDisplay) {
-            answerItems.push(`<div class="answer-item"><strong>${num}</strong>${answerDisplay}</div>`);
-        }
-    }
 
-    // ---------- РЕШЕНИЕ ----------
-    if (showSolutions && (mode === 'full')) {
-        const hasSol = !!(task.solutionText || task.solutionImage);
-        const hasDraw = !!(task.drawingImage);
-        if (hasSol || hasDraw) {
-            html += `<div class="solution-block">`;
-            html += `<strong>Решение:</strong>`;
-            if (task.solutionText) {
-                html += `<div class="text-content latex-content" style="font-size:11pt; margin-top:4px;">${task.solutionText.replace(/\n/g, '<br>')}</div>`;
-            }
-            if (task.solutionImage) {
-                html += `<img src="${task.solutionImage}" alt="Решение">`;
-            }
-            if (showDrawings && task.drawingImage) {
-                html += `<div style="margin-top:8px;"><strong>📐 Чертеж:</strong><br><img src="${task.drawingImage}" alt="Чертеж"></div>`;
-            }
-            html += `</div>`;
-        }
-    }
+        html += `</div>`;
+    });
 
-    // ---------- ССЫЛКИ ----------
-    if (showLinks && (task.solutionLink || task.videoLink)) {
-        html += `<div class="links">`;
-        if (task.solutionLink) {
-            html += `<a href="${escapeHtml(task.solutionLink)}" target="_blank">🔗 Решение</a>`;
-        }
-        if (task.videoLink) {
-            if (task.solutionLink) html += ` &nbsp;|&nbsp; `;
-            html += `<a href="${escapeHtml(task.videoLink)}" target="_blank">📹 Видео</a>`;
-        }
+    if (answerItems.length > 0 && (mode === 'condition+answer' || mode === 'full')) {
+        html += `<div class="answer-grid"><div style="grid-column:span 6;text-align:center;font-size:14pt;font-weight:bold;margin-bottom:10px;">📋 Ключ ответов</div>`;
+        html += answerItems.join('');
         html += `</div>`;
     }
 
-    html += `</div>`;
-});
+                                   
 
-                if (answerItems.length > 0 && (mode === 'condition+answer' || mode === 'full')) {
-                    html +=
-                        `<div class="answer-grid"><div style="grid-column:span 6;text-align:center;font-size:14pt;font-weight:bold;margin-bottom:10px;">📋 Ключ ответов</div>`;
-                    html += answerItems.join('');
-                    html += `</div>`;
-                }
 
-                html += `</body></html>`;
+                              html += `</body></html>`;
 
                 const win = window.open('', '_blank');
                 if (!win) {
@@ -2673,65 +2575,68 @@ table {
                 win.document.write(html);
                 win.document.close();
 
-                let printed = false;
-
-                function doPrint() {
-                    if (printed) return;
-                    printed = true;
-                    setTimeout(() => {
-                        win.print();
-                        setTimeout(() => win.close(), 1500);
-                    }, 300);
-                }
-
+                // Ждём загрузки окна
                 win.onload = function() {
-                    console.log('🔄 Окно загружено, ждем MathJax...');
-                    let attempts = 0;
-                    const maxAttempts = 20;
+                    console.log('🔄 Окно загружено, пытаемся пересчитать формулы...');
 
-                    function checkMathJax() {
-                        attempts++;
-                        if (win.MathJax && win.MathJax.typesetPromise) {
-                            console.log('✅ MathJax найден, пересчитываем формулы...');
-                            const elements = win.document.querySelectorAll('.latex-content');
-                            if (elements.length > 0) {
-                                win.MathJax.typesetPromise(Array.from(elements))
-                                    .then(() => {
-                                        console.log(`✅ Формулы пересчитаны (${elements.length} элементов)`);
-                                        doPrint();
-                                    })
-                                    .catch((err) => {
-                                        console.warn('⚠️ Ошибка пересчета формул:', err);
-                                        doPrint();
-                                    });
-                            } else {
-                                console.log('ℹ️ Нет формул для пересчета');
-                                doPrint();
-                            }
-                        } else if (attempts < maxAttempts) {
-                            console.log(`⏳ Ожидание MathJax... попытка ${attempts}/${maxAttempts}`);
-                            setTimeout(checkMathJax, 300);
-                        } else {
-                            console.warn('⚠️ MathJax не загрузился, печатаем без формул');
-                            doPrint();
-                        }
+                    // Проверяем, загружен ли MathJax в новом окне
+                    if (!win.MathJax) {
+                        console.error('❌ MathJax не загружен в новом окне!');
+                        return;
                     }
 
-                    setTimeout(checkMathJax, 500);
+                    // Ищем все элементы, которые могут содержать формулы
+                    const elements = win.document.querySelectorAll(
+                        '.text-content, .latex-content, .zone .text-content, .zone .latex-content, .zone'
+                    );
+
+                    if (elements.length === 0) {
+                        console.warn('⚠️ Нет элементов для пересчета');
+                        return;
+                    }
+
+                    console.log(`🔍 Найдено ${elements.length} элементов, пересчитываем...`);
+
+                    // Пересчитываем формулы
+                    win.MathJax.typesetPromise(Array.from(elements))
+                        .then(() => {
+                            console.log('✅ Формулы успешно пересчитаны!');
+                            // Теперь можно печатать (если нужно автоматически)
+                            // win.print();
+                        })
+                        .catch((err) => {
+                            console.error('❌ Ошибка пересчета формул:', err);
+                        });
                 };
 
+                // Страховка: если onload не сработал
                 setTimeout(() => {
-                    if (!printed) {
-                        console.warn('⚠️ Таймаут, печатаем без ожидания MathJax');
-                        doPrint();
+                    if (win && win.MathJax && win.document) {
+                        const elements = win.document.querySelectorAll(
+                            '.text-content, .latex-content, .zone .text-content, .zone .latex-content'
+                        );
+                        if (elements.length > 0) {
+                            console.log('⏳ Повторная попытка пересчета (таймаут)');
+                            win.MathJax.typesetPromise(Array.from(elements))
+                                .then(() => console.log('✅ Формулы пересчитаны по таймауту'))
+                                .catch(err => console.warn('⚠️ Ошибка пересчета по таймауту:', err));
+                        }
                     }
-                }, 10000);
+                }, 3000);
             }
 
+
+
+
+
+
+
+
+
             // ---- Кнопки навигации ----
-            document.getElementById('scrollToTop').addEventListener('click', function() {
-                document.getElementById('topPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
+document.getElementById('scrollToTop').addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 
             document.getElementById('scrollToLastViewed').addEventListener('click', function() {
                 if (lastViewedTaskId) {
