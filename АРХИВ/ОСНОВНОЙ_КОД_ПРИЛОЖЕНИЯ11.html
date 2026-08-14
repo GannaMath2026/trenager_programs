@@ -2530,7 +2530,7 @@ img {
 <body>`;
 
     const title = document.querySelector('.top-panel .title')?.textContent || 'Задачи';
-    html += `<div class="print-title">${escapeHtml(title)}</div>`;
+    // html += `<div class="print-title">${escapeHtml(title)}</div>`; // УБИРАЕМ ЗАГОЛОВОК
 
     let answerItems = [];
 
@@ -2538,62 +2538,64 @@ img {
         const num = index + 1;
         html += `<div class="task-print">`;
         // **************************************************************************************************************************************
-	// если не надо выводить сквозные номера - комментим следующую строку:
-	//html += `<div class="task-title">${num}. ${escapeHtml(task.title || '(без названия)')}</div>`;
-        html += `<div class="task-title">. ${escapeHtml(task.title || 'ЗАДАНИЕ ')}</div>`;
+        // если не надо выводить сквозные номера - комментим следующую строку:
+        //html += `<div class="task-title">${num}. ${escapeHtml(task.title || '(без названия)')}</div>`;
+        // html += `<div class="task-title">. ${escapeHtml(task.title || '(без названия)')}</div>`;
         
-// ---------- УСЛОВИЕ ----------
+// ---------- УСЛОВИЕ (ЗАДАЧА + НОМЕР + ТЕКСТ В ОДНОЙ СТРОКЕ) ----------
         html += `<div class="task-content">`;
+        html += `<div style="margin-top:0px;"><strong>Задача ${num}.</strong>`;
         if (task.taskText) {
-            html += `<div class="text-content latex-content">${task.taskText}</div>`;
+            html += `<span class="text-content latex-content" style="display:inline; white-space:normal;"> ${task.taskText}</span>`;
         }
         if (task.taskImage) {
-            html += `<img src="${task.taskImage}" alt="Условие">`;
+            html += `<br><img src="${task.taskImage}" alt="Условие">`;
         }
         if (!task.taskText && !task.taskImage) {
-            html += `<div style="color:#94a3b8;font-style:italic;">(условие не задано)</div>`;
+            html += `<span style="color:#94a3b8;font-style:italic;"> (условие не задано)</span>`;
         }
         html += `</div>`;
+        html += `</div>`;
 
-        // ---------- ОТВЕТ ----------
+        // ---------- ОТВЕТ (слово "Ответ" и сам ответ в 1 строке) ----------
         if (mode === 'condition+answer' || mode === 'full') {
             if (task.answerText || task.answerImage) {
-                html += `<div style="margin-top:6px;"><strong>Ответ:</strong>`;
+                html += `<div style="margin-top:2px;"><strong>Ответ:</strong>`;
                 if (task.answerText) {
-                    html += `<div class="text-content latex-content">${task.answerText}</div>`;
+                    html += `<span class="text-content latex-content" style="display:inline; white-space:normal;"> ${task.answerText}</span>`;
                 }
                 if (task.answerImage) {
-                    html += `<img src="${task.answerImage}" alt="Ответ">`;
+                    html += `<br><img src="${task.answerImage}" alt="Ответ">`;
                 }
                 html += `</div>`;
             }
             let answerDisplay = '';
             if (task.answerText) {
-                answerDisplay += `<div class="text-content" style="font-size:9pt;">${task.answerText.replace(/<[^>]*>/g,'').substring(0,100)}</div>`;
+                answerDisplay += `<span style="font-size:9pt;">${task.answerText.replace(/<[^>]*>/g,'').substring(0,100)}</span>`;
             }
             if (task.answerImage) {
-                answerDisplay += `<img src="${task.answerImage}" style="max-width:60px;max-height:60px;">`;
+                answerDisplay += `<br><img src="${task.answerImage}" style="max-width:60px;max-height:60px;">`;
             }
             if (answerDisplay) {
                 answerItems.push(`<div class="answer-item"><strong>${num}</strong>${answerDisplay}</div>`);
             }
         }
 
-        // ---------- РЕШЕНИЕ ----------
+        // ---------- РЕШЕНИЕ (слово "Решение" и само решение в 1 строке) ----------
         if (showSolutions && (mode === 'full')) {
             const hasSol = !!(task.solutionText || task.solutionImage);
             const hasDraw = !!(task.drawingImage);
             if (hasSol || hasDraw) {
-                html += `<div class="solution-block">`;
+                html += `<div class="solution-block" style="margin-top:2px;">`;
                 html += `<strong>Решение:</strong>`;
                 if (task.solutionText) {
-                    html += `<div class="text-content latex-content">${task.solutionText}</div>`;
+                    html += `<span class="text-content latex-content" style="display:inline; white-space:normal;"> ${task.solutionText}</span>`;
                 }
                 if (task.solutionImage) {
-                    html += `<img src="${task.solutionImage}" alt="Решение">`;
+                    html += `<br><img src="${task.solutionImage}" alt="Решение">`;
                 }
                 if (showDrawings && task.drawingImage) {
-                    html += `<div style="margin-top:8px;"><strong>📐 Чертеж:</strong><br><img src="${task.drawingImage}" alt="Чертеж"></div>`;
+                    html += `<br><strong>📐 Чертеж:</strong><br><img src="${task.drawingImage}" alt="Чертеж">`;
                 }
                 html += `</div>`;
             }
