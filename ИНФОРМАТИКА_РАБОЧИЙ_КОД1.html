@@ -1,0 +1,3258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Python Runner + Объяснение кода (Учитель/Ученик)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <!-- Библиотека для динамических разделителей -->
+    <script src="https://cdn.jsdelivr.net/npm/split.js@1.6.5/dist/split.min.js"></script>
+    
+    <style>
+        /* Глобальные стили для правильной работы прокрутки */
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+
+
+        body {
+            background: #0f172a;
+            color: white;
+            font-family: Segoe UI, Tahoma, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .welcome-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+
+
+        .welcome-content {
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 16px;
+            border: 2px solid #334155;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+
+        .welcome-content h2 { color: #facc15; margin-top: 0; }
+        .welcome-content h3 { color: #10b981; }
+        .welcome-content ul { text-align: left; }
+
+        .close-welcome {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .close-welcome:hover {
+            background: #475569;
+            transform: scale(1.05);
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+            align-items: center;
+            flex-shrink: 0;
+            background: #0f172a;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            z-index: 100;
+        }
+
+        .programmer-help-btn {
+            background: linear-gradient(135deg, #a855f7, #7e22ce) !important;
+            min-width: 160px;
+        }
+        
+        .programmer-help-btn:hover {
+            background: linear-gradient(135deg, #9333ea, #6b21a5) !important;
+            transform: scale(1.05);
+        }
+
+        /* Кнопки режимов Учитель/Ученик */
+        .mode-btn {
+            background: #475569;
+            min-width: 120px;
+        }
+        
+        .mode-btn.teacher-active {
+            background: #dc2626 !important;
+            outline: 2px solid #facc15;
+        }
+        
+        .mode-btn.student-active {
+            background: #16a34a !important;
+            outline: 2px solid #facc15;
+        }
+
+        .palette-row {
+            display: flex;
+            gap: 4px;
+            margin: 0 6px 6px 6px;
+        }
+
+        .color-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .color-btn.active {
+            outline: 3px solid #facc15;
+            box-shadow: 0 0 0 3px rgba(250,204,21,0.5);
+        }
+
+        .color-btn.drawing {
+            animation: pulse 1s infinite;
+        }
+
+        .pen-size-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 6px;
+            background: #475569;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        .pen-size-btn:hover {
+            transform: scale(1.1);
+            background: #64748b;
+        }
+
+        .pen-size-btn.active {
+            outline: 3px solid #facc15;
+            box-shadow: 0 0 0 3px rgba(250,204,21,0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1.1); }
+            50% { transform: scale(1.2); }
+        }
+
+        button, input, select {
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+        }
+
+        button {
+            cursor: pointer;
+            background: #3b82f6;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.3);
+            transform: skewX(-20deg);
+            transition: left 0.3s;
+        }
+
+        button:active::after {
+            left: 100%;
+        }
+
+        button.gray { background:#64748b; }
+        button.green { background:#10b981; }
+        button.red { background:#ef4444; }
+        button.print { background: #f59e0b; }
+        button.orange { background: #ff9800; }
+        button.help { background: #a855f7; }
+
+        .code-mode-btn {
+            background: #475569;
+            min-width: 120px;
+        }
+        
+        .code-mode-btn.active {
+            background: #f59e0b;
+            outline: 2px solid #facc15;
+        }
+
+        .video-play-btn {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            padding: 8px 12px !important;
+            font-size: 16px !important;
+            min-width: 50px;
+        }
+
+        .video-play-btn:hover {
+            background: linear-gradient(135deg, #059669, #047857) !important;
+            transform: scale(1.05);
+        }
+
+        /* Модальное окно помощи программера */
+        .programmer-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.98);
+            z-index: 4000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .programmer-modal.show {
+            display: flex;
+        }
+
+        .programmer-content {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 16px;
+            border: 2px solid #a855f7;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .programmer-content h3 {
+            color: #a855f7;
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        .function-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .function-btn {
+            background: #334155;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .function-btn:hover {
+            background: #475569;
+            transform: scale(1.05);
+        }
+
+        .function-btn.active {
+            background: #a855f7;
+            box-shadow: 0 0 15px #a855f7;
+        }
+
+        .function-description {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-family: Consolas, monospace;
+            font-size: 16px;
+            color: #ffffff;
+            border-left: 4px solid #a855f7;
+        }
+
+        .function-code {
+            background: #020617;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-family: Consolas, monospace;
+            font-size: 16px;
+            color: #ffffff;
+            white-space: pre-wrap;
+            border: 1px solid #a855f7;
+        }
+
+        .programmer-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Индикатор анимации */
+        .animation-indicator {
+            background: #ff9800;
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 10px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .animation-indicator .key-hint {
+            background: #000;
+            color: #ff9800;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+#taskImage {
+    display: block;
+    margin-left: 0;
+    margin-right: auto;
+    width: 30vw;  /* 30% от ширины окна браузера */
+    height: auto;
+    max-width: 100%;
+    border-radius: 8px;
+    border: 2px solid #334155;
+    margin-bottom: 10px;
+}
+
+        #taskText {
+            display: none;
+            margin-bottom: 10px;
+            padding: 12px;
+            background: #1e293b;
+            border-radius: 8px;
+            border: 2px solid #334155;
+            white-space: pre-wrap;
+            font-family: Consolas, monospace;
+            font-size: 18px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        #taskText .number {
+            color: #ef4444;
+            font-weight: bold;
+            background: rgba(239,68,68,0.1);
+            padding: 1px 3px;
+            border-radius: 3px;
+        }
+
+        .print-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 90vw;
+            max-height: 85vh;
+            width: 600px;
+            height: 70vh;
+            padding: 25px;
+            background: #1e293b;
+            border-radius: 16px;
+            border: 2px solid #334155;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+
+        .print-checkboxes {
+            max-height: 450px;
+            overflow-y: auto;
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #334155;
+        }
+
+        .print-task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            margin: 4px 0;
+            background: #1e293b;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .print-task-item:hover {
+            background: #334155;
+        }
+
+        .print-task-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #f59e0b;
+        }
+
+        .answer-section {
+            cursor: pointer;
+            margin-top: 12px;
+            padding: 8px;
+            background: #1e293b;
+            border-radius: 8px;
+            border: 2px solid #334155;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .answer-section:hover {
+            background: #334155;
+        }
+
+        #answerInput {
+            width: 100%;
+            margin-top: 12px;
+            margin-bottom: 12px;
+            font-size: 18px;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+            flex-shrink: 0;
+        }
+
+
+
+
+
+        .solved-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #1e293b;
+            border-radius: 8px;
+            border: 2px solid #334155;
+            transition: all 0.3s;
+        }
+
+        .solved-container.solved {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            border-color: #34d399 !important;
+            box-shadow: 0 0 20px rgba(16,185,129,0.5);
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(16,185,129,0.5); }
+            50% { box-shadow: 0 0 30px rgba(16,185,129,0.8); }
+        }
+
+        /* ========== КОНТЕЙНЕР С РАЗДЕЛИТЕЛЕМ ========== */
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            gap: 10px;
+        }
+
+        .split-container {
+            display: flex;
+            flex-direction: row;
+            height: 100%;
+            gap: 0;
+            min-height: 0;
+            flex: 1;
+        }
+
+        /* Левая панель (код) */
+        .code-panel {
+            background: #020617;
+            border-radius: 10px 0 0 10px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .code-panel textarea {
+            width: 100%;
+            border-radius: 10px 0 0 10px;
+            border: none;
+            padding: 14px;
+            font-family: Consolas, monospace;
+            font-size: 20px;
+            line-height: 1.5;
+            background: #020617;
+            color: #ffffff;
+            resize: none;
+            height: 100% !important;
+            min-height: 0;
+            box-sizing: border-box;
+            overflow-y: auto !important;
+        }
+
+        /* Средняя панель (вывод) */
+        .output-panel {
+            background: #020617;
+            border-radius: 0 10px 10px 0;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        #output {
+            width: 100%;
+            border-radius: 0 10px 10px 0;
+            border: none;
+            padding: 14px;
+            font-family: Consolas, monospace;
+            font-size: 20px;
+            line-height: 1.5;
+            background: #020617;
+            color: #22c55e;
+            white-space: pre-wrap;
+            overflow-y: auto !important;
+            height: 100% !important;
+            min-height: 0;
+            box-sizing: border-box;
+        }
+
+        /* Стили для комментариев в анимации - оранжевые */
+        #output .animation-comment {
+            color: #ff8c00 !important;
+            font-style: italic;
+        }
+
+        .comment-highlight-animation {
+            color: #ff8c00 !important;
+            font-style: italic;
+        }
+
+        /* Динамический разделитель */
+        .gutter {
+            cursor: col-resize;
+            background: #334155;
+            width: 6px;
+            margin: 0;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+
+        .gutter:hover {
+            background: #facc15;
+        }
+
+        .gutter.gutter-horizontal {
+            cursor: col-resize;
+        }
+
+        /* Правая панель (список задач) */
+        .task-list-panel {
+            background: #1e293b;
+            border-radius: 10px;
+            border: 2px solid #334155;
+            display: flex;
+            flex-direction: column;
+            height: 100% !important;
+            min-height: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+            width: 280px;
+            flex-shrink: 0;
+        }
+
+        .task-list-header {
+            padding: 12px;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .task-list-header button {
+            padding: 6px 10px;
+            font-size: 12px;
+            background: #334155;
+        }
+
+        .task-list-header button.active {
+            background: #3b82f6;
+        }
+
+        .task-list-items {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .task-list-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            margin-bottom: 4px;
+            background: #0f172a;
+            border-radius: 6px;
+            border-left: 4px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .task-list-item:hover {
+            background: #334155;
+        }
+
+        .task-list-item.selected {
+    background: linear-gradient(135deg, #3b82f6, #1e40af) !important;
+    border-left-color: #facc15;
+    border-left-width: 6px;
+    box-shadow: 0 0 0 2px #facc15, 0 4px 12px rgba(0,0,0,0.3);
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+}
+.task-info-card {
+    max-width: 260px;  /* ограничиваем максимальную ширину */
+    width: 100%;
+    margin: 8px auto;
+}
+
+.task-list-item.selected .task-title {
+    color: #ffffff;
+    font-weight: bold;
+    text-shadow: 0 0 4px rgba(0,0,0,0.5);
+}
+
+        .task-list-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #10b981;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .task-star {
+            cursor: pointer;
+            font-size: 18px;
+            color: #64748b;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .task-star.favorite {
+            color: #facc15;
+        }
+
+        .task-title {
+            flex: 1;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+
+        .task-status {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .task-status.solved {
+            background: #10b981;
+        }
+
+        .task-status.unsolved {
+            background: #64748b;
+        }
+
+        #drawCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .error { color:#ef4444; }
+
+        #taskFilter {
+            background: #1e293b;
+            color: white;
+            padding: 8px 12px;
+        }
+
+        #videoUrl {
+            background: #1e293b;
+            color: white;
+            padding: 6px 10px;
+            font-size: 13px;
+            width: 220px;
+        }
+
+        /* Модальное окно видео */
+        #videoModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.98);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #videoModal.show {
+            display: flex;
+        }
+
+        .modal-video-container {
+            position: relative;
+            width: 90vw;
+            max-width: 1200px;
+            height: 70vh;
+            max-height: 700px;
+        }
+
+        #modalVideo {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .fullscreen-btn, .close-modal {
+            background: #64748b !important;
+            backdrop-filter: blur(10px);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .fullscreen-btn:hover, .close-modal:hover {
+            background: #475569 !important;
+            transform: scale(1.05);
+        }
+
+        /* Диалог печати */
+        #printDialog {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 2500;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .print-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Диалог сохранения */
+        .save-dialog {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 3500;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .save-dialog.show {
+            display: flex;
+        }
+
+        .save-content {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 16px;
+            border: 2px solid #334155;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .save-content input {
+            width: 100%;
+            margin: 15px 0;
+            padding: 12px;
+            background: #0f172a;
+            color: white;
+            border: 1px solid #334155;
+        }
+
+        .save-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Инфо-панель задачи */
+        .task-info-panel {
+            background: #1e293b;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 2px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .task-info-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #facc15;
+        }
+
+        .task-info-analog {
+            background: #334155;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .task-info-analog a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .task-info-analog a:hover {
+            text-decoration: underline;
+        }
+
+        .task-info-video {
+            background: #059669;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .task-info-video a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .task-info-video a:hover {
+            text-decoration: underline;
+        }
+
+        /* НОВОЕ: поле для ссылки на файл */
+        .task-info-file {
+            background: #2563eb;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 300px;
+        }
+
+        .task-info-file a {
+            color: white !important;
+            text-decoration: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 200px;
+        }
+
+        .task-info-file a:hover {
+            text-decoration: underline;
+        }
+
+        .task-info-file button {
+            background: #1e293b !important;
+            color: white;
+            padding: 2px 8px;
+            font-size: 12px;
+            border-radius: 12px;
+        }
+
+        .task-info-file button:hover {
+            background: #334155 !important;
+        }
+
+        /* Модальное окно для загрузки файла по ссылке */
+        .file-load-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.98);
+            z-index: 4500;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-load-modal.show {
+            display: flex;
+        }
+
+        .file-load-content {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 16px;
+            border: 2px solid #2563eb;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .file-load-content h3 {
+            color: #2563eb;
+            margin-top: 0;
+        }
+
+        .file-load-content input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            background: #0f172a;
+            color: white;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            font-family: Consolas, monospace;
+        }
+
+        .file-load-content textarea {
+            width: 100%;
+            height: 200px;
+            background: #0f172a;
+            color: #ffffff;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: Consolas, monospace;
+            margin-bottom: 15px;
+        }
+
+        .file-load-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .file-example-btn {
+            background: #334155;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .file-example-btn:hover {
+            background: #475569;
+        }
+
+        /* Селектор задач с GitHub */
+    .github-tasks-selector {
+    background: #1e293b;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin: 5px 0;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    width: fit-content;      /* ширина по содержимому */
+    max-width: 90%;
+}
+
+.github-tasks-selector select {
+    padding: 4px 8px;
+    font-size: 12px;
+    min-width: 140px;
+    border-radius: 5px;
+}
+
+.github-tasks-selector button {
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 5px;
+    white-space: nowrap;     /* текст кнопки в одну строку */
+}
+
+        .load-task-btn {
+            background: #3b82f6 !important;
+        }
+
+        /* Модальное окно подтверждения */
+        .confirm-dialog {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 5000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .confirm-dialog.show {
+            display: flex;
+        }
+
+        .confirm-content {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 16px;
+            border: 2px solid #facc15;
+            max-width: 500px;
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            .print-content, .print-content * { visibility: visible; }
+            .print-content { 
+                position: absolute; left: 0; top: 0; width: 100%; 
+                background: white; color: black; padding: 20px 30px; font-family: Arial, sans-serif;
+                font-size: 16px; line-height: 1.6;
+            }
+            .print-task { page-break-inside: avoid; margin-bottom: 40px; }
+            .print-task a { color: #1e293b; text-decoration: underline; }
+            button, input, .toolbar, #printDialog, #printContent > style, .task-list-panel { display: none !important; }
+        }
+
+ /* Скрываем блок "Решено" */
+        #solvedContainer {
+            display: none !important;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Модальное окно приветствия (инструкция) -->
+<div id="welcomeModal" class="welcome-modal" style="display: none;">
+    <div class="welcome-content">
+        <h2>🎯 Python Runner + Объяснение кода</h2>
+        <h3>Инструкция по работе:</h3>
+        <ul style="text-align: left; font-size: 16px; line-height: 1.6;">
+            <li><strong>👨‍🏫 Режимы Учитель/Ученик:</strong> Учитель может создавать и редактировать задачи, Ученик - только выполнять.</li>
+            <li><strong>📚 Загрузка с GitHub:</strong> Выберите задачу из списка (Информатика 1-27) и загрузите код и данные.</li>
+            <li><strong>⚠️ При импорте нового JSON:</strong> Система спросит, сохранили ли вы старые задачи, и предложит очистить или добавить.</li>
+            <li><strong>📋 Условие (img/текст):</strong> Вставьте из буфера обмена картинку или текст задачи (числа подсветятся красным).</li>
+            <li><strong>🎨 Палитра:</strong> Выберите цвет и толщину → рисуйте мышкой по экрану (Esc для выхода).</li>
+            <li><strong>▶ Run:</strong> Запустите Python код (Pyodide загружается автоматически).</li>
+            <li><strong>🎬 Объяснение кода:</strong> Показывает анимированный вывод кода построчно. Комментарии (#) подсвечиваются оранжевым. Нажмите любую клавишу для продолжения, Esc - выход.</li>
+            <li><strong>👨‍💻 Помощь программера:</strong> Готовые функции с объяснением и анимацией работы.</li>
+            <li><strong>📁 Ссылка на файл:</strong> У каждой задачи может быть ссылка на файл с данными (GitHub, Google Drive и т.д.)</li>
+            <li><strong>📋 Копировать код:</strong> Скопировать код в буфер.</li>
+            <li><strong>↩ Undo / 🧹 Очистить:</strong> Отменить последнее действие / очистить весь холст.</li>
+            <li><strong>🔗 Видео:</strong> Вставьте ссылку YouTube/Rutube → ▶️ воспроизвести в модальном окне.</li>
+            <li><strong>✅ Решено:</strong> Отметить задачу как решённую (зелёная подсветка).</li>
+            <li><strong>⬆⬇ Импорт/Экспорт:</strong> Сохранить/загрузить все задачи в JSON (оба варианта кода сохраняются).</li>
+            <li><strong>🖨️ Печать:</strong> Выберите задачи галочками → напечатать условия + ответы + ссылки на видео и файлы.</li>
+            <li><strong>📝 Режимы вставки:</strong> Переключайтесь между кодом с комментариями и без (оба варианта хранятся в задаче).</li>
+            <li><strong>❓ Помощь:</strong> Показать это окно с инструкцией.</li>
+        </ul>
+        <button class="close-welcome" onclick="closeWelcome()">Начать работу!</button>
+    </div>
+</div>
+
+<!-- Модальное окно помощи программера -->
+<div id="programmerModal" class="programmer-modal">
+    <div class="programmer-content">
+        <h3>👨‍💻 Помощь программера</h3>
+        
+        <div class="function-selector">
+            <div class="function-btn active" onclick="selectProgrammerFunction(0)">Сумма цифр числа</div>
+            <div class="function-btn" onclick="selectProgrammerFunction(1)">Произведение цифр</div>
+            <div class="function-btn" onclick="selectProgrammerFunction(2)">Проверка на простоту</div>
+            <div class="function-btn" onclick="selectProgrammerFunction(3)">Число Фибоначчи</div>
+            <div class="function-btn" onclick="selectProgrammerFunction(4)">Факториал</div>
+            <div class="function-btn" onclick="selectProgrammerFunction(5)">Разложение на множители</div>
+        </div>
+        
+        <div id="functionDescription" class="function-description">
+            Сумма цифр числа - классическая задача. Функция принимает целое число и возвращает сумму его цифр.
+        </div>
+        
+        <div id="functionCode" class="function-code">
+            def sum_digits(n):\n    # Сумма цифр числа\n    total = 0\n    n = abs(n)  # Берем модуль числа\n    while n > 0:\n        total += n % 10  # Добавляем последнюю цифру\n        n //= 10  # Убираем последнюю цифру\n    return total
+        </div>
+        
+        <div class="programmer-buttons">
+            <button class="green" onclick="runProgrammerFunction()">▶ Запустить</button>
+            <button class="orange" onclick="animateProgrammerFunction()">🎬 Анимировать</button>
+            <button class="gray" onclick="copyProgrammerCode()">📋 Копировать код</button>
+            <button class="red" onclick="closeProgrammerModal()">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для загрузки файла по ссылке -->
+<div id="fileLoadModal" class="file-load-modal">
+    <div class="file-load-content">
+        <h3>📁 Загрузка файла по ссылке</h3>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="color: #94a3b8;">Ссылка на файл:</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="fileUrlInput" placeholder="https://raw.githubusercontent.com/... или https://drive.google.com/..." style="flex: 1;">
+                <span class="file-example-btn" onclick="setExampleUrl()">Пример</span>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="color: #94a3b8;">Или вставьте содержимое:</label>
+            <textarea id="fileContentInput" placeholder="Вставьте содержимое файла здесь..."></textarea>
+        </div>
+        
+        <div style="margin-bottom: 15px; background: #0f172a; padding: 10px; border-radius: 8px;">
+            <label style="color: #94a3b8;">Как использовать в коде:</label>
+            <pre style="color: #ffffff; font-family: Consolas; font-size: 12px; margin: 5px 0;">
+# В Python коде переменная file_content доступна
+lines = file_content.split('\n')
+first_line = lines[0] if lines else ""
+
+# Поиск последовательностей C
+for k in range(1, 100):
+    if 'C'*k in first_line:
+        print(f"Найдено {k} букв C")</pre>
+        </div>
+        
+        <div class="file-load-buttons">
+            <button class="green" onclick="loadFileFromUrl()">🌐 Загрузить по ссылке</button>
+            <button class="green" onclick="usePastedFileContent()">📝 Использовать текст</button>
+            <button class="red" onclick="closeFileLoadModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения -->
+<div id="confirmDialog" class="confirm-dialog">
+    <div class="confirm-content">
+        <h3 style="color: #facc15;">⚠️ Подтверждение</h3>
+        <p id="confirmMessage">Вы действительно хотите выполнить это действие?</p>
+        <div class="confirm-buttons">
+            <button class="green" id="confirmYes">Да</button>
+            <button class="red" id="confirmNo">Нет</button>
+        </div>
+    </div>
+</div>
+
+<div class="toolbar">
+    <!-- Кнопки выбора режима -->
+    <button class="mode-btn student-active" id="studentModeBtn" onclick="setMode('student')">👨‍🎓 Ученик</button>
+    <button class="mode-btn" id="teacherModeBtn" onclick="setMode('teacher')">👨‍🏫 Учитель</button>
+    
+    <!-- Кнопки учителя (будут скрыты в режиме ученика) -->
+   <span id="teacherButtons" style="display: inline;">
+    <button class="gray" onclick="importTasks()">⬆ Импорт</button>
+    <button class="gray" onclick="pasteImage()">🖼️ Условие (img)</button>        
+    <button class="gray" onclick="pasteText()">📄 Условие (текст)</button>
+    <button class="gray" onclick="showSaveDialog()">💾 Сохранить</button>
+    <button class="gray" onclick="exportTasks()">⬇ Экспорт</button>
+    <button class="print" onclick="showPrintDialog()">🖨️ Печать</button>
+
+</span>
+    
+    <!-- Общие кнопки -->
+   
+     <!-- <button class="help" onclick="showWelcomeModal()">❓ Помощь</button> -->
+    <!--<button class="programmer-help-btn" onclick="showProgrammerModal()">👨‍💻 Помощь программера</button> -->
+
+    <!-- Кнопки выбора режима кода -->
+    <button class="code-mode-btn" id="codeModeNoComments" onclick="setCodeMode('noComments')">📝 Без комментариев</button>
+    <button class="code-mode-btn active" id="codeModeWithComments" onclick="setCodeMode('withComments')">📝 С комментариями</button>
+
+    <button class="green" onclick="runPython()">▶ Run</button>
+    <button class="orange" onclick="startCodeAnimation()">🎬 Объяснение кода</button>
+    <button class="gray" onclick="copyCode()">📋 Копировать код</button>
+    <!--  <button class="green" onclick="runWithFile()">📁 Запустить с файлом</button>  -->
+    
+    <div class="palette-row">
+            <button class="color-btn" style="background:#ffff00" onclick="setColor('#ffff00')" title="Жёлтый">🖌️</button>
+        <button class="color-btn" style="background:#ff0000" onclick="setColor('#ff0000')"></button>
+        <!--<button class="color-btn" style="background:#00ff00" onclick="setColor('#00ff00')"></button>-->
+        <!--<button class="color-btn" style="background:#0000ff" onclick="setColor('#0000ff')"></button>-->
+        <!--<button class="color-btn" style="background:#ffffff" onclick="setColor('#ffffff')"></button>-->
+        <!--<button class="pen-size-btn" onclick="setPenSize(2)">─</button>
+        <!--<button class="pen-size-btn" onclick="setPenSize(6)">━</button>-->
+        <!--<button class="pen-size-btn" onclick="setPenSize(12)">⬤</button>-->
+    </div>
+    
+    <!--<button class="gray" onclick="undo()">↩ Undo</button>-->
+    <button class="red" onclick="clearCanvas()">🧹 Очистить</button>
+    
+    <!-- Индикатор анимации (скрыт по умолчанию) -->
+    <div id="animationIndicator" class="animation-indicator" style="display: none;">
+        <span>🎬 Анимация</span>
+        <span class="key-hint">Любая клавиша → продолжить</span>
+        <span class="key-hint">Esc → выход</span>
+    </div>
+</div>
+
+
+
+<!-- Селектор задач с GitHub -->
+<div class="github-tasks-selector">
+    <select id="githubTaskSelect">
+        <option value="">-- Выберите задачу с GitHub --</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika1.json">Информатика 1</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika2.json">Информатика 2</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika3.json">Информатика 3</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika4.json">Информатика 4</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika5.json">Информатика 5</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika6.json">Информатика 6</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika7.json">Информатика 7</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika8.json">Информатика 8</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika9.json">Информатика 9</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika10.json">Информатика 10</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika11.json">Информатика 11</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika12.json">Информатика 12</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika13.json">Информатика 13</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika14.json">Информатика 14</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika15.json">Информатика 15</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika16.json">Информатика 16</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika17.json">Информатика 17</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika18.json">Информатика 18</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika19-21.json">Информатика 19-21</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika22.json">Информатика 22</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika23.json">Информатика 23</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika24bc.json">Информатика 24 Базовый код+префиксы</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika24r.json">Информатика 24 Регулярки</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika25_маски.json">Информатика 25_маски</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika25_делители.json">Информатика 25_делители</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika25_простые_множители.json">Информатика 25_простые_множители</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika26.json">Информатика 26</option>
+<option value="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files/informatika27.json">Информатика 27</option>
+    </select>
+    <button class="load-task-btn" onclick="loadGithubTask()">📥 Загрузить задачу</button>
+</div>
+
+<div class="task-controls">
+    <div style="display: flex; gap: 8px; align-items: center;">
+        <input id="videoUrl" placeholder="🔗 YouTube/Rutube" oninput="updateVideo()">
+        <button id="videoPlayBtn" class="video-play-btn" onclick="playVideo()" style="display: none;">▶️</button>
+    </div>
+    <div id="solvedContainer" class="solved-container">
+        <input type="checkbox" id="solvedCheckbox">
+        <label for="solvedCheckbox">✅ Решено</label>
+    </div>
+    <!--<button class="gray" onclick="showFileLoadModal()">📁 Загрузить файл</button>-->
+</div>
+
+<!-- Инфо-панель задачи с полем для ссылки на файл -->
+<div id="taskInfoPanel" class="task-info-panel" style="display: none;">
+    <span id="taskInfoTitle" class="task-info-title"></span>
+    <span id="taskInfoAnalog" class="task-info-analog" style="display: none;"></span>
+    <span id="taskInfoVideo" class="task-info-video" style="display: none;"></span>
+    <!-- НОВОЕ ПОЛЕ для ссылки на файл -->
+    <span id="taskInfoFile" class="task-info-file" style="display: none;">
+        <span>📁</span>
+        <a href="#" id="fileLink" target="_blank"></a>
+        <button class="gray" onclick="showFileLoadModal()">⬇ Загрузить</button>
+    </span>
+</div>
+
+<img id="taskImage">
+<div id="taskText"></div>
+
+<div class="answer-section" onclick="toggleAnswer()" id="answerToggle">
+    👁️ Ответ
+</div>
+<input id="answerInput" placeholder="Верный ответ">
+
+<!-- Диалог печати -->
+<div id="printDialog" class="print-controls" style="display: none;">
+    <h3 style="margin: 0 0 20px 0; color: #facc15; text-align: center;">🖨️ Выберите задачи для печати</h3>
+    <div class="print-checkboxes" id="printCheckboxes"></div>
+</div>
+
+<!-- Диалог сохранения -->
+<div id="saveDialog" class="save-dialog">
+    <div class="save-content">
+        <h3 style="color: #facc15; margin-top: 0;">💾 Сохранить задачу</h3>
+        <input type="text" id="saveTaskName" placeholder="Название задачи">
+        <input type="text" id="saveFileUrl" placeholder="Ссылка на файл (необязательно)" style="margin-top: 10px;">
+        <div class="save-buttons">
+            <button class="green" onclick="saveTaskWithName()">Сохранить</button>
+            <button class="gray" onclick="saveAsNewTask()">Сохранить как новую</button>
+            <button class="red" onclick="closeSaveDialog()">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- Контейнер с динамическим разделителем -->
+<div class="main-container">
+    <div class="split-container" id="splitContainer">
+        <!-- Левая панель с кодом -->
+        <div class="code-panel" id="codePanel">
+            <textarea id="code"></textarea>
+        </div>
+        
+        <!-- Правая панель с выводом -->
+        <div class="output-panel" id="outputPanel">
+            <div id="output">Python готов.</div>
+        </div>
+    </div>
+    
+    <!-- Панель списка задач справа (фиксированная ширина) -->
+    <div class="task-list-panel">
+        <div class="task-list-header">
+            <button onclick="filterTaskList('all')" id="filterAllBtn" class="active">Все</button>
+            <button onclick="filterTaskList('solved')" id="filterSolvedBtn">✅ Решено</button>
+            <button onclick="filterTaskList('unsolved')" id="filterUnsolvedBtn">⏳ Не решено</button>
+            <button onclick="filterTaskList('favorite')" id="filterFavoriteBtn">⭐ Избранное</button>
+            <button onclick="filterTaskList('unfavorite')" id="filterUnfavoriteBtn">☆ Не избранное</button>
+        </div>
+        <div id="taskListItems" class="task-list-items"></div>
+    </div>
+</div>
+
+<!-- Скрытый контейнер для печати -->
+<div id="printContent" class="print-content" style="display: none;"></div>
+
+<!-- Модальное окно видео -->
+<div id="videoModal" onclick="closeVideoModal(event)">
+    <div class="modal-video-container">
+        <iframe id="modalVideo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+        </iframe>
+        <div class="controls">
+            <button class="close-modal" onclick="closeVideoModal(event)">✕ Закрыть</button>
+            <button class="fullscreen-btn" onclick="toggleFullscreen(event)">⛶ Полный экран</button>
+        </div>
+    </div>
+</div>
+
+<canvas id="drawCanvas" width="1098" height="836"></canvas>
+<input type="file" id="importFile" accept=".json" hidden="">
+
+<script>
+/* ================= ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ================= */
+let pyodide, ready = false;
+let taskTextGlobal = "";
+let current = -1;
+let currentTaskData = null;
+let tasks = [];
+let printCheckboxes = {};
+let currentFilter = 'all';
+let penSize = 4;
+let codeMode = 'withComments'; // 'withComments' или 'noComments'
+
+// Переменная для хранения загруженного файла
+let loadedFileContent = "";
+let loadedFileName = "";
+
+// Режим работы: 'student' или 'teacher'
+let currentMode = 'student';
+
+/* ================= ПЕРЕМЕННЫЕ ДЛЯ АНИМАЦИИ ================= */
+let animationActive = false;
+let animationLines = [];
+let currentAnimLine = 0;
+let animationSpeed = 5; // мс на символ   СКОРОСТЬ АНИМАЦИИ
+let animationInterval = null;
+let lineElement = null;
+let currentLineText = '';
+let currentLineIndex = 0;
+let animationFullCode = ''; // Полный код с комментариями для анимации
+
+/* ================= ПЕРЕМЕННЫЕ ДЛЯ ПОМОЩИ ПРОГРАММЕРА ================= */
+let programmerFunctions = [
+    {
+        name: "Сумма цифр числа",
+        description: "Сумма цифр числа - классическая задача. Функция принимает целое число и возвращает сумму его цифр.",
+        code: "def sum_digits(n):\n    # Сумма цифр числа\n    total = 0\n    n = abs(n)  # Берем модуль числа\n    while n > 0:\n        total += n % 10  # Добавляем последнюю цифру\n        n //= 10  # Убираем последнюю цифру\n    return total",
+        test: "print(sum_digits(12345))  # Должно вывести 15"
+    },
+    {
+        name: "Произведение цифр",
+        description: "Произведение цифр числа. Функция принимает целое число и возвращает произведение его цифр.",
+        code: "def product_digits(n):\n    # Произведение цифр числа\n    n = abs(n)\n    if n == 0:\n        return 0\n    product = 1\n    while n > 0:\n        product *= n % 10  # Умножаем на последнюю цифру\n        n //= 10  # Убираем последнюю цифру\n    return product",
+        test: "print(product_digits(12345))  # Должно вывести 120"
+    },
+    {
+        name: "Проверка на простоту",
+        description: "Проверка, является ли число простым. Функция возвращает True, если число простое, иначе False.",
+        code: "def is_prime(n):\n    # Проверка на простоту\n    if n < 2:\n        return False\n    if n == 2:\n        return True\n    if n % 2 == 0:\n        return False\n    for i in range(3, int(n**0.5) + 1, 2):\n        if n % i == 0:\n            return False\n    return True",
+        test: "print(is_prime(17))  # Должно вывести True\nprint(is_prime(25))  # Должно вывести False"
+    },
+    {
+        name: "Число Фибоначчи",
+        description: "Возвращает n-е число Фибоначчи (F(0)=0, F(1)=1).",
+        code: "def fibonacci(n):\n    # n-е число Фибоначчи\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    else:\n        a, b = 0, 1\n        for i in range(2, n + 1):\n            a, b = b, a + b\n        return b",
+        test: "print(fibonacci(10))  # Должно вывести 55"
+    },
+    {
+        name: "Факториал",
+        description: "Вычисляет факториал числа n (n!).",
+        code: "def factorial(n):\n    # Факториал числа\n    if n < 0:\n        return None  # Факториал не определен для отрицательных чисел\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result",
+        test: "print(factorial(5))  # Должно вывести 120"
+    },
+    {
+        name: "Разложение на множители",
+        description: "Возвращает список простых множителей числа.",
+        code: "def prime_factors(n):\n    # Разложение на простые множители\n    n = abs(n)\n    factors = []\n    # Проверяем делимость на 2\n    while n % 2 == 0:\n        factors.append(2)\n        n //= 2\n    # Проверяем нечетные делители\n    i = 3\n    while i * i <= n:\n        while n % i == 0:\n            factors.append(i)\n            n //= i\n        i += 2\n    if n > 1:\n        factors.append(n)\n    return factors",
+        test: "print(prime_factors(84))  # Должно вывести [2, 2, 3, 7]"
+    }
+];
+
+let currentProgrammerFunction = 0;
+
+/* ================= ИНИЦИАЛИЗАЦИЯ ================= */
+window.onload = function() {
+    // Всегда показываем приветствие/инструкцию при загрузке
+    //   setTimeout(() => {
+    //    document.getElementById("welcomeModal").style.display = "flex";
+    // }, 500);
+    
+    // Нет тестовых задач при загрузке
+    updateTaskList();
+    document.getElementById("taskInfoPanel").style.display = "none";
+    
+    // Инициализация динамического разделителя
+    Split(['#codePanel', '#outputPanel'], {
+        sizes: [50, 50],
+        minSize: [200, 200],
+        gutterSize: 6,
+        cursor: 'col-resize',
+        gutter: function(index, direction) {
+            const gutter = document.createElement('div');
+            gutter.className = 'gutter gutter-horizontal';
+            return gutter;
+        }
+    });
+    
+    // Принудительно включаем скролл для output
+    document.getElementById('output').style.overflowY = 'auto';
+    
+    // Устанавливаем режим ученика по умолчанию
+    setMode('student');
+};
+
+/* ================= РЕЖИМЫ УЧИТЕЛЬ/УЧЕНИК ================= */
+function setMode(mode) {
+    currentMode = mode;
+    
+    const studentBtn = document.getElementById('studentModeBtn');
+    const teacherBtn = document.getElementById('teacherModeBtn');
+    const teacherButtons = document.getElementById('teacherButtons');
+    
+    if (mode === 'student') {
+        studentBtn.classList.add('student-active');
+        teacherBtn.classList.remove('teacher-active');
+        teacherButtons.style.display = 'none';
+        
+        // Отключаем редактирование задач
+        document.getElementById('code').readOnly = true;
+        document.getElementById('answerInput').readOnly = true;
+        document.getElementById('videoUrl').readOnly = true;
+        document.getElementById('solvedCheckbox').disabled = true;
+    } else {
+        studentBtn.classList.remove('student-active');
+        teacherBtn.classList.add('teacher-active');
+        teacherButtons.style.display = 'inline';
+        
+        // Включаем редактирование
+        document.getElementById('code').readOnly = false;
+        document.getElementById('answerInput').readOnly = false;
+        document.getElementById('videoUrl').readOnly = false;
+        document.getElementById('solvedCheckbox').disabled = false;
+    }
+}
+
+/* ================= ПОКАЗ ИНСТРУКЦИИ ================= */
+function showWelcomeModal() {
+    document.getElementById("welcomeModal").style.display = "flex";
+}
+
+function closeWelcome() {
+    document.getElementById("welcomeModal").style.display = "none";
+}
+
+/* ================= ФУНКЦИИ ДЛЯ ПОМОЩИ ПРОГРАММЕРА ================= */
+function showProgrammerModal() {
+    document.getElementById("programmerModal").classList.add('show');
+    updateProgrammerDisplay();
+}
+
+function closeProgrammerModal() {
+    document.getElementById("programmerModal").classList.remove('show');
+}
+
+function selectProgrammerFunction(index) {
+    currentProgrammerFunction = index;
+    
+    document.querySelectorAll('.function-btn').forEach((btn, i) => {
+        if (i === index) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    updateProgrammerDisplay();
+}
+
+function updateProgrammerDisplay() {
+    const func = programmerFunctions[currentProgrammerFunction];
+    document.getElementById('functionDescription').textContent = func.description;
+    document.getElementById('functionCode').innerHTML = func.code.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;');
+}
+
+function copyProgrammerCode() {
+    const func = programmerFunctions[currentProgrammerFunction];
+    navigator.clipboard.writeText(func.code + '\n\n' + func.test);
+    alert('Код скопирован в буфер обмена!');
+}
+
+function runProgrammerFunction() {
+    const func = programmerFunctions[currentProgrammerFunction];
+    const fullCode = func.code + '\n\n' + func.test;
+    
+    document.getElementById('code').value = fullCode;
+    closeProgrammerModal();
+    setTimeout(() => runPython(), 100);
+}
+
+function animateProgrammerFunction() {
+    const func = programmerFunctions[currentProgrammerFunction];
+    
+    let animatedCode = '';
+    
+    if (currentProgrammerFunction === 0) {
+        animatedCode = `def sum_digits(n):
+    # Функция для вычисления суммы цифр числа
+    # Например: sum_digits(123) = 1+2+3 = 6
+    
+    total = 0
+    # Переменная для хранения суммы
+    
+    n = abs(n)
+    # Берем абсолютное значение числа (работаем с положительными числами)
+    
+    while n > 0:
+    # Пока в числе есть цифры
+        
+        total += n % 10
+        # Добавляем к сумме последнюю цифру числа
+        # Например: 123 % 10 = 3
+        
+        n //= 10
+        # Убираем последнюю цифру числа
+        # Например: 123 // 10 = 12
+    
+    return total
+    # Возвращаем полученную сумму
+
+# Тестируем функцию
+print(sum_digits(12345))  # Ожидаемый результат: 15`;
+    } else if (currentProgrammerFunction === 1) {
+        animatedCode = `def product_digits(n):
+    # Функция для вычисления произведения цифр числа
+    # Например: product_digits(123) = 1*2*3 = 6
+    
+    n = abs(n)
+    # Берем абсолютное значение числа
+    
+    if n == 0:
+    # Особый случай: число равно 0
+        return 0
+        # Произведение цифр числа 0 равно 0
+    
+    product = 1
+    # Начинаем с 1, так как умножение на 1 не меняет результат
+    
+    while n > 0:
+    # Пока в числе есть цифры
+        
+        product *= n % 10
+        # Умножаем на последнюю цифру числа
+        # Например: 123 % 10 = 3
+        
+        n //= 10
+        # Убираем последнюю цифру числа
+        # Например: 123 // 10 = 12
+    
+    return product
+    # Возвращаем полученное произведение
+
+# Тестируем функцию
+print(product_digits(12345))  # Ожидаемый результат: 120`;
+    } else if (currentProgrammerFunction === 2) {
+        animatedCode = `def is_prime(n):
+    # Функция проверки числа на простоту
+    # Простое число делится только на 1 и на само себя
+    
+    if n < 2:
+    # Числа меньше 2 не являются простыми
+        return False
+    
+    if n == 2:
+    # 2 - единственное четное простое число
+        return True
+    
+    if n % 2 == 0:
+    # Четные числа больше 2 не являются простыми
+        return False
+    
+    # Проверяем нечетные делители до квадратного корня из n
+    for i in range(3, int(n**0.5) + 1, 2):
+    # range(3, sqrt(n)+1, 2) дает только нечетные числа
+        
+        if n % i == 0:
+        # Если нашелся делитель
+            return False
+            # Число составное
+    
+    return True
+    # Если делителей не нашлось - число простое
+
+# Тестируем функцию
+print(is_prime(17))  # Ожидаемый результат: True
+print(is_prime(25))  # Ожидаемый результат: False`;
+    } else if (currentProgrammerFunction === 3) {
+        animatedCode = `def fibonacci(n):
+    # Функция возвращает n-е число Фибоначчи
+    # Ряд Фибоначчи: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55...
+    
+    if n <= 0:
+    # Базовый случай: F(0) = 0
+        return 0
+    
+    elif n == 1:
+    # Базовый случай: F(1) = 1
+        return 1
+    
+    else:
+    # Рекуррентная формула: F(n) = F(n-1) + F(n-2)
+        a, b = 0, 1
+        # a = F(0), b = F(1)
+        
+        for i in range(2, n + 1):
+        # Вычисляем последовательно от F(2) до F(n)
+            a, b = b, a + b
+            # a = предыдущее число, b = текущее
+            # На каждом шаге сдвигаемся вперед
+        
+        return b
+        # Возвращаем n-е число
+
+# Тестируем функцию
+print(fibonacci(10))  # Ожидаемый результат: 55`;
+    } else if (currentProgrammerFunction === 4) {
+        animatedCode = `def factorial(n):
+    # Функция вычисляет факториал числа n
+    # Факториал: n! = 1 * 2 * 3 * ... * n
+    # Например: 5! = 1*2*3*4*5 = 120
+    
+    if n < 0:
+    # Факториал не определен для отрицательных чисел
+        return None
+    
+    result = 1
+    # Начинаем с 1
+    
+    for i in range(2, n + 1):
+    # Умножаем на все числа от 2 до n
+        result *= i
+        # result = result * i
+    
+    return result
+    # Возвращаем результат
+
+# Тестируем функцию
+print(factorial(5))  # Ожидаемый результат: 120`;
+    } else if (currentProgrammerFunction === 5) {
+        animatedCode = `def prime_factors(n):
+    # Функция разлагает число на простые множители
+    # Например: 84 = 2 * 2 * 3 * 7
+    
+    n = abs(n)
+    # Берем абсолютное значение
+    
+    factors = []
+    # Список для хранения множителей
+    
+    # Проверяем делимость на 2
+    while n % 2 == 0:
+    # Пока число делится на 2
+        factors.append(2)
+        # Добавляем 2 в список множителей
+        n //= 2
+        # Делим число на 2
+    
+    # Проверяем нечетные делители
+    i = 3
+    # Начинаем с 3
+    
+    while i * i <= n:
+    # Проверяем до квадратного корня из n
+        while n % i == 0:
+        # Пока число делится на i
+            factors.append(i)
+            # Добавляем i в список множителей
+            n //= i
+            # Делим число на i
+        i += 2
+        # Переходим к следующему нечетному числу
+    
+    if n > 1:
+    # Если остаток больше 1, это простой множитель
+        factors.append(n)
+    
+    return factors
+    # Возвращаем список множителей
+
+# Тестируем функцию
+print(prime_factors(84))  # Ожидаемый результат: [2, 2, 3, 7]`;
+    }
+    
+    document.getElementById('code').value = animatedCode;
+    closeProgrammerModal();
+    setTimeout(() => startCodeAnimation(), 100);
+}
+
+/* ================= РЕЖИМЫ КОДА ================= */
+function setCodeMode(mode) {
+    codeMode = mode;
+    
+    document.getElementById('codeModeNoComments').classList.toggle('active', mode === 'noComments');
+    document.getElementById('codeModeWithComments').classList.toggle('active', mode === 'withComments');
+    
+    if (current !== -1 && tasks[current]) {
+        const task = tasks[current];
+        if (mode === 'withComments' && task.codeWithComments) {
+            document.getElementById('code').value = task.codeWithComments;
+        } else if (mode === 'noComments' && task.codeNoComments) {
+            document.getElementById('code').value = task.codeNoComments;
+        } else {
+            document.getElementById('code').value = task.codeWithComments || task.codeNoComments || task.code || '';
+        }
+    }
+}
+
+/* ================= РИСОВАНИЕ ================= */
+const canvas = document.getElementById('drawCanvas');
+const ctx = canvas.getContext("2d");
+let drawEnabled = false, drawing = false, history = [];
+let color = "#ffff00";
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+function setColor(newColor) {
+    color = newColor;
+    document.querySelectorAll('.color-btn').forEach(btn => {
+        btn.classList.remove('active', 'drawing');
+    });
+    event.target.classList.add('active', 'drawing');
+    
+    if (!drawEnabled) {
+        drawEnabled = true;
+        canvas.style.pointerEvents = "auto";
+    }
+}
+
+function setPenSize(size) {
+    penSize = size;
+    document.querySelectorAll('.pen-size-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    if (!drawEnabled) {
+        drawEnabled = true;
+        canvas.style.pointerEvents = "auto";
+    }
+}
+
+canvas.addEventListener("pointerdown", e => {
+    if (!drawEnabled) return;
+    drawing = true;
+    history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    ctx.strokeStyle = color;
+    ctx.lineWidth = penSize;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(e.clientX, e.clientY);
+});
+
+canvas.addEventListener("pointermove", e => {
+    if (!drawing) return;
+    ctx.lineTo(e.clientX, e.clientY);
+    ctx.stroke();
+});
+
+canvas.addEventListener("pointerup", () => drawing = false);
+canvas.addEventListener("pointerleave", () => drawing = false);
+
+function undo() {
+    if (history.length) ctx.putImageData(history.pop(), 0, 0);
+}
+function clearCanvas() {
+    history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+/* ================= ПЕЧАТЬ ================= */
+/* ================= ПЕЧАТЬ (ОБНОВЛЕННАЯ) ================= */
+function showPrintDialog() {
+    if (tasks.length === 0) {
+        alert("Сначала создайте задачи!");
+        return;
+    }
+    
+    // Получаем отфильтрованные задачи
+    let filteredTasks = tasks;
+    
+    if (currentFilter === 'solved') {
+        filteredTasks = tasks.filter(t => t.solved);
+    } else if (currentFilter === 'unsolved') {
+        filteredTasks = tasks.filter(t => !t.solved);
+    } else if (currentFilter === 'favorite') {
+        filteredTasks = tasks.filter(t => t.favorite);
+    } else if (currentFilter === 'unfavorite') {
+        filteredTasks = tasks.filter(t => !t.favorite);
+    }
+    
+    if (filteredTasks.length === 0) {
+        alert("Нет задач в текущем фильтре!");
+        return;
+    }
+    
+    const dialog = document.getElementById("printDialog");
+    const checkboxes = document.getElementById("printCheckboxes");
+    
+    checkboxes.innerHTML = `
+        <div style="margin-bottom: 15px; padding: 10px; background: #0f172a; border-radius: 8px;">
+            <strong style="color: #facc15;">📋 Что печатать:</strong>
+            <div style="margin-top: 10px;">
+                <label style="display: inline-block; margin-right: 15px;">
+                    <input type="checkbox" id="printNumber" checked> Номер задачи
+                </label>
+                <label style="display: inline-block; margin-right: 15px;">
+                    <input type="checkbox" id="printCondition" checked> Условие
+                </label>
+                <label style="display: inline-block; margin-right: 15px;">
+                    <input type="checkbox" id="printAnswer" checked> Ответ
+                </label>
+                <label style="display: inline-block; margin-right: 15px;">
+                    <input type="checkbox" id="printCodeShort"> Короткий код (без комментов)
+                </label>
+                <label style="display: inline-block;">
+                    <input type="checkbox" id="printCodeFull"> Код с комментариями
+                </label>
+            </div>
+            <div style="margin-top: 10px; font-size: 12px; color: #94a3b8;">
+                📌 Текущий фильтр: ${currentFilter === 'all' ? 'Все задачи' : 
+                                    currentFilter === 'solved' ? 'Решенные' : 
+                                    currentFilter === 'unsolved' ? 'Не решенные' : 
+                                    currentFilter === 'favorite' ? 'Избранные' : 'Не избранные'} (${filteredTasks.length} задач)
+            </div>
+        </div>
+        <div style="margin-bottom: 10px; font-weight: bold; color: #facc15;">📝 Выберите задачи для печати:</div>
+        <div id="tasksCheckboxesList"></div>
+        <div class="print-buttons" style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+            <button id="printSelectAllBtn" class="gray">✅ Выбрать все</button>
+            <button id="printDeselectAllBtn" class="gray">❌ Снять все</button>
+            <button id="printExecuteBtn" class="green">🖨️ Печатать</button>
+            <button id="printCancelBtn" class="red">❌ Отмена</button>
+        </div>
+    `;
+    
+    // Добавляем задачи в отдельный контейнер
+    const tasksListContainer = document.getElementById("tasksCheckboxesList");
+    tasksListContainer.innerHTML = "";
+    printCheckboxes = {};
+    
+    filteredTasks.forEach((task, idx) => {
+        const realIndex = tasks.indexOf(task);
+        const div = document.createElement("div");
+        div.className = "print-task-item";
+        div.innerHTML = `
+            <input type="checkbox" id="print_${realIndex}" value="${realIndex}" checked>
+            <label for="print_${realIndex}">${realIndex + 1}. ${task.name}</label>
+            ${task.solved ? '<span style="margin-left: auto; color: #10b981;">✅</span>' : ''}
+            ${task.favorite ? '<span style="margin-left: auto; color: #facc15;">★</span>' : ''}
+        `;
+        tasksListContainer.appendChild(div);
+        
+        printCheckboxes[realIndex] = div.querySelector(`#print_${realIndex}`);
+        div.onclick = (e) => {
+            if (e.target.tagName !== 'INPUT') {
+                printCheckboxes[realIndex].checked = !printCheckboxes[realIndex].checked;
+            }
+        };
+    });
+    
+    dialog.style.display = "flex";
+    
+    // Привязываем обработчики через addEventListener
+    const selectAllBtn = document.getElementById("printSelectAllBtn");
+    const deselectAllBtn = document.getElementById("printDeselectAllBtn");
+    const executeBtn = document.getElementById("printExecuteBtn");
+    const cancelBtn = document.getElementById("printCancelBtn");
+    
+    // Удаляем старые обработчики, если есть
+    const newSelectAllBtn = selectAllBtn.cloneNode(true);
+    const newDeselectAllBtn = deselectAllBtn.cloneNode(true);
+    const newExecuteBtn = executeBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    
+    selectAllBtn.parentNode.replaceChild(newSelectAllBtn, selectAllBtn);
+    deselectAllBtn.parentNode.replaceChild(newDeselectAllBtn, deselectAllBtn);
+    executeBtn.parentNode.replaceChild(newExecuteBtn, executeBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    
+    newSelectAllBtn.onclick = function() {
+        Object.values(printCheckboxes).forEach(cb => cb.checked = true);
+    };
+    
+    newDeselectAllBtn.onclick = function() {
+        Object.values(printCheckboxes).forEach(cb => cb.checked = false);
+    };
+    
+    newExecuteBtn.onclick = function() {
+        printSelectedTasksWithOptions();
+    };
+    
+    newCancelBtn.onclick = function() {
+        closePrintDialog();
+    };
+}
+
+function printSelectedTasksWithOptions() {
+    const selected = Object.keys(printCheckboxes).filter(i => printCheckboxes[i].checked);
+    if (!selected.length) {
+        alert("Выберите задачи для печати!");
+        return;
+    }
+    
+    // Получаем опции печати
+    const printNumber = document.getElementById("printNumber")?.checked !== false;
+    const printCondition = document.getElementById("printCondition")?.checked !== false;
+    const printAnswer = document.getElementById("printAnswer")?.checked !== false;
+    const printCodeShort = document.getElementById("printCodeShort")?.checked === true;
+    const printCodeFull = document.getElementById("printCodeFull")?.checked === true;
+    const printImage = document.getElementById("printImage")?.checked !== false;
+    const printFileLink = document.getElementById("printFileLink")?.checked === true;
+    const printVideoLink = document.getElementById("printVideoLink")?.checked === true;
+    
+    // Создаем окно печати
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Печать задач</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: 'Segoe UI', 'Arial', sans-serif;
+                    font-size: 14px;
+                    line-height: 1.5;
+                    padding: 20px;
+                    background: #ffffff;
+                    color: #1e293b;
+                }
+                .print-header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                    padding-bottom: 15px;
+                    border-bottom: 2px solid #e2e8f0;
+                }
+                .print-header h1 { font-size: 24px; color: #0f172a; }
+                .print-header p { color: #475569; margin-top: 5px; }
+                .print-task {
+                    page-break-inside: avoid;
+                    margin-bottom: 35px;
+                    padding: 20px;
+                    background: #f8fafc;
+                    border-radius: 12px;
+                    border-left: 4px solid #3b82f6;
+                }
+                .task-title {
+                    font-size: 18px;
+                    font-weight: bold;
+                    color: #0f172a;
+                    margin-bottom: 15px;
+                    padding-bottom: 8px;
+                    border-bottom: 2px solid #e2e8f0;
+                }
+                .task-section { margin: 12px 0; }
+                .task-section-label {
+                    font-weight: bold;
+                    color: #2563eb;
+                    margin-bottom: 5px;
+                    font-size: 13px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                .task-condition {
+                    background: #ffffff;
+                    padding: 12px 15px;
+                    border-radius: 8px;
+                    border: 1px solid #e2e8f0;
+                    white-space: pre-wrap;
+                    font-family: inherit;
+                }
+                .task-image-container {
+                    background: #ffffff;
+                    padding: 10px;
+                    border-radius: 8px;
+                    border: 1px solid #e2e8f0;
+                    text-align: center;
+                }
+                .task-image-container img {
+                    max-width: 100%;
+                    max-height: 500px;
+                    border-radius: 4px;
+                    border: 1px solid #e2e8f0;
+                }
+                .task-answer {
+                    background: #ecfdf5;
+                    padding: 10px 15px;
+                    border-radius: 8px;
+                    border-left: 3px solid #10b981;
+                    font-weight: 500;
+                }
+                .task-links {
+                    background: #f1f5f9;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    font-size: 13px;
+                    color: #475569;
+                }
+                .task-links a { color: #2563eb; word-break: break-all; }
+                .task-code {
+                    background: #0f172a;
+                    color: #ffffff;
+                    padding: 15px;
+                    border-radius: 8px;
+                    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+                    font-size: 12px;
+                    line-height: 1.5;
+                    white-space: pre-wrap;
+                    overflow-x: auto;
+                    border: 1px solid #334155;
+                }
+                .task-code .comment { color: #ff8c00; font-style: italic; }
+                .print-footer {
+                    margin-top: 40px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #94a3b8;
+                    border-top: 1px solid #e2e8f0;
+                    padding-top: 15px;
+                }
+                @media print {
+                    body { padding: 15px; }
+                    .print-task { break-inside: avoid; }
+                    .task-code {
+                        background: #0f172a;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    .task-image-container img { max-height: 400px; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="print-header">
+                <h1>📋 Задачи по информатике</h1>
+                <p>Дата печати: ${new Date().toLocaleDateString('ru-RU')} ${new Date().toLocaleTimeString('ru-RU')}</p>
+                <p>Всего задач: ${selected.length}</p>
+            </div>
+    `);
+    
+    selected.forEach(i => {
+        const task = tasks[i];
+        const taskNumber = parseInt(i) + 1;
+        
+        printWindow.document.write(`
+            <div class="print-task">
+                <div class="task-title">
+                    ${printNumber ? `${taskNumber}. ` : ''}${escapeHtml(task.name) || 'Без названия'}
+                    ${task.solved ? ' ✅' : ''}
+                    ${task.favorite ? ' ⭐' : ''}
+                </div>
+        `);
+        
+        // ---- ИЗОБРАЖЕНИЕ (если есть) ----
+        if (printImage && task.image && task.image.startsWith('data:image')) {
+            printWindow.document.write(`
+                <div class="task-section">
+                    <div class="task-section-label">🖼️ УСЛОВИЕ (ИЗОБРАЖЕНИЕ)</div>
+                    <div class="task-image-container">
+                        <img src="${task.image}" alt="Условие задачи ${taskNumber}" onerror="this.style.display='none'">
+                    </div>
+                </div>
+            `);
+        }
+        
+        // ---- ТЕКСТ УСЛОВИЯ ----
+        if (printCondition && task.text) {
+            printWindow.document.write(`
+                <div class="task-section">
+                    <div class="task-section-label">📖 УСЛОВИЕ ЗАДАЧИ</div>
+                    <div class="task-condition">${escapeHtml(task.text).replace(/\n/g, '<br>')}</div>
+                </div>
+            `);
+        }
+        
+        // ---- ОТВЕТ ----
+        if (printAnswer && task.answer) {
+            printWindow.document.write(`
+                <div class="task-section">
+                    <div class="task-section-label">✅ ОТВЕТ</div>
+                    <div class="task-answer">${escapeHtml(task.answer)}</div>
+                </div>
+            `);
+        }
+        
+        // ---- ССЫЛКИ (видео и файл) ----
+        if (printVideoLink && task.video) {
+            printWindow.document.write(`
+                <div class="task-section">
+                    <div class="task-section-label">📹 ВИДЕО-РАЗБОР</div>
+                    <div class="task-links"><a href="${escapeHtml(task.video)}" target="_blank">${escapeHtml(task.video)}</a></div>
+                </div>
+            `);
+        }
+        
+        if (printFileLink && task.fileUrl) {
+            printWindow.document.write(`
+                <div class="task-section">
+                    <div class="task-section-label">📁 ФАЙЛ С ДАННЫМИ</div>
+                    <div class="task-links"><a href="${escapeHtml(task.fileUrl)}" target="_blank">${escapeHtml(task.fileUrl)}</a></div>
+                </div>
+            `);
+        }
+        
+        // ---- КОД БЕЗ КОММЕНТАРИЕВ ----
+        if (printCodeShort && task.codeNoComments) {
+            printWindow.document.write(`
+                <div class="task-section">
+                    <div class="task-section-label">💻 КОД (без комментариев)</div>
+                    <div class="task-code"><pre>${escapeHtml(task.codeNoComments)}</pre></div>
+                </div>
+            `);
+        }
+        
+        // ---- КОД С КОММЕНТАРИЯМИ ----
+        if (printCodeFull && task.codeWithComments) {
+            let codeWithHighlight = escapeHtml(task.codeWithComments);
+            codeWithHighlight = codeWithHighlight.replace(/(#.*)$/gm, '<span class="comment">$1</span>');
+            printWindow.document.write(`
+                <div class="task-section">
+                    <div class="task-section-label">💬 КОД (с комментариями)</div>
+                    <div class="task-code"><pre>${codeWithHighlight}</pre></div>
+                </div>
+            `);
+        }
+        
+        printWindow.document.write(`</div>`);
+    });
+    
+    printWindow.document.write(`
+            <div class="print-footer">
+                Фильтр: ${currentFilter === 'all' ? 'Все' : 
+                            currentFilter === 'solved' ? 'Решенные' : 
+                            currentFilter === 'unsolved' ? 'Не решенные' : 
+                            currentFilter === 'favorite' ? 'Избранные' : 'Не избранные'}
+                | Всего задач: ${selected.length}
+            </div>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    closePrintDialog();
+    
+    setTimeout(() => { printWindow.print(); }, 100);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function closePrintDialog() {
+    document.getElementById("printDialog").style.display = "none";
+}
+
+
+/* ================= ВИДЕО ================= */
+function updateVideo() {
+    const url = document.getElementById("videoUrl").value.trim();
+    const embedUrl = getVideoEmbedUrl(url);
+    
+    if (url && embedUrl) {
+        document.getElementById("videoPlayBtn").style.display = 'block';
+        document.getElementById("videoPlayBtn").dataset.embed = embedUrl;
+    } else {
+        document.getElementById("videoPlayBtn").style.display = 'none';
+    }
+    updateTaskInfoPanel();
+}
+
+function getVideoEmbedUrl(url) {
+    url = url.trim();
+    
+    if (url.includes('rutube.ru/video/')) {
+        const videoId = url.match(/rutube\.ru\/video\/([a-f0-9]{32})/i)?.[1];
+        if (videoId) return `https://rutube.ru/embed/${videoId}`;
+    }
+    
+    let match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\\s]{11})/i);
+    if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1&rel=0`;
+    
+    match = url.match(/vimeo\.com\/(\d+)/i);
+    if (match) return `https://player.vimeo.com/video/${match[1]}?autoplay=1`;
+    
+    if (url.match(/\.(mp4|webm|ogg|mkv)$/i)) return url;
+    
+    return '';
+}
+
+function playVideo() {
+    const embedUrl = document.getElementById("videoPlayBtn").dataset.embed;
+    if (embedUrl) {
+        document.getElementById("modalVideo").src = embedUrl;
+        document.getElementById("videoModal").classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeVideoModal(event) {
+    if (event && event.target === event.currentTarget) {
+        document.getElementById("videoModal").classList.remove('show');
+        document.getElementById("modalVideo").src = '';
+        document.body.style.overflow = '';
+    }
+}
+
+function toggleFullscreen(event) {
+    event.stopPropagation();
+    const modal = document.getElementById("videoModal");
+    if (modal.requestFullscreen) {
+        modal.requestFullscreen();
+    } else if (modal.webkitRequestFullscreen) {
+        modal.webkitRequestFullscreen();
+    }
+}
+
+/* ================= PYTHON ================= */
+async function initPy() {
+    pyodide = await loadPyodide({
+        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
+    });
+    ready = true;
+    const output = document.getElementById("output");
+    output.textContent = "Python готов.";
+    output.style.overflowY = "auto";
+}
+initPy();
+
+async function runPython() {
+    if (!ready) return;
+    
+    const output = document.getElementById("output");
+    output.style.overflowY = "auto";
+    
+    try {
+        output.textContent = "";
+        
+        pyodide.runPython(`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+        `);
+        
+        pyodide.runPython(document.getElementById("code").value);
+        
+        const result = pyodide.runPython("sys.stdout.getvalue()");
+        output.textContent = result || "Код выполнен успешно (нет вывода)";
+        output.className = "";
+    } catch (e) {
+        output.textContent = "Ошибка: " + e.toString();
+        output.className = "error";
+    }
+}
+
+/* ================= РАБОТА С ФАЙЛАМИ ================= */
+function setExampleUrl() {
+    document.getElementById('fileUrlInput').value = 'https://raw.githubusercontent.com/username/repo/main/24_2419.txt';
+}
+
+function showFileLoadModal() {
+    document.getElementById('fileLoadModal').classList.add('show');
+    
+    if (current !== -1 && tasks[current] && tasks[current].fileUrl) {
+        document.getElementById('fileUrlInput').value = tasks[current].fileUrl;
+    } else {
+        document.getElementById('fileUrlInput').value = '';
+    }
+    document.getElementById('fileContentInput').value = '';
+}
+
+function closeFileLoadModal() {
+    document.getElementById('fileLoadModal').classList.remove('show');
+}
+
+async function loadFileFromUrl() {
+    const url = document.getElementById('fileUrlInput').value.trim();
+    if (!url) {
+        alert("Введите ссылку на файл!");
+        return;
+    }
+    
+    const output = document.getElementById('output');
+    output.innerHTML = `⏳ Загрузка файла с ${url}...`;
+    
+    try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Ошибка загрузки: ${response.status} ${response.statusText}`);
+        }
+        
+        const text = await response.text();
+        
+        loadedFileContent = text;
+        loadedFileName = url.split('/').pop() || 'file.txt';
+        
+        output.innerHTML = `✅ Файл загружен!\n`;
+        output.innerHTML += `Имя: ${loadedFileName}\n`;
+        output.innerHTML += `Размер: ${text.length} символов\n`;
+        output.innerHTML += `Строк: ${text.split('\n').length}\n`;
+        output.innerHTML += `Первые 200 символов:\n${"-".repeat(50)}\n`;
+        output.innerHTML += text.substring(0, 200) + "...";
+        
+        output.innerHTML += `\n\n${"=".repeat(60)}`;
+        output.innerHTML += `\n✅ Переменная file_content доступна в Python!\n`;
+        output.innerHTML += `${"=".repeat(60)}\n`;
+        output.innerHTML += `# Пример использования:\n`;
+        output.innerHTML += `lines = file_content.split('\\n')\n`;
+        output.innerHTML += `first_line = lines[0] if lines else ""\n`;
+        output.innerHTML += `for k in range(1, 100):\n`;
+        output.innerHTML += `    if 'C'*k in first_line:\n`;
+        output.innerHTML += `        print(f"Найдено {k} букв C")\n`;
+        
+        if (current !== -1 && tasks[current]) {
+            tasks[current].fileUrl = url;
+            updateTaskInfoPanel();
+        }
+        
+        closeFileLoadModal();
+        
+    } catch (e) {
+        output.innerHTML = `❌ Ошибка: ${e.message}\n\n`;
+        output.innerHTML += "Убедитесь, что:\n";
+        output.innerHTML += "1. Ссылка доступна (публичный файл)\n";
+        output.innerHTML += "2. Для GitHub используйте raw-ссылку\n";
+        output.innerHTML += "3. Сервер разрешает CORS запросы";
+        output.className = "error";
+    }
+}
+
+function usePastedFileContent() {
+    const content = document.getElementById('fileContentInput').value;
+    if (!content.trim()) {
+        alert("Вставьте содержимое файла!");
+        return;
+    }
+    
+    loadedFileContent = content;
+    loadedFileName = "pasted_text.txt";
+    
+    const output = document.getElementById('output');
+    output.innerHTML = `✅ Текст загружен!\n`;
+    output.innerHTML += `Размер: ${content.length} символов\n`;
+    output.innerHTML += `Строк: ${content.split('\n').length}\n`;
+    output.innerHTML += `Первые 200 символов:\n${"-".repeat(50)}\n`;
+    output.innerHTML += content.substring(0, 200) + "...";
+    
+    output.innerHTML += `\n\n${"=".repeat(60)}`;
+    output.innerHTML += `\n✅ Переменная file_content доступна в Python!\n`;
+    output.innerHTML += `${"=".repeat(60)}\n`;
+    
+    closeFileLoadModal();
+}
+
+async function runWithFile() {
+    if (!ready) {
+        alert("Pyodide еще не загружен!");
+        return;
+    }
+    
+    if (!loadedFileContent) {
+        alert("Сначала загрузите файл! Нажмите '📁 Загрузить файл'");
+        showFileLoadModal();
+        return;
+    }
+    
+    const output = document.getElementById('output');
+    
+    try {
+        const escapedContent = loadedFileContent
+            .replace(/\\/g, '\\\\')
+            .replace(/`/g, '\\`')
+            .replace(/\${/g, '\\${');
+        
+        // СОЗДАЕМ ПЕРЕМЕННУЮ file_content В PYTHON
+        const pythonPreamble = `
+# Загруженный файл доступен в переменной file_content
+file_content = """${escapedContent}"""
+`;
+        
+        // Получаем код пользователя
+        const userCode = document.getElementById('code').value;
+        
+        // Объединяем
+        const fullCode = pythonPreamble + "\n" + userCode;
+        
+        pyodide.runPython(`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+        `);
+        
+        pyodide.runPython(fullCode);
+        
+        const result = pyodide.runPython("sys.stdout.getvalue()");
+        output.innerHTML = result || "Код выполнен успешно (нет вывода)";
+        output.className = "";
+        
+    } catch (e) {
+        output.innerHTML = "Ошибка: " + e.toString();
+        output.className = "error";
+    }
+}
+
+/* ================= АНИМАЦИЯ КОДА ================= */
+function startCodeAnimation() {
+    const output = document.getElementById('output');
+    output.style.overflowY = 'auto';
+    
+    document.getElementById('animationIndicator').style.display = 'inline-flex';
+    
+    let codeToAnimate = '';
+    
+    if (current !== -1 && tasks[current] && tasks[current].codeWithComments) {
+        codeToAnimate = tasks[current].codeWithComments;
+    } else {
+        codeToAnimate = document.getElementById('code').value;
+    }
+    
+    if (!codeToAnimate.trim()) {
+        alert('Сначала напишите код!');
+        return;
+    }
+    
+    animationFullCode = codeToAnimate;
+    stopAnimation();
+    
+    const allLines = codeToAnimate.split('\n');
+    
+    animationLines = [];
+    let i = 0;
+    
+    while (i < allLines.length) {
+        const currentLine = allLines[i];
+        
+        if (currentLine.trim().startsWith('#') && i > 0 && !allLines[i - 1].trim().startsWith('#')) {
+            i++;
+            continue;
+        }
+        
+        const group = [];
+        group.push(currentLine);
+        i++;
+        
+        while (i < allLines.length && allLines[i].trim().startsWith('#')) {
+            group.push(allLines[i]);
+            i++;
+        }
+        
+        animationLines.push(group);
+    }
+    
+    currentAnimLine = 0;
+    animationActive = true;
+    
+    output.innerHTML = '';
+    output.style.whiteSpace = 'pre';
+    output.style.fontFamily = 'Consolas, monospace';
+    output.style.fontSize = '18px';
+    output.style.lineHeight = '1.6';
+    output.style.color = '#ffffff';
+    
+    document.addEventListener('keydown', handleAnimationKey);
+    
+    processNextGroup();
+}
+
+function stopAnimation() {
+    animationActive = false;
+    if (animationInterval) {
+        clearInterval(animationInterval);
+        animationInterval = null;
+    }
+    document.removeEventListener('keydown', handleAnimationKey);
+    document.getElementById('animationIndicator').style.display = 'none';
+}
+
+function handleAnimationKey(e) {
+    if (!animationActive) return;
+    
+    if (e.key === "Escape") {
+        stopAnimation();
+        document.getElementById('output').innerHTML += '\n\n⏸️ Объяснение остановлено';
+        return;
+    }
+    
+    e.preventDefault();
+    currentAnimLine++;
+    processNextGroup();
+}
+
+function processNextGroup() {
+    if (!animationActive) return;
+    
+    if (currentAnimLine >= animationLines.length) {
+        const output = document.getElementById('output');
+        output.innerHTML += '\n\n✅ Объяснение завершено!';
+        output.style.color = '#22c55e';
+        stopAnimation();
+        return;
+    }
+    
+    const group = animationLines[currentAnimLine];
+    const output = document.getElementById('output');
+    
+    const groupElement = document.createElement('div');
+    groupElement.style.margin = '0 0 0 0';
+    groupElement.style.padding = '0';
+    groupElement.style.fontFamily = 'Consolas, monospace';
+    groupElement.style.whiteSpace = 'pre';
+    
+    output.appendChild(groupElement);
+    
+    if (group.length === 1) {
+        const line = group[0];
+        lineElement = document.createElement('div');
+        lineElement.style.margin = '0';
+        lineElement.style.padding = '0';
+        groupElement.appendChild(lineElement);
+        
+        const isCommentLine = line.trim().startsWith('#');
+        
+        if (isCommentLine) {
+            lineElement.innerHTML = `<span class="animation-comment">${line}</span>`;
+            lineElement.classList.add('typed');
+            
+            setTimeout(() => {
+                if (animationActive) {
+                    currentAnimLine++;
+                    processNextGroup();
+                }
+            }, 50);
+        } else {
+            animateLine(lineElement, line);
+        }
+    } else {
+        animateGroup(groupElement, group);
+    }
+}
+
+function animateGroup(container, lines) {
+    const lineElements = [];
+    
+    lines.forEach((line, idx) => {
+        const lineDiv = document.createElement('div');
+        lineDiv.style.margin = '0';
+        lineDiv.style.padding = '0';
+        lineDiv.style.fontFamily = 'Consolas, monospace';
+        lineDiv.style.whiteSpace = 'pre';
+        container.appendChild(lineDiv);
+        lineElements.push(lineDiv);
+    });
+    
+    const currentIndices = new Array(lines.length).fill(0);
+    
+    function typeNextChar() {
+        if (!animationActive) return;
+        
+        let allCompleted = true;
+        
+        for (let i = 0; i < lines.length; i++) {
+            if (currentIndices[i] < lines[i].length) {
+                allCompleted = false;
+                
+                const currentText = lines[i].substring(0, currentIndices[i] + 1);
+                
+                if (i === 0) {
+                    lineElements[i].innerHTML = currentText;
+                } else {
+                    lineElements[i].innerHTML = `<span class="animation-comment">${currentText}</span>`;
+                }
+                
+                currentIndices[i]++;
+            } else {
+                if (i === 0) {
+                    lineElements[i].innerHTML = lines[i];
+                } else {
+                    lineElements[i].innerHTML = `<span class="animation-comment">${lines[i]}</span>`;
+                }
+            }
+        }
+        
+        const output = document.getElementById('output');
+        output.scrollTop = output.scrollHeight;
+        
+        if (!allCompleted) {
+            animationInterval = setTimeout(typeNextChar, animationSpeed);
+        } else {
+            animationInterval = null;
+        }
+    }
+    
+    typeNextChar();
+}
+
+function animateLine(element, fullLine) {
+    let index = 0;
+    element.innerHTML = '';
+    
+    function typeNextChar() {
+        if (!animationActive) return;
+        
+        if (index < fullLine.length) {
+            const currentText = fullLine.substring(0, index + 1);
+            
+            const commentIndex = currentText.indexOf('#');
+            if (commentIndex !== -1) {
+                const beforeComment = currentText.substring(0, commentIndex);
+                const comment = currentText.substring(commentIndex);
+                element.innerHTML = `${beforeComment}<span class="animation-comment">${comment}</span>`;
+            } else {
+                element.innerHTML = currentText;
+            }
+            
+            index++;
+            
+            const output = document.getElementById('output');
+            output.scrollTop = output.scrollHeight;
+            
+            animationInterval = setTimeout(typeNextChar, animationSpeed);
+        } else {
+            element.classList.add('typed');
+            animationInterval = null;
+        }
+    }
+    
+    typeNextChar();
+}
+
+/* ================= ОСНОВНЫЕ ФУНКЦИИ ================= */
+function toggleAnswer() {
+    const answerInput = document.getElementById("answerInput");
+    answerInput.style.display = answerInput.style.display === "none" ? "block" : "none";
+}
+
+function copyCode() {
+    navigator.clipboard.writeText(document.getElementById("code").value);
+    alert("Код скопирован!");
+}
+
+async function pasteText() {
+    try {
+        const text = await navigator.clipboard.readText();
+        taskTextGlobal = text;
+        const taskTextDiv = document.getElementById("taskText");
+        taskTextDiv.innerHTML = highlightNumbers(text);
+        taskTextDiv.style.display = "block";
+        document.getElementById("taskImage").style.display = "none";
+        document.getElementById("videoPlayBtn").style.display = "none";
+
+        updateVideo();
+    } catch (e) {
+        alert("Ошибка чтения буфера: " + e.message);
+    }
+}
+
+async function pasteImage() {
+    const items = await navigator.clipboard.read();
+    for (const item of items)
+        for (const type of item.types)
+            if (type.startsWith("image/")) {
+                const blob = await item.getType(type);
+                const reader = new FileReader();
+                reader.onload = () => {
+                    document.getElementById("taskImage").src = reader.result;
+                    document.getElementById("taskImage").style.display = "block";
+                    document.getElementById("taskText").style.display = "none";
+                    document.getElementById("videoPlayBtn").style.display = "none";
+                    taskTextGlobal = "";
+                    
+                    updateVideo();
+                };
+                reader.readAsDataURL(blob);
+                return;
+            }
+    alert("В буфере нет изображений!");
+}
+
+function highlightNumbers(text) {
+    const numberRegex = /\b\d+(?:\.?\d+)?(?:[+%×÷=≤≥<>°²³]|руб|USD|[a-zA-Zа-яА-Я]{0,3})?\b/gi;
+    return text.replace(numberRegex, '<span class="number">$&</span>');
+}
+
+/* ================= ЗАДАЧИ ================= */
+function updateTaskInfoPanel() {
+    const panel = document.getElementById("taskInfoPanel");
+    const titleEl = document.getElementById("taskInfoTitle");
+    const analogEl = document.getElementById("taskInfoAnalog");
+    const videoEl = document.getElementById("taskInfoVideo");
+    const fileEl = document.getElementById("taskInfoFile");
+    const fileLink = document.getElementById("fileLink");
+    
+    if (current === -1 || !tasks[current]) {
+        panel.style.display = "none";
+        return;
+    }
+    
+    const task = tasks[current];
+    panel.style.display = "flex";
+    titleEl.textContent = `${current + 1}. ${task.name}`;
+    
+    const analogIndex = tasks.findIndex((t, i) =>
+        i !== current &&
+        t.name.includes(task.name.replace('-аналог', '')) &&
+        t.name.includes('аналог')
+    );
+    
+    if (analogIndex !== -1) {
+        analogEl.style.display = "flex";
+        analogEl.innerHTML = `🔄 Аналог: <a href="#" onclick="showTask(${analogIndex}); return false;">${analogIndex + 1}. ${tasks[analogIndex].name}</a>`;
+    } else {
+        analogEl.style.display = "none";
+    }
+    
+if (task.video) {
+    videoEl.style.display = "flex";
+    videoEl.innerHTML = `📹 ВИДЕО-РАЗБОР: <a href="${task.video}" target="_blank">${task.video}</a>`;
+} else {
+    videoEl.style.display = "none";
+}
+    
+    if (task.fileUrl) {
+        fileEl.style.display = "flex";
+        fileLink.href = task.fileUrl;
+        fileLink.textContent = task.fileUrl.length > 40 ? task.fileUrl.substring(0, 40) + "..." : task.fileUrl;
+    } else {
+        fileEl.style.display = "none";
+    }
+}
+
+function reorganizeTasksAfterImport() {
+    const originalTasks = [...tasks];
+    tasks = [];
+    
+    const nonAnalogTasks = originalTasks.filter(t => !t.name.includes('-аналог') && !t.name.includes('аналог'));
+    nonAnalogTasks.forEach(task => {
+        tasks.push(task);
+        const analog = originalTasks.find(t =>
+            t.name.includes(task.name) &&
+            (t.name.includes('-аналог') || t.name.includes('аналог'))
+        );
+        if (analog) {
+            tasks.push(analog);
+        }
+    });
+    
+    const remainingAnalogs = originalTasks.filter(t =>
+        (t.name.includes('-аналог') || t.name.includes('аналог')) &&
+        !tasks.includes(t)
+    );
+    tasks.push(...remainingAnalogs);
+}
+
+function showTask(i) {
+    const t = tasks[i];
+    current = i;
+    currentTaskData = t;
+    
+    if (codeMode === 'withComments' && t.codeWithComments) {
+        document.getElementById("code").value = t.codeWithComments;
+    } else if (codeMode === 'noComments' && t.codeNoComments) {
+        document.getElementById("code").value = t.codeNoComments;
+    } else {
+        document.getElementById("code").value = t.codeWithComments || t.codeNoComments || t.code || "";
+    }
+    
+    document.getElementById("answerInput").value = t.answer || "";
+    document.getElementById("videoUrl").value = t.video || "";
+    document.getElementById("solvedCheckbox").checked = t.solved || false;
+    taskTextGlobal = t.text || "";
+    
+    updateVideo();
+    updateSolvedCheckbox();
+    updateTaskInfoPanel();
+    
+    if (t.image) {
+        document.getElementById("taskImage").src = t.image;
+        document.getElementById("taskImage").style.display = "block";
+        document.getElementById("taskText").style.display = "none";
+    } else if (t.text) {
+        document.getElementById("taskText").innerHTML = highlightNumbers(t.text);
+        document.getElementById("taskText").style.display = "block";
+        document.getElementById("taskImage").style.display = "none";
+    } else {
+        document.getElementById("taskImage").style.display = "none";
+        document.getElementById("taskText").style.display = "none";
+    }
+    
+    updateTaskList();
+}
+
+function updateSolvedCheckbox() {
+    document.getElementById("solvedContainer").classList.toggle('solved', document.getElementById("solvedCheckbox").checked);
+}
+
+document.getElementById("solvedCheckbox").onchange = function() {
+    updateSolvedCheckbox();
+    if (current !== -1 && tasks[current]) {
+        tasks[current].solved = this.checked;
+        updateTaskList();
+        updateTaskInfoPanel();
+    }
+};
+
+/* ================= ДИАЛОГ СОХРАНЕНИЯ ================= */
+function showSaveDialog() {
+    document.getElementById("saveTaskName").value = currentTaskData ? currentTaskData.name : "Новая задача";
+    document.getElementById("saveFileUrl").value = currentTaskData && currentTaskData.fileUrl ? currentTaskData.fileUrl : "";
+    document.getElementById("saveDialog").classList.add('show');
+}
+
+function closeSaveDialog() {
+    document.getElementById("saveDialog").classList.remove('show');
+}
+
+function saveTaskWithName() {
+    const newName = document.getElementById("saveTaskName").value.trim();
+    if (!newName) {
+        alert("Введите название задачи!");
+        return;
+    }
+    
+    const fileUrl = document.getElementById("saveFileUrl").value.trim();
+    const currentCode = document.getElementById("code").value;
+    
+    const taskData = {
+        name: newName,
+        codeWithComments: codeMode === 'withComments' ? currentCode : (currentTaskData?.codeWithComments || ""),
+        codeNoComments: codeMode === 'noComments' ? currentCode : (currentTaskData?.codeNoComments || ""),
+        answer: document.getElementById("answerInput").value,
+        image: document.getElementById("taskImage").src || "",
+        text: taskTextGlobal,
+        video: document.getElementById("videoUrl").value,
+        fileUrl: fileUrl || "",
+        solved: document.getElementById("solvedCheckbox").checked,
+        favorite: currentTaskData?.favorite || false
+    };
+
+    if (current === -1) {
+        tasks.push(taskData);
+        current = tasks.length - 1;
+    } else {
+        tasks[current] = taskData;
+    }
+    
+    currentTaskData = taskData;
+    updateTaskList();
+    updateTaskInfoPanel();
+    closeSaveDialog();
+}
+
+function saveAsNewTask() {
+    const newName = document.getElementById("saveTaskName").value.trim();
+    if (!newName) {
+        alert("Введите название задачи!");
+        return;
+    }
+    
+    const fileUrl = document.getElementById("saveFileUrl").value.trim();
+    const currentCode = document.getElementById("code").value;
+    
+    const taskData = {
+        name: newName,
+        codeWithComments: codeMode === 'withComments' ? currentCode : "",
+        codeNoComments: codeMode === 'noComments' ? currentCode : "",
+        answer: document.getElementById("answerInput").value,
+        image: document.getElementById("taskImage").src || "",
+        text: taskTextGlobal,
+        video: document.getElementById("videoUrl").value,
+        fileUrl: fileUrl || "",
+        solved: document.getElementById("solvedCheckbox").checked,
+        favorite: false
+    };
+
+    tasks.push(taskData);
+    current = tasks.length - 1;
+    currentTaskData = taskData;
+    updateTaskList();
+    updateTaskInfoPanel();
+    closeSaveDialog();
+}
+
+/* ================= СПИСОК ЗАДАЧ ================= */
+function updateTaskList() {
+    const container = document.getElementById("taskListItems");
+    container.innerHTML = "";
+    
+    let filteredTasks = tasks;
+    
+    if (currentFilter === 'solved') {
+        filteredTasks = tasks.filter(t => t.solved);
+    } else if (currentFilter === 'unsolved') {
+        filteredTasks = tasks.filter(t => !t.solved);
+    } else if (currentFilter === 'favorite') {
+        filteredTasks = tasks.filter(t => t.favorite);
+    } else if (currentFilter === 'unfavorite') {
+        filteredTasks = tasks.filter(t => !t.favorite);
+    }
+    
+    filteredTasks.forEach((task, idx) => {
+        const realIndex = tasks.indexOf(task);
+        const div = document.createElement("div");
+        div.className = `task-list-item ${current === realIndex ? 'selected' : ''}`;
+        
+        div.innerHTML = `
+            <input type="checkbox" ${task.solved ? 'checked' : ''} onchange="toggleSolved(${realIndex}, this.checked)">
+            <span class="task-star ${task.favorite ? 'favorite' : ''}" onclick="toggleFavorite(${realIndex}, event)">${task.favorite ? '★' : '☆'}</span>
+            <span class="task-title" onclick="showTask(${realIndex})">${realIndex + 1}. ${task.name}</span>
+            <span class="task-status ${task.solved ? 'solved' : 'unsolved'}">${task.solved ? '✅' : '⏳'}</span>
+        `;
+        
+        container.appendChild(div);
+    });
+}
+
+function toggleSolved(index, checked) {
+    if (tasks[index]) {
+        tasks[index].solved = checked;
+        if (current === index) {
+            document.getElementById("solvedCheckbox").checked = checked;
+            updateSolvedCheckbox();
+        }
+        updateTaskList();
+        if (current === index) updateTaskInfoPanel();
+    }
+}
+
+function toggleFavorite(index, event) {
+    event.stopPropagation();
+    if (tasks[index]) {
+        tasks[index].favorite = !tasks[index].favorite;
+        updateTaskList();
+    }
+}
+
+function filterTaskList(filter) {
+    currentFilter = filter;
+    
+    document.querySelectorAll('.task-list-header button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    if (filter === 'all') document.getElementById('filterAllBtn').classList.add('active');
+    if (filter === 'solved') document.getElementById('filterSolvedBtn').classList.add('active');
+    if (filter === 'unsolved') document.getElementById('filterUnsolvedBtn').classList.add('active');
+    if (filter === 'favorite') document.getElementById('filterFavoriteBtn').classList.add('active');
+    if (filter === 'unfavorite') document.getElementById('filterUnfavoriteBtn').classList.add('active');
+    
+    updateTaskList();
+}
+
+function exportTasks() {
+    if (tasks.length === 0) {
+        alert("Нет задач для экспорта!");
+        return;
+    }
+    const blob = new Blob([JSON.stringify(tasks, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "tasks.json";
+    a.click();
+}
+
+function importTasks() {
+    if (tasks.length > 0) {
+        showConfirm("У вас есть несохраненные задачи. Сделайте экспорт перед загрузкой новых. Продолжить загрузку? (старые задачи будут заменены)", () => {
+            document.getElementById("importFile").click();
+        });
+    } else {
+        document.getElementById("importFile").click();
+    }
+}
+
+document.getElementById("importFile").onchange = () => {
+    const r = new FileReader();
+    r.onload = () => {
+        try {
+            const importedTasks = JSON.parse(r.result);
+            importedTasks.forEach(task => {
+                if (task.favorite === undefined) task.favorite = false;
+                if (task.fileUrl === undefined) task.fileUrl = "";
+                if (task.codeWithComments === undefined) task.codeWithComments = task.code || "";
+                if (task.codeNoComments === undefined) task.codeNoComments = task.code || "";
+            });
+            
+            // Заменяем старые задачи новыми
+            tasks = importedTasks;
+            
+            reorganizeTasksAfterImport();
+            if (tasks.length > 0) {
+                showTask(0);
+            }
+            updateTaskList();
+            alert(`✅ Загружено ${importedTasks.length} задач!`);
+        } catch (e) {
+            alert("Ошибка чтения файла: " + e.message);
+        }
+    };
+    r.readAsText(document.getElementById("importFile").files[0]);
+};
+
+/* ================= ЗАГРУЗКА ЗАДАЧ С GITHUB ================= */
+async function loadGithubTask() {
+    const select = document.getElementById('githubTaskSelect');
+    const url = select.value;
+    
+    if (!url) {
+        alert('Выберите задачу из списка!');
+        return;
+    }
+    
+    if (tasks.length > 0) {
+        showConfirm("У вас есть несохраненные задачи. Сделайте экспорт перед загрузкой новых. Продолжить загрузку? (старые задачи будут заменены)", async () => {
+            await fetchGithubTask(url);
+        });
+    } else {
+        await fetchGithubTask(url);
+    }
+}
+
+async function fetchGithubTask(url) {
+    const output = document.getElementById('output');
+    output.innerHTML = `⏳ Загрузка задачи с GitHub...`;
+    
+    try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Ошибка загрузки: ${response.status} ${response.statusText}`);
+        }
+        
+        const importedTasks = await response.json();
+        
+        importedTasks.forEach(task => {
+            if (task.favorite === undefined) task.favorite = false;
+            if (task.fileUrl === undefined) task.fileUrl = "";
+            if (task.codeWithComments === undefined) task.codeWithComments = task.code || "";
+            if (task.codeNoComments === undefined) task.codeNoComments = task.code || "";
+        });
+        
+        tasks = importedTasks;
+        
+        reorganizeTasksAfterImport();
+        if (tasks.length > 0) {
+            showTask(0);
+            
+            // Если есть файл для загрузки, загружаем его автоматически
+            if (tasks[0].fileUrl) {
+                output.innerHTML += `\n\n⏳ Загрузка файла данных...`;
+                const fileResponse = await fetch(tasks[0].fileUrl);
+                if (fileResponse.ok) {
+                    loadedFileContent = await fileResponse.text();
+                    output.innerHTML += `\n✅ Файл данных загружен!`;
+                }
+            }
+        }
+        updateTaskList();
+        output.innerHTML = `✅ Загружено ${importedTasks.length} задач!`;
+        
+    } catch (e) {
+        output.innerHTML = `❌ Ошибка: ${e.message}`;
+        output.className = "error";
+    }
+}
+
+/* ================= ДИАЛОГ ПОДТВЕРЖДЕНИЯ ================= */
+function showConfirm(message, onYes) {
+    const dialog = document.getElementById('confirmDialog');
+    const messageEl = document.getElementById('confirmMessage');
+    const yesBtn = document.getElementById('confirmYes');
+    const noBtn = document.getElementById('confirmNo');
+    
+    messageEl.textContent = message;
+    dialog.classList.add('show');
+    
+    const onYesHandler = () => {
+        dialog.classList.remove('show');
+        yesBtn.removeEventListener('click', onYesHandler);
+        noBtn.removeEventListener('click', onNoHandler);
+        onYes();
+    };
+    
+    const onNoHandler = () => {
+        dialog.classList.remove('show');
+        yesBtn.removeEventListener('click', onYesHandler);
+        noBtn.removeEventListener('click', onNoHandler);
+    };
+    
+    yesBtn.addEventListener('click', onYesHandler);
+    noBtn.addEventListener('click', onNoHandler);
+}
+
+/* ================= ГОРЯЧИЕ КЛАВИШИ ================= */
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+        if (drawEnabled) {
+            drawEnabled = false;
+            canvas.style.pointerEvents = "none";
+            document.querySelectorAll('.color-btn, .pen-size-btn').forEach(btn => btn.classList.remove('drawing'));
+        }
+        if (document.getElementById("videoModal").classList.contains("show")) {
+            closeVideoModal();
+        }
+        closePrintDialog();
+        closeSaveDialog();
+        closeProgrammerModal();
+        closeFileLoadModal();
+        
+        if (animationActive) {
+            stopAnimation();
+            document.getElementById('output').innerHTML += '\n\n⏸️ Объяснение остановлено';
+        }
+    }
+    if (e.ctrlKey && e.key === 'p') {
+        e.preventDefault();
+        showPrintDialog();
+    }
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        showSaveDialog();
+    }
+});
+// Функции для совместимости со старыми кнопками
+function selectAllForPrint() {
+    if (printCheckboxes) {
+        Object.values(printCheckboxes).forEach(cb => {
+            if (cb) cb.checked = true;
+        });
+    }
+}
+
+function deselectAllForPrint() {
+    if (printCheckboxes) {
+        Object.values(printCheckboxes).forEach(cb => {
+            if (cb) cb.checked = false;
+        });
+    }
+}
+
+function printSelectedTasks() {
+    printSelectedTasksWithOptions();
+}
+
+function updateVideoFromTeacher() {
+    const videoUrl = document.getElementById('videoUrlTeacher').value;
+    document.getElementById('videoUrl').value = videoUrl;
+    updateVideo();
+    alert('Видео добавлено!');
+}
+</script>
+
+</body>
+</html>

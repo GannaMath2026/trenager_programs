@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таблица истинности с разбором</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background: #f5f7fa; padding: 20px; display: flex; justify-content: center; }
+        .container { max-width: 1250px; width: 100%; background: white; border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+        h1 { font-size: 22px; margin: 0 0 8px 0; color: #1e293b; }
+        .sub { color: #64748b; font-size: 14px; margin-bottom: 20px; }
+        .func-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+        .func-buttons button { padding: 8px 20px; border: 2px solid #e2e8f0; border-radius: 30px; background: white; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; color: #1e293b; }
+        .func-buttons button.active { background: #1e293b; color: white; border-color: #1e293b; }
+        .func-buttons button:hover { background: #e2e8f0; }
+        .func-buttons button.active:hover { background: #0f172a; }
+        .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .filter-bar button { padding: 6px 16px; border-radius: 20px; border: 1px solid #cbd5e1; background: white; font-size: 13px; cursor: pointer; transition: 0.2s; }
+        .filter-bar button.active-filter { background: #1e293b; color: white; border-color: #1e293b; }
+        .filter-bar button:hover { background: #e2e8f0; }
+        .filter-bar button.active-filter:hover { background: #0f172a; }
+        .table-wrap { overflow-x: auto; }
+        table { border-collapse: collapse; font-size: 13px; width: 100%; min-width: 750px; }
+        th, td { border: 1px solid #e2e8f0; padding: 6px 10px; text-align: center; }
+        th { background: #f1f5f9; font-weight: 600; color: #1e293b; }
+        .var-col { font-weight: 600; background: #fafbfc; }
+        .result-col { font-weight: 700; background: #f1f5f9; }
+        .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-1 { background: #d1fae5; color: #0b6e4f; }
+        .badge-0 { background: #fee2e2; color: #b91c1c; }
+        .step-label { font-size: 10px; color: #64748b; display: block; margin-top: 2px; }
+        .step-num { font-size: 9px; color: #94a3b8; display: block; font-weight: 700; }
+        .expression-box { background: #f1f5f9; padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-family: 'Courier New', monospace; font-size: 15px; color: #0f172a; word-break: break-all; }
+        .footer { margin-top: 20px; font-size: 13px; color: #94a3b8; text-align: center; }
+        .empty-row { padding: 30px; color: #94a3b8; text-align: center; }
+        .step-header { font-size: 11px; color: #475569; font-weight: 600; background: #f8fafc; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🧮 Таблица истинности</h1>
+    <div class="sub">Пошаговый разбор логической функции (импликация → считается как ≤)</div>
+
+    <div class="func-buttons" id="funcButtons">
+        <button data-fn="0" class="active">Функция 3</button>
+        <button data-fn="1">Функция 5</button>
+        <button data-fn="2">Функция 4</button>
+        <button data-fn="3">Функция 2</button>
+        <button data-fn="4">Функция 1</button>
+    </div>
+
+    <div class="expression-box" id="exprDisplay">
+        <span id="exprText">(x ∨ y) → (z ∧ w)</span>
+    </div>
+
+    <div class="filter-bar">
+        <button id="filterAll" class="active-filter">Все</button>
+        <button id="filter1">✅ Только 1</button>
+        <button id="filter0">❌ Только 0</button>
+    </div>
+
+    <div class="table-wrap" id="tableWrap"></div>
+    <div class="footer">⚡ Импликация A → B вычисляется как (A ≤ B), т.е. ложна только при 1→0.</div>
+</div>
+
+<script>
+// ============================================================
+//  ФУНКЦИИ (порядок: 3, 5, 4, 2, 1)
+//  В формулах → оставлена, при вычислении заменяется на <=
+// ============================================================
+const FUNCTIONS = [
+    // 1) (x ∨ y) → (z ∧ w)
+    function f3(x,y,z,w) {
+        const a = x || y;
+        const b = z && w;
+        return a <= b;   // импликация
+    },
+    // 2) ((y → w) → x) ∨ ¬z
+    function f5(x,y,z,w) {
+        const a = y <= w;
+        const b = a <= x;
+        const c = !z;
+        return b || c;
+    },
+    // 3) ¬(x ≡ w∧¬z) ∧ (y ≡ x∧¬w)
+    function f4(x,y,z,w) {
+        const a = w && !z;
+        const b = (x === a);
+        const c = !b;
+        const d = x && !w;
+        const e = (y === d);
+        return c && e;
+    },
+    // 4) (x → y) ∧ (z → w) ∧ ¬(y ∨ w)
+    function f2(x,y,z,w) {
+        const a = x <= y;
+        const b = z <= w;
+        const c = !(y || w);
+        return a && b && c;
+    },
+    // 5) ¬( ¬( x → ¬w ) ∧ z ) ∧ ¬( w → z ) ∧ ( x → ¬z )
+    function f1(x,y,z,w) {
+        const a = x <= !w;
+        const b = !a;
+        const c = b && z;
+        const d = !c;
+        const e = w <= z;
+        const f = !e;
+        const g = x <= !z;
+        return d && f && g;
+    }
+];
+
+// ============================================================
+//  ПОЛУЧЕНИЕ ШАГОВ (С НОМЕРАМИ ДЕЙСТВИЙ)
+// ============================================================
+function getSteps(fn, x, y, z, w) {
+    const steps = [];
+    let num = 1;
+
+    if (fn === FUNCTIONS[0]) { // (x∨y) → (z∧w)
+        const a = x || y;
+        const b = z && w;
+        const c = a <= b;
+        steps.push({ num: num++, label: 'x∨y', value: a?1:0 });
+        steps.push({ num: num++, label: 'z∧w', value: b?1:0 });
+        steps.push({ num: num++, label: '→ (≤)', value: c?1:0 });
+        return steps;
+    }
+    if (fn === FUNCTIONS[1]) { // ((y→w)→x) ∨ ¬z
+        const a = y <= w;
+        const b = a <= x;
+        const c = !z;
+        const d = b || c;
+        steps.push({ num: num++, label: 'y→w', value: a?1:0 });
+        steps.push({ num: num++, label: '→x', value: b?1:0 });
+        steps.push({ num: num++, label: '¬z', value: c?1:0 });
+        steps.push({ num: num++, label: '∨', value: d?1:0 });
+        return steps;
+    }
+    if (fn === FUNCTIONS[2]) { // ¬(x≡w∧¬z) ∧ (y≡x∧¬w)
+        const a = w && !z;
+        const b = (x === a);
+        const c = !b;
+        const d = x && !w;
+        const e = (y === d);
+        const f = c && e;
+        steps.push({ num: num++, label: 'w∧¬z', value: a?1:0 });
+        steps.push({ num: num++, label: 'x≡...', value: b?1:0 });
+        steps.push({ num: num++, label: '¬(...)', value: c?1:0 });
+        steps.push({ num: num++, label: 'x∧¬w', value: d?1:0 });
+        steps.push({ num: num++, label: 'y≡...', value: e?1:0 });
+        steps.push({ num: num++, label: '∧', value: f?1:0 });
+        return steps;
+    }
+    if (fn === FUNCTIONS[3]) { // (x→y) ∧ (z→w) ∧ ¬(y∨w)
+        const a = x <= y;
+        const b = z <= w;
+        const c = !(y || w);
+        const d = a && b && c;
+        steps.push({ num: num++, label: 'x→y', value: a?1:0 });
+        steps.push({ num: num++, label: 'z→w', value: b?1:0 });
+        steps.push({ num: num++, label: '¬(y∨w)', value: c?1:0 });
+        steps.push({ num: num++, label: '∧∧', value: d?1:0 });
+        return steps;
+    }
+    if (fn === FUNCTIONS[4]) { // ¬(¬(x→¬w)∧z) ∧ ¬(w→z) ∧ (x→¬z)
+        const a = x <= !w;
+        const b = !a;
+        const c = b && z;
+        const d = !c;
+        const e = w <= z;
+        const f = !e;
+        const g = x <= !z;
+        const h = d && f && g;
+        steps.push({ num: num++, label: 'x→¬w', value: a?1:0 });
+        steps.push({ num: num++, label: '¬(...)', value: b?1:0 });
+        steps.push({ num: num++, label: '∧z', value: c?1:0 });
+        steps.push({ num: num++, label: '¬(...)', value: d?1:0 });
+        steps.push({ num: num++, label: 'w→z', value: e?1:0 });
+        steps.push({ num: num++, label: '¬(...)', value: f?1:0 });
+        steps.push({ num: num++, label: 'x→¬z', value: g?1:0 });
+        steps.push({ num: num++, label: '∧∧', value: h?1:0 });
+        return steps;
+    }
+    return steps;
+}
+
+// ============================================================
+//  ПОСТРОЕНИЕ ТАБЛИЦЫ
+// ============================================================
+function buildTruthTable(fn) {
+    const rows = [];
+    for (let i = 0; i < 16; i++) {
+        const x = (i >> 3) & 1;
+        const y = (i >> 2) & 1;
+        const z = (i >> 1) & 1;
+        const w = i & 1;
+        const steps = getSteps(fn, x, y, z, w);
+        const result = fn(x, y, z, w) ? 1 : 0;
+        rows.push({ x, y, z, w, steps, result });
+    }
+    return rows;
+}
+
+// ============================================================
+//  ОТОБРАЖЕНИЕ
+// ============================================================
+let currentFnIndex = 0;
+let currentFilter = 'all';
+
+const EXPR_TEXTS = [
+    '(x ∨ y) → (z ∧ w)',
+    '((y → w) → x) ∨ ¬z',
+    '¬(x ≡ w ∧ ¬z) ∧ (y ≡ x ∧ ¬w)',
+    '(x → y) ∧ (z → w) ∧ ¬(y ∨ w)',
+    '¬( ¬( x → ¬w ) ∧ z ) ∧ ¬( w → z ) ∧ ( x → ¬z )'
+];
+
+function render() {
+    const fn = FUNCTIONS[currentFnIndex];
+    const rows = buildTruthTable(fn);
+
+    let filtered = rows;
+    if (currentFilter === '1') filtered = rows.filter(r => r.result === 1);
+    if (currentFilter === '0') filtered = rows.filter(r => r.result === 0);
+
+    document.getElementById('exprText').textContent = EXPR_TEXTS[currentFnIndex];
+
+    // Определяем максимальное количество шагов для этой функции
+    const maxSteps = rows.length > 0 ? rows[0].steps.length : 0;
+
+    let html = `<table>
+        <thead>
+            <tr>
+                <th>x</th><th>y</th><th>z</th><th>w</th>`;
+
+    // Заголовки шагов с номерами
+    for (let i = 0; i < maxSteps; i++) {
+        html += `<th class="step-header">Действие ${i+1}</th>`;
+    }
+    html += `<th>Результат</th></tr></thead><tbody>`;
+
+    if (filtered.length === 0) {
+        html += `<tr><td colspan="${4 + maxSteps + 1}" class="empty-row">Нет строк с таким значением</td></tr>`;
+    } else {
+        for (const row of filtered) {
+            html += `<tr>
+                <td class="var-col">${row.x}</td>
+                <td class="var-col">${row.y}</td>
+                <td class="var-col">${row.z}</td>
+                <td class="var-col">${row.w}</td>`;
+
+            const steps = row.steps;
+            for (const s of steps) {
+                const cls = s.value === 1 ? 'badge-1' : 'badge-0';
+                html += `<td>
+                    <span class="badge ${cls}">${s.value}</span>
+                    <span class="step-label">${s.label}</span>
+                </td>`;
+            }
+
+            // Добиваем пустыми ячейками, если шагов меньше max
+            for (let i = steps.length; i < maxSteps; i++) {
+                html += `<td style="background:#fafbfc;color:#cbd5e1;">—</td>`;
+            }
+
+            const r = row.result;
+            const cls = r === 1 ? 'badge-1' : 'badge-0';
+            html += `<td class="result-col"><span class="badge ${cls}">${r}</span></td>`;
+            html += `</tr>`;
+        }
+    }
+
+    html += `</tbody></table>`;
+    document.getElementById('tableWrap').innerHTML = html;
+
+    document.querySelectorAll('.filter-bar button').forEach(btn => btn.classList.remove('active-filter'));
+    if (currentFilter === 'all') document.getElementById('filterAll').classList.add('active-filter');
+    if (currentFilter === '1') document.getElementById('filter1').classList.add('active-filter');
+    if (currentFilter === '0') document.getElementById('filter0').classList.add('active-filter');
+}
+
+// ============================================================
+//  СОБЫТИЯ
+// ============================================================
+document.querySelectorAll('#funcButtons button').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('#funcButtons button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentFnIndex = parseInt(this.dataset.fn);
+        render();
+    });
+});
+
+document.getElementById('filterAll').addEventListener('click', () => { currentFilter = 'all'; render(); });
+document.getElementById('filter1').addEventListener('click', () => { currentFilter = '1'; render(); });
+document.getElementById('filter0').addEventListener('click', () => { currentFilter = '0'; render(); });
+
+render();
+</script>
+</body>
+</html>
