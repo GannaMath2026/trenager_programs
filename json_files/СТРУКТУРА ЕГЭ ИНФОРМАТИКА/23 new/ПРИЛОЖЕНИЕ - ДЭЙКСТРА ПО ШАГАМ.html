@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дейкстра — яркая визуализация</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            padding: 20px;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #16213e;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 16px;
+            font-weight: normal;
+            color: #94a3b8;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #1e293b;
+            border-radius: 10px;
+            align-items: center;
+            border: 1px solid #334155;
+        }
+        .controls button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-success { background: #22c55e; color: white; }
+        .btn-success:hover { background: #16a34a; transform: translateY(-2px); }
+        .btn-warning { background: #eab308; color: #1a1a2e; }
+        .btn-warning:hover { background: #ca8a04; transform: translateY(-2px); }
+        .btn-secondary { background: #64748b; color: white; }
+        .btn-secondary:hover { background: #475569; transform: translateY(-2px); }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-2px); }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+        .graph-container { display: flex; gap: 30px; flex-wrap: wrap; }
+        .canvas-wrapper {
+            flex: 2;
+            min-width: 500px;
+            border: 2px solid #334155;
+            border-radius: 10px;
+            background: #0f172a;
+            padding: 10px;
+        }
+        canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 6px;
+            background: #0f172a;
+            cursor: grab;
+        }
+        canvas:active { cursor: grabbing; }
+        .info-panel {
+            flex: 1;
+            min-width: 320px;
+            max-height: 650px;
+            display: flex;
+            flex-direction: column;
+            background: #1e293b;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+        .info-panel h3 {
+            font-size: 18px;
+            padding: 14px 16px 8px 16px;
+            color: #f1f5f9;
+            flex-shrink: 0;
+            border-bottom: 1px solid #334155;
+            margin: 0;
+        }
+        .step-log-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 16px 16px 16px;
+            display: flex;
+            flex-direction: column;
+        }
+        .step-log-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .step-log-container::-webkit-scrollbar-track {
+            background: #0f172a;
+            border-radius: 3px;
+        }
+        .step-log-container::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 3px;
+        }
+        .step-item {
+            padding: 10px 14px;
+            margin: 4px 0;
+            border-radius: 8px;
+            background: #0f172a;
+            border-left: 5px solid #3b82f6;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #e2e8f0;
+            flex-shrink: 0;
+        }
+        .step-item.active {
+            background: #1e3a5f;
+            border-left-color: #facc15;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        .step-item.done {
+            border-left-color: #22c55e;
+            opacity: 0.8;
+        }
+        .step-item .highlight { color: #60a5fa; font-weight: 700; }
+        .step-item .highlight-red { color: #f87171; font-weight: 700; }
+        .step-item .highlight-green { color: #4ade80; font-weight: 700; }
+        .step-item .highlight-yellow { color: #facc15; font-weight: 700; }
+        .step-number {
+            display: inline-block;
+            background: #334155;
+            color: #94a3b8;
+            border-radius: 12px;
+            padding: 0 8px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-right: 6px;
+        }
+        .distances {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 6px;
+            padding: 12px 16px 16px 16px;
+            background: #0f172a;
+            border-top: 1px solid #334155;
+            flex-shrink: 0;
+        }
+        .distances-title {
+            grid-column: 1 / -1;
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+        .dist-item {
+            padding: 6px 8px;
+            background: #1e293b;
+            border-radius: 6px;
+            text-align: center;
+            border: 2px solid #334155;
+            font-size: 13px;
+        }
+        .dist-item .vertex { font-weight: 700; color: #60a5fa; font-size: 16px; }
+        .dist-item .dist { font-weight: 700; color: #4ade80; font-size: 18px; }
+        .dist-item .dist.inf { color: #f87171; }
+        .dist-item.visited { background: #064e3b; border-color: #22c55e; }
+        .dist-item.current { background: #713f12; border-color: #facc15; border-width: 3px; }
+        .dist-item .label-small { font-size: 10px; color: #64748b; }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 16px;
+            font-size: 14px;
+            padding: 14px 20px;
+            background: #1e293b;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+        .legend-item { display: flex; align-items: center; gap: 8px; color: #e2e8f0; }
+        .legend-color {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #475569;
+        }
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: auto;
+        }
+        .speed-control input[type="range"] {
+            width: 120px;
+            accent-color: #3b82f6;
+            background: #334155;
+        }
+        .speed-control label { font-weight: 600; font-size: 14px; color: #94a3b8; }
+        .hint {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 6px;
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .graph-container { flex-direction: column; }
+            .canvas-wrapper { min-width: unset; }
+            .info-panel { max-height: 400px; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .speed-control { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>
+        🚀 Алгоритм Дейкстры
+        <small>ярко, контрастно, с перетаскиванием</small>
+    </h1>
+
+    <div class="controls">
+        <button class="btn-success" id="btnStart">▶ Запустить</button>
+        <button class="btn-warning" id="btnStep">⏭ Шаг</button>
+        <button class="btn-secondary" id="btnReset">🔄 Сброс</button>
+        <button class="btn-primary" id="btnExample">📊 Пример</button>
+        <div class="speed-control">
+            <label>🐢</label>
+            <input type="range" id="speedRange" min="300" max="3000" value="900">
+            <label>🐇</label>
+        </div>
+    </div>
+
+    <div class="graph-container">
+        <div class="canvas-wrapper">
+            <canvas id="graphCanvas" width="750" height="550"></canvas>
+            <div class="hint">🖱️ Перетащите вершину — всё поедет за ней</div>
+        </div>
+        <div class="info-panel" id="infoPanel">
+            <h3>📋 Пошаговый разбор алгоритма</h3>
+            <div class="step-log-container" id="stepLogContainer">
+                <div id="stepLog">
+                    <div class="step-item">Нажмите <span class="highlight">"Запустить"</span> или <span class="highlight">"Шаг"</span></div>
+                </div>
+            </div>
+            <div class="distances" id="distancesGrid">
+                <div class="distances-title">📏 Расстояния до вершин</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-color" style="background:#3b82f6;"></div><span>Старт</span></div>
+        <div class="legend-item"><div class="legend-color" style="background:#22c55e;"></div><span>Посещённая</span></div>
+        <div class="legend-item"><div class="legend-color" style="background:#facc15;"></div><span>Текущая</span></div>
+        <div class="legend-item"><div class="legend-color" style="background:#ef4444;"></div><span>Цель</span></div>
+        <div class="legend-item"><span style="font-size:22px;color:#ffffff;">➜</span><span>Направление (белая стрелка)</span></div>
+        <div class="legend-item"><div style="width:40px;height:4px;background:#60a5fa;border-radius:2px;"></div><span>Кратчайший путь</span></div>
+        <div class="legend-item"><div style="width:40px;height:4px;background:#f87171;border-radius:2px;"></div><span>Релаксация</span></div>
+    </div>
+</div>
+
+<script>
+    // ================================================================
+    // 1. ДАННЫЕ ГРАФА
+    // ================================================================
+
+    const graphData = {
+        vertices: [
+            { id: 0, label: 'A', x: 60, y: 280 },
+            { id: 1, label: 'B', x: 180, y: 120 },
+            { id: 2, label: 'C', x: 340, y: 60 },
+            { id: 3, label: 'D', x: 500, y: 120 },
+            { id: 4, label: 'E', x: 610, y: 230 },
+            { id: 5, label: 'F', x: 500, y: 400 },
+            { id: 6, label: 'G', x: 240, y: 400 },
+            { id: 7, label: 'H', x: 120, y: 430 }
+        ],
+        edges: [
+            { from: 0, to: 1, weight: 4 },
+            { from: 0, to: 6, weight: 7 },
+            { from: 1, to: 2, weight: 2 },
+            { from: 1, to: 6, weight: 3 },
+            { from: 2, to: 3, weight: 1 },
+            { from: 2, to: 4, weight: 5 },
+            { from: 3, to: 4, weight: 2 },
+            { from: 3, to: 5, weight: 6 },
+            { from: 4, to: 5, weight: 2 },
+            { from: 4, to: 7, weight: 8 },
+            { from: 5, to: 6, weight: 4 },
+            { from: 5, to: 7, weight: 3 },
+            { from: 6, to: 7, weight: 5 }
+        ],
+        start: 0,
+        end: 7
+    };
+
+    // ================================================================
+    // 2. СОСТОЯНИЕ
+    // ================================================================
+
+    let state = {
+        graph: null,
+        distances: {},
+        previous: {},
+        visited: new Set(),
+        unvisited: new Set(),
+        current: null,
+        pq: [],
+        path: [],
+        finished: false,
+        steps: [],
+        stepIndex: -1,
+        running: false,
+        timeoutId: null,
+        relaxEdges: [],
+        dragVertex: null,
+        dragOffsetX: 0,
+        dragOffsetY: 0,
+        stepCounter: 0
+    };
+
+    // ================================================================
+    // 3. ИНИЦИАЛИЗАЦИЯ
+    // ================================================================
+
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function initGraph(data) {
+        state.graph = JSON.parse(JSON.stringify(data));
+        state.distances = {};
+        state.previous = {};
+        state.visited = new Set();
+        state.unvisited = new Set();
+        state.current = null;
+        state.pq = [];
+        state.path = [];
+        state.finished = false;
+        state.steps = [];
+        state.stepIndex = -1;
+        state.relaxEdges = [];
+        state.stepCounter = 0;
+
+        state.graph.vertices.forEach(v => {
+            state.distances[v.id] = v.id === state.graph.start ? 0 : Infinity;
+            state.previous[v.id] = null;
+            state.unvisited.add(v.id);
+        });
+
+        state.pq.push({ vertex: state.graph.start, dist: 0 });
+
+        addStep('🚀 <b>СТАРТ</b> — начинаем из вершины <span class="highlight">' + getLabel(state.graph.start) + '</span> (расстояние = 0)', 'start');
+        addStep('📌 <b>Цель</b> — найти путь до <span class="highlight-red">' + getLabel(state.graph.end) + '</span>', 'info');
+
+        render();
+        updateInfo();
+        // Прокручиваем к началу
+        const container = document.getElementById('stepLogContainer');
+        container.scrollTop = 0;
+    }
+
+    function getLabel(id) {
+        const v = state.graph.vertices.find(v => v.id === id);
+        return v ? v.label + '(' + id + ')' : id;
+    }
+
+    function getLabelShort(id) {
+        const v = state.graph.vertices.find(v => v.id === id);
+        return v ? v.label : id;
+    }
+
+    function addStep(text, type = 'info') {
+        state.stepCounter++;
+        state.steps.push({ text, type, num: state.stepCounter });
+        state.stepIndex = state.steps.length - 1;
+    }
+
+    // ================================================================
+    // 4. РИСОВАНИЕ (БЕЗ ТЕНЕЙ, КОНТРАСТНО)
+    // ================================================================
+
+    function drawArrow(ctx, fromX, fromY, toX, toY, color, lineWidth) {
+        const headLength = 14;
+        const headAngle = Math.PI / 6;
+        const angle = Math.atan2(toY - fromY, toX - fromX);
+
+        ctx.beginPath();
+        ctx.moveTo(fromX, fromY);
+        ctx.lineTo(toX, toY);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.stroke();
+
+        const tipX = toX;
+        const tipY = toY;
+        const leftX = tipX - headLength * Math.cos(angle - headAngle);
+        const leftY = tipY - headLength * Math.sin(angle - headAngle);
+        const rightX = tipX - headLength * Math.cos(angle + headAngle);
+        const rightY = tipY - headLength * Math.sin(angle + headAngle);
+
+        ctx.beginPath();
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(leftX, leftY);
+        ctx.lineTo(rightX, rightY);
+        ctx.closePath();
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+    }
+
+    function render() {
+        const W = canvas.width;
+        const H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+
+        const vertices = state.graph.vertices;
+        const edges = state.graph.edges;
+
+        // ---- РЁБРА ----
+        for (const edge of edges) {
+            const from = vertices.find(v => v.id === edge.from);
+            const to = vertices.find(v => v.id === edge.to);
+            if (!from || !to) continue;
+
+            const isInPath = state.path.includes(edge.from) && state.path.includes(edge.to) &&
+                state.path.indexOf(edge.from) + 1 === state.path.indexOf(edge.to);
+            const isRelaxed = state.relaxEdges.some(e => e.from === edge.from && e.to === edge.to);
+
+            let color = '#475569';
+            let lineWidth = 2.5;
+
+            if (isInPath) {
+                color = '#60a5fa';
+                lineWidth = 5;
+            } else if (isRelaxed) {
+                color = '#f87171';
+                lineWidth = 4;
+            } else if (state.visited.has(edge.from) && state.visited.has(edge.to)) {
+                color = '#4ade80';
+                lineWidth = 3;
+            } else if (state.visited.has(edge.from) || state.visited.has(edge.to)) {
+                color = '#64748b';
+                lineWidth = 2;
+            }
+
+            const radius = 28;
+            const angle = Math.atan2(to.y - from.y, to.x - from.x);
+            const startX = from.x + radius * Math.cos(angle);
+            const startY = from.y + radius * Math.sin(angle);
+            const endX = to.x - radius * Math.cos(angle);
+            const endY = to.y - radius * Math.sin(angle);
+
+            drawArrow(ctx, startX, startY, endX, endY, color, lineWidth);
+
+            // ---- ВЕС РЕБРА (ЦЕНТР РЕБРА) ----
+            const midX = (from.x + to.x) / 2;
+            const midY = (from.y + to.y) / 2;
+
+            // Яркий фон для веса
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(midX, midY, 20, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(midX, midY, 20, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            ctx.fillStyle = '#facc15';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(edge.weight, midX, midY);
+        }
+
+        // ---- ВЕРШИНЫ ----
+        for (const v of vertices) {
+            const isStart = v.id === state.graph.start;
+            const isEnd = v.id === state.graph.end;
+            const isVisited = state.visited.has(v.id);
+            const isCurrent = state.current === v.id;
+            const isInPath = state.path.includes(v.id);
+
+            let radius = 30;
+            let color = '#1e293b';
+            let borderColor = '#475569';
+            let borderWidth = 3;
+
+            if (isCurrent) {
+                color = '#facc15';
+                borderColor = '#facc15';
+                borderWidth = 4;
+                radius = 34;
+            } else if (isInPath && state.finished) {
+                color = '#3b82f6';
+                borderColor = '#60a5fa';
+                borderWidth = 4;
+            } else if (isVisited) {
+                color = '#064e3b';
+                borderColor = '#22c55e';
+                borderWidth = 3;
+            }
+
+            if (isStart) {
+                borderColor = '#3b82f6';
+                borderWidth = 4;
+            }
+            if (isEnd) {
+                borderColor = '#ef4444';
+                borderWidth = 4;
+            }
+
+            ctx.shadowBlur = 0; // БЕЗ ТЕНЕЙ
+
+            ctx.beginPath();
+            ctx.arc(v.x, v.y, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = borderWidth;
+            ctx.stroke();
+
+            // Буква
+            ctx.fillStyle = isCurrent ? '#1a1a2e' : '#ffffff';
+            ctx.font = 'bold 26px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(v.label, v.x, v.y - 2);
+
+            // Расстояние
+            const dist = state.distances[v.id];
+            let distText = dist === Infinity ? '∞' : dist;
+            if (v.id === state.graph.start) distText = '0';
+
+            ctx.fillStyle = dist === Infinity ? '#f87171' : '#4ade80';
+            ctx.font = 'bold 20px Arial';
+            ctx.textBaseline = 'top';
+            ctx.fillText('d=' + distText, v.x, v.y + radius + 6);
+
+            // Индекс
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px Arial';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('[' + v.id + ']', v.x, v.y - radius - 6);
+
+            if (isEnd) {
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 6]);
+                ctx.beginPath();
+                ctx.arc(v.x, v.y, radius + 10, 0, 2 * Math.PI);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#ef4444';
+                ctx.font = 'bold 16px Arial';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText('🎯 ЦЕЛЬ', v.x, v.y - radius - 30);
+            }
+        }
+
+        // ---- ОЧЕРЕДЬ ----
+        if (state.pq.length > 0) {
+            const queueText = '📋 Очередь: ' + state.pq
+                .sort((a, b) => a.dist - b.dist)
+                .map(p => getLabelShort(p.vertex) + '(' + p.dist + ')')
+                .join('  ');
+            ctx.font = 'bold 16px Arial';
+            const metrics = ctx.measureText(queueText);
+            const tw = Math.min(metrics.width + 24, W - 20);
+            ctx.fillStyle = 'rgba(15,23,42,0.92)';
+            ctx.fillRect(10, 10, tw, 36);
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(10, 10, tw, 36);
+            ctx.fillStyle = '#facc15';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(queueText, 18, 16);
+        }
+
+        // ---- РЕЛАКСАЦИЯ ----
+        if (state.relaxEdges.length > 0) {
+            ctx.fillStyle = 'rgba(15,23,42,0.92)';
+            ctx.fillRect(10, H - 48, 280, 38);
+            ctx.strokeStyle = '#f87171';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(10, H - 48, 280, 38);
+            ctx.fillStyle = '#f87171';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🔄 Релаксация рёбер...', 20, H - 29);
+        }
+    }
+
+    // ================================================================
+    // 5. ПЕРЕТАСКИВАНИЕ
+    // ================================================================
+
+    function getVertexAt(x, y) {
+        const radius = 38;
+        for (const v of state.graph.vertices) {
+            const dx = x - v.x;
+            const dy = y - v.y;
+            if (dx * dx + dy * dy < radius * radius) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+
+        const vertex = getVertexAt(x, y);
+        if (vertex) {
+            state.dragVertex = vertex;
+            state.dragOffsetX = x - vertex.x;
+            state.dragOffsetY = y - vertex.y;
+            canvas.style.cursor = 'grabbing';
+        }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!state.dragVertex) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+
+        state.dragVertex.x = Math.max(20, Math.min(canvas.width - 20, x - state.dragOffsetX));
+        state.dragVertex.y = Math.max(20, Math.min(canvas.height - 20, y - state.dragOffsetY));
+
+        render();
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (state.dragVertex) {
+            state.dragVertex = null;
+            canvas.style.cursor = 'grab';
+            render();
+        }
+    });
+
+    // ================================================================
+    // 6. АЛГОРИТМ
+    // ================================================================
+
+    function dijkstraStep() {
+        if (state.finished) return false;
+
+        let minDist = Infinity;
+        let minVertex = null;
+        let minIndex = -1;
+
+        for (let i = 0; i < state.pq.length; i++) {
+            if (state.pq[i].dist < minDist) {
+                minDist = state.pq[i].dist;
+                minVertex = state.pq[i].vertex;
+                minIndex = i;
+            }
+        }
+
+        if (minVertex === null || minDist === Infinity) {
+            state.finished = true;
+            addStep('❌ <b>ПУТЬ НЕ НАЙДЕН</b> — цель недостижима', 'error');
+            render();
+            updateInfo();
+            return false;
+        }
+
+        state.pq.splice(minIndex, 1);
+        if (state.visited.has(minVertex)) return true;
+
+        state.visited.add(minVertex);
+        state.current = minVertex;
+        state.unvisited.delete(minVertex);
+
+        addStep('📍 <b>ВЫБРАНА</b> <span class="highlight">' + getLabel(minVertex) +
+            '</span> (расстояние = <span class="highlight-green">' + minDist + '</span>)', 'visit');
+
+        if (minVertex === state.graph.end) {
+            state.finished = true;
+            let path = [];
+            let current = state.graph.end;
+            while (current !== null) {
+                path.unshift(current);
+                current = state.previous[current];
+            }
+            state.path = path;
+            let pathStr = path.map(p => getLabelShort(p)).join(' → ');
+            addStep('🎉 <b>КРАТЧАЙШИЙ ПУТЬ НАЙДЕН!</b> ' + pathStr +
+                ' (длина = <span class="highlight-green">' + minDist + '</span>)', 'finish');
+            render();
+            updateInfo();
+            return false;
+        }
+
+        const edges = state.graph.edges.filter(e => e.from === minVertex);
+        state.relaxEdges = [];
+
+        if (edges.length === 0) {
+            addStep('  └─ ⚠️ Нет исходящих рёбер', 'skip');
+        } else {
+            addStep('  └─ 🔄 <b>РЕЛАКСАЦИЯ</b> из <span class="highlight">' + getLabelShort(minVertex) + '</span>:', 'relax');
+        }
+
+        let relaxed = 0;
+        for (const edge of edges) {
+            if (!state.visited.has(edge.to)) {
+                const newDist = minDist + edge.weight;
+                const oldDist = state.distances[edge.to];
+                const oldDistText = oldDist === Infinity ? '∞' : oldDist;
+
+                if (newDist < oldDist) {
+                    state.distances[edge.to] = newDist;
+                    state.previous[edge.to] = minVertex;
+                    state.pq.push({ vertex: edge.to, dist: newDist });
+                    relaxed++;
+                    state.relaxEdges.push(edge);
+
+                    addStep(
+                        '    ✅ <b>УЛУЧШИЛИ!</b> ' + getLabelShort(minVertex) + ' → ' + getLabelShort(edge.to) +
+                        ' (вес=' + edge.weight + ')<br>       было <span class="highlight-red">' + oldDistText + '</span> → стало <span class="highlight-green">' + newDist + '</span>',
+                        'relax'
+                    );
+                } else {
+                    addStep(
+                        '    ⏭️ Пропускаем: ' + getLabelShort(minVertex) + ' → ' + getLabelShort(edge.to) +
+                        ' (вес=' + edge.weight + '), уже лучше (<span class="highlight-green">' + oldDistText + '</span>)',
+                        'skip'
+                    );
+                }
+            } else {
+                addStep('    ⏭️ ' + getLabelShort(edge.to) + ' уже посещена', 'skip');
+            }
+        }
+
+        if (relaxed === 0) {
+            addStep('  └─ ⚡ Ни одно расстояние не улучшено', 'skip');
+        } else {
+            addStep('  └─ ✅ Обновлено <span class="highlight-green">' + relaxed + '</span> расстояний', 'info');
+        }
+
+        if (state.pq.length > 0) {
+            const queueStr = state.pq
+                .sort((a, b) => a.dist - b.dist)
+                .map(p => getLabelShort(p.vertex) + '(' + p.dist + ')')
+                .join(', ');
+            addStep('📋 <b>Очередь</b>: ' + queueStr, 'info');
+        }
+
+        render();
+        updateInfo();
+        return true;
+    }
+
+    // ================================================================
+    // 7. ОБНОВЛЕНИЕ ИНФОРМАЦИИ (СВЕРХУ — СВЕЖИЕ ШАГИ)
+    // ================================================================
+
+    function updateInfo() {
+        const logDiv = document.getElementById('stepLog');
+        const container = document.getElementById('stepLogContainer');
+        
+        // Сохраняем позицию скролла
+        const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 20;
+        
+        let logHtml = '';
+        // Показываем ВСЕ шаги (свежие сверху)
+        for (let i = state.steps.length - 1; i >= 0; i--) {
+            const s = state.steps[i];
+            const isActive = i === state.steps.length - 1;
+            let cls = 'step-item';
+            if (isActive) cls += ' active';
+            if (s.type === 'finish' || s.type === 'error') cls += ' done';
+            logHtml += `
+                <div class="${cls}">
+                    <span class="step-number">#${s.num}</span>
+                    ${s.text}
+                </div>
+            `;
+        }
+        logDiv.innerHTML = logHtml;
+        
+        // Если были внизу — остаёмся внизу (свежие шаги сверху, но мы видим последний)
+        if (wasAtBottom || state.steps.length < 5) {
+            container.scrollTop = 0;
+        }
+
+        // Расстояния
+        const gridDiv = document.getElementById('distancesGrid');
+        let gridHtml = '<div class="distances-title">📏 Расстояния до вершин</div>';
+        for (const v of state.graph.vertices) {
+            const isVisited = state.visited.has(v.id);
+            const isCurrent = state.current === v.id;
+            const dist = state.distances[v.id];
+            const distText = dist === Infinity ? '∞' : dist;
+
+            let cls = 'dist-item';
+            if (isVisited) cls += ' visited';
+            if (isCurrent) cls += ' current';
+
+            gridHtml += `
+                <div class="${cls}">
+                    <div class="vertex">${v.label}</div>
+                    <div class="dist ${dist === Infinity ? 'inf' : ''}">${distText}</div>
+                    <div class="label-small">[${v.id}]</div>
+                </div>
+            `;
+        }
+        gridDiv.innerHTML = gridHtml;
+    }
+
+    // ================================================================
+    // 8. УПРАВЛЕНИЕ
+    // ================================================================
+
+    function startAlgorithm() {
+        if (state.running) return;
+        state.running = true;
+        document.getElementById('btnStart').disabled = true;
+        document.getElementById('btnStep').disabled = true;
+        runStep();
+    }
+
+    function runStep() {
+        if (state.finished || !state.running) {
+            state.running = false;
+            document.getElementById('btnStart').disabled = false;
+            document.getElementById('btnStep').disabled = false;
+            return;
+        }
+        const speed = parseInt(document.getElementById('speedRange').value);
+        const hasMore = dijkstraStep();
+        if (!hasMore || state.finished) {
+            state.running = false;
+            document.getElementById('btnStart').disabled = false;
+            document.getElementById('btnStep').disabled = false;
+            return;
+        }
+        state.timeoutId = setTimeout(runStep, speed);
+    }
+
+    function stepOnce() {
+        if (state.running) return;
+        if (state.finished) { resetAlgorithm(); return; }
+        state.relaxEdges = [];
+        dijkstraStep();
+        // Прокручиваем к свежим шагам
+        document.getElementById('stepLogContainer').scrollTop = 0;
+    }
+
+    function resetAlgorithm() {
+        if (state.timeoutId) { clearTimeout(state.timeoutId); state.timeoutId = null; }
+        state.running = false;
+        document.getElementById('btnStart').disabled = false;
+        document.getElementById('btnStep').disabled = false;
+        state.relaxEdges = [];
+        initGraph(graphData);
+        document.getElementById('stepLogContainer').scrollTop = 0;
+    }
+
+    function loadExample() {
+        if (state.running) return;
+        resetAlgorithm();
+    }
+
+    // ================================================================
+    // 9. СОБЫТИЯ
+    // ================================================================
+
+    document.getElementById('btnStart').addEventListener('click', startAlgorithm);
+    document.getElementById('btnStep').addEventListener('click', stepOnce);
+    document.getElementById('btnReset').addEventListener('click', resetAlgorithm);
+    document.getElementById('btnExample').addEventListener('click', loadExample);
+
+    // ================================================================
+    // 10. ЗАПУСК
+    // ================================================================
+
+    initGraph(graphData);
+</script>
+</body>
+</html>
