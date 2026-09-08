@@ -15,9 +15,9 @@ theory_links = {
 
 # Ссылки на домашние задания
 homework_links = {
-    "1": "https://gannamath2026.github.io/trenager_programs/json_files/СТРУКТУРА%ЕГЭ%МАТЕМАТИКА/00%НЕДЕЛЯ%1/ПАРАМЕТРЫ%18%-%6%ЗАДАЧ.pdf",
-    "2": "https://gannamath2026.github.io/trenager_programs/json_files/СТРУКТУРА%ЕГЭ%МАТЕМАТИКА/00%НЕДЕЛЯ%1/ПАРАМЕТРЫ%18%-%6%ЗАДАЧ.pdf",
-    "3": "https://gannamath2026.github.io/trenager_programs/json_files/СТРУКТУРА%ЕГЭ%МАТЕМАТИКА/00%НЕДЕЛЯ%1/ПАРАМЕТРЫ%18%-%6%ЗАДАЧ.pdf",
+    "1": "https://gannamath2026.github.io/trenager_programs/json_files/СТРУКТУРА%20ЕГЭ%20МАТЕМАТИКА/00%20%20НЕДЕЛЯ%201/ПАРАМЕТРЫ%2018%20-%20%206%20ЗАДАЧ.pdf",
+    "2": "https://gannamath2026.github.io/trenager_programs/json_files/СТРУКТУРА%20ЕГЭ%20МАТЕМАТИКА/00%20%20НЕДЕЛЯ%201/ПАРАМЕТРЫ%2018%20-%20%206%20ЗАДАЧ.pdf",
+    "3": "https://gannamath2026.github.io/trenager_programs/json_files/СТРУКТУРА%20ЕГЭ%20МАТЕМАТИКА/00%20%20НЕДЕЛЯ%201/ПАРАМЕТРЫ%2018%20-%20%206%20ЗАДАЧ.pdf",
 }
 
 # Ссылки на видеоразборы (Rutube)
