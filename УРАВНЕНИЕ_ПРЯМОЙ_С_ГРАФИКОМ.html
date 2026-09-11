@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Прямая через 2 точки</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+    display: flex;
+    height: 100vh;
+  }
+
+  /* ===== ЛЕВАЯ ЧАСТЬ — КАНВАС ===== */
+  #left {
+    flex: 1 1 65%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: #f8fafc;
+  }
+  #wrap {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  }
+  canvas {
+    display: block;
+    border-radius: 12px;
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  /* ===== ПРАВАЯ ЧАСТЬ — ПАНЕЛЬ ===== */
+  #right {
+    flex: 0 0 35%;
+    max-width: 440px;
+    background: white;
+    box-shadow: -4px 0 20px rgba(0,0,0,0.06);
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  h1 {
+    font-size: 18px;
+    margin: 0 0 4px 0;
+  }
+  .sub {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 10px;
+  }
+
+  .point-block {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px;
+    background: #fafbfc;
+  }
+  .point-block h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot.a { background: #ef4444; }
+  .dot.b { background: #3b82f6; }
+
+  .coord-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .coord-row label {
+    flex: 1;
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+  }
+  .coord-row input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 15px;
+    font-family: "SF Mono", Consolas, monospace;
+    transition: border-color .15s;
+  }
+  .coord-row input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+  }
+
+  .equation-box {
+    border: 2px solid #3b82f6;
+    border-radius: 10px;
+    padding: 16px;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    text-align: center;
+  }
+  .equation-box .label {
+    font-size: 12px;
+    color: #1e40af;
+    font-weight: 600;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .equation-box .eq {
+    font-size: 26px;
+    font-weight: 700;
+    font-family: "SF Mono", Consolas, monospace;
+    color: #1e3a8a;
+    word-break: break-all;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+  .equation-box .info {
+    font-size: 12px;
+    color: #475569;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  /* ===== ДРОБЬ ===== */
+  .frac {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0 4px;
+    line-height: 1.05;
+    font-size: 0.85em;
+  }
+  .frac .num {
+    border-bottom: 2px solid #1e3a8a;
+    padding: 0 8px 2px 8px;
+  }
+  .frac .den {
+    padding: 2px 8px 0 8px;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  button {
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all .15s;
+    flex: 1;
+  }
+  button:hover {
+    background: #f1f5f9;
+    transform: translateY(-1px);
+  }
+  button.primary {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+  }
+  button.primary:hover {
+    background: #2563eb;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.5;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 12px;
+    margin-top: auto;
+  }
+  .hint b { color: #64748b; }
+
+  @media (max-width: 800px) {
+    body { flex-direction: column; height: auto; }
+    #left { flex: none; height: 55vh; }
+    #right { flex: none; max-width: none; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="left">
+  <div id="wrap">
+    <canvas id="cv" width="700" height="700"></canvas>
+  </div>
+</div>
+
+<div id="right">
+  <div>
+    <h1>Прямая через 2 точки</h1>
+    <div class="sub">Перетаскивай точки мышью — уравнение обновится автоматически</div>
+  </div>
+
+  <div class="point-block">
+    <h3><span class="dot a"></span> Точка A</h3>
+    <div class="coord-row">
+      <label>x<sub>A</sub>
+        <input id="ax" type="number" step="0.1" value="-3">
+      </label>
+      <label>y<sub>A</sub>
+        <input id="ay" type="number" step="0.1" value="-1">
+      </label>
+    </div>
+  </div>
+
+  <div class="point-block">
+    <h3><span class="dot b"></span> Точка B</h3>
+    <div class="coord-row">
+      <label>x<sub>B</sub>
+        <input id="bx" type="number" step="0.1" value="4">
+      </label>
+      <label>y<sub>B</sub>
+        <input id="by" type="number" step="0.1" value="3">
+      </label>
+    </div>
+  </div>
+
+  <div class="equation-box">
+    <div class="label">Уравнение прямой</div>
+    <div class="eq" id="eq">y = kx + b</div>
+    <div class="info" id="info"></div>
+  </div>
+
+  <div class="buttons">
+    <button id="btnReset">↺ Сброс</button>
+    <button id="btnGrid" class="primary"># Сетка</button>
+  </div>
+
+  <div class="hint">
+    <b>Управление:</b><br>
+    • Тащи точки A и B мышью<br>
+    • Или вводи координаты вручную<br>
+    • Масштаб: 40 px = 1 единица<br>
+    • k показывается дробью Δy/Δx
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+
+  const SCALE = 40;
+  const cx = W / 2;
+  const cy = H / 2;
+
+  let A = { x: -3, y: -1 };
+  let B = { x:  4, y:  3 };
+
+  let showGrid = true;
+  let dragging = null;
+  let hover = null;
+
+  // ================================================================
+  // ПРЕОБРАЗОВАНИЯ КООРДИНАТ
+  // ================================================================
+  function toScreen(p) {
+    return {
+      x: cx + p.x * SCALE,
+      y: cy - p.y * SCALE
+    };
+  }
+  function toMath(sx, sy) {
+    return {
+      x: (sx - cx) / SCALE,
+      y: (cy - sy) / SCALE
+    };
+  }
+
+  // ================================================================
+  // РИСОВАНИЕ
+  // ================================================================
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    if (showGrid) drawGrid();
+    drawAxes();
+    drawLine();
+    drawDeltaTriangle();
+    drawPoint(A, '#ef4444', 'A');
+    drawPoint(B, '#3b82f6', 'B');
+  }
+
+  function drawGrid() {
+    const step = SCALE;
+    ctx.strokeStyle = '#eef2f7';
+    ctx.lineWidth = 1;
+
+    const xStart = cx % step;
+    for (let x = xStart; x < W; x += step) {
+      ctx.beginPath();
+      ctx.moveTo(Math.round(x) + 0.5, 0);
+      ctx.lineTo(Math.round(x) + 0.5, H);
+      ctx.stroke();
+    }
+    const yStart = cy % step;
+    for (let y = yStart; y < H; y += step) {
+      ctx.beginPath();
+      ctx.moveTo(0, Math.round(y) + 0.5);
+      ctx.lineTo(W, Math.round(y) + 0.5);
+      ctx.stroke();
+    }
+  }
+
+  function drawAxes() {
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1.5;
+
+    ctx.beginPath();
+    ctx.moveTo(0, cy);
+    ctx.lineTo(W, cy);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(cx, 0);
+    ctx.lineTo(cx, H);
+    ctx.stroke();
+
+    // Стрелки
+    ctx.fillStyle = '#94a3b8';
+    ctx.beginPath();
+    ctx.moveTo(W - 1, cy);
+    ctx.lineTo(W - 12, cy - 5);
+    ctx.lineTo(W - 12, cy + 5);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(cx, 1);
+    ctx.lineTo(cx - 5, 12);
+    ctx.lineTo(cx + 5, 12);
+    ctx.closePath();
+    ctx.fill();
+
+    // Подписи делений
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for (let x = -Math.floor(cx / SCALE); x <= Math.floor((W - cx) / SCALE); x++) {
+      if (x === 0) continue;
+      const sx = cx + x * SCALE;
+      ctx.fillText(x, sx, cy + 6);
+    }
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    for (let y = -Math.floor((H - cy) / SCALE); y <= Math.floor(cy / SCALE); y++) {
+      if (y === 0) continue;
+      const sy = cy - y * SCALE;
+      ctx.fillText(y, cx - 6, sy);
+    }
+
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    ctx.fillText('0', cx - 4, cy + 4);
+  }
+
+  function drawLine() {
+    const dx = B.x - A.x;
+    const dy = B.y - A.y;
+
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+
+    if (Math.abs(dx) < 1e-9) {
+      const sx = cx + A.x * SCALE;
+      ctx.moveTo(sx, 0);
+      ctx.lineTo(sx, H);
+    } else {
+      const k = dy / dx;
+      const b = A.y - k * A.x;
+      const xLeft = -cx / SCALE;
+      const xRight = (W - cx) / SCALE;
+      const yLeft = k * xLeft + b;
+      const yRight = k * xRight + b;
+      ctx.moveTo(cx + xLeft * SCALE, cy - yLeft * SCALE);
+      ctx.lineTo(cx + xRight * SCALE, cy - yRight * SCALE);
+    }
+    ctx.stroke();
+  }
+
+  // ================================================================
+  // Δx и Δy — прямоугольный треугольник со стрелками
+  // ================================================================
+  function drawDeltaTriangle() {
+    const sA = toScreen(A);
+    const sB = toScreen(B);
+
+    const sameX = Math.abs(sA.x - sB.x) < 1e-6;
+    const sameY = Math.abs(sA.y - sB.y) < 1e-6;
+
+    if (sameX && sameY) return;
+
+    // lower — визуально ниже (screen.y больше)
+    const lower = sA.y > sB.y ? { s: sA, m: A } : { s: sB, m: B };
+    const upper = lower.s === sA ? { s: sB, m: B } : { s: sA, m: A };
+
+    // Угловая точка
+    const corner = { x: upper.s.x, y: lower.s.y };
+
+    ctx.save();
+    ctx.setLineDash([6, 6]);
+    ctx.lineWidth = 2;
+
+    // ---- Δx: от lower горизонтально до corner ----
+    if (!sameX) {
+      ctx.strokeStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.moveTo(lower.s.x, lower.s.y);
+      ctx.lineTo(corner.x, corner.y);
+      ctx.stroke();
+
+      // Стрелки в обе стороны
+      drawArrowHead(lower.s.x, lower.s.y, corner.x, corner.y, '#f59e0b');
+      drawArrowHead(corner.x, corner.y, lower.s.x, lower.s.y, '#f59e0b');
+
+      // Подпись Δx — по центру отрезка, чуть ниже
+      const midX = (lower.s.x + corner.x) / 2;
+      const midY = lower.s.y + 20;
+      drawLabel('Δx = ' + fmt(Math.abs(upper.m.x - lower.m.x)), midX, midY, '#b45309');
+    }
+
+    // ---- Δy: от corner вертикально до upper ----
+    if (!sameY) {
+      ctx.strokeStyle = '#8b5cf6';
+      ctx.beginPath();
+      ctx.moveTo(corner.x, corner.y);
+      ctx.lineTo(upper.s.x, upper.s.y);
+      ctx.stroke();
+
+      drawArrowHead(corner.x, corner.y, upper.s.x, upper.s.y, '#8b5cf6');
+      drawArrowHead(upper.s.x, upper.s.y, corner.x, corner.y, '#8b5cf6');
+
+      // Подпись Δy — слева от отрезка
+      const midX = corner.x - 14;
+      const midY = (corner.y + upper.s.y) / 2;
+      drawLabel('Δy = ' + fmt(Math.abs(upper.m.y - lower.m.y)), midX, midY, '#6d28d9', 'right');
+    }
+
+    // ---- Прямой угол ----
+    if (!sameX && !sameY) {
+      const sz = 10;
+      const dirX = Math.sign(lower.s.x - corner.x);
+      const dirY = Math.sign(upper.s.y - corner.y);
+      ctx.setLineDash([]);
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(corner.x + dirX * sz, corner.y);
+      ctx.lineTo(corner.x + dirX * sz, corner.y + dirY * sz);
+      ctx.lineTo(corner.x, corner.y + dirY * sz);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  function drawArrowHead(fromX, fromY, toX, toY, color) {
+    const angle = Math.atan2(toY - fromY, toX - fromX);
+    const size = 9;
+    ctx.save();
+    ctx.setLineDash([]);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(toX, toY);
+    ctx.lineTo(
+      toX - size * Math.cos(angle - Math.PI / 7),
+      toY - size * Math.sin(angle - Math.PI / 7)
+    );
+    ctx.lineTo(
+      toX - size * Math.cos(angle + Math.PI / 7),
+      toY - size * Math.sin(angle + Math.PI / 7)
+    );
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawLabel(text, x, y, color, align) {
+    ctx.save();
+    ctx.setLineDash([]);
+    ctx.font = 'bold 14px -apple-system, sans-serif';
+    ctx.textAlign = align || 'center';
+    ctx.textBaseline = 'middle';
+
+    const w = ctx.measureText(text).width + 10;
+    const h = 20;
+    let bx = x - w / 2;
+    if (align === 'right') bx = x - w;
+    if (align === 'left') bx = x;
+
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.fillRect(bx, y - h / 2, w, h);
+    ctx.fillStyle = color;
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  function drawPoint(p, color, label) {
+    const s = toScreen(p);
+    const r = 8;
+    const isHover = hover === label || dragging === label;
+
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, isHover ? r + 6 : r + 2, 0, Math.PI * 2);
+    ctx.fillStyle = color + '33';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, isHover ? r + 2 : r, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = color;
+    ctx.font = 'bold 14px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(label, s.x + 12, s.y - 8);
+  }
+
+  // ================================================================
+  // УРАВНЕНИЕ
+  // ================================================================
+  function fmt(n) {
+    if (Math.abs(n) < 1e-9) return '0';
+    const rounded = Math.round(n * 1000) / 1000;
+    return String(rounded).replace('.', ',');
+  }
+
+  // НОД для целых и "полуцелых" чисел
+  function gcdFloat(a, b) {
+    if (Number.isInteger(a) && Number.isInteger(b)) {
+      a = Math.abs(a); b = Math.abs(b);
+      while (b) { const t = b; b = a % b; a = t; }
+      return a || 1;
+    }
+    const prec = 1000;
+    let A2 = Math.round(a * prec);
+    let B2 = Math.round(b * prec);
+    A2 = Math.abs(A2); B2 = Math.abs(B2);
+    while (B2) { const t = B2; B2 = A2 % B2; A2 = t; }
+    return (A2 || 1) / prec;
+  }
+
+  function updateEquation() {
+    const dx = B.x - A.x;
+    const dy = B.y - A.y;
+    const eqEl = document.getElementById('eq');
+    const infoEl = document.getElementById('info');
+
+    if (Math.abs(dx) < 1e-9 && Math.abs(dy) < 1e-9) {
+      eqEl.textContent = '—';
+      infoEl.textContent = 'Точки совпадают, прямая не определена';
+      return;
+    }
+
+    if (Math.abs(dx) < 1e-9) {
+      eqEl.textContent = 'x = ' + fmt(A.x);
+      infoEl.innerHTML = 'Вертикальная прямая<br>Δx = 0, k не существует';
+      return;
+    }
+
+    const k = dy / dx;
+    const b = A.y - k * A.x;
+
+    // ---- Дробь для k: dy / dx ----
+    let num = dy;
+    let den = dx;
+    if (den < 0) { num = -num; den = -den; }
+
+    const g = gcdFloat(num, den) || 1;
+    num = num / g;
+    den = den / g;
+
+    num = Math.round(num * 1000) / 1000;
+    den = Math.round(den * 1000) / 1000;
+
+    // ---- Собираем HTML уравнения ----
+    let html = 'y = ';
+
+    if (Math.abs(k) < 1e-9) {
+      // Горизонтальная прямая
+      html += fmt(b);
+      eqEl.innerHTML = html;
+    } else if (Math.abs(den - 1) < 1e-9) {
+      // Целый k
+      const n = num;
+      if (Math.abs(n - 1) < 1e-9) html += 'x';
+      else if (Math.abs(n + 1) < 1e-9) html += '−x';
+      else html += fmt(n) + 'x';
+
+      if (Math.abs(b) > 1e-9) {
+        html += (b > 0 ? ' + ' : ' − ') + fmt(Math.abs(b));
+      }
+      eqEl.innerHTML = html;
+    } else {
+      // Дробный k
+      const sign = num < 0 ? '−' : '';
+      const absNum = Math.abs(num);
+      html += sign +
+        '<span class="frac"><span class="num">' + fmt(absNum) +
+        '</span><span class="den">' + fmt(den) + '</span></span>x';
+
+      if (Math.abs(b) > 1e-9) {
+        html += (b > 0 ? ' + ' : ' − ') + fmt(Math.abs(b));
+      }
+      eqEl.innerHTML = html;
+    }
+
+    // ---- Доп. инфо ----
+    const angle = Math.atan(k) * 180 / Math.PI;
+    infoEl.innerHTML =
+      'Δx = ' + fmt(Math.abs(dx)) +
+      ' &nbsp;•&nbsp; Δy = ' + fmt(Math.abs(dy)) +
+      '<br>k = ' + fmt(k) +
+      ' &nbsp;•&nbsp; b = ' + fmt(b) +
+      '<br>Угол наклона: ' + fmt(angle) + '°';
+  }
+
+  // ================================================================
+  // ВЗАИМОДЕЙСТВИЕ
+  // ================================================================
+  function getMouse(e) {
+    const rect = cv.getBoundingClientRect();
+    const scaleX = cv.width / rect.width;
+    const scaleY = cv.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  }
+
+  function hitTest(m) {
+    const sa = toScreen(A);
+    const sb = toScreen(B);
+    const da = Math.hypot(m.x - sa.x, m.y - sa.y);
+    const db = Math.hypot(m.x - sb.x, m.y - sb.y);
+    const R = 18;
+    if (da < R && da <= db) return 'A';
+    if (db < R) return 'B';
+    return null;
+  }
+
+  cv.addEventListener('mousedown', e => {
+    const m = getMouse(e);
+    const hit = hitTest(m);
+    if (hit) {
+      dragging = hit;
+      cv.style.cursor = 'grabbing';
+    }
+  });
+
+  cv.addEventListener('mousemove', e => {
+    const m = getMouse(e);
+
+    if (dragging) {
+      const p = toMath(m.x, m.y);
+      if (dragging === 'A') {
+        A.x = Math.round(p.x * 10) / 10;
+        A.y = Math.round(p.y * 10) / 10;
+      } else {
+        B.x = Math.round(p.x * 10) / 10;
+        B.y = Math.round(p.y * 10) / 10;
+      }
+      syncInputs();
+      updateEquation();
+      draw();
+      return;
+    }
+
+    const hit = hitTest(m);
+    if (hit !== hover) {
+      hover = hit;
+      cv.style.cursor = hit ? 'grab' : 'crosshair';
+      draw();
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (dragging) {
+      dragging = null;
+      cv.style.cursor = 'crosshair';
+      draw();
+    }
+  });
+
+  // ---- Тач ----
+  cv.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    const m = getMouse(t);
+    const hit = hitTest(m);
+    if (hit) {
+      dragging = hit;
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  cv.addEventListener('touchmove', e => {
+    if (!dragging || e.touches.length !== 1) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    const m = getMouse(t);
+    const p = toMath(m.x, m.y);
+    if (dragging === 'A') {
+      A.x = Math.round(p.x * 10) / 10;
+      A.y = Math.round(p.y * 10) / 10;
+    } else {
+      B.x = Math.round(p.x * 10) / 10;
+      B.y = Math.round(p.y * 10) / 10;
+    }
+    syncInputs();
+    updateEquation();
+    draw();
+  }, { passive: false });
+
+  cv.addEventListener('touchend', () => {
+    dragging = null;
+  });
+
+  // ================================================================
+  // ИНПУТЫ
+  // ================================================================
+  const inputs = {
+    ax: document.getElementById('ax'),
+    ay: document.getElementById('ay'),
+    bx: document.getElementById('bx'),
+    by: document.getElementById('by')
+  };
+
+  function syncInputs() {
+    inputs.ax.value = A.x;
+    inputs.ay.value = A.y;
+    inputs.bx.value = B.x;
+    inputs.by.value = B.y;
+  }
+
+  function readInputs() {
+    const ax = parseFloat(inputs.ax.value);
+    const ay = parseFloat(inputs.ay.value);
+    const bx = parseFloat(inputs.bx.value);
+    const by = parseFloat(inputs.by.value);
+    if (!isNaN(ax)) A.x = ax;
+    if (!isNaN(ay)) A.y = ay;
+    if (!isNaN(bx)) B.x = bx;
+    if (!isNaN(by)) B.y = by;
+    updateEquation();
+    draw();
+  }
+
+  Object.values(inputs).forEach(inp => {
+    inp.addEventListener('input', readInputs);
+  });
+
+  // ================================================================
+  // КНОПКИ
+  // ================================================================
+  document.getElementById('btnReset').addEventListener('click', () => {
+    A = { x: -3, y: -1 };
+    B = { x:  4, y:  3 };
+    syncInputs();
+    updateEquation();
+    draw();
+  });
+
+  document.getElementById('btnGrid').addEventListener('click', function() {
+    showGrid = !showGrid;
+    this.textContent = showGrid ? '# Сетка' : '# Без сетки';
+    draw();
+  });
+
+  // ================================================================
+  // СТАРТ
+  // ================================================================
+  syncInputs();
+  updateEquation();
+  draw();
+
+})();
+</script>
+</body>
+</html>

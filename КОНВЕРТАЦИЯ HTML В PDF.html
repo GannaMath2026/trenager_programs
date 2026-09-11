@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📄 MHTML → PDF с разбивкой на страницы</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a202c, #2d3748);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .app {
+            background: #2d3748;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 750px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            color: #e2e8f0;
+        }
+        h1 {
+            font-size: 1.6em;
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: #fbbf24;
+        }
+        .sub {
+            color: #a0aec0;
+            font-size: 0.9em;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #4a5568;
+            padding-bottom: 12px;
+        }
+        .drop-zone {
+            border: 3px dashed #4a5568;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            background: #1a202c;
+            margin-bottom: 20px;
+        }
+        .drop-zone:hover {
+            border-color: #667eea;
+            background: #2a3a4a;
+        }
+        .drop-zone.dragover {
+            border-color: #fbbf24;
+            background: #3a4a5a;
+        }
+        .drop-zone .icon {
+            font-size: 3em;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .drop-zone p {
+            margin: 5px 0;
+            color: #a0aec0;
+        }
+        .drop-zone .file-name {
+            color: #fbbf24;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .drop-zone .file-size {
+            color: #a0aec0;
+            font-size: 0.85em;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1em;
+            flex: 1;
+            min-width: 140px;
+        }
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #3182ce;
+        }
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #38a169;
+        }
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #dd6b20;
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .info {
+            margin-top: 16px;
+            padding: 12px;
+            background: #1a202c;
+            border-radius: 8px;
+            font-size: 0.9em;
+            color: #a0aec0;
+            display: none;
+        }
+        .info.show {
+            display: block;
+        }
+        .info strong {
+            color: #e2e8f0;
+        }
+        .status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        .status.loaded {
+            background: #48bb78;
+            color: #1a202c;
+        }
+        .status.empty {
+            background: #4a5568;
+            color: #a0aec0;
+        }
+        .status.error {
+            background: #f56565;
+            color: white;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.75em;
+            color: #4a5568;
+            text-align: center;
+            border-top: 1px solid #4a5568;
+            padding-top: 14px;
+        }
+        .format-badge {
+            display: inline-block;
+            background: #4a5568;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.7em;
+            color: #fbbf24;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <h1>📄 MHTML → PDF</h1>
+    <div class="sub">
+        Конвертация MHTML-файлов в PDF с разбивкой на страницы
+        <span class="format-badge">.mhtml</span>
+    </div>
+
+    <div class="drop-zone" id="dropZone">
+        <span class="icon">📂</span>
+        <p>Перетащите сюда <strong>MHTML-файл</strong> или нажмите для выбора</p>
+        <p style="font-size: 0.85em; color: #4a5568;">(поддерживаются .mhtml, .mht)</p>
+        <div style="margin-top: 8px;">
+            <span class="status empty" id="statusBadge">❌ файл не загружен</span>
+        </div>
+        <div style="margin-top: 10px;">
+            <span class="file-name" id="fileName">—</span>
+            <span class="file-size" id="fileSize"></span>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" accept=".mhtml,.mht">
+
+    <div class="btn-group">
+        <button class="btn btn-success" id="printBtn" disabled>🖨️ Открыть для печати (PDF)</button>
+        <button class="btn btn-warning" id="viewBtn" disabled>👁️ Предпросмотр</button>
+        <button class="btn btn-danger" id="clearBtn" disabled>🗑️ Очистить</button>
+    </div>
+
+    <div class="info" id="infoBox">
+        <strong>📌 Инструкция:</strong><br>
+        1. Нажмите <strong>«Открыть для печати»</strong> — откроется новое окно с содержимым MHTML-файла.<br>
+        2. В окне нажмите <strong>Ctrl+P</strong> (или Cmd+P на Mac).<br>
+        3. В настройках печати выберите <strong>«Сохранить как PDF»</strong>.<br>
+        4. В разделе <strong>«Параметры страницы»</strong> выберите нужный формат (A4, Letter).<br>
+        5. Нажмите <strong>«Сохранить»</strong> — получите PDF с правильной разбивкой на страницы.
+    </div>
+
+    <div class="footer">
+        Использует встроенную печать браузера • Разбивка на страницы автоматическая<br>
+        Поддерживает MHTML (веб-архивы с изображениями и стилями)
+    </div>
+</div>
+
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const statusBadge = document.getElementById('statusBadge');
+    const printBtn = document.getElementById('printBtn');
+    const viewBtn = document.getElementById('viewBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const infoBox = document.getElementById('infoBox');
+
+    let loadedFile = null;
+    let fileContent = null;
+    let fileUrl = null;
+
+    // --- ОБРАБОТКА ВЫБОРА ФАЙЛА ---
+    function handleFile(file) {
+        if (!file) return;
+
+        // Проверяем расширение
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['mhtml', 'mht'].includes(ext)) {
+            alert('❌ Пожалуйста, выберите MHTML-файл (.mhtml или .mht)');
+            return;
+        }
+
+        loadedFile = file;
+        const sizeKB = (file.size / 1024).toFixed(1);
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        const sizeStr = file.size > 1024 * 1024 ? sizeMB + ' МБ' : sizeKB + ' КБ';
+
+        fileName.textContent = file.name;
+        fileSize.textContent = ' (' + sizeStr + ')';
+        statusBadge.textContent = '✅ файл загружен';
+        statusBadge.className = 'status loaded';
+        printBtn.disabled = false;
+        viewBtn.disabled = false;
+        clearBtn.disabled = false;
+        infoBox.classList.add('show');
+
+        // Читаем содержимое
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            fileContent = e.target.result;
+            if (fileUrl) {
+                URL.revokeObjectURL(fileUrl);
+                fileUrl = null;
+            }
+            fileUrl = URL.createObjectURL(file);
+        };
+        reader.onerror = function() {
+            alert('❌ Ошибка чтения файла');
+            statusBadge.textContent = '❌ ошибка чтения';
+            statusBadge.className = 'status error';
+        };
+        reader.readAsText(file);
+    }
+
+    // --- DROP ZONE ---
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (fileInput.files.length > 0) {
+            handleFile(fileInput.files[0]);
+        }
+    });
+
+    // --- ОТКРЫТИЕ ДЛЯ ПЕЧАТИ ---
+    function openForPrint() {
+        if (!fileContent && !fileUrl) {
+            alert('Сначала загрузите MHTML-файл');
+            return;
+        }
+
+        const win = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,menubar=yes');
+
+        if (!win) {
+            alert('⚠️ Браузер заблокировал открытие нового окна.\nРазрешите всплывающие окна для этого сайта.');
+            return;
+        }
+
+        win.document.write(fileContent || '');
+        win.document.close();
+
+        // Даём время на загрузку
+        setTimeout(() => {
+            win.focus();
+        }, 300);
+    }
+
+    // --- ПЕЧАТЬ / PDF ---
+    printBtn.addEventListener('click', () => {
+        openForPrint();
+        // Дополнительная подсказка через 1 секунду
+        setTimeout(() => {
+            alert('✅ Файл загружен!\n\nНажмите Ctrl+P (или Cmd+P на Mac)\nВыберите "Сохранить как PDF"\nНастройте поля и масштаб при необходимости.');
+        }, 600);
+    });
+
+    // --- ПРЕДПРОСМОТР (без печати) ---
+    viewBtn.addEventListener('click', () => {
+        openForPrint();
+    });
+
+    // --- ОЧИСТКА ---
+    clearBtn.addEventListener('click', () => {
+        loadedFile = null;
+        fileContent = null;
+        if (fileUrl) {
+            URL.revokeObjectURL(fileUrl);
+            fileUrl = null;
+        }
+        fileName.textContent = '—';
+        fileSize.textContent = '';
+        statusBadge.textContent = '❌ файл не загружен';
+        statusBadge.className = 'status empty';
+        printBtn.disabled = true;
+        viewBtn.disabled = true;
+        clearBtn.disabled = true;
+        infoBox.classList.remove('show');
+        fileInput.value = '';
+    });
+
+    // --- ПОДСКАЗКА ---
+    console.log('📄 MHTML → PDF конвертер загружен');
+    console.log('Поддерживаются файлы .mhtml и .mht');
+</script>
+</body>
+</html>

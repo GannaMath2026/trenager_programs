@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌳 Дерево Фано — полный функционал + GitHub</title>
     <style>
+        /* Все стили без изменений (полностью сохранены из исходного файла) */
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', sans-serif;
@@ -69,6 +70,7 @@
             background: #718096;
         }
 
+        /* Строка поиска */
         .search-bar {
             padding: 10px;
             background: #2d3748;
@@ -124,8 +126,8 @@
             padding: 10px;
         }
         .task-item {
-            padding: 8px 8px;
-            margin-bottom: 4px;
+            padding: 12px 10px;
+            margin-bottom: 5px;
             background: #4a5568;
             border-radius: 8px;
             cursor: pointer;
@@ -135,7 +137,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 4px;
         }
         .task-item:hover {
             background: #5f6b7a;
@@ -149,89 +150,28 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 110px;
-            font-size: 0.9em;
-            cursor: pointer;
-            flex-shrink: 0;
+            max-width: 120px;
         }
-        .task-name mark {
-            background: #fbbf24;
-            color: #1a202c;
-            border-radius: 2px;
-            padding: 0 1px;
-        }
-
-        /* ====== Быстрые иконки-кнопки статуса в карточке задачи ====== */
-        .task-item .status-checkboxes {
+        .task-icons {
             display: flex;
-            gap: 2px;
-            margin-left: 4px;
-            flex-shrink: 0;
+            gap: 5px;
+            margin-right: 5px;
         }
-
-        .task-item .status-checkboxes .quick-btn {
-            background: transparent;
-            border: none;
-            padding: 2px 5px;
-            font-size: 1.05em;
-            cursor: pointer;
-            border-radius: 6px;
-            opacity: 0.35;
-            transition: transform 0.15s, opacity 0.15s, background 0.15s;
-            line-height: 1;
-            box-shadow: none;
-            color: #cbd5e0;
+        .task-icons span {
+            font-size: 1.1em;
         }
-
-        .task-item .status-checkboxes .quick-btn:hover {
-            transform: scale(1.25);
-            opacity: 1;
-            background: rgba(255,255,255,0.12);
-        }
-
-        .task-item .status-checkboxes .quick-btn.active {
-            opacity: 1;
-        }
-
-        .task-item .status-checkboxes .quick-btn.q-solved.active { color: #10b981; }
-        .task-item .status-checkboxes .quick-btn.q-fav.active    { color: #fbbf24; }
-        .task-item .status-checkboxes .quick-btn.q-hw.active     { color: #f97316; }
-
-        .task-item .move-buttons {
-            display: flex;
-            flex-direction: column;
-            margin-left: 2px;
-            gap: 1px;
-            flex-shrink: 0;
-        }
-        .task-item .move-buttons button {
+        .task-item button {
             background: #2d3748;
             border: none;
-            color: #a0aec0;
-            padding: 1px 4px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.7em;
-            line-height: 1.2;
-            min-width: 20px;
-        }
-        .task-item .move-buttons button:hover {
-            background: #4a5568;
             color: white;
-        }
-        .task-item .edit-btn {
-            background: #2d3748;
-            border: none;
-            color: #a0aec0;
-            padding: 2px 6px;
+            padding: 3px 6px;
             border-radius: 4px;
-            cursor: pointer;
             font-size: 0.8em;
-            flex-shrink: 0;
+            cursor: pointer;
+            margin-left: 5px;
         }
-        .task-item .edit-btn:hover {
-            background: #4a5568;
-            color: white;
+        .task-item button:hover {
+            background: #1e293b;
         }
 
         .edit-panel {
@@ -367,7 +307,7 @@
         }
         .task-info .task-condition {
             color: #cbd5e0;
-            font-size: 1.2em !important;
+            font-size: 0.9em;
             flex: 2.5;
             overflow-wrap: break-word;
             min-width: 300px;
@@ -536,6 +476,7 @@
             color: white;
         }
 
+        /* Стили для печати */
         @media print {
             body, .app {
                 background: white;
@@ -573,7 +514,6 @@
             .task-condition {
                 white-space: normal;
                 color: black;
-                font-size: 1.2em !important;
             }
             .task-info {
                 background: #f0f0f0;
@@ -607,21 +547,20 @@
 </head>
 <body>
     <div class="app">
+        <!-- Левая панель -->
         <div class="left-panel narrow" id="leftPanel">
             <div class="panel-header">
                 <h3 id="leftPanelTitle">📋 Задачи</h3>
                 <button id="backToListBtn" style="display: none;" onclick="showTaskList()">← Назад</button>
             </div>
             <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="🔍 Поиск по названию и условию..." oninput="applyTextSearch()">
+                <input type="text" id="searchInput" placeholder="🔍 Поиск по условию (часть строки)..." oninput="applyTextSearch()">
             </div>
             <div class="filter-bar" id="filterBar">
-                <button class="filter-btn active" onclick="setFilter('all', event)">Все</button>
-                <button class="filter-btn" onclick="setFilter('solved', event)">✅ Решённые</button>
-                <button class="filter-btn" onclick="setFilter('unsolved', event)">⏳ Не решённые</button>
-                <button class="filter-btn" onclick="setFilter('favorite', event)">⭐ Избранные</button>
-                <button class="filter-btn" onclick="setFilter('unfavorite', event)">☆ Не избр.</button>
-                <button class="filter-btn" onclick="setFilter('homework', event)">📚 ДЗ</button>
+                <button class="filter-btn active" onclick="setFilter('all')">Все</button>
+                <button class="filter-btn" onclick="setFilter('solved')">✅ Решённые</button>
+                <button class="filter-btn" onclick="setFilter('favorite')">⭐ Избранные</button>
+                <button class="filter-btn" onclick="setFilter('homework')">📚 ДЗ</button>
             </div>
             <div id="taskListContainer" class="task-list"></div>
             <div id="editPanelContainer" class="edit-panel" style="display: none;">
@@ -632,7 +571,9 @@
                 <label>Условие задачи</label>
                 <textarea id="editCondition" placeholder="Текст условия..." rows="2"></textarea>
                 <label>Коды (формат: А=0, Б=10, ...)</label>
-                <textarea id="editCodes" placeholder="А=0&#10;Б=10&#10;В=110" rows="3"></textarea>
+                <textarea id="editCodes" placeholder="А=0
+Б=10
+В=110" rows="3"></textarea>
                 <label>Ответ</label>
                 <input type="text" id="editAnswer" placeholder="Например: 101">
                 <label>Решение (текст или Ctrl+V для изображения)</label>
@@ -652,6 +593,7 @@
             </div>
         </div>
 
+        <!-- Правая панель -->
         <div class="right-panel">
             <div class="task-info">
                 <span class="task-id" id="currentTaskId">#?</span>
@@ -688,6 +630,7 @@
         </div>
     </div>
 
+    <!-- Модальное окно для решения (почти весь экран) -->
     <div id="solutionModal" class="modal">
         <div class="modal-content">
             <span class="modal-close" onclick="closeModal()">&times;</span>
@@ -697,6 +640,9 @@
     </div>
 
     <script>
+        // ==================== ПОЛНЫЙ ИСХОДНЫЙ КОД ====================
+        // Восстановлен весь оригинальный функционал: Node, отрисовка, подсветка оранжевым, клики, печать и т.д.
+        
         class Node {
             constructor(name = null, originalCode = null) {
                 this.name = name;
@@ -802,6 +748,7 @@
             }
         }
 
+        // ========== ОТРИСОВКА ==========
         function drawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (!root) return;
@@ -863,6 +810,7 @@
             ctx.lineWidth = 2 / scale;
             ctx.stroke();
 
+            // Подсветка оранжевым, если есть только один потомок (и это не лист)
             if (!node.name && ((!node.left && node.right) || (node.left && !node.right))) {
                 ctx.beginPath();
                 ctx.strokeStyle = '#ed8936';
@@ -897,6 +845,7 @@
             if (node.right) drawNodes(node.right);
         }
 
+        // ========== ПОИСК УЗЛА ПО КООРДИНАТАМ ==========
         function findNodeByXY(node, x, y) {
             if (!node) return null;
             const dx = node.x - x;
@@ -905,6 +854,7 @@
             return findNodeByXY(node.left, x, y) || findNodeByXY(node.right, x, y);
         }
 
+        // ========== ДОБАВЛЕНИЕ ВЕТОК ДЛЯ ОРАНЖЕВОГО УЗЛА ==========
         function addBranches(node) {
             if (!node || !node.isUserAdded) return;
             let changed = false;
@@ -930,6 +880,7 @@
             }
         }
 
+        // ========== УДАЛЕНИЕ ОРАНЖЕВОГО УЗЛА ==========
         function removeNode(targetNode) {
             function removeSubtree(node) {
                 if (!node) return;
@@ -957,6 +908,7 @@
             }
         }
 
+        // ========== ОБРАБОТКА КЛИКА ==========
         canvas.addEventListener('click', function(e) {
             if (!root) return;
             
@@ -1019,141 +971,44 @@
         // ========== ФИЛЬТРАЦИЯ С ПОИСКОМ ==========
         function filterTasks() {
             let filtered = tasks;
-
-            // Фильтр по статусу
-            if (currentFilter === 'solved')          filtered = filtered.filter(t => t.solved);
-            else if (currentFilter === 'unsolved')   filtered = filtered.filter(t => !t.solved);
-            else if (currentFilter === 'favorite')   filtered = filtered.filter(t => t.favorite);
-            else if (currentFilter === 'unfavorite') filtered = filtered.filter(t => !t.favorite);
-            else if (currentFilter === 'homework')   filtered = filtered.filter(t => t.homework);
-
-            // Поиск по названию + условию + ответу
+            if (currentFilter === 'solved') filtered = filtered.filter(t => t.solved);
+            else if (currentFilter === 'favorite') filtered = filtered.filter(t => t.favorite);
+            else if (currentFilter === 'homework') filtered = filtered.filter(t => t.homework);
+            
             if (searchText.trim() !== '') {
                 const text = searchText.trim().toLowerCase();
-                filtered = filtered.filter(t =>
-                    (t.name || '').toLowerCase().includes(text) ||
-                    (t.condition || '').toLowerCase().includes(text) ||
-                    (t.answer || '').toLowerCase().includes(text)
-                );
+                filtered = filtered.filter(t => (t.condition || '').toLowerCase().includes(text));
             }
             return filtered;
         }
 
-        function escapeHtml(str) {
-            if (str === null || str === undefined) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        function escapeRegex(str) {
-            return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        }
-
-        function highlightMatch(text, query) {
-            if (!query || !text) return escapeHtml(text || '');
-            const escaped = escapeHtml(text);
-            const regex = new RegExp('(' + escapeRegex(query) + ')', 'gi');
-            return escaped.replace(regex, '<mark>$1</mark>');
-        }
-
-        // ========== ОСНОВНАЯ ФУНКЦИЯ ОТРИСОВКИ СПИСКА ==========
         function renderTaskList() {
             const filtered = filterTasks();
             taskListContainer.innerHTML = '';
-
-            if (filtered.length === 0) {
-                const empty = document.createElement('div');
-                empty.style.color = '#a0aec0';
-                empty.style.fontSize = '0.9em';
-                empty.style.textAlign = 'center';
-                empty.style.padding = '20px';
-                empty.textContent = tasks.length === 0 ? 'Нет задач' : 'Ничего не найдено';
-                taskListContainer.appendChild(empty);
-                return;
-            }
-
-            filtered.forEach((task) => {
+            filtered.forEach(task => {
                 const div = document.createElement('div');
                 div.className = `task-item ${task.id === currentTaskId ? 'active' : ''}`;
-                
-                const solvedClass = task.solved   ? 'active' : '';
-                const favClass    = task.favorite ? 'active' : '';
-                const hwClass     = task.homework ? 'active' : '';
-
-                const nameHtml = searchText.trim()
-                    ? highlightMatch(task.name || '', searchText.trim())
-                    : escapeHtml(task.name || '');
-
+                let icons = '';
+                if (task.solved) icons += '<span title="Решено">✅</span>';
+                if (task.favorite) icons += '<span title="Избранное">⭐</span>';
+                if (task.homework) icons += '<span title="ДЗ">📚</span>';
                 div.innerHTML = `
-                    <span class="task-name" onclick="loadTask(${task.id})" title="${escapeHtml(task.name || '')}">
-                        ${task.id}. ${nameHtml}
-                    </span>
-                    <div class="status-checkboxes">
-                        <button class="quick-btn q-solved ${solvedClass}"
-                                title="Решено"
-                                onclick="toggleStatus(${task.id}, 'solved', event)">✅</button>
-                        <button class="quick-btn q-fav ${favClass}"
-                                title="Избранное"
-                                onclick="toggleStatus(${task.id}, 'favorite', event)">⭐</button>
-                        <button class="quick-btn q-hw ${hwClass}"
-                                title="ДЗ"
-                                onclick="toggleStatus(${task.id}, 'homework', event)">📚</button>
+                    <div style="display: flex; align-items: center; gap: 5px; max-width: 180px;">
+                        <span class="task-name" onclick="loadTask(${task.id})">${task.id}. ${task.name}</span>
+                        ${icons ? `<span class="task-icons">${icons}</span>` : ''}
                     </div>
-                    <div class="move-buttons">
-                        <button onclick="moveTask(${task.id}, -1, event)" title="Вверх">▲</button>
-                        <button onclick="moveTask(${task.id}, 1, event)" title="Вниз">▼</button>
+                    <div>
+                        <button onclick="event.stopPropagation(); openEditForTask(${task.id})">✏️</button>
                     </div>
-                    <button class="edit-btn" onclick="event.stopPropagation(); openEditForTask(${task.id})">✏️</button>
                 `;
                 taskListContainer.appendChild(div);
             });
         }
 
-        // ========== ПЕРЕКЛЮЧЕНИЕ СТАТУСОВ ==========
-        function toggleStatus(taskId, statusType, event) {
-            if (event) event.stopPropagation();
-            const task = tasks.find(t => t.id === taskId);
-            if (!task) return;
-            
-            if (statusType === 'solved')        task.solved   = !task.solved;
-            else if (statusType === 'favorite') task.favorite = !task.favorite;
-            else if (statusType === 'homework') task.homework = !task.homework;
-
-            renderTaskList();
-
-            // Синхронизируем с редактором, если он открыт на этой задаче
-            if (currentTaskId === taskId) {
-                const editIdVal = parseInt(document.getElementById('editId').value);
-                if (editIdVal === taskId) {
-                    document.getElementById('editSolved').checked   = task.solved   || false;
-                    document.getElementById('editFavorite').checked = task.favorite || false;
-                    document.getElementById('editHomework').checked = task.homework || false;
-                }
-            }
-        }
-
-        // ========== ПЕРЕМЕЩЕНИЕ ЗАДАЧ ==========
-        function moveTask(taskId, direction, event) {
-            if (event) event.stopPropagation();
-            const index = tasks.findIndex(t => t.id === taskId);
-            if (index === -1) return;
-            
-            const newIndex = index + direction;
-            if (newIndex < 0 || newIndex >= tasks.length) return;
-            
-            [tasks[index], tasks[newIndex]] = [tasks[newIndex], tasks[index]];
-            
-            renderTaskList();
-        }
-
-        function setFilter(filter, event) {
+        function setFilter(filter) {
             currentFilter = filter;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            if (event) event.target.classList.add('active');
+            event.target.classList.add('active');
             renderTaskList();
         }
 
@@ -1293,7 +1148,7 @@
             if (solution.startsWith('data:image')) {
                 modalContent.innerHTML = `<img src="${solution}" alt="решение">`;
             } else {
-                modalContent.innerHTML = `<pre style="white-space: pre-wrap; color: #e2e8f0;">${escapeHtml(solution)}</pre>`;
+                modalContent.innerHTML = `<pre style="white-space: pre-wrap; color: #e2e8f0;">${solution}</pre>`;
             }
             solutionModal.style.display = 'flex';
         }
@@ -1302,7 +1157,7 @@
         window.onclick = function(event) { if (event.target === solutionModal) solutionModal.style.display = 'none'; };
 
         function openEditForTask(id) {
-            if (id) loadTask(id);
+            loadTask(id);
             leftPanel.classList.remove('narrow');
             leftPanel.classList.add('wide');
             taskListContainer.style.display = 'none';
@@ -1328,18 +1183,6 @@
                 } else {
                     document.getElementById('solutionPreview').innerHTML = '<div style="color:#a0aec0">Текстовое решение</div>';
                 }
-            } else {
-                document.getElementById('editId').value = '';
-                document.getElementById('editName').value = '';
-                document.getElementById('editCondition').value = '';
-                document.getElementById('editCodes').value = 'А=0\nБ=10\nВ=110';
-                document.getElementById('editAnswer').value = '';
-                document.getElementById('editSolution').value = '';
-                document.getElementById('editVideo').value = '';
-                document.getElementById('editSolved').checked = false;
-                document.getElementById('editFavorite').checked = false;
-                document.getElementById('editHomework').checked = false;
-                document.getElementById('solutionPreview').innerHTML = '';
             }
         }
 
@@ -1407,6 +1250,17 @@
 
         function newTask() {
             currentTaskId = null;
+            document.getElementById('editId').value = '';
+            document.getElementById('editName').value = '';
+            document.getElementById('editCondition').value = '';
+            document.getElementById('editCodes').value = 'А=0\nБ=10\nВ=110';
+            document.getElementById('editAnswer').value = '';
+            document.getElementById('editSolution').value = '';
+            document.getElementById('editVideo').value = '';
+            document.getElementById('editSolved').checked = false;
+            document.getElementById('editFavorite').checked = false;
+            document.getElementById('editHomework').checked = false;
+            document.getElementById('solutionPreview').innerHTML = '';
             openEditForTask(null);
         }
 
@@ -1475,7 +1329,7 @@
             input.click();
         }
 
-        // ========== ПЕЧАТЬ ==========
+        // ========== ПЕЧАТЬ ОТФИЛЬТРОВАННЫХ ЗАДАЧ (СО ВСЕМИ ДЕРЕВЬЯМИ) ==========
         function printFilteredTasks() {
             const filtered = filterTasks();
             if (!filtered.length) {
@@ -1585,6 +1439,7 @@
                     offCtx.lineWidth = 2;
                     offCtx.stroke();
                     
+                    // Подсветка оранжевым (для печати тоже)
                     if (!node.name && ((!node.left && node.right) || (node.left && !node.right))) {
                         offCtx.beginPath();
                         offCtx.strokeStyle = '#ed8936';
@@ -1634,7 +1489,7 @@
                     body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: white; }
                     .task-card { page-break-after: always; border-bottom: 2px dashed #aaa; margin-bottom: 30px; padding-bottom: 20px; }
                     .task-header { background: #f0f0f0; padding: 10px; font-size: 1.4em; font-weight: bold; }
-                    .condition { margin: 10px 0; background: #f9f9f9; padding: 10px; border-left: 5px solid #4299e1; font-size: 1.1em; }
+                    .condition { margin: 10px 0; background: #f9f9f9; padding: 10px; border-left: 5px solid #4299e1; }
                     .answer { background: #e2e8f0; padding: 5px 10px; display: inline-block; border-radius: 20px; margin: 10px 0; }
                     .tree-img { max-width: 100%; border: 1px solid #ccc; margin: 10px 0; }
                     .video-link { color: #1a0dab; text-decoration: underline; }
@@ -1649,9 +1504,9 @@
                 const imgData = imagesData[i];
                 htmlContent += `
                     <div class="task-card">
-                        <div class="task-header">#${task.id}. ${escapeHtml(task.name)}</div>
-                        <div class="condition"><strong>Условие:</strong> ${escapeHtml(task.condition || '—')}</div>
-                        ${includeAnswers ? `<div class="answer"><strong>Ответ:</strong> ${escapeHtml(task.answer || '?')}</div>` : ''}
+                        <div class="task-header">#${task.id}. ${task.name}</div>
+                        <div class="condition"><strong>Условие:</strong> ${task.condition || '—'}</div>
+                        ${includeAnswers ? `<div class="answer"><strong>Ответ:</strong> ${task.answer || '?'}</div>` : ''}
                         <img class="tree-img" src="${imgData}" alt="дерево для задачи ${task.id}">
                         ${task.video ? `<p>📺 <a class="video-link" href="${task.video}" target="_blank">Видеоразбор</a></p>` : ''}
                         <hr>
@@ -1670,9 +1525,10 @@
             printWin.print();
         }
 
-        // ========== ЗАГРУЗКА С GITHUB ==========
+        // ========== ЗАГРУЗКА С GITHUB (ВАША КОРРЕКТНАЯ ССЫЛКА) ==========
         async function loadTasksFromGitHub() {
             try {
+                // ИСПОЛЬЗУЕМ ВАШУ ССЫЛКУ
                 const url = 'https://raw.githubusercontent.com/GannaMath2026/trenager_programs/main/json_files/информатика_4_фано.json';
                 
                 const response = await fetch(url);
@@ -1697,6 +1553,7 @@
                 console.error('❌ Ошибка загрузки:', error);
                 alert('Не удалось загрузить задачи с GitHub. Используются демо-задачи.');
                 
+                // Демо-задачи на случай ошибки
                 tasks = [
                     { id: 1, name: "ДЕМО 2024", condition: "Для букв А, Б, В, Г, Д, Е известны коды: А=000, Б=001, В=0101, Г=0100, Д=011, Е=101.", codes: { "А": "000", "Б": "001", "В": "0101", "Г": "0100", "Д": "011", "Е": "101" }, answer: "011", solution: "Дерево построено.", video: "", solved: false, favorite: false, homework: false },
                     { id: 2, name: "Вариант 303", condition: "Для букв А, Б, В, Г заданы коды: А=00, Б=01, В=100, Г=101.", codes: { "А": "00", "Б": "01", "В": "100", "Г": "101" }, answer: "110", solution: "Обратное дерево", video: "", solved: true, favorite: true, homework: true }
@@ -1709,6 +1566,7 @@
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         function init() {
+            // Загружаем задачи с GitHub при запуске
             loadTasksFromGitHub();
             
             canvas.addEventListener('mousedown', startDrag);

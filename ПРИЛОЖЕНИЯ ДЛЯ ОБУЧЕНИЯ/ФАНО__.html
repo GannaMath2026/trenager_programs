@@ -149,54 +149,32 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 110px;
+            max-width: 100px;
             font-size: 0.9em;
             cursor: pointer;
             flex-shrink: 0;
         }
-        .task-name mark {
-            background: #fbbf24;
-            color: #1a202c;
-            border-radius: 2px;
-            padding: 0 1px;
-        }
-
-        /* ====== Быстрые иконки-кнопки статуса в карточке задачи ====== */
         .task-item .status-checkboxes {
             display: flex;
             gap: 2px;
             margin-left: 4px;
             flex-shrink: 0;
         }
-
-        .task-item .status-checkboxes .quick-btn {
-            background: transparent;
-            border: none;
-            padding: 2px 5px;
-            font-size: 1.05em;
+        .task-item .status-checkboxes label {
             cursor: pointer;
-            border-radius: 6px;
-            opacity: 0.35;
-            transition: transform 0.15s, opacity 0.15s, background 0.15s;
-            line-height: 1;
-            box-shadow: none;
-            color: #cbd5e0;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+            padding: 0 2px;
         }
-
-        .task-item .status-checkboxes .quick-btn:hover {
-            transform: scale(1.25);
-            opacity: 1;
-            background: rgba(255,255,255,0.12);
-        }
-
-        .task-item .status-checkboxes .quick-btn.active {
+        .task-item .status-checkboxes label.active {
             opacity: 1;
         }
-
-        .task-item .status-checkboxes .quick-btn.q-solved.active { color: #10b981; }
-        .task-item .status-checkboxes .quick-btn.q-fav.active    { color: #fbbf24; }
-        .task-item .status-checkboxes .quick-btn.q-hw.active     { color: #f97316; }
-
+        .task-item .status-checkboxes input[type="checkbox"] {
+            display: none;
+        }
         .task-item .move-buttons {
             display: flex;
             flex-direction: column;
@@ -613,14 +591,12 @@
                 <button id="backToListBtn" style="display: none;" onclick="showTaskList()">← Назад</button>
             </div>
             <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="🔍 Поиск по названию и условию..." oninput="applyTextSearch()">
+                <input type="text" id="searchInput" placeholder="🔍 Поиск по условию (часть строки)..." oninput="applyTextSearch()">
             </div>
             <div class="filter-bar" id="filterBar">
                 <button class="filter-btn active" onclick="setFilter('all', event)">Все</button>
                 <button class="filter-btn" onclick="setFilter('solved', event)">✅ Решённые</button>
-                <button class="filter-btn" onclick="setFilter('unsolved', event)">⏳ Не решённые</button>
                 <button class="filter-btn" onclick="setFilter('favorite', event)">⭐ Избранные</button>
-                <button class="filter-btn" onclick="setFilter('unfavorite', event)">☆ Не избр.</button>
                 <button class="filter-btn" onclick="setFilter('homework', event)">📚 ДЗ</button>
             </div>
             <div id="taskListContainer" class="task-list"></div>
@@ -1019,89 +995,47 @@
         // ========== ФИЛЬТРАЦИЯ С ПОИСКОМ ==========
         function filterTasks() {
             let filtered = tasks;
-
-            // Фильтр по статусу
-            if (currentFilter === 'solved')          filtered = filtered.filter(t => t.solved);
-            else if (currentFilter === 'unsolved')   filtered = filtered.filter(t => !t.solved);
-            else if (currentFilter === 'favorite')   filtered = filtered.filter(t => t.favorite);
-            else if (currentFilter === 'unfavorite') filtered = filtered.filter(t => !t.favorite);
-            else if (currentFilter === 'homework')   filtered = filtered.filter(t => t.homework);
-
-            // Поиск по названию + условию + ответу
+            if (currentFilter === 'solved') filtered = filtered.filter(t => t.solved);
+            else if (currentFilter === 'favorite') filtered = filtered.filter(t => t.favorite);
+            else if (currentFilter === 'homework') filtered = filtered.filter(t => t.homework);
+            
             if (searchText.trim() !== '') {
                 const text = searchText.trim().toLowerCase();
-                filtered = filtered.filter(t =>
-                    (t.name || '').toLowerCase().includes(text) ||
-                    (t.condition || '').toLowerCase().includes(text) ||
-                    (t.answer || '').toLowerCase().includes(text)
-                );
+                filtered = filtered.filter(t => (t.condition || '').toLowerCase().includes(text));
             }
             return filtered;
-        }
-
-        function escapeHtml(str) {
-            if (str === null || str === undefined) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        function escapeRegex(str) {
-            return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        }
-
-        function highlightMatch(text, query) {
-            if (!query || !text) return escapeHtml(text || '');
-            const escaped = escapeHtml(text);
-            const regex = new RegExp('(' + escapeRegex(query) + ')', 'gi');
-            return escaped.replace(regex, '<mark>$1</mark>');
         }
 
         // ========== ОСНОВНАЯ ФУНКЦИЯ ОТРИСОВКИ СПИСКА ==========
         function renderTaskList() {
             const filtered = filterTasks();
             taskListContainer.innerHTML = '';
-
-            if (filtered.length === 0) {
-                const empty = document.createElement('div');
-                empty.style.color = '#a0aec0';
-                empty.style.fontSize = '0.9em';
-                empty.style.textAlign = 'center';
-                empty.style.padding = '20px';
-                empty.textContent = tasks.length === 0 ? 'Нет задач' : 'Ничего не найдено';
-                taskListContainer.appendChild(empty);
-                return;
-            }
-
-            filtered.forEach((task) => {
+            filtered.forEach((task, filterIndex) => {
                 const div = document.createElement('div');
                 div.className = `task-item ${task.id === currentTaskId ? 'active' : ''}`;
                 
-                const solvedClass = task.solved   ? 'active' : '';
-                const favClass    = task.favorite ? 'active' : '';
-                const hwClass     = task.homework ? 'active' : '';
-
-                const nameHtml = searchText.trim()
-                    ? highlightMatch(task.name || '', searchText.trim())
-                    : escapeHtml(task.name || '');
-
+                const realIndex = tasks.indexOf(task);
+                
+                // Статусные галочки
+                const solvedActive = task.solved ? 'active' : '';
+                const favActive = task.favorite ? 'active' : '';
+                const hwActive = task.homework ? 'active' : '';
+                
                 div.innerHTML = `
-                    <span class="task-name" onclick="loadTask(${task.id})" title="${escapeHtml(task.name || '')}">
-                        ${task.id}. ${nameHtml}
-                    </span>
+                    <span class="task-name" onclick="loadTask(${task.id})">${task.id}. ${task.name}</span>
                     <div class="status-checkboxes">
-                        <button class="quick-btn q-solved ${solvedClass}"
-                                title="Решено"
-                                onclick="toggleStatus(${task.id}, 'solved', event)">✅</button>
-                        <button class="quick-btn q-fav ${favClass}"
-                                title="Избранное"
-                                onclick="toggleStatus(${task.id}, 'favorite', event)">⭐</button>
-                        <button class="quick-btn q-hw ${hwClass}"
-                                title="ДЗ"
-                                onclick="toggleStatus(${task.id}, 'homework', event)">📚</button>
+                        <label class="${solvedActive}" title="Решено" onclick="toggleStatus(${task.id}, 'solved', event)">
+                            ✅
+                            <input type="checkbox" ${task.solved ? 'checked' : ''}>
+                        </label>
+                        <label class="${favActive}" title="Избранное" onclick="toggleStatus(${task.id}, 'favorite', event)">
+                            ⭐
+                            <input type="checkbox" ${task.favorite ? 'checked' : ''}>
+                        </label>
+                        <label class="${hwActive}" title="ДЗ" onclick="toggleStatus(${task.id}, 'homework', event)">
+                            📚
+                            <input type="checkbox" ${task.homework ? 'checked' : ''}>
+                        </label>
                     </div>
                     <div class="move-buttons">
                         <button onclick="moveTask(${task.id}, -1, event)" title="Вверх">▲</button>
@@ -1119,17 +1053,17 @@
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
             
-            if (statusType === 'solved')        task.solved   = !task.solved;
+            if (statusType === 'solved') task.solved = !task.solved;
             else if (statusType === 'favorite') task.favorite = !task.favorite;
             else if (statusType === 'homework') task.homework = !task.homework;
-
+            
             renderTaskList();
-
-            // Синхронизируем с редактором, если он открыт на этой задаче
+            // Обновляем активный элемент, если он есть
             if (currentTaskId === taskId) {
-                const editIdVal = parseInt(document.getElementById('editId').value);
-                if (editIdVal === taskId) {
-                    document.getElementById('editSolved').checked   = task.solved   || false;
+                // Обновляем информацию в редакторе (не закрывая его)
+                const task = tasks.find(t => t.id === currentTaskId);
+                if (task) {
+                    document.getElementById('editSolved').checked = task.solved || false;
                     document.getElementById('editFavorite').checked = task.favorite || false;
                     document.getElementById('editHomework').checked = task.homework || false;
                 }
@@ -1145,6 +1079,7 @@
             const newIndex = index + direction;
             if (newIndex < 0 || newIndex >= tasks.length) return;
             
+            // Меняем местами
             [tasks[index], tasks[newIndex]] = [tasks[newIndex], tasks[index]];
             
             renderTaskList();
@@ -1293,7 +1228,7 @@
             if (solution.startsWith('data:image')) {
                 modalContent.innerHTML = `<img src="${solution}" alt="решение">`;
             } else {
-                modalContent.innerHTML = `<pre style="white-space: pre-wrap; color: #e2e8f0;">${escapeHtml(solution)}</pre>`;
+                modalContent.innerHTML = `<pre style="white-space: pre-wrap; color: #e2e8f0;">${solution}</pre>`;
             }
             solutionModal.style.display = 'flex';
         }
@@ -1649,9 +1584,9 @@
                 const imgData = imagesData[i];
                 htmlContent += `
                     <div class="task-card">
-                        <div class="task-header">#${task.id}. ${escapeHtml(task.name)}</div>
-                        <div class="condition"><strong>Условие:</strong> ${escapeHtml(task.condition || '—')}</div>
-                        ${includeAnswers ? `<div class="answer"><strong>Ответ:</strong> ${escapeHtml(task.answer || '?')}</div>` : ''}
+                        <div class="task-header">#${task.id}. ${task.name}</div>
+                        <div class="condition"><strong>Условие:</strong> ${task.condition || '—'}</div>
+                        ${includeAnswers ? `<div class="answer"><strong>Ответ:</strong> ${task.answer || '?'}</div>` : ''}
                         <img class="tree-img" src="${imgData}" alt="дерево для задачи ${task.id}">
                         ${task.video ? `<p>📺 <a class="video-link" href="${task.video}" target="_blank">Видеоразбор</a></p>` : ''}
                         <hr>
