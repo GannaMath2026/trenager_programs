@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Лайфхаки: расстояния и углы</title>
+<style>
+  :root{ --txt:#e6edf7; --muted:#8fa3bf; --acc:#4ecdc4; }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;overflow:hidden;}
+  body{background:radial-gradient(1200px 800px at 75% 15%, #1c2740 0%, #0b1018 60%, #070a10 100%);
+    color:var(--txt);font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Arial,sans-serif;}
+  #app{position:fixed;inset:0;display:flex;}
+  .menu{width:430px;height:100%;background:rgba(12,17,26,.94);
+    border-right:1px solid rgba(255,255,255,.08);padding:14px 12px;overflow-y:auto;
+    backdrop-filter:blur(10px);}
+  .menu::-webkit-scrollbar{width:6px;}
+  .menu::-webkit-scrollbar-thumb{background:#2a3a52;border-radius:3px;}
+  details{margin-bottom:6px;border:1px solid rgba(255,255,255,.08);
+    border-radius:12px;background:rgba(15,21,32,.55);overflow:hidden;}
+  details[open]{background:rgba(15,21,32,.8);border-color:rgba(78,205,196,.25);}
+  summary{list-style:none;cursor:pointer;padding:11px 14px;font-size:13px;font-weight:700;
+    color:#cfd9e8;letter-spacing:.2px;display:flex;justify-content:space-between;
+    align-items:center;user-select:none;transition:.15s;}
+  summary::-webkit-details-marker{display:none;}
+  summary::after{content:'▾';color:var(--muted);transition:.2s;font-size:12px;}
+  details[open] summary::after{transform:rotate(180deg);color:var(--acc);}
+  summary:hover{color:#fff;background:rgba(78,205,196,.06);}
+  details[open] summary{color:var(--acc);border-bottom:1px solid rgba(255,255,255,.06);}
+  .sec-num{display:inline-block;min-width:32px;color:var(--acc);font-weight:800;margin-right:8px;}
+  .menu button{width:calc(100% - 20px);margin:6px 10px;padding:9px 12px;
+    background:rgba(18,24,34,.85);border:1px solid rgba(255,255,255,.10);
+    color:#cfd9e8;font:inherit;font-size:12.5px;font-weight:600;border-radius:9px;
+    text-align:left;cursor:pointer;transition:.15s;line-height:1.35;}
+  .menu button:hover{color:#fff;border-color:rgba(78,205,196,.5);}
+  .menu button.active{background:rgba(78,205,196,.18);color:#fff;
+    border-color:rgba(78,205,196,.65);box-shadow:0 0 0 1px rgba(78,205,196,.4);}
+  details > button:last-child{margin-bottom:10px;}
+  .view{position:relative;flex:1;min-width:0;}
+  .view canvas{display:block;}
+  .single{position:absolute;inset:0;}
+  .caption{position:absolute;top:18px;left:50%;transform:translateX(-50%);
+    max-width:min(1344px,96%);background:rgba(18,24,34,.92);backdrop-filter:blur(10px);
+    border:1px solid rgba(78,205,196,.28);border-radius:14px;padding:14px 24px;
+    font-size:15.5px;line-height:1.55;color:#f3f8ff;font-weight:500;
+    letter-spacing:.15px;box-shadow:0 10px 26px rgba(0,0,0,.55);text-align:center;z-index:10;
+    max-height:70vh;overflow-y:auto;}
+  .caption::-webkit-scrollbar{width:6px;}
+  .caption::-webkit-scrollbar-thumb{background:#2a3a52;border-radius:3px;}
+  .caption b{color:var(--acc);font-weight:700;}
+  .caption .formula{display:inline-block;margin:6px 10px;padding:8px 14px;
+    background:rgba(78,205,196,.10);border-radius:8px;
+    font-family:ui-monospace,Menlo,monospace;font-size:15.5px;color:#b6f3ed;
+    font-weight:600;letter-spacing:.2px;}
+  .caption .big{font-size:17px;padding:10px 18px;color:#c9faf4;}
+
+  /* collapsible detail in captions */
+  .caption details.detail{margin-top:10px;}
+  .caption details.detail summary{
+    list-style:none;cursor:pointer;display:inline-block;
+    padding:6px 16px;background:rgba(78,205,196,.12);
+    border:1px solid rgba(78,205,196,.38);border-radius:8px;
+    color:#4ecdc4;font-size:13px;font-weight:800;
+    letter-spacing:.3px;user-select:none;transition:.15s;
+    text-transform:uppercase;
+  }
+  .caption details.detail summary::-webkit-details-marker{display:none;}
+  .caption details.detail summary::after{content:' ▾';}
+  .caption details.detail[open] summary::after{content:' ▴';}
+  .caption details.detail summary:hover{background:rgba(78,205,196,.24);color:#e6fffd;}
+  .caption details.detail[open] summary{background:rgba(78,205,196,.28);color:#e6fffd;
+    border-bottom-left-radius:0;border-bottom-right-radius:0;}
+  .caption .detail-content{
+    margin-top:0;padding:12px 18px;text-align:left;
+    background:rgba(78,205,196,.06);
+    border:1px solid rgba(78,205,196,.28);border-top:none;
+    border-bottom-left-radius:10px;border-bottom-right-radius:10px;
+    animation:fadeIn .2s ease-out;
+  }
+  .caption .detail-content .lead{color:#b6f3ed;font-weight:700;margin-bottom:4px;display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
+
+  .hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+    font-size:11.5px;color:#5f6d82;letter-spacing:.3px;pointer-events:none;
+    background:rgba(15,21,32,.6);padding:6px 12px;border-radius:8px;z-index:10;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<aside class="menu" id="menu">
+  <details open>
+    <summary><span><span class="sec-num">ЛХ</span>Лайфхаки: расстояния и углы</summary>
+    <button data-id="hackDist" class="active">Расстояние от точки до плоскости через объём</button>
+    <button data-id="hackAngleProj">Угол между плоскостями через площади</button>
+    <button data-id="hackAngleLine">Угол между прямой и плоскостью</button>
+    <button data-id="hackAngleTTT">Двугранный угол — через ТТП</button>
+    <button data-id="hackVolRatio">Отношение объёмов пирамид</button>
+    <button data-id="hackTent">Объём палатки</button>
+  </details>
+</aside>
+
+<div class="view" id="view">
+  <div class="single" id="single"></div>
+  <div class="caption" id="caption"></div>
+  <div class="hint">левая кнопка — вращать · колесо — зум · шары — перетаскивать</div>
+</div>
+
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const singleEl  = document.getElementById('single');
+const captionEl = document.getElementById('caption');
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(singleEl.clientWidth, singleEl.clientHeight);
+singleEl.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, singleEl.clientWidth/singleEl.clientHeight, 0.1, 200);
+camera.position.set(5.0, 4.0, 6.0);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.minDistance = 1; controls.maxDistance = 40;
+controls.target.set(0, 0.5, 0);
+controls.minPolarAngle = Math.PI * 0.05;
+controls.maxPolarAngle = Math.PI * 0.49;
+
+scene.add(new THREE.HemisphereLight(0xdce8ff, 0x1a2233, 1.6));
+const keyL = new THREE.DirectionalLight(0xffffff, 2.0); keyL.position.set(6,9,7); scene.add(keyL);
+const rimL = new THREE.DirectionalLight(0x7fa8ff, 1.0); rimL.position.set(-7,-3,-6); scene.add(rimL);
+
+const g = new THREE.Group(); scene.add(g);
+const handlesGroup = new THREE.Group(); scene.add(handlesGroup);
+
+const V = (x,y,z)=> new THREE.Vector3(x,y,z);
+
+/* ---------- базовые хелперы ---------- */
+function fatLine(a, b, color, r=0.024){
+  const grp = new THREE.Group();
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length(); if (len < 1e-6) return grp;
+  const mid = a.clone().add(b).multiplyScalar(0.5);
+  const geo = new THREE.CylinderGeometry(r, r, len, 12, 1, false);
+  const mat = new THREE.MeshStandardMaterial({color, roughness:.35, metalness:.1,
+    emissive:color, emissiveIntensity:.15});
+  const cyl = new THREE.Mesh(geo, mat);
+  cyl.position.copy(mid);
+  cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+  grp.add(cyl);
+  [a, b].forEach(p=>{
+    const sp = new THREE.Mesh(new THREE.SphereGeometry(r*1.05, 10, 8), mat);
+    sp.position.copy(p); grp.add(sp);
+  });
+  return grp;
+}
+
+function fatArrow(a, b, color, r=0.026, headLen=0.24, headR=0.085){
+  const grp = new THREE.Group();
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length();
+  if (len < 1e-6) return grp;
+  const n = dir.clone().normalize();
+  const mat = new THREE.MeshStandardMaterial({color, roughness:.4, metalness:.1,
+    emissive:color, emissiveIntensity:.4});
+  const shaftLen = Math.max(0.001, len - headLen);
+  const shaftGeo = new THREE.CylinderGeometry(r, r, shaftLen, 12);
+  const shaft = new THREE.Mesh(shaftGeo, mat);
+  shaft.position.copy(a.clone().add(n.clone().multiplyScalar(shaftLen/2)));
+  shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), n);
+  grp.add(shaft);
+  const headGeo = new THREE.ConeGeometry(headR, headLen, 18);
+  const head = new THREE.Mesh(headGeo, mat);
+  head.position.copy(a.clone().add(n.clone().multiplyScalar(shaftLen + headLen/2)));
+  head.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), n);
+  grp.add(head);
+  const sp = new THREE.Mesh(new THREE.SphereGeometry(r*1.1, 10, 8), mat);
+  sp.position.copy(a); grp.add(sp);
+  return grp;
+}
+
+function dashedThickLine(a, b, color, r=0.018, dash=0.13, gap=0.09){
+  const grp = new THREE.Group();
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length(); if (len < 1e-6) return grp;
+  const n = dir.clone().normalize();
+  const total = dash + gap; let t = 0;
+  while (t < len){
+    const s0 = a.clone().add(n.clone().multiplyScalar(t));
+    const s1 = a.clone().add(n.clone().multiplyScalar(Math.min(t+dash, len)));
+    grp.add(fatLine(s0, s1, color, r)); t += total;
+  }
+  return grp;
+}
+
+function point(p, color=0xff6b6b, r=0.075){
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12),
+                           new THREE.MeshBasicMaterial({color}));
+  m.position.copy(p); return m;
+}
+
+function label(p, text, color='#e6edf7', size=0.55){
+  const c = document.createElement('canvas'); const ctx = c.getContext('2d');
+  c.width = 512; c.height = 128;
+  ctx.fillStyle = 'rgba(0,0,0,0)'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle = color; ctx.font = 'bold 72px ui-sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, 256, 64);
+  const tex = new THREE.CanvasTexture(c);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false}));
+  spr.scale.set(size, size*0.25, 1); spr.position.copy(p); return spr;
+}
+
+function labelBig(p, text, color='#e6edf7', size=0.85){ return label(p, text, color, size); }
+
+function planePatch(p1, p2, p3, p4, color, opacity=0.16){
+  const verts = [p1, p2, p3, p4];
+  const geo = new THREE.BufferGeometry().setFromPoints(verts);
+  geo.setIndex([0,1,2, 0,2,3]); geo.computeVertexNormals();
+  const mat = new THREE.MeshBasicMaterial({color, transparent:true, opacity,
+    side:THREE.DoubleSide, depthWrite:false});
+  const mesh = new THREE.Mesh(geo, mat);
+  const loop = new THREE.LineLoop(
+    new THREE.BufferGeometry().setFromPoints(verts),
+    new THREE.LineBasicMaterial({color, linewidth:1.2, transparent:true, opacity:.7}));
+  const wrap = new THREE.Group(); wrap.add(mesh); wrap.add(loop); return wrap;
+}
+
+function planeBig(c, u, v, s, color, opacity=0.12){
+  const p1 = c.clone().add(u.clone().multiplyScalar(s)).add(v.clone().multiplyScalar(s));
+  const p2 = c.clone().add(u.clone().multiplyScalar(-s)).add(v.clone().multiplyScalar(s));
+  const p3 = c.clone().add(u.clone().multiplyScalar(-s)).add(v.clone().multiplyScalar(-s));
+  const p4 = c.clone().add(u.clone().multiplyScalar(s)).add(v.clone().multiplyScalar(-s));
+  return planePatch(p1, p2, p3, p4, color, opacity);
+}
+
+function triangle3D(A, B, C, color, opacity=0.28){
+  const geo = new THREE.BufferGeometry().setFromPoints([A, B, C]);
+  geo.setIndex([0,1,2]); geo.computeVertexNormals();
+  const mat = new THREE.MeshBasicMaterial({color, transparent:true, opacity,
+    side:THREE.DoubleSide, depthWrite:false});
+  const mesh = new THREE.Mesh(geo, mat);
+  const wrap = new THREE.Group(); wrap.add(mesh); return wrap;
+}
+
+function polyhedron(faces, color, opacity=0.18){
+  const grp = new THREE.Group();
+  faces.forEach(face => {
+    const geo = new THREE.BufferGeometry().setFromPoints(face);
+    const idx = [];
+    for (let i=1; i<face.length-1; i++) idx.push(0, i, i+1);
+    geo.setIndex(idx); geo.computeVertexNormals();
+    const mat = new THREE.MeshBasicMaterial({color, transparent:true, opacity,
+      side:THREE.DoubleSide, depthWrite:false});
+    grp.add(new THREE.Mesh(geo, mat));
+  });
+  return grp;
+}
+
+function rightAngleAt(O, P1, P2, size, color){
+  const d1 = new THREE.Vector3().subVectors(P1, O);
+  const d2 = new THREE.Vector3().subVectors(P2, O);
+  if (d1.lengthSq() < 1e-8 || d2.lengthSq() < 1e-8) return new THREE.Group();
+  d1.normalize(); d2.normalize();
+  const a = O.clone().add(d1.clone().multiplyScalar(size));
+  const b = O.clone().add(d1.clone().multiplyScalar(size)).add(d2.clone().multiplyScalar(size));
+  const c = O.clone().add(d2.clone().multiplyScalar(size));
+  const line = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([a, b, c]),
+    new THREE.LineBasicMaterial({color}));
+  const grp = new THREE.Group(); grp.add(line); return grp;
+}
+
+function arcAngle(O, dir1, dir2, radius, color, width=1.6){
+  const d1 = dir1.clone().normalize();
+  const d2 = dir2.clone().normalize();
+  const arcPts = []; const N = 32;
+  let e2 = d2.clone().sub(d1.clone().multiplyScalar(d1.dot(d2)));
+  if (e2.length() < 1e-6) e2 = new THREE.Vector3(0,1,0).cross(d1);
+  e2.normalize();
+  const angle = Math.acos(Math.max(-1, Math.min(1, d1.dot(d2))));
+  for (let i=0; i<=N; i++){
+    const t = i/N * angle;
+    arcPts.push(O.clone()
+      .add(d1.clone().multiplyScalar(Math.cos(t) * radius))
+      .add(e2.clone().multiplyScalar(Math.sin(t) * radius)));
+  }
+  const line = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(arcPts),
+    new THREE.LineBasicMaterial({color, linewidth:width}));
+  const grp = new THREE.Group(); grp.add(line); return grp;
+}
+
+function disposeObj(obj){
+  if (obj.geometry && obj.geometry.dispose) obj.geometry.dispose();
+  if (obj.material){
+    if (Array.isArray(obj.material)) obj.material.forEach(m=>m.dispose());
+    else if (obj.material.dispose) obj.material.dispose();
+  }
+  if (obj.children) for (let i=obj.children.length-1; i>=0; i--) disposeObj(obj.children[i]);
+}
+function clearGroup(grp){
+  for (let i=grp.children.length-1; i>=0; i--){
+    const c = grp.children[i]; grp.remove(c); disposeObj(c);
+  }
+}
+
+function triangleArea3D(A, B, C){
+  return 0.5 * new THREE.Vector3().subVectors(B, A)
+    .cross(new THREE.Vector3().subVectors(C, A)).length();
+}
+function footOnPlane(P, A, B, C){
+  const n = new THREE.Vector3().subVectors(B, A)
+    .cross(new THREE.Vector3().subVectors(C, A)).normalize();
+  const t = new THREE.Vector3().subVectors(P, A).dot(n);
+  return P.clone().sub(n.multiplyScalar(t));
+}
+function tOnEdge(p, S, E){
+  const dir = new THREE.Vector3().subVectors(E, S);
+  const L2 = dir.lengthSq(); if (L2 < 1e-9) return 0;
+  return new THREE.Vector3().subVectors(p, S).dot(dir) / L2;
+}
+
+/* ---------- рендер заголовка с раскрывающимся «Подробнее» ---------- */
+function setCaption(factHtml, detailHtml){
+  let html = '<div class="fact-block">' + factHtml + '</div>';
+  if (detailHtml){
+    html += '<details class="detail"><summary>Подробнее</summary>' +
+            '<div class="detail-content">' + detailHtml + '</div></details>';
+  }
+  captionEl.innerHTML = html;
+}
+
+/* ---------- интерактив ---------- */
+const raycaster = new THREE.Raycaster();
+const pointerNDC = new THREE.Vector2();
+const dragPlane = new THREE.Plane();
+let draggingHandle = null;
+let currentId = null;
+const interactState = {};
+
+function pointerToNDC(e){
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointerNDC.x = ((e.clientX - rect.left) / rect.width)  * 2 - 1;
+  pointerNDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+}
+function onPointerDown(e){
+  if (e.button !== 0 || handlesGroup.children.length === 0) return;
+  pointerToNDC(e); raycaster.setFromCamera(pointerNDC, camera);
+  const hits = raycaster.intersectObjects(handlesGroup.children, false);
+  if (hits.length > 0){
+    draggingHandle = hits[0].object;
+    controls.enabled = false;
+    const camDir = new THREE.Vector3(); camera.getWorldDirection(camDir);
+    dragPlane.setFromNormalAndCoplanarPoint(camDir, draggingHandle.position);
+  }
+}
+function syncHandles(id){
+  const s = SCENES[id]; if (!s || !s.handles) return;
+  const list = s.handles();
+  handlesGroup.children.forEach(mesh => {
+    const h = list.find(x => x.name === mesh.userData.name);
+    if (h) mesh.position.copy(h.pos);
+  });
+}
+function onPointerMove(e){
+  if (!draggingHandle) return;
+  pointerToNDC(e); raycaster.setFromCamera(pointerNDC, camera);
+  const newPos = new THREE.Vector3();
+  if (!raycaster.ray.intersectPlane(dragPlane, newPos)) return;
+  const s = SCENES[currentId], st = interactState[currentId];
+  if (!s || !st) return;
+  st[draggingHandle.userData.name] = newPos.clone();
+  if (s.restrict) s.restrict(st, draggingHandle.userData.name);
+  rebuildStatic(currentId);
+  syncHandles(currentId);
+}
+function onPointerUp(){
+  if (draggingHandle){ draggingHandle = null; controls.enabled = true; }
+}
+renderer.domElement.addEventListener('pointerdown', onPointerDown);
+window.addEventListener('pointermove', onPointerMove);
+window.addEventListener('pointerup', onPointerUp);
+
+function rebuildStatic(id){ clearGroup(g); SCENES[id].build(); }
+function disposeHandles(){
+  clearGroup(handlesGroup); draggingHandle = null; controls.enabled = true;
+}
+function setupHandles(id){
+  disposeHandles();
+  const s = SCENES[id]; if (!s || !s.handles) return;
+  s.handles().forEach(h => {
+    const mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.13, 20, 16),
+      new THREE.MeshStandardMaterial({color:h.color || 0xffb84d,
+        emissive:h.color || 0xffb84d, emissiveIntensity:.55,
+        transparent:true, opacity:.94}));
+    mesh.position.copy(h.pos);
+    mesh.userData.name = h.name;
+    handlesGroup.add(mesh);
+  });
+}
+function clampToEdge(st, name, S, E, kMin=0.1, kMax=0.95){
+  const p = st[name];
+  const dir = new THREE.Vector3().subVectors(E, S);
+  const L2 = dir.lengthSq(); if (L2 < 1e-9) return;
+  let k = new THREE.Vector3().subVectors(p, S).dot(dir) / L2;
+  if (k < kMin) k = kMin; if (k > kMax) k = kMax;
+  st[name] = S.clone().add(dir.clone().multiplyScalar(k));
+}
+
+/* ============================================================
+   1. РАССТОЯНИЕ ОТ ТОЧКИ ДО ПЛОСКОСТИ ЧЕРЕЗ ОБЪЁМ
+   ============================================================ */
+function sceneHackDist(){
+  const st = interactState['hackDist'];
+  const D = st.D.clone();
+  const A = V(-1.4, 0, -0.8), B = V(1.4, 0, -0.8), C = V(0, 0, 1.2);
+
+  const H = V(D.x, 0, D.z);
+  const H2 = footOnPlane(B, D, A, C);
+
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 2.3, 0x4ecdc4, 0.08));
+  g.add(triangle3D(D, A, C, 0xffa94d, 0.10));
+  g.add(polyhedron([[A,B,C],[D,A,B],[D,B,C],[D,C,A]], 0xffa94d, 0.08));
+
+  g.add(fatLine(A, B, 0xff6b6b, 0.024));
+  g.add(fatLine(B, C, 0xff6b6b, 0.024));
+  g.add(fatLine(C, A, 0xff6b6b, 0.024));
+
+  g.add(fatLine(D, A, 0xffd93d, 0.020));
+  g.add(fatLine(D, B, 0xffd93d, 0.020));
+  g.add(fatLine(D, C, 0xffd93d, 0.020));
+
+  g.add(fatLine(D, H, 0x3ddc97, 0.030));
+  g.add(rightAngleAt(H, D, A, 0.16, 0xffffff));
+
+  g.add(dashedThickLine(B, H2, 0x6ba8ff, 0.018, 0.12, 0.08));
+  g.add(rightAngleAt(H2, B, A, 0.16, 0xffffff));
+
+  g.add(point(H, 0xffffff, 0.07));
+  g.add(point(H2, 0x6ba8ff, 0.07));
+  g.add(label(A.clone().add(V(-0.15,-0.05, 0.15)), 'A', '#ff6b6b'));
+  g.add(label(B.clone().add(V( 0.15,-0.05, 0.15)), 'B', '#ff6b6b'));
+  g.add(label(C.clone().add(V( 0.15, 0.10, 0.15)), 'C', '#ff6b6b'));
+  g.add(label(D.clone().add(V( 0.15, 0.15, 0.10)), 'D', '#ffd93d'));
+  g.add(label(H.clone().add(V( 0.12,-0.05, 0.10)), 'H', '#3ddc97'));
+  g.add(label(H2.clone().add(V(-0.20, 0.10, 0)), 'H₂', '#6ba8ff'));
+  g.add(label(V(0, 0.2, -2.0), 'α', '#4ecdc4'));
+
+  const Sabc = triangleArea3D(A, B, C);
+  const Sadc = triangleArea3D(A, D, C);
+  const DH  = D.distanceTo(H);
+  const V0  = (1/3) * Sabc * DH;
+  const BH2 = (3 * V0) / Sadc;
+
+  setCaption(
+    '<b>Две высоты — один и тот же объём.</b> ' +
+    '<span class="formula">BH₂ = S<sub>ABC</sub> · DH / S<sub>ADC</sub></span>' +
+    ' &nbsp; S<sub>ABC</sub> = ' + Sabc.toFixed(3) +
+    ' &nbsp; DH = ' + DH.toFixed(3) +
+    ' &nbsp; S<sub>ADC</sub> = ' + Sadc.toFixed(3) +
+    ' &nbsp; ⇒ BH₂ = <b>' + BH2.toFixed(3) + '</b>',
+    '<span class="lead">Как это получается</span>' +
+    'Одна и та же пирамида DABC — объём можно считать через любое основание:<br>' +
+    '<span class="formula">V = ⅓ · S<sub>ABC</sub> · DH</span>' +
+    '<span class="formula">V = ⅓ · S<sub>ADC</sub> · BH₂</span><br>' +
+    'Приравниваем: ⅓ · S<sub>ABC</sub> · DH = ⅓ · S<sub>ADC</sub> · BH₂. Отсюда — формула выше.<br>' +
+    '<i style="color:#8fa3bf">Перетаскивай D — H, H₂, обе площади и обе высоты пересчитываются.</i>'
+  );
+}
+sceneHackDist.initState = () => ({ D: V(0.3, 1.7, 0.0) });
+sceneHackDist.handles = () => [{ name:'D', pos: interactState['hackDist'].D, color: 0xffd93d }];
+sceneHackDist.restrict = (st) => { if (st.D.y < 0.4) st.D.y = 0.4; };
+
+/* ============================================================
+   2. УГОЛ МЕЖДУ ПЛОСКОСТЯМИ ЧЕРЕЗ ПЛОЩАДИ
+   ============================================================ */
+function sceneHackAngleProj(){
+  const st = interactState['hackAngleProj'];
+  const phi = st.phi, Hh = st.Hh;
+
+  const A = V(-1.5, 0, 0), B = V(1.5, 0, 0);
+  const H_pt = V(0, 0, 0);
+  const C_beta = V(0, Hh * Math.sin(phi), Hh * Math.cos(phi));
+  const C_proj = V(0, 0, Hh * Math.cos(phi));
+
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 2.4, 0x4ecdc4, 0.07));
+
+  const betaU = V(1,0,0);
+  const betaV = V(0, Math.sin(phi), Math.cos(phi));
+  g.add(planeBig(H_pt, betaU, betaV, 1.95, 0xffa94d, 0.09));
+
+  g.add(triangle3D(A, B, C_beta, 0xffd93d, 0.38));
+  g.add(fatLine(A, B, 0xff6b6b, 0.030));
+  g.add(fatLine(B, C_beta, 0xffd93d, 0.024));
+  g.add(fatLine(C_beta, A, 0xffd93d, 0.024));
+
+  g.add(triangle3D(A, B, C_proj, 0x6ba8ff, 0.38));
+  g.add(fatLine(A, C_proj, 0x6ba8ff, 0.022));
+  g.add(fatLine(B, C_proj, 0x6ba8ff, 0.022));
+
+  g.add(fatLine(H_pt, C_beta, 0xff3d7f, 0.026));
+  g.add(fatLine(H_pt, C_proj, 0x1f6fbf, 0.026));
+  g.add(rightAngleAt(H_pt, C_beta, B, 0.16, 0xffffff));
+  g.add(rightAngleAt(H_pt, C_proj, B, 0.16, 0xffffff));
+
+  g.add(dashedThickLine(C_beta, C_proj, 0x8fa3bf, 0.012, 0.09, 0.06));
+  g.add(arcAngle(H_pt, V(0,0,1), betaV, 0.55, 0x3ddc97, 2));
+
+  g.add(point(C_beta, 0xffd93d, 0.08));
+  g.add(point(C_proj, 0x6ba8ff, 0.08));
+  g.add(point(H_pt, 0xffffff, 0.07));
+  g.add(label(A.clone().add(V(-0.20,-0.05, 0)), 'A', '#ff6b6b'));
+  g.add(label(B.clone().add(V( 0.20,-0.05, 0)), 'B', '#ff6b6b'));
+  g.add(label(C_beta.clone().add(V( 0.20, 0.12, 0)), 'C', '#ffd93d'));
+  g.add(label(C_proj.clone().add(V( 0.20, 0.05, 0.1)), 'C′', '#6ba8ff'));
+  g.add(label(H_pt.clone().add(V(-0.05,-0.05, 0.15)), 'H', '#ffffff'));
+  g.add(label(V(0.18, -0.30, 0.35), 'φ', '#3ddc97', 0.5));
+  g.add(label(V(0, 0.05, 1.95), 'β', '#ffa94d'));
+  g.add(label(V(0, -0.55, 0.6), 'α', '#4ecdc4'));
+
+  const CH  = Hh;
+  const CpH = Hh * Math.cos(phi);
+  const ratio = CpH / CH;
+  const angleDeg = (Math.acos(Math.max(-1, Math.min(1, ratio))) * 180 / Math.PI).toFixed(1);
+
+  setCaption(
+    'Угол между плоскостями: <span class="formula">cos φ = S<sub>ABC′</sub> / S<sub>ABC</sub></span>' +
+    ' &nbsp; CH = ' + CH.toFixed(3) +
+    ' &nbsp; C′H′ = ' + CpH.toFixed(3) +
+    ' &nbsp; cos φ = ' + ratio.toFixed(3) +
+    ' &nbsp; <b>φ ≈ ' + angleDeg + '°</b>',
+    '<span class="lead">Почему работает</span>' +
+    'Линия пересечения плоскостей — <b>AB</b>. Обе высоты <b>CH</b> и <b>C′H′</b> идут к AB, ' +
+    'поэтому площади треугольников равны ½ · AB · h.<br>' +
+    '<span class="formula">S<sub>ABC</sub> = ½ · AB · CH</span>' +
+    '<span class="formula">S<sub>ABC′</sub> = ½ · AB · C′H′</span><br>' +
+    'Отношение площадей = отношению высот = cos φ. ' +
+    '<i style="color:#8fa3bf">Жёлтый шар — C в β, синий — C′ в α; оба можно тянуть.</i>'
+  );
+}
+sceneHackAngleProj.initState = () => ({ phi: 0.6, Hh: 1.3 });
+sceneHackAngleProj.handles = () => {
+  const st = interactState['hackAngleProj'];
+  const phi = st.phi, Hh = st.Hh;
+  return [
+    { name:'C',  pos: V(0, Hh * Math.sin(phi), Hh * Math.cos(phi)), color: 0xffd93d },
+    { name:'Cp', pos: V(0, 0.02, Hh * Math.cos(phi)),               color: 0x6ba8ff }
+  ];
+};
+sceneHackAngleProj.restrict = (st, name) => {
+  if (name === 'C'){
+    const p = st.C; if (!p) return;
+    let y = Math.max(p.y, 0.15), z = Math.max(p.z, 0.15);
+    let phi = Math.atan2(y, z);
+    let Hh  = Math.sqrt(y*y + z*z);
+    if (phi < 0.15) phi = 0.15;
+    if (phi > Math.PI/2 - 0.10) phi = Math.PI/2 - 0.10;
+    Hh = Math.min(Math.max(Hh, 0.45), 1.95);
+    st.phi = phi; st.Hh = Hh;
+  } else if (name === 'Cp'){
+    const p = st.Cp; if (!p) return;
+    const h2 = Math.min(Math.max(p.z, 0.15), 1.85);
+    const cosPhi = Math.max(Math.cos(st.phi), 0.18);
+    st.Hh = Math.min(Math.max(h2 / cosPhi, 0.45), 1.95);
+  }
+};
+
+/* ============================================================
+   3. УГОЛ МЕЖДУ ПРЯМОЙ И ПЛОСКОСТЬЮ
+   ============================================================ */
+function sceneHackAngleLine(){
+  const st = interactState['hackAngleLine'];
+  const A = st.A.clone();
+  const H = V(A.x, 0, A.z);
+
+  const T1 = V(-1.4, 0, -0.9), T2 = V(1.4, 0, -0.9), T3 = V(0, 0, 1.3);
+
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 2.3, 0x4ecdc4, 0.08));
+
+  g.add(triangle3D(T1, T2, T3, 0x6ba8ff, 0.30));
+  g.add(fatLine(T1, T2, 0x6ba8ff, 0.024));
+  g.add(fatLine(T2, T3, 0x6ba8ff, 0.024));
+  g.add(fatLine(T3, T1, 0x6ba8ff, 0.024));
+
+  g.add(fatLine(A, T1, 0xffd93d, 0.024));
+  g.add(fatLine(A, T2, 0xffd93d, 0.021));
+  g.add(fatLine(A, T3, 0xffd93d, 0.021));
+
+  g.add(fatLine(H, T1, 0x3ddc97, 0.020));
+  g.add(fatLine(H, T2, 0x3ddc97, 0.017));
+  g.add(fatLine(H, T3, 0x3ddc97, 0.017));
+
+  g.add(dashedThickLine(A, H, 0x8fa3bf, 0.014, 0.10, 0.07));
+  g.add(rightAngleAt(H, A, T2, 0.16, 0xffffff));
+
+  g.add(point(A, 0xff6b6b, 0.10));
+  g.add(point(H, 0xffffff, 0.08));
+
+  g.add(label(A.clone().add(V(0.15, 0.15, 0)), 'A', '#ff6b6b'));
+  g.add(label(H.clone().add(V(0.15, 0.05, 0)), 'H', '#8fa3bf'));
+  g.add(label(T1.clone().add(V(-0.15,-0.05, 0)), 'T₁', '#6ba8ff'));
+  g.add(label(T2.clone().add(V( 0.15,-0.05, 0)), 'T₂', '#6ba8ff'));
+  g.add(label(T3.clone().add(V( 0.05, 0.10, 0.15)), 'T₃', '#6ba8ff'));
+  g.add(label(V(0, 0.20, -1.9), 'α', '#4ecdc4'));
+
+  const AH = A.distanceTo(H);
+
+  setCaption(
+    'Высота пирамидки: <span class="formula">AH = 3V / S<sub>T₁T₂T₃</sub></span>' +
+    ' &nbsp; AH = <b>' + AH.toFixed(3) + '</b>',
+    '<span class="lead">Что происходит на чертеже</span>' +
+    'В плоскости α — треугольник T₁T₂T₃. Соединяем A с его вершинами и получаем пирамидку ' +
+    '<b>A·T₁T₂T₃</b>.<br>' +
+    'Все три прямые <b>ATᵢ</b> — сплошные жёлтые; <b>проекции</b> этих прямых на α — зелёные ' +
+    'отрезки <b>H–Tᵢ</b>; <b>AH</b> — пунктирная высота (перпендикуляр к α).<br>' +
+    'Например, угол между прямой <b>AT₁</b> и плоскостью α — это ∠<b>AT₁H</b>.<br>' +
+    '<span class="formula">V = ⅓ · S<sub>T₁T₂T₃</sub> · AH</span>' +
+    '<span class="formula">⇒ AH = 3V / S<sub>T₁T₂T₃</sub></span><br>' +
+    '<b>Приём «2 пирамидки»:</b> чтобы найти расстояние от точки до плоскости, ' +
+    'строим вспомогательную пирамидку и находим её высоту через объём.'
+  );
+}
+sceneHackAngleLine.initState = () => ({ A: V(0.5, 1.6, 0.3) });
+sceneHackAngleLine.handles = () => [{ name:'A', pos: interactState['hackAngleLine'].A, color: 0xff6b6b }];
+sceneHackAngleLine.restrict = (st) => { if (st.A.y < 0.4) st.A.y = 0.4; };
+
+/* ============================================================
+   4. ДВУГРАННЫЙ УГОЛ — ТТП
+   ============================================================ */
+function sceneHackAngleTTT(){
+  const st = interactState['hackAngleTTT'];
+  const M = st.M.clone();
+
+  const A = V(-1.3, 0, 0), B = V(1.3, 0, 0);
+  const Mprime = V(M.x, 0, M.z);
+  const N_pt = V(Mprime.x, 0, 0);
+
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 2.4, 0x4ecdc4, 0.07));
+
+  const betaV = new THREE.Vector3().subVectors(M, V(M.x, 0, 0)).normalize();
+  if (betaV.length() < 1e-6) betaV.copy(V(0,0,1));
+  g.add(planeBig(V(0,0,0), V(1,0,0), betaV, 1.7, 0xffa94d, 0.10));
+
+  g.add(fatLine(A, B, 0xffffff, 0.032));
+
+  g.add(fatArrow(M, Mprime, 0x3ddc97, 0.028, 0.22, 0.09));
+  g.add(rightAngleAt(Mprime, M, N_pt, 0.16, 0xffffff));
+
+  g.add(fatArrow(Mprime, N_pt, 0xff6b6b, 0.026, 0.20, 0.085));
+  g.add(rightAngleAt(N_pt, Mprime, B, 0.16, 0xffffff));
+
+  g.add(fatArrow(N_pt, M, 0xffd93d, 0.028, 0.22, 0.09));
+  g.add(rightAngleAt(N_pt, M, B, 0.16, 0xffffff));
+
+  g.add(arcAngle(N_pt,
+    new THREE.Vector3().subVectors(M, N_pt).normalize(),
+    new THREE.Vector3().subVectors(Mprime, N_pt).normalize(),
+    0.50, 0x3ddc97, 2));
+
+  g.add(point(M, 0xffd93d, 0.10));
+  g.add(point(Mprime, 0x3ddc97, 0.08));
+  g.add(point(N_pt, 0xffffff, 0.08));
+
+  g.add(label(M.clone().add(V(0.15, 0.15, 0)), 'M', '#ffd93d', 0.6));
+  g.add(label(Mprime.clone().add(V(0.15, 0.05, 0.1)), 'M′', '#3ddc97', 0.6));
+  g.add(label(N_pt.clone().add(V(-0.20,-0.05, 0)), 'N', '#ffffff', 0.6));
+  g.add(label(A.clone().add(V(-0.20,-0.05, 0)), 'A', '#ffffff'));
+  g.add(label(B.clone().add(V( 0.20,-0.05, 0)), 'B', '#ffffff'));
+
+  const midMMp = M.clone().add(Mprime).multiplyScalar(0.5);
+  const midMpN  = Mprime.clone().add(N_pt).multiplyScalar(0.5);
+  const midNM   = N_pt.clone().add(M).multiplyScalar(0.5);
+  g.add(label(midMMp.clone().add(V(0.25, 0.05, 0)), 'a', '#3ddc97', 0.55));
+  g.add(label(midMpN.clone().add(V(0.05, 0.05, 0.20)), 'b', '#ff6b6b', 0.55));
+  g.add(label(midNM.clone().add(V(0.25, 0.10, 0.05)), 'c', '#ffd93d', 0.55));
+
+  const linAngle = Math.acos(Math.max(-1, Math.min(1,
+    new THREE.Vector3().subVectors(M, N_pt).normalize()
+      .dot(new THREE.Vector3().subVectors(Mprime, N_pt).normalize()))));
+  const linDeg = (linAngle * 180 / Math.PI).toFixed(1);
+
+  const a = M.distanceTo(Mprime);
+  const c = M.distanceTo(N_pt);
+  const sinPhi = c > 1e-6 ? a / c : 0;
+  const phiDeg = (Math.asin(Math.max(-1, Math.min(1, sinPhi))) * 180 / Math.PI).toFixed(1);
+
+  setCaption(
+    'Линейный угол двугранного: <span class="formula">sin ∠MNM′ = a / c = MM′ / MN</span>' +
+    ' &nbsp; a = ' + a.toFixed(3) +
+    ' &nbsp; c = ' + c.toFixed(3) +
+    ' &nbsp; <b>∠MNM′ = ' + linDeg + '°</b>',
+    '<span class="lead">Как работает ТТП</span>' +
+    'Из точки <b>M</b> в β: ① вектор <b>a = MM′ ⊥ α</b>; ' +
+    '② из <b>M′</b> вектор <b>b = M′N ⊥ AB</b>; ' +
+    '③ вектор <b>c = NM</b> — наклонная в β.<br>' +
+    'По ТТП: раз <b>M′N ⊥ AB</b>, то и <b>NM ⊥ AB</b>. Значит ∠MNM′ — <b>линейный угол</b> двугранного.<br>' +
+    'a = MM′ = ' + a.toFixed(3) + ', c = MN = ' + c.toFixed(3) +
+    ', ∠ = arcsin(a/c) = ' + phiDeg + '°.<br>' +
+    '<i style="color:#8fa3bf">Стрелки — векторы a, b, c. Перетаскивай M.</i>'
+  );
+}
+sceneHackAngleTTT.initState = () => ({ M: V(0.6, 1.3, 0.6) });
+sceneHackAngleTTT.handles = () => [{ name:'M', pos: interactState['hackAngleTTT'].M, color: 0xffd93d }];
+sceneHackAngleTTT.restrict = (st) => {
+  if (st.M.y < 0.3) st.M.y = 0.3;
+  if (st.M.z < 0.2) st.M.z = 0.2;
+  if (st.M.z > 1.6) st.M.z = 1.6;
+  if (Math.abs(st.M.x) > 1.2) st.M.x = Math.sign(st.M.x) * 1.2;
+};
+
+/* ============================================================
+   5. ОТНОШЕНИЕ ОБЪЁМОВ ПИРАМИД
+   ============================================================ */
+function sceneHackVolRatio(){
+  const st = interactState['hackVolRatio'];
+  const A1 = st.A1.clone();
+  const B1 = st.B1.clone();
+  const C1 = st.C1.clone();
+
+  const S = V(0, 2.0, 0);
+  const A = V(-1.4, 0, -0.8);
+  const B = V( 1.4, 0, -0.8);
+  const C = V( 0, 0, 1.3);
+
+  g.add(polyhedron([[A,B,C],[S,A,B],[S,B,C],[S,C,A]], 0x6ba8ff, 0.06));
+  g.add(fatLine(S, A, 0x6ba8ff, 0.016));
+  g.add(fatLine(S, B, 0x6ba8ff, 0.016));
+  g.add(fatLine(S, C, 0x6ba8ff, 0.016));
+  g.add(fatLine(A, B, 0x6ba8ff, 0.016));
+  g.add(fatLine(B, C, 0x6ba8ff, 0.016));
+  g.add(fatLine(C, A, 0x6ba8ff, 0.016));
+
+  g.add(polyhedron([[A1,B1,C1],[S,A1,B1],[S,B1,C1],[S,C1,A1]], 0xffa94d, 0.30));
+  g.add(fatLine(S, A1, 0xff6b6b, 0.028));
+  g.add(fatLine(S, B1, 0xff6b6b, 0.028));
+  g.add(fatLine(S, C1, 0xff6b6b, 0.028));
+  g.add(fatLine(A1, B1, 0xffd93d, 0.028));
+  g.add(fatLine(B1, C1, 0xffd93d, 0.028));
+  g.add(fatLine(C1, A1, 0xffd93d, 0.028));
+
+  g.add(point(S, 0xffffff, 0.10));
+  g.add(point(A, 0xffffff, 0.06));
+  g.add(point(B, 0xffffff, 0.06));
+  g.add(point(C, 0xffffff, 0.06));
+
+  g.add(labelBig(S.clone().add(V(0, 0.22, 0)), 'S', '#ffffff', 0.72));
+  g.add(labelBig(A.clone().add(V(-0.22,-0.10, 0.10)), 'A', '#6ba8ff', 0.72));
+  g.add(labelBig(B.clone().add(V( 0.22,-0.10, 0.10)), 'B', '#6ba8ff', 0.72));
+  g.add(labelBig(C.clone().add(V( 0.10, 0.10, 0.20)), 'C', '#6ba8ff', 0.72));
+
+  g.add(label(A1.clone().add(V(-0.22, 0.10, 0.10)), 'A₁', '#ff6b6b', 0.60));
+  g.add(label(B1.clone().add(V( 0.22, 0.10, 0.10)), 'B₁', '#ff6b6b', 0.60));
+  g.add(label(C1.clone().add(V( 0.10, 0.10, 0.20)), 'C₁', '#ff6b6b', 0.60));
+
+  const k1 = A1.distanceTo(S) / A.distanceTo(S);
+  const k2 = B1.distanceTo(S) / B.distanceTo(S);
+  const k3 = C1.distanceTo(S) / C.distanceTo(S);
+  const ratio = k1 * k2 * k3;
+
+  const frac = (num, den, big) =>
+    '<span class="frac' + (big ? ' big' : '') + '">' +
+      '<span class="num">' + num + '</span>' +
+      '<span class="den">' + den + '</span>' +
+    '</span>';
+
+  setCaption(
+    '<b>Общая вершина S — отношения рёбер перемножаются:</b><br>' +
+    frac('V<sub>SA₁B₁C₁</sub>', 'V<sub>SABC</sub>', true) + ' = ' +
+    frac('SA₁ · SB₁ · SC₁', 'SA · SB · SC', true) + ' = <b>' + ratio.toFixed(3) + '</b>' +
+    ' &nbsp; <span style="color:#b6f3ed">k₁ = ' + k1.toFixed(3) +
+    ', k₂ = ' + k2.toFixed(3) + ', k₃ = ' + k3.toFixed(3) + '</span>',
+    '<span class="lead">Почему это работает</span>' +
+    'У пирамид с общей вершиной S объём пропорционален произведению трёх рёбер, выходящих из S ' +
+    '(одно ребро × площадь основания, а площадь основания — через два других ребра и угол между ними).<br>' +
+    'Отсюда: <b>V<sub>SA₁B₁C₁</sub> / V<sub>SABC</sub> = (SA₁/SA) · (SB₁/SB) · (SC₁/SC)</b>.<br>' +
+    '<hr style="border-color:rgba(255,255,255,.10);margin:10px 0">' +
+    '<span class="lead">Для 4-угольной пирамиды</span>' +
+    'Разбиваем её диагональю AC на две треугольные:<br>' +
+    'V<sub>SABCD</sub> = V<sub>SABC</sub> + V<sub>SACD</sub><br>' +
+    'Для каждой — своё произведение отношений, а в сумме они дают объём 4-угольной пирамидки:<br>' +
+    frac('V<sub>SA₁B₁C₁D₁</sub>', 'V<sub>SABCD</sub>', false) + ' = ' +
+    frac('V<sub>SABC</sub>·SA₁·SB₁·SC₁ / (SA·SB·SC) + V<sub>SACD</sub>·SA₁·SC₁·SD₁ / (SA·SC·SD)',
+         'V<sub>SABCD</sub>', false) +
+    '<br><i style="color:#8fa3bf">Перетаскивай A₁, B₁, C₁ вдоль рёбер.</i>'
+  );
+}
+sceneHackVolRatio.initState = () => ({
+  A1: V(-0.7, 1.05, -0.4),
+  B1: V( 0.7, 1.05, -0.4),
+  C1: V( 0,  1.05, 0.65)
+});
+sceneHackVolRatio.handles = () => {
+  const st = interactState['hackVolRatio'];
+  return [
+    { name:'A1', pos: st.A1, color: 0xff6b6b },
+    { name:'B1', pos: st.B1, color: 0xff6b6b },
+    { name:'C1', pos: st.C1, color: 0xff6b6b }
+  ];
+};
+sceneHackVolRatio.restrict = (st) => {
+  const S = V(0, 2.0, 0);
+  clampToEdge(st, 'A1', S, V(-1.4, 0, -0.8));
+  clampToEdge(st, 'B1', S, V( 1.4, 0, -0.8));
+  clampToEdge(st, 'C1', S, V( 0, 0, 1.3));
+};
+
+/* ============================================================
+   6. ОБЪЁМ ПАЛАТКИ
+   Слева — призмовидная: KL ∥ BC, разбиваем на пирамиду K–ABCD
+           и пирамиду K–LCD (L и C — на грани SCD).
+   Справа — пирамидальная: KL ／ BC, продлеваем KL до пересечения
+           с BC в M; три плоскости (сечение, SBC, ABCD) сходятся в M.
+           Строим сечение KLD → M на следе, ищем объём палатки
+           как разность большой и малой пирамид.
+   ============================================================ */
+function tentPyramid(o){
+  // о — смещение левой/правой палатки
+  const S = V(0, 2.2, 0).add(o);
+  const A = V(-1.1, 0, -1.1).add(o);
+  const B = V( 1.1, 0, -1.1).add(o);
+  const C = V( 1.1, 0,  1.1).add(o);
+  const D = V(-1.1, 0,  1.1).add(o);
+  return {S, A, B, C, D};
+}
+
+function drawPyramidWire(P){
+  const c = 0x6ba8ff;
+  g.add(fatLine(P.S, P.A, c, 0.013));
+  g.add(fatLine(P.S, P.B, c, 0.013));
+  g.add(fatLine(P.S, P.C, c, 0.013));
+  g.add(fatLine(P.S, P.D, c, 0.013));
+  g.add(fatLine(P.A, P.B, c, 0.013));
+  g.add(fatLine(P.B, P.C, c, 0.013));
+  g.add(fatLine(P.C, P.D, c, 0.013));
+  g.add(fatLine(P.D, P.A, c, 0.013));
+}
+
+function sceneHackTent(){
+  const st = interactState['hackTent'];
+
+  const OFF_L = V(-3.0, 0, 0);
+  const OFF_R = V( 3.0, 0, 0);
+  const PL = tentPyramid(OFF_L);
+  const PR = tentPyramid(OFF_R);
+
+  drawPyramidWire(PL);
+  drawPyramidWire(PR);
+
+  /* ===================== ЛЕВАЯ (призмовидная) ===================== */
+  const tL = st.tL;                      // одна и та же доля для K и L
+  const K_L = PL.S.clone().lerp(PL.B, tL);
+  const L_L = PL.S.clone().lerp(PL.C, tL);
+
+  // Пирамида K–ABCD (вершина K, основание — вся нижняя грань)
+  g.add(polyhedron([[PL.A, PL.B, PL.C, PL.D]], 0xffa94d, 0.10));
+  g.add(triangle3D(PL.A, PL.B, K_L, 0xffa94d, 0.28));
+  g.add(triangle3D(PL.B, PL.C, K_L, 0xffa94d, 0.28));
+  g.add(triangle3D(PL.C, PL.D, K_L, 0xffa94d, 0.28));
+  g.add(triangle3D(PL.D, PL.A, K_L, 0xffa94d, 0.28));
+
+  // Пирамида K–LCD (вершина K, основание — треугольник LCD на грани SCD)
+  g.add(triangle3D(L_L, PL.C, PL.D, 0x3ddc97, 0.42));
+  g.add(triangle3D(K_L, L_L, PL.C, 0x3ddc97, 0.42));
+  g.add(triangle3D(K_L, PL.C, PL.D, 0x3ddc97, 0.42));
+  g.add(triangle3D(K_L, PL.D, L_L, 0x3ddc97, 0.42));
+
+  // Рёбра палатки
+  g.add(fatLine(PL.A, PL.B, 0xff6b6b, 0.022));
+  g.add(fatLine(PL.B, PL.C, 0xff6b6b, 0.022));
+  g.add(fatLine(PL.C, PL.D, 0xff6b6b, 0.022));
+  g.add(fatLine(PL.D, PL.A, 0xff6b6b, 0.022));
+  g.add(fatLine(K_L, L_L, 0xffd93d, 0.028));
+  g.add(fatLine(PL.A, K_L, 0xffd93d, 0.022));
+  g.add(fatLine(PL.B, K_L, 0xffd93d, 0.022));
+  g.add(fatLine(PL.C, L_L, 0xffd93d, 0.022));
+  g.add(fatLine(PL.D, L_L, 0xffd93d, 0.022));
+
+  // Общая грань-перегородка KCD
+  g.add(fatLine(K_L, PL.C, 0x3ddc97, 0.020));
+  g.add(fatLine(K_L, PL.D, 0x3ddc97, 0.020));
+
+  g.add(point(K_L, 0xffd93d, 0.09));
+  g.add(point(L_L, 0xffd93d, 0.09));
+  g.add(label(K_L.clone().add(V(-0.12, 0.10, 0.06)), 'K', '#ffd93d', 0.50));
+  g.add(label(L_L.clone().add(V( 0.12, 0.10, 0.06)), 'L', '#ffd93d', 0.50));
+  g.add(label(PL.A.clone().add(V(-0.18,-0.10, 0.12)), 'A', '#6ba8ff', 0.46));
+  g.add(label(PL.B.clone().add(V( 0.14,-0.10, 0.12)), 'B', '#6ba8ff', 0.46));
+  g.add(label(PL.C.clone().add(V( 0.16,-0.10,-0.10)), 'C', '#6ba8ff', 0.46));
+  g.add(label(PL.D.clone().add(V(-0.18,-0.10,-0.10)), 'D', '#6ba8ff', 0.46));
+  g.add(label(PL.S.clone().add(V(0, 0.20, 0)), 'S', '#6ba8ff', 0.46));
+  g.add(labelBig(V(-3.0, 2.85, 0), 'ПРИЗМОВИДНАЯ   K L ∥ B C', '#3ddc97', 0.55));
+  g.add(label(V(-3.0, -0.65, 0), 'V = V(K–ABCD) + V(K–LCD)', '#ffd93d', 0.50));
+
+  /* ===================== ПРАВАЯ (пирамидальная) ===================== */
+  const K_R = PR.S.clone().lerp(PR.B, st.tK);
+  const L_R = PR.S.clone().lerp(PR.C, st.tC);
+
+  // Палатка (заливка бледная)
+  g.add(polyhedron([[PR.A, PR.B, PR.C, PR.D]], 0xffa94d, 0.10));
+  g.add(triangle3D(PR.A, PR.B, K_R, 0xffa94d, 0.22));
+  g.add(polyhedron([[PR.B, K_R, L_R, PR.C]], 0xffa94d, 0.22));
+  g.add(triangle3D(PR.C, PR.D, L_R, 0xffa94d, 0.22));
+  g.add(polyhedron([[K_R, L_R, PR.D, PR.A]], 0xffa94d, 0.22));
+
+  // Рёбра палатки
+  g.add(fatLine(PR.A, PR.B, 0xff6b6b, 0.022));
+  g.add(fatLine(PR.B, PR.C, 0xff6b6b, 0.022));
+  g.add(fatLine(PR.C, PR.D, 0xff6b6b, 0.022));
+  g.add(fatLine(PR.D, PR.A, 0xff6b6b, 0.022));
+  g.add(fatLine(K_R, L_R, 0xffd93d, 0.028));
+  g.add(fatLine(PR.A, K_R, 0xffd93d, 0.022));
+  g.add(fatLine(PR.B, K_R, 0xffd93d, 0.022));
+  g.add(fatLine(PR.C, L_R, 0xffd93d, 0.022));
+  g.add(fatLine(PR.D, L_R, 0xffd93d, 0.022));
+
+  // Ищем M = KL ∩ BC (в плоскости y=0)
+  const dKL = new THREE.Vector3().subVectors(L_R, K_R);
+  let M = null;
+  if (Math.abs(dKL.y) > 1e-3){
+    const sM = -K_R.y / dKL.y;
+    if (sM > 0){ // продолжаем от K к L (M «за» L, если sM>1) или за K (sM<0)
+      M = K_R.clone().add(dKL.clone().multiplyScalar(sM));
+    }
+  }
+  if (M){
+    // Продолжения KL и BC до M — пунктиром
+    const farKL = (K_R.distanceTo(M) > L_R.distanceTo(M)) ? K_R : L_R;
+    g.add(dashedThickLine(farKL, M, 0xffd93d, 0.011, 0.10, 0.06));
+    const farBC = (PR.B.distanceTo(M) > PR.C.distanceTo(M)) ? PR.B : PR.C;
+    g.add(dashedThickLine(farBC, M, 0xff6b6b, 0.011, 0.10, 0.06));
+
+    // След MD на нижней грани — пунктиром
+    g.add(dashedThickLine(M, PR.D, 0x9fc3e8, 0.011, 0.10, 0.06));
+  }
+
+  // Сечение через три точки K, L, D
+  g.add(triangle3D(K_R, L_R, PR.D, 0xff3d7f, 0.30));
+  g.add(fatLine(K_R, PR.D, 0xff3d7f, 0.020));
+  g.add(fatLine(L_R, PR.D, 0xff3d7f, 0.020));
+
+  // «Большая» пирамида M–KCD (с выносом)
+  if (M){
+    // Контур большой пирамиды: M-KCD
+    const BIG = 0x3ddc97;
+    g.add(triangle3D(M, K_R, PR.C, BIG, 0.14));
+    g.add(triangle3D(M, PR.C, PR.D, BIG, 0.14));
+    g.add(triangle3D(M, PR.D, K_R, BIG, 0.14));
+    g.add(triangle3D(K_R, PR.C, PR.D, BIG, 0.14));
+    // рёбра
+    g.add(fatLine(M, K_R, BIG, 0.016));
+    g.add(fatLine(M, PR.C, BIG, 0.016));
+    g.add(fatLine(M, PR.D, BIG, 0.016));
+
+    // «Малая» — то, что остаётся убрать снаружи палатки, вокруг вершины B
+    const SMALL = 0xff3d7f;
+    g.add(triangle3D(M, K_R, PR.B, SMALL, 0.14));
+    g.add(triangle3D(M, PR.B, PR.C, SMALL, 0.14));
+    g.add(fatLine(M, PR.B, SMALL, 0.014));
+
+    // Метки
+    g.add(point(M, 0x3ddc97, 0.10));
+    g.add(label(M.clone().add(V(0.10, 0.14, 0)), 'M', '#3ddc97', 0.60));
+
+    // Выноски-подписи у пирамид
+    const bigMid = M.clone().add(K_R).add(PR.C).add(PR.D).multiplyScalar(0.25);
+    const smallMid = M.clone().add(K_R).add(PR.B).add(PR.C).multiplyScalar(0.25);
+    g.add(labelBig(bigMid.clone().add(V(0, 0.55, 0)), 'БОЛЬШАЯ  M–KCD', '#3ddc97', 0.46));
+    g.add(labelBig(smallMid.clone().add(V(0, -0.55, 0)), 'МАЛАЯ  M–KBC (вычитаем)', '#ff3d7f', 0.42));
+  }
+
+  g.add(point(K_R, 0xffd93d, 0.09));
+  g.add(point(L_R, 0xffd93d, 0.09));
+  g.add(label(K_R.clone().add(V(-0.12, 0.10, 0.06)), 'K', '#ffd93d', 0.50));
+  g.add(label(L_R.clone().add(V( 0.12, 0.10, 0.06)), 'L', '#ffd93d', 0.50));
+  g.add(label(PR.A.clone().add(V(-0.18,-0.10, 0.12)), 'A', '#6ba8ff', 0.46));
+  g.add(label(PR.B.clone().add(V( 0.14,-0.10, 0.12)), 'B', '#6ba8ff', 0.46));
+  g.add(label(PR.C.clone().add(V( 0.16,-0.10,-0.10)), 'C', '#6ba8ff', 0.46));
+  g.add(label(PR.D.clone().add(V(-0.18,-0.10,-0.10)), 'D', '#6ba8ff', 0.46));
+  g.add(label(PR.S.clone().add(V(0, 0.20, 0)), 'S', '#6ba8ff', 0.46));
+  g.add(labelBig(V(3.0, 2.85, 0), 'ПИРАМИДАЛЬНАЯ   K L ／ B C', '#ff9a3c', 0.55));
+  g.add(label(V(3.0, -0.65, 0), 'V = V(M–KCD) − V(M–KBC)', '#ffd93d', 0.50));
+
+  /* разделитель */
+  const sep = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([V(0, -1.4, 0), V(0, 3.0, 0)]),
+    new THREE.LineDashedMaterial({color: 0x4a5a72, dashSize: 0.15, gapSize: 0.10}));
+  sep.computeLineDistances();
+  g.add(sep);
+
+  setCaption(
+    '<b>Объём палатки</b> — двумя способами: <span style="color:#3ddc97">сложение</span> ' +
+    '(призмовидная, KL ∥ BC) и <span style="color:#ff9a3c">вычитание</span> ' +
+    '(пирамидальная, KL ／ BC).',
+    '<span class="lead">Слева — призмовидная (KL ∥ BC)</span>' +
+    'Разбиваем палатку на <b style="color:#ffa94d">пирамиду K–ABCD</b> (вершина K, ' +
+    'основание — вся нижняя грань ABCD) и <b style="color:#3ddc97">пирамиду K–LCD</b> ' +
+    '(та же вершина K, основание — треугольник LCD на боковой грани SCD; L — вторая точка ребра SC).<br>' +
+    '<span class="formula">V = V(K–ABCD) + V(K–LCD)</span><br>' +
+    '<span class="lead">Справа — пирамидальная (KL ／ BC)</span>' +
+    'Продлеваем KL до пересечения с BC в точке <b>M</b>. В M сходятся сразу <b>три плоскости</b>: ' +
+    'плоскость сечения (через K, L, D), боковая грань SBC и плоскость основания ABCD — ' +
+    'потому что KL ∩ BC = M, а обе прямые лежат каждая в двух из этих трёх плоскостей.<br>' +
+    'Через M и D проводим <b>след MD</b> на нижней грани (пунктир). Сечение — треугольник <b>KLD</b>.<br>' +
+    'Строим <b style="color:#3ddc97">большую пирамиду M–KCD</b> (она содержит палатку и лишний кусок). ' +
+    'Лишний кусок — <b style="color:#ff3d7f">малая пирамида M–KBC</b>. Её и вычитаем:<br>' +
+    '<span class="formula">V = V(M–KCD) − V(M–KBC)</span><br>' +
+    '<i style="color:#8fa3bf">Перетаскивай шары: слева один «ползунок» двигает K и L вместе; ' +
+    'справа K и L независимо — так меняется форма палатки.</i>'
+  );
+}
+sceneHackTent.initState = () => ({
+  tL: 0.55,   // призмовидная: K и L на одной высоте
+  tK: 0.72,   // пирамидальная: K
+  tC: 0.42    // пирамидальная: L
+});
+sceneHackTent.handles = () => {
+  const st = interactState['hackTent'];
+  const OFF_L = V(-3.0, 0, 0);
+  const OFF_R = V( 3.0, 0, 0);
+  const PL = tentPyramid(OFF_L);
+  const PR = tentPyramid(OFF_R);
+  const K_L = PL.S.clone().lerp(PL.B, st.tL);
+  const L_L = PL.S.clone().lerp(PL.C, st.tL);
+  const K_R = PR.S.clone().lerp(PR.B, st.tK);
+  const L_R = PR.S.clone().lerp(PR.C, st.tC);
+  return [
+    { name:'tL',  pos: K_L, color: 0x3ddc97 },
+    { name:'tL2', pos: L_L, color: 0x3ddc97 },
+    { name:'tK',  pos: K_R, color: 0xffd93d },
+    { name:'tC',  pos: L_R, color: 0xff9a3c }
+  ];
+};
+sceneHackTent.restrict = (st, name) => {
+  const OFF_L = V(-3.0, 0, 0);
+  const OFF_R = V( 3.0, 0, 0);
+  const PL = tentPyramid(OFF_L);
+  const PR = tentPyramid(OFF_R);
+  if (name === 'tL' || name === 'tL2'){
+    // обе точки двигаются в унисон — параметр tL
+    const p = (name === 'tL') ? st.tL : st.tL2;
+    // восстановим параметр из позиции
+    const S = (name === 'tL') ? PL.S : PL.S;
+    const E = (name === 'tL') ? PL.B : PL.C;
+    let t = tOnEdge(p, S, E);
+    t = Math.max(0.18, Math.min(0.82, t));
+    st.tL = t;
+    st.tL2 = t;
+  } else if (name === 'tK'){
+    clampToEdge(st, 'tK', PR.S, PR.B, 0.18, 0.82);
+    // перевести точку в параметр
+    st.tK = tOnEdge(st.tK, PR.S, PR.B);
+  } else if (name === 'tC'){
+    clampToEdge(st, 'tC', PR.S, PR.C, 0.18, 0.82);
+    st.tC = tOnEdge(st.tC, PR.S, PR.C);
+  }
+};
+
+/* ============================================================
+   РЕГИСТРАЦИЯ
+   ============================================================ */
+const SCENES = {
+  hackDist: {build: sceneHackDist, cam:[5.4,4.4,6.4], tgt:[0,0.7,0],
+    interactive:true, initState: sceneHackDist.initState,
+    handles: sceneHackDist.handles, restrict: sceneHackDist.restrict},
+  hackAngleProj: {build: sceneHackAngleProj, cam:[5.0,3.8,6.2], tgt:[0,0.3,0.3],
+    interactive:true, initState: sceneHackAngleProj.initState,
+    handles: sceneHackAngleProj.handles, restrict: sceneHackAngleProj.restrict},
+  hackAngleLine: {build: sceneHackAngleLine, cam:[5.0,4.2,6.2], tgt:[0,0.7,0.2],
+    interactive:true, initState: sceneHackAngleLine.initState,
+    handles: sceneHackAngleLine.handles, restrict: sceneHackAngleLine.restrict},
+  hackAngleTTT: {build: sceneHackAngleTTT, cam:[4.8,3.8,6.0], tgt:[0,0.5,0.3],
+    interactive:true, initState: sceneHackAngleTTT.initState,
+    handles: sceneHackAngleTTT.handles, restrict: sceneHackAngleTTT.restrict},
+  hackVolRatio: {build: sceneHackVolRatio, cam:[5.0,4.4,6.2], tgt:[0,1.0,0],
+    interactive:true, initState: sceneHackVolRatio.initState,
+    handles: sceneHackVolRatio.handles, restrict: sceneHackVolRatio.restrict},
+  hackTent: {build: sceneHackTent, cam:[0,7.0,12.0], tgt:[0,0.8,0],
+    interactive:true, initState: sceneHackTent.initState,
+    handles: sceneHackTent.handles, restrict: sceneHackTent.restrict},
+};
+
+/* ============================================================
+   ПОКАЗ
+   ============================================================ */
+function showSingle(id){
+  const s = SCENES[id];
+  if (!s){ console.warn('SCENES[' + id + '] не найдено'); return; }
+  currentId = id;
+  disposeHandles();
+  clearGroup(g);
+
+  if (s.interactive && !interactState[id]) interactState[id] = s.initState();
+
+  try { s.build(); }
+  catch(e){
+    console.error('scene error:', id, e);
+    captionEl.innerHTML = '<b style="color:#ff6b6b">Ошибка:</b> ' + e.message;
+    return;
+  }
+
+  camera.position.set(...s.cam);
+  controls.target.set(...s.tgt);
+  camera.aspect = singleEl.clientWidth/singleEl.clientHeight;
+  camera.updateProjectionMatrix();
+  controls.update();
+  setupHandles(id);
+  renderer.render(scene, camera);
+}
+
+document.querySelectorAll('#menu button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#menu button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    showSingle(btn.dataset.id);
+  });
+});
+
+addEventListener('resize', ()=>{
+  const w = singleEl.clientWidth, h = singleEl.clientHeight;
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+
+function loop(){
+  requestAnimationFrame(loop);
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+showSingle('hackDist');
+loop();
+</script>
+</body>
+</html>

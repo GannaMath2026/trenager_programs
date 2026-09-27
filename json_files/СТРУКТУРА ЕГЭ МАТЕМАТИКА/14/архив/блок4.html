@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Основные теоремы и признаки — 3D</title>
+<style>
+  :root{
+    --bg:#0f1520; --line:#2a3a52;
+    --txt:#e6edf7; --muted:#8fa3bf; --accent:#4ecdc4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;overflow:hidden;}
+  body{
+    background:radial-gradient(1200px 800px at 75% 15%, #1c2740 0%, #0b1018 60%, #070a10 100%);
+    color:var(--txt);font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  #app{position:fixed;inset:0;display:flex;}
+
+  .menu{
+    width:380px;height:100%;
+    background:rgba(12,17,26,.92);
+    border-right:1px solid rgba(255,255,255,.08);
+    padding:18px 14px;overflow-y:auto;
+    backdrop-filter:blur(10px);
+  }
+  .menu h2{
+    font-size:13px;text-transform:uppercase;letter-spacing:1px;
+    color:#8fa3bf;margin:0 0 10px 6px;font-weight:700;
+  }
+  .menu h2.section{margin-top:18px;color:#4ecdc4;}
+  .menu button{
+    width:100%;
+    background:rgba(18,24,34,.85);
+    border:1px solid rgba(255,255,255,.10);
+    color:#cfd9e8;font:inherit;font-size:13px;font-weight:600;
+    padding:10px 14px;border-radius:10px;text-align:left;cursor:pointer;
+    transition:.15s;margin-bottom:6px;
+  }
+  .menu button:hover{color:#fff;border-color:rgba(78,205,196,.5);}
+  .menu button.active{
+    background:rgba(78,205,196,.18);color:#fff;
+    border-color:rgba(78,205,196,.65);
+    box-shadow:0 0 0 1px rgba(78,205,196,.4);
+  }
+
+  .view{position:relative;flex:1;min-width:0;}
+  .view canvas{display:block;}
+
+  .caption{
+    position:absolute;top:18px;left:50%;transform:translateX(-50%);
+    max-width:min(820px, 92%);
+    background:rgba(18,24,34,.88);backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:14px;padding:12px 20px;
+    font-size:13.5px;line-height:1.5;color:#cfd9e8;
+    box-shadow:0 8px 22px rgba(0,0,0,.45);
+    text-align:center;
+  }
+  .caption b{color:#4ecdc4;}
+  .caption .label{
+    display:inline-block;font-size:11px;letter-spacing:1px;
+    color:#8fa3bf;text-transform:uppercase;margin-bottom:4px;
+  }
+
+  .hint{
+    position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+    font-size:11.5px;color:#5f6d82;letter-spacing:.3px;pointer-events:none;
+    background:rgba(15,21,32,.6);padding:6px 12px;border-radius:8px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <aside class="menu" id="menu">
+    <h2 class="section">2. Основные теоремы и признаки</h2>
+    <button data-id="t1" class="active">Признак параллельности плоскостей</button>
+    <button data-id="t2">Свойство параллельных плоскостей</button>
+  </aside>
+
+  <div class="view" id="view">
+    <div class="caption" id="caption"></div>
+    <div class="hint">левая кнопка — вращать · колесо — зум · ПКМ — панорама</div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const viewEl = document.getElementById('view');
+const captionEl = document.getElementById('caption');
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(viewEl.clientWidth, viewEl.clientHeight);
+viewEl.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(42, viewEl.clientWidth/viewEl.clientHeight, 0.1, 200);
+camera.position.set(3.8, 3.2, 4.8);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 1;
+controls.maxDistance = 30;
+controls.target.set(0, 0.3, 0);
+controls.minPolarAngle = Math.PI * 0.05;
+controls.maxPolarAngle = Math.PI * 0.49;
+
+scene.add(new THREE.HemisphereLight(0xdce8ff, 0x1a2233, 1.6));
+const key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(6,9,7); scene.add(key);
+const rim = new THREE.DirectionalLight(0x7fa8ff, 1.0); rim.position.set(-7,-3,-6); scene.add(rim);
+
+const g = new THREE.Group(); scene.add(g);
+
+/* ============================================================
+   Хелперы
+============================================================ */
+const V = (x,y,z)=> new THREE.Vector3(x,y,z);
+
+function fatLine(a, b, color, r=0.028){
+  const grp = new THREE.Group();
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length();
+  if (len < 1e-6) return grp;
+  const mid = a.clone().add(b).multiplyScalar(0.5);
+  const geo = new THREE.CylinderGeometry(r, r, len, 12, 1, false);
+  const mat = new THREE.MeshStandardMaterial({
+    color, roughness:0.35, metalness:0.1, emissive: color, emissiveIntensity: 0.15
+  });
+  const cyl = new THREE.Mesh(geo, mat);
+  cyl.position.copy(mid);
+  cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+  grp.add(cyl);
+  [a, b].forEach(p=>{
+    const sp = new THREE.Mesh(new THREE.SphereGeometry(r*1.05, 10, 8), mat);
+    sp.position.copy(p);
+    grp.add(sp);
+  });
+  return grp;
+}
+
+function point(p, color=0xff6b6b, r=0.08){
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12),
+                           new THREE.MeshBasicMaterial({color}));
+  m.position.copy(p);
+  return m;
+}
+
+function label(p, text, color='#e6edf7', size=0.55){
+  const c = document.createElement('canvas');
+  const ctx = c.getContext('2d');
+  c.width = 512; c.height = 128;
+  ctx.fillStyle = 'rgba(0,0,0,0)';
+  ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle = color;
+  ctx.font = 'bold 72px ui-sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, 256, 64);
+  const tex = new THREE.CanvasTexture(c);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false}));
+  spr.scale.set(size, size*0.25, 1);
+  spr.position.copy(p);
+  return spr;
+}
+
+function planePatch(p1, p2, p3, p4, color, opacity=0.18){
+  const verts = [p1, p2, p3, p4];
+  const geo = new THREE.BufferGeometry().setFromPoints(verts);
+  geo.setIndex([0,1,2, 0,2,3]);
+  geo.computeVertexNormals();
+  const mat = new THREE.MeshBasicMaterial({
+    color, transparent:true, opacity, side:THREE.DoubleSide, depthWrite:false
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  const loop = new THREE.LineLoop(
+    new THREE.BufferGeometry().setFromPoints(verts),
+    new THREE.LineBasicMaterial({color, linewidth:1.2, transparent:true, opacity:0.75})
+  );
+  const wrap = new THREE.Group();
+  wrap.add(mesh); wrap.add(loop);
+  return wrap;
+}
+
+function planeBig(c, u, v, s, color, opacity=0.12){
+  const p1 = c.clone().add(u.clone().multiplyScalar(s)).add(v.clone().multiplyScalar(s));
+  const p2 = c.clone().add(u.clone().multiplyScalar(-s)).add(v.clone().multiplyScalar(s));
+  const p3 = c.clone().add(u.clone().multiplyScalar(-s)).add(v.clone().multiplyScalar(-s));
+  const p4 = c.clone().add(u.clone().multiplyScalar(s)).add(v.clone().multiplyScalar(-s));
+  return planePatch(p1, p2, p3, p4, color, opacity);
+}
+
+function clearGroup(grp){
+  while (grp.children.length){
+    const c = grp.children.pop();
+    if (c.geometry) c.geometry.dispose();
+    if (c.material){
+      if (Array.isArray(c.material)) c.material.forEach(m=>m.dispose());
+      else c.material.dispose();
+    }
+    if (c.children && c.children.length) clearGroup(c);
+  }
+}
+
+/* ============================================================
+   Т1. Признак параллельности плоскостей.
+============================================================ */
+function sceneT1(){
+  const u1 = V(1,0,0), v1 = V(0,0,1);
+  g.add(planeBig(V(0, 0.8, 0), u1, v1, 1.9, 0x4ecdc4, 0.14));
+  g.add(planeBig(V(0,-0.8, 0), u1, v1, 1.9, 0x6ba8ff, 0.14));
+
+  g.add(fatLine(V(-1.5, 0.8, 0), V(1.5, 0.8, 0), 0xff6b6b, 0.028));
+  g.add(fatLine(V(0, 0.8, -1.5), V(0, 0.8, 1.5), 0xffd93d, 0.028));
+
+  g.add(fatLine(V(-1.5, -0.8, 0), V(1.5, -0.8, 0), 0xff6b6b, 0.028));
+  g.add(fatLine(V(0, -0.8, -1.5), V(0, -0.8, 1.5), 0xffd93d, 0.028));
+
+  g.add(point(V(0, 0.8, 0), 0xffffff, 0.08));
+  g.add(point(V(0, -0.8, 0), 0xffffff, 0.08));
+
+  g.add(label(V(1.5, 0.95, 0), 'a', '#ff6b6b'));
+  g.add(label(V(0, 0.95, 1.5), 'b', '#ffd93d'));
+  g.add(label(V(1.5, -0.65, 0), "a'", '#ff6b6b'));
+  g.add(label(V(0, -0.65, 1.5), "b'", '#ffd93d'));
+  g.add(label(V(-1.6, 0.9, -1.6), 'α', '#4ecdc4'));
+  g.add(label(V(-1.6, -0.7, -1.6), 'β', '#6ba8ff'));
+}
+
+/* ============================================================
+   Т2. Свойство параллельных плоскостей.
+   α ∥ β. γ — ВЕРТИКАЛЬНАЯ секущая плоскость (x = 0).
+   Линии пересечения: a = γ ∩ α, b = γ ∩ β — обе параллельны Z.
+============================================================ */
+function sceneT2(){
+  // α: горизонтальная y = 0.8
+  const u1 = V(1,0,0), v1 = V(0,0,1);
+  g.add(planeBig(V(0, 0.8, 0), u1, v1, 1.9, 0x4ecdc4, 0.14));
+  // β: горизонтальная y = -0.8
+  g.add(planeBig(V(0,-0.8, 0), u1, v1, 1.9, 0x6ba8ff, 0.14));
+
+  // γ: вертикальная x = 0, простирается по Y и Z
+  const u2 = V(0,1,0), v2 = V(0,0,1);
+  g.add(planeBig(V(0, 0, 0), u2, v2, 1.9, 0x3ddc97, 0.16));
+
+  // γ ∩ α: y = 0.8, x = 0, z — свободно
+  const a1 = V(0, 0.8, -1.9);
+  const a2 = V(0, 0.8,  1.9);
+  g.add(fatLine(a1, a2, 0xff6b6b, 0.032));
+
+  // γ ∩ β: y = -0.8, x = 0, z — свободно
+  const b1 = V(0, -0.8, -1.9);
+  const b2 = V(0, -0.8,  1.9);
+  g.add(fatLine(b1, b2, 0xffd93d, 0.032));
+
+  g.add(label(a1.clone().add(V(-0.2,0.15,0)), 'a', '#ff6b6b'));
+  g.add(label(b1.clone().add(V(-0.2,0.15,0)), 'b', '#ffd93d'));
+  g.add(label(V(-1.6, 0.9, -1.6), 'α', '#4ecdc4'));
+  g.add(label(V(-1.6, -0.7, -1.6), 'β', '#6ba8ff'));
+  g.add(label(V(1.6, 0.1, 1.6), 'γ', '#3ddc97'));
+}
+
+/* ============================================================
+   Управление
+============================================================ */
+const SCENES = {
+  t1: {
+    build: sceneT1,
+    cap: '<div class="label">Признак параллельности плоскостей</div>Если две пересекающиеся прямые одной плоскости соответственно параллельны двум пересекающимся прямым другой плоскости, то плоскости параллельны.',
+    cam:[5.0,3.8,6.0], tgt:[0,0,0]
+  },
+  t2: {
+    build: sceneT2,
+    cap: '<div class="label">Свойство параллельных плоскостей</div>Если две параллельные плоскости пересечены третьей, то линии их пересечения параллельны.',
+    cam:[5.0, 3.8, 6.0], tgt:[0, 0, 0]
+  },
+};
+
+function show(id){
+  clearGroup(g);
+  const s = SCENES[id];
+  if (!s) return;
+  s.build();
+  captionEl.innerHTML = s.cap;
+  camera.position.set(...s.cam);
+  controls.target.set(...s.tgt);
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+document.querySelectorAll('#menu button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#menu button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    show(btn.dataset.id);
+  });
+});
+
+addEventListener('resize', ()=>{
+  const w = viewEl.clientWidth, h = viewEl.clientHeight;
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+
+function loop(){
+  requestAnimationFrame(loop);
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+show('t1');
+loop();
+</script>
+</body>
+</html>

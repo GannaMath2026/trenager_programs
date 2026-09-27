@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Памятка: графики функций — коэффициенты</title>
+
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  chtml: { scale: 1.05 }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+<style>
+  :root{
+    --bg:#f7f9fc; --txt:#1f2937; --muted:#64748b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;padding:32px 20px 60px;
+    background:var(--bg);color:var(--txt);
+    font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+    line-height:1.55;
+  }
+  h1{
+    max-width:1150px;margin:0 auto 24px;
+    font-size:26px;letter-spacing:.2px;text-align:center;
+  }
+  h1 small{display:block;font-size:13px;color:var(--muted);font-weight:400;margin-top:6px;}
+  .grid{
+    max-width:1150px;margin:0 auto;
+    display:grid;gap:18px;
+    grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  }
+  .card{
+    border-radius:16px;padding:16px 18px 18px;
+    box-shadow:0 6px 18px rgba(30,41,59,.07);
+    border:1px solid rgba(0,0,0,.04);
+  }
+  .card h2{
+    margin:0 0 10px;font-size:16px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .card h2 .n{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:50%;
+    background:rgba(0,0,0,.08);font-size:12px;font-weight:700;
+  }
+  .card p{margin:6px 0;}
+  .card .row{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;}
+  .card .plot{flex:0 0 160px;}
+  .card .info{flex:1 1 170px;min-width:170px;}
+  .card svg{display:block;background:#ffffffcc;border-radius:10px;}
+  .fact{
+    margin-top:10px;padding:8px 10px;border-radius:10px;
+    background:rgba(255,255,255,.55);
+    border:1px dashed rgba(0,0,0,.12);
+    font-size:13px;
+  }
+  .fact b{color:#111827;}
+
+  .c1 {background:#e8f0fb;} .c2 {background:#eaf7ef;} .c3 {background:#fdf1e3;}
+  .c4 {background:#fbe9ee;} .c5 {background:#f0ebfa;} .c6 {background:#e6f6f7;}
+  .c7 {background:#fdf6e3;} .c8 {background:#eaeafb;} .c9 {background:#f5eee6;}
+  .c10{background:#eaf3e9;} .c11{background:#fdeaf1;} .c12{background:#e8f2ff;}
+  .c13{background:#fff2e6;} .c14{background:#e9f5ff;} .c15{background:#f2e9fb;}
+  .c16{background:#e8f7ef;}
+
+  .wide{grid-column:1 / -1;}
+  .wide .row{gap:16px;}
+  .wide .plot{flex:1 1 200px;min-width:200px;}
+  .wide .plot svg{margin:0 auto;}
+  .plot-cap{font-size:12px;color:#64748b;text-align:center;margin-top:4px;}
+</style>
+</head>
+<body>
+
+<h1>Памятка: коэффициенты по графику
+  <small>«через точки» + «глазами» · наглядно, с пунктирами и точками пересечения</small>
+</h1>
+
+<div class="grid">
+
+<!-- 1. ЛИНЕЙНАЯ -->
+<div class="card c1">
+  <h2><span class="n">1</span> Линейная \(y=kx+b\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <!-- сетка -->
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <!-- оси -->
+        <line x1="25" y1="115" x2="160" y2="115" stroke="#94a3b8"/>
+        <line x1="25" y1="15" x2="25" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="118" font-size="10" fill="#94a3b8">x</text>
+        <text x="18" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- прямая через (25;95) и (145;35) -->
+        <line x1="25" y1="95" x2="145" y2="35" stroke="#2563eb" stroke-width="2.4"/>
+
+        <!-- b — пересечение с осью y -->
+        <circle cx="25" cy="95" r="4" fill="#dc2626"/>
+        <text x="29" y="93" font-size="11" fill="#dc2626" font-weight="700">b</text>
+
+        <!-- Δx пунктиром -->
+        <line x1="85" y1="65" x2="130" y2="65" stroke="#0f766e" stroke-dasharray="4 3"/>
+        <text x="105" y="61" font-size="10" fill="#0f766e" font-weight="700">Δx</text>
+        <!-- Δy пунктиром -->
+        <line x1="130" y1="65" x2="130" y2="42" stroke="#0f766e" stroke-dasharray="4 3"/>
+        <text x="133" y="57" font-size="10" fill="#0f766e" font-weight="700">Δy</text>
+
+        <!-- две точки -->
+        <circle cx="85" cy="65" r="3.5" fill="#111827"/>
+        <circle cx="130" cy="42" r="3.5" fill="#111827"/>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> две точки → система.</p>
+      <p><b>Глазами:</b> \(b\) — пересечение с осью \(y\); \(k=\dfrac{\Delta y}{\Delta x}\).</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> прямая растёт ⇒ \(k>0\), падает ⇒ \(k<0\).</div>
+</div>
+
+<!-- 2. ПАРАБОЛА -->
+<div class="card c2">
+  <h2><span class="n">2</span> Парабола \(y=ax^2+bx+c\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="105" x2="160" y2="105" stroke="#94a3b8"/>
+        <line x1="25" y1="15" x2="25" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="108" font-size="10" fill="#94a3b8">x</text>
+        <text x="18" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- ось симметрии -->
+        <line x1="80" y1="15" x2="80" y2="115" stroke="#94a3b8" stroke-dasharray="3 3"/>
+        <text x="82" y="26" font-size="9" fill="#94a3b8">x=x_в</text>
+
+        <!-- парабола y = a x^2 + ... , вершина (80;90) -->
+        <path d="M35 15 Q80 140 125 15" fill="none" stroke="#059669" stroke-width="2.4"/>
+
+        <!-- c — пересечение с осью y (x=25) -->
+        <circle cx="25" cy="65" r="4" fill="#dc2626"/>
+        <text x="29" y="62" font-size="11" fill="#dc2626" font-weight="700">c</text>
+
+        <!-- вершина -->
+        <circle cx="80" cy="90" r="4" fill="#2563eb"/>
+        <text x="84" y="103" font-size="10" fill="#2563eb" font-weight="700">вершина</text>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> три точки → система.</p>
+      <p><b>Глазами:</b> \(c\) — пересечение с \(y\); \(a\) — сравнить с \(y=x^2\); \(b\) через \(x_в=-\dfrac{b}{2a}\).</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> ветви вверх ⇒ \(a>0\), вниз ⇒ \(a<0\).</div>
+</div>
+
+<!-- 3. ГИПЕРБОЛА -->
+<div class="card c3">
+  <h2><span class="n">3</span> Гипербола \(y=\dfrac{k}{x}\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="65" x2="160" y2="65" stroke="#94a3b8"/>
+        <line x1="90" y1="15" x2="90" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="68" font-size="10" fill="#94a3b8">x</text>
+        <text x="83" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- гипербола k>0 -->
+        <path d="M95 25 Q110 48 150 65" fill="none" stroke="#d97706" stroke-width="2.4"/>
+        <path d="M85 105 Q70 82 30 65" fill="none" stroke="#d97706" stroke-width="2.4"/>
+
+        <!-- точка (120;40) -->
+        <circle cx="120" cy="40" r="4" fill="#dc2626"/>
+        <line x1="120" y1="40" x2="120" y2="65" stroke="#94a3b8" stroke-dasharray="2 2"/>
+        <line x1="120" y1="40" x2="90" y2="40" stroke="#94a3b8" stroke-dasharray="2 2"/>
+        <text x="124" y="38" font-size="10" fill="#dc2626" font-weight="700">(x₀;y₀)</text>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> \(k=x_0\!\cdot\!y_0\).</p>
+      <p><b>Глазами:</b> берём удобную точку и перемножаем координаты.</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> I и III четверти ⇒ \(k>0\); II и IV ⇒ \(k<0\).</div>
+</div>
+
+<!-- 4.1 -->
+<div class="card c4">
+  <h2><span class="n">4.1</span> \(y=\dfrac{k}{x}+b\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="85" x2="160" y2="85" stroke="#94a3b8"/>
+        <line x1="90" y1="15" x2="90" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="88" font-size="10" fill="#94a3b8">x</text>
+        <text x="83" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- горизонтальная асимптота y=b -->
+        <line x1="25" y1="45" x2="160" y2="45" stroke="#dc2626" stroke-dasharray="5 4"/>
+        <text x="135" y="42" font-size="10" fill="#dc2626" font-weight="700">y=b</text>
+
+        <!-- ветви -->
+        <path d="M95 30 Q110 40 150 45" fill="none" stroke="#db2777" stroke-width="2.4"/>
+        <path d="M85 105 Q70 90 30 85" fill="none" stroke="#db2777" stroke-width="2.4"/>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> \(b\) по асимптоте, потом \(k\).</p>
+      <p><b>Глазами:</b> \(b\) — горизонтальная асимптота; \(k=x_0(y_0-b)\).</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> асимптота \(y=b\) — уровень, к которому «липнет» график.</div>
+</div>
+
+<!-- 4.2 -->
+<div class="card c5">
+  <h2><span class="n">4.2</span> \(y=\dfrac{k}{x+a}\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="65" x2="160" y2="65" stroke="#94a3b8"/>
+        <line x1="90" y1="15" x2="90" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="68" font-size="10" fill="#94a3b8">x</text>
+        <text x="83" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- вертикальная асимптота x=-a -->
+        <line x1="60" y1="15" x2="60" y2="115" stroke="#dc2626" stroke-dasharray="5 4"/>
+        <text x="62" y="26" font-size="10" fill="#dc2626" font-weight="700">x=-a</text>
+
+        <!-- ветви, сдвинутые влево -->
+        <path d="M66 25 Q80 48 120 65" fill="none" stroke="#7c3aed" stroke-width="2.4"/>
+        <path d="M54 105 Q40 82 0 65" fill="none" stroke="#7c3aed" stroke-width="2.4"/>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> \(a\) по асимптоте, потом \(k\).</p>
+      <p><b>Глазами:</b> \(a\) — вертикальная асимптота \(x=-a\); \(k=(x_0+a)y_0\).</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> сдвиг влево ⇒ \(a>0\), вправо ⇒ \(a<0\).</div>
+</div>
+
+<!-- 4.3 -->
+<div class="card c6">
+  <h2><span class="n">4.3</span> \(y=\dfrac{k}{x+a}+b\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="65" x2="160" y2="65" stroke="#94a3b8"/>
+        <line x1="90" y1="15" x2="90" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="68" font-size="10" fill="#94a3b8">x</text>
+        <text x="83" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- вертикальная асимптота -->
+        <line x1="60" y1="15" x2="60" y2="115" stroke="#dc2626" stroke-dasharray="5 4"/>
+        <text x="62" y="26" font-size="10" fill="#dc2626" font-weight="700">x=-a</text>
+        <!-- горизонтальная асимптота -->
+        <line x1="25" y1="85" x2="160" y2="85" stroke="#dc2626" stroke-dasharray="5 4"/>
+        <text x="135" y="82" font-size="10" fill="#dc2626" font-weight="700">y=b</text>
+
+        <!-- ветви в новой системе -->
+        <path d="M66 90 Q80 82 120 85" fill="none" stroke="#0d9488" stroke-width="2.4"/>
+        <path d="M54 40 Q40 48 0 60" fill="none" stroke="#0d9488" stroke-width="2.4"/>
+
+        <!-- крестик центра новой системы -->
+        <circle cx="60" cy="85" r="3" fill="#111827"/>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> \(a,b\) по асимптотам, потом \(k\).</p>
+      <p><b>Глазами:</b> новая система \(X=x+a,\ Y=y-b\) ⇒ \(k=X_0Y_0\).</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> сначала «переехали» в новую систему, потом ищем \(k\).</div>
+</div>
+
+<!-- 5. ЭКСПОНЕНТА -->
+<div class="card c7">
+  <h2><span class="n">5</span> Экспонента \(y=a^x\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="95" x2="160" y2="95" stroke="#94a3b8"/>
+        <line x1="55" y1="15" x2="55" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="98" font-size="10" fill="#94a3b8">x</text>
+        <text x="48" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- экспонента -->
+        <path d="M25 92 Q55 82 90 45 T155 18" fill="none" stroke="#ca8a04" stroke-width="2.4"/>
+
+        <!-- особая точка (0;1) -->
+        <circle cx="55" cy="80" r="4" fill="#dc2626"/>
+        <text x="60" y="78" font-size="10" fill="#dc2626" font-weight="700">(0;1)</text>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> одна точка → \(a^{x_0}=y_0\).</p>
+      <p><b>Глазами:</b> «особая» точка \((0;1)\) — всегда на графике.</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> экспонента всегда проходит через \((0;1)\).</div>
+</div>
+
+<!-- 6.1 -->
+<div class="card c8">
+  <h2><span class="n">6.1</span> \(y=a^x+b\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="95" x2="160" y2="95" stroke="#94a3b8"/>
+        <line x1="55" y1="15" x2="55" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="98" font-size="10" fill="#94a3b8">x</text>
+        <text x="48" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- горизонтальная асимптота y=b -->
+        <line x1="25" y1="55" x2="160" y2="55" stroke="#dc2626" stroke-dasharray="5 4"/>
+        <text x="140" y="52" font-size="10" fill="#dc2626" font-weight="700">y=b</text>
+
+        <path d="M25 52 Q55 45 90 30 T155 12" fill="none" stroke="#4f46e5" stroke-width="2.4"/>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> \(b\) по асимптоте, потом \(a\).</p>
+      <p><b>Глазами:</b> \(a^{x_0}=y_0-b\).</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> асимптота \(y=b\) — сдвиг по вертикали.</div>
+</div>
+
+<!-- 6.2 -->
+<div class="card c9">
+  <h2><span class="n">6.2</span> \(y=a^{x+c}\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="95" x2="160" y2="95" stroke="#94a3b8"/>
+        <line x1="55" y1="15" x2="55" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="98" font-size="10" fill="#94a3b8">x</text>
+        <text x="48" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- старая особая точка (0;1) — бледная -->
+        <circle cx="55" cy="80" r="3" fill="#cbd5e1"/>
+        <text x="58" y="90" font-size="9" fill="#94a3b8">(0;1)</text>
+
+        <!-- пунктир: сдвиг влево на c -->
+        <line x1="55" y1="80" x2="30" y2="80" stroke="#dc2626" stroke-dasharray="4 3"/>
+        <text x="37" y="76" font-size="9" fill="#dc2626" font-weight="700">c</text>
+
+        <!-- новая экспонента -->
+        <path d="M25 90 Q45 80 70 50 T140 25" fill="none" stroke="#b45309" stroke-width="2.4"/>
+
+        <!-- новая особая точка (-c;1) -->
+        <circle cx="30" cy="80" r="4" fill="#dc2626"/>
+        <text x="34" y="93" font-size="9" fill="#dc2626" font-weight="700">(-c;1)</text>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> \(c\) по сдвигу \((0;1)\), потом \(a\).</p>
+      <p><b>Глазами:</b> \((0;1)\) переходит в \((-c;1)\).</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> сдвиг влево/вправо — по «особой» точке.</div>
+</div>
+
+<!-- 6.3 -->
+<div class="card c10">
+  <h2><span class="n">6.3</span> \(y=a^{x+c}+b\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="95" x2="160" y2="95" stroke="#94a3b8"/>
+        <line x1="55" y1="15" x2="55" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="98" font-size="10" fill="#94a3b8">x</text>
+        <text x="48" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- новая асимптота -->
+        <line x1="25" y1="60" x2="160" y2="60" stroke="#dc2626" stroke-dasharray="5 4"/>
+        <text x="140" y="57" font-size="10" fill="#dc2626" font-weight="700">y=b</text>
+
+        <!-- пунктир: сдвиг -->
+        <line x1="55" y1="80" x2="30" y2="80" stroke="#dc2626" stroke-dasharray="4 3"/>
+        <line x1="30" y1="80" x2="30" y2="60" stroke="#dc2626" stroke-dasharray="4 3"/>
+        <text x="37" y="76" font-size="9" fill="#dc2626" font-weight="700">c</text>
+        <text x="33" y="70" font-size="9" fill="#dc2626" font-weight="700">b</text>
+
+        <!-- старая точка (0;1) — бледная -->
+        <circle cx="55" cy="80" r="3" fill="#cbd5e1"/>
+
+        <!-- новая экспонента -->
+        <path d="M25 58 Q45 52 70 40 T140 22" fill="none" stroke="#166534" stroke-width="2.4"/>
+
+        <!-- новая особая точка (-c;1+b) -->
+        <circle cx="30" cy="60" r="4" fill="#dc2626"/>
+        <text x="34" y="58" font-size="9" fill="#dc2626" font-weight="700">(-c;1+b)</text>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> \(b\) по асимптоте, \(c\) по сдвигу, потом \(a\).</p>
+      <p><b>Глазами:</b> \(a^{x_0+c}=y_0-b\).</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> две «ручки» — вертикаль и горизонталь, потом \(a\).</div>
+</div>
+
+<!-- 7. ЛОГАРИФМ -->
+<div class="card c11">
+  <h2><span class="n">7</span> Логарифм \(y=\log_a x\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="65" x2="160" y2="65" stroke="#94a3b8"/>
+        <line x1="55" y1="15" x2="55" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="68" font-size="10" fill="#94a3b8">x</text>
+        <text x="48" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- асимптота x=0 -->
+        <line x1="55" y1="15" x2="55" y2="115" stroke="#dc2626" stroke-dasharray="5 4"/>
+        <text x="57" y="26" font-size="9" fill="#dc2626" font-weight="700">x=0</text>
+
+        <path d="M60 20 Q72 45 155 100" fill="none" stroke="#be185d" stroke-width="2.4"/>
+
+        <circle cx="85" cy="65" r="4" fill="#dc2626"/>
+        <text x="90" y="63" font-size="10" fill="#dc2626" font-weight="700">(1;0)</text>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> одна точка → \(a^{y_0}=x_0\).</p>
+      <p><b>Глазами:</b> «особая» точка \((1;0)\) всегда на графике.</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> логарифм всегда проходит через \((1;0)\).</div>
+</div>
+
+<!-- 8.1 -->
+<div class="card c12">
+  <h2><span class="n">8.1</span> \(y=\log_a x+b\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="75" x2="160" y2="75" stroke="#94a3b8"/>
+        <line x1="55" y1="15" x2="55" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="78" font-size="10" fill="#94a3b8">x</text>
+        <text x="48" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- асимптота -->
+        <line x1="55" y1="15" x2="55" y2="115" stroke="#dc2626" stroke-dasharray="5 4"/>
+
+        <path d="M60 30 Q72 55 155 105" fill="none" stroke="#2563eb" stroke-width="2.4"/>
+
+        <!-- бледная старая точка -->
+        <circle cx="85" cy="75" r="3" fill="#cbd5e1"/>
+
+        <!-- пунктир сдвига вверх -->
+        <line x1="85" y1="75" x2="85" y2="55" stroke="#dc2626" stroke-dasharray="4 3"/>
+        <text x="89" y="66" font-size="9" fill="#dc2626" font-weight="700">b</text>
+
+        <!-- новая точка (1;b) -->
+        <circle cx="85" cy="55" r="4" fill="#dc2626"/>
+        <text x="90" y="52" font-size="10" fill="#dc2626" font-weight="700">(1;b)</text>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> \(b\) — ордината при \(x=1\), потом \(a\).</p>
+      <p><b>Глазами:</b> \(a^{y_0-b}=x_0\).</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> \((1;0)\) переезжает в \((1;b)\).</div>
+</div>
+
+<!-- 8.2 -->
+<div class="card c13">
+  <h2><span class="n">8.2</span> \(y=\log_a(x+c)\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="65" x2="160" y2="65" stroke="#94a3b8"/>
+        <line x1="55" y1="15" x2="55" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="68" font-size="10" fill="#94a3b8">x</text>
+        <text x="48" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- старая асимптота x=0 (бледная) -->
+        <line x1="55" y1="15" x2="55" y2="115" stroke="#cbd5e1" stroke-dasharray="3 3"/>
+
+        <!-- новая асимптота x=-c -->
+        <line x1="30" y1="15" x2="30" y2="115" stroke="#dc2626" stroke-dasharray="5 4"/>
+        <text x="32" y="26" font-size="9" fill="#dc2626" font-weight="700">x=-c</text>
+
+        <!-- пунктир сдвига влево -->
+        <line x1="55" y1="65" x2="30" y2="65" stroke="#dc2626" stroke-dasharray="4 3"/>
+        <text x="38" y="61" font-size="9" fill="#dc2626" font-weight="700">c</text>
+
+        <path d="M35 25 Q50 45 155 95" fill="none" stroke="#7c3aed" stroke-width="2.4"/>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> \(c\) по вертикальной асимптоте \(x=-c\).</p>
+      <p><b>Глазами:</b> \(a^{y_0}=x_0+c\).</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> \((1;0)\) переезжает в \((1-c;0)\).</div>
+</div>
+
+<!-- 8.3 -->
+<div class="card c14">
+  <h2><span class="n">8.3</span> \(y=\log_a(x+c)+b\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="75" x2="160" y2="75" stroke="#94a3b8"/>
+        <line x1="55" y1="15" x2="55" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="78" font-size="10" fill="#94a3b8">x</text>
+        <text x="48" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- старая асимптота -->
+        <line x1="55" y1="15" x2="55" y2="115" stroke="#cbd5e1" stroke-dasharray="3 3"/>
+        <!-- новая асимптота -->
+        <line x1="30" y1="15" x2="30" y2="115" stroke="#dc2626" stroke-dasharray="5 4"/>
+
+        <!-- бледная старая точка (1;0) -->
+        <circle cx="85" cy="75" r="3" fill="#cbd5e1"/>
+
+        <!-- пунктир сдвигов -->
+        <line x1="85" y1="75" x2="30" y2="75" stroke="#dc2626" stroke-dasharray="4 3"/>
+        <line x1="30" y1="75" x2="30" y2="55" stroke="#dc2626" stroke-dasharray="4 3"/>
+        <text x="55" y="71" font-size="9" fill="#dc2626" font-weight="700">c</text>
+        <text x="33" y="66" font-size="9" fill="#dc2626" font-weight="700">b</text>
+
+        <path d="M35 35 Q50 55 155 100" fill="none" stroke="#0e7490" stroke-width="2.4"/>
+
+        <!-- новая точка (1-c;b) -->
+        <circle cx="30" cy="55" r="4" fill="#dc2626"/>
+        <text x="34" y="52" font-size="9" fill="#dc2626" font-weight="700">(1-c;b)</text>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> \(c\) по асимптоте, \(b\) по \((1;b)\), потом \(a\).</p>
+      <p><b>Глазами:</b> \(a^{y_0-b}=x_0+c\).</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> \((1;0)\) переезжает в \((1-c;b)\).</div>
+</div>
+
+<!-- 9. КОРЕНЬ -->
+<div class="card c15">
+  <h2><span class="n">9</span> Корень \(y=b+k\sqrt{x}\)</h2>
+  <div class="row">
+    <div class="plot">
+      <svg viewBox="0 0 170 130" width="170" height="130">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="15" x2="25" y2="115"/><line x1="55" y1="15" x2="55" y2="115"/>
+          <line x1="85" y1="15" x2="85" y2="115"/><line x1="115" y1="15" x2="115" y2="115"/>
+          <line x1="145" y1="15" x2="145" y2="115"/>
+          <line x1="25" y1="35" x2="160" y2="35"/><line x1="25" y1="55" x2="160" y2="55"/>
+          <line x1="25" y1="75" x2="160" y2="75"/><line x1="25" y1="95" x2="160" y2="95"/>
+        </g>
+        <line x1="25" y1="95" x2="160" y2="95" stroke="#94a3b8"/>
+        <line x1="55" y1="15" x2="55" y2="115" stroke="#94a3b8"/>
+        <text x="162" y="98" font-size="10" fill="#94a3b8">x</text>
+        <text x="48" y="20" font-size="10" fill="#94a3b8">y</text>
+
+        <!-- кривая корня -->
+        <path d="M55 75 Q90 50 155 30" fill="none" stroke="#9333ea" stroke-width="2.4"/>
+
+        <!-- точка при x=0: (55;75) -->
+        <circle cx="55" cy="75" r="4" fill="#dc2626"/>
+        <text x="60" y="73" font-size="10" fill="#dc2626" font-weight="700">b</text>
+
+        <!-- вторая точка для k -->
+        <circle cx="115" cy="43" r="4" fill="#111827"/>
+        <line x1="115" y1="43" x2="115" y2="95" stroke="#94a3b8" stroke-dasharray="2 2"/>
+        <line x1="115" y1="43" x2="55" y2="43" stroke="#94a3b8" stroke-dasharray="2 2"/>
+        <text x="120" y="40" font-size="9" fill="#111827">(x₀;y₀)</text>
+      </svg>
+    </div>
+    <div class="info">
+      <p><b>Через точки:</b> \(b\) при \(x=0\), потом \(k\).</p>
+      <p><b>Глазами:</b> \(k=\dfrac{y_0-b}{\sqrt{x_0}}\).</p>
+    </div>
+  </div>
+  <div class="fact"><b>Запомни:</b> при \(x=0\) видим \(b\), остальное — из любой точки.</div>
+</div>
+
+<!-- 10. ТОЧКА ПЕРЕСЕЧЕНИЯ — НА ВСЮ ШИРИНУ -->
+<div class="card c16 wide">
+  <h2><span class="n">10</span> Точка пересечения графиков</h2>
+  <p>Приравнять \(f(x)=g(x)\), решить уравнение, найти \(y\) подстановкой. Ниже — четыре типовые ситуации с точными точками пересечения.</p>
+
+  <div class="row">
+
+    <!-- 10.1 две прямые -->
+    <div class="plot">
+      <svg viewBox="0 0 220 160" width="220" height="160">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="20" x2="25" y2="140"/><line x1="65" y1="20" x2="65" y2="140"/>
+          <line x1="105" y1="20" x2="105" y2="140"/><line x1="145" y1="20" x2="145" y2="140"/>
+          <line x1="185" y1="20" x2="185" y2="140"/>
+          <line x1="25" y1="40" x2="210" y2="40"/><line x1="25" y1="70" x2="210" y2="70"/>
+          <line x1="25" y1="100" x2="210" y2="100"/><line x1="25" y1="130" x2="210" y2="130"/>
+        </g>
+        <line x1="25" y1="120" x2="210" y2="120" stroke="#94a3b8"/>
+        <line x1="25" y1="20" x2="25" y2="140" stroke="#94a3b8"/>
+        <!-- прямая 1: y = 0.55x + 40 (пиксельно) -->
+        <line x1="25" y1="115" x2="205" y2="30" stroke="#2563eb" stroke-width="2.4"/>
+        <!-- прямая 2: y = -0.45x + ... -->
+        <line x1="25" y1="45" x2="205" y2="125" stroke="#dc2626" stroke-width="2.4"/>
+        <!-- точка пересечения -->
+        <circle cx="118" cy="72" r="5" fill="#111827" stroke="#fff" stroke-width="1.5"/>
+        <text x="124" y="69" font-size="10" fill="#111827" font-weight="700">(x₀;y₀)</text>
+      </svg>
+      <div class="plot-cap">Две прямые — одна точка пересечения</div>
+    </div>
+
+    <!-- 10.2 прямая и парабола -->
+    <div class="plot">
+      <svg viewBox="0 0 220 160" width="220" height="160">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="20" x2="25" y2="140"/><line x1="65" y1="20" x2="65" y2="140"/>
+          <line x1="105" y1="20" x2="105" y2="140"/><line x1="145" y1="20" x2="145" y2="140"/>
+          <line x1="185" y1="20" x2="185" y2="140"/>
+          <line x1="25" y1="40" x2="210" y2="40"/><line x1="25" y1="70" x2="210" y2="70"/>
+          <line x1="25" y1="100" x2="210" y2="100"/><line x1="25" y1="130" x2="210" y2="130"/>
+        </g>
+        <line x1="25" y1="130" x2="210" y2="130" stroke="#94a3b8"/>
+        <line x1="25" y1="20" x2="25" y2="140" stroke="#94a3b8"/>
+        <!-- парабола, проходящая через точки (45;108) и (150;62) -->
+        <path d="M35 25 Q105 175 175 25" fill="none" stroke="#059669" stroke-width="2.4"/>
+        <!-- прямая через (45;108) и (150;62) -->
+        <line x1="30" y1="112" x2="205" y2="45" stroke="#2563eb" stroke-width="2.4"/>
+        <!-- точки пересечения -->
+        <circle cx="45" cy="108" r="5" fill="#111827" stroke="#fff" stroke-width="1.5"/>
+        <circle cx="150" cy="62" r="5" fill="#111827" stroke="#fff" stroke-width="1.5"/>
+      </svg>
+      <div class="plot-cap">Прямая и парабола — 0, 1 или 2 точки</div>
+    </div>
+
+    <!-- 10.3 прямая и гипербола -->
+    <div class="plot">
+      <svg viewBox="0 0 220 160" width="220" height="160">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="20" x2="25" y2="140"/><line x1="65" y1="20" x2="65" y2="140"/>
+          <line x1="105" y1="20" x2="105" y2="140"/><line x1="145" y1="20" x2="145" y2="140"/>
+          <line x1="185" y1="20" x2="185" y2="140"/>
+          <line x1="25" y1="40" x2="210" y2="40"/><line x1="25" y1="70" x2="210" y2="70"/>
+          <line x1="25" y1="100" x2="210" y2="100"/><line x1="25" y1="130" x2="210" y2="130"/>
+        </g>
+        <line x1="25" y1="80" x2="210" y2="80" stroke="#94a3b8"/>
+        <line x1="115" y1="20" x2="115" y2="140" stroke="#94a3b8"/>
+        <!-- гипербола -->
+        <path d="M122 25 Q140 55 200 80" fill="none" stroke="#d97706" stroke-width="2.4"/>
+        <path d="M108 135 Q90 105 30 80" fill="none" stroke="#d97706" stroke-width="2.4"/>
+        <!-- прямая -->
+        <line x1="30" y1="125" x2="205" y2="40" stroke="#2563eb" stroke-width="2.4"/>
+        <!-- две точки пересечения -->
+        <circle cx="60" cy="108" r="5" fill="#111827" stroke="#fff" stroke-width="1.5"/>
+        <circle cx="158" cy="64" r="5" fill="#111827" stroke="#fff" stroke-width="1.5"/>
+      </svg>
+      <div class="plot-cap">Прямая и гипербола — 0, 1 или 2 точки</div>
+    </div>
+
+    <!-- 10.4 две параболы -->
+    <div class="plot">
+      <svg viewBox="0 0 220 160" width="220" height="160">
+        <g stroke="#e5eaf1" stroke-width="1">
+          <line x1="25" y1="20" x2="25" y2="140"/><line x1="65" y1="20" x2="65" y2="140"/>
+          <line x1="105" y1="20" x2="105" y2="140"/><line x1="145" y1="20" x2="145" y2="140"/>
+          <line x1="185" y1="20" x2="185" y2="140"/>
+          <line x1="25" y1="40" x2="210" y2="40"/><line x1="25" y1="70" x2="210" y2="70"/>
+          <line x1="25" y1="100" x2="210" y2="100"/><line x1="25" y1="130" x2="210" y2="130"/>
+        </g>
+        <line x1="25" y1="80" x2="210" y2="80" stroke="#94a3b8"/>
+        <line x1="115" y1="20" x2="115" y2="140" stroke="#94a3b8"/>
+        <!-- парабола 1 (вверх) -->
+        <path d="M35 25 Q115 175 195 25" fill="none" stroke="#059669" stroke-width="2.4"/>
+        <!-- парабола 2 (вниз) -->
+        <path d="M40 130 Q115 20 190 130" fill="none" stroke="#9333ea" stroke-width="2.4"/>
+        <!-- две точки пересечения -->
+        <circle cx="70" cy="72" r="5" fill="#111827" stroke="#fff" stroke-width="1.5"/>
+        <circle cx="160" cy="72" r="5" fill="#111827" stroke="#fff" stroke-width="1.5"/>
+      </svg>
+      <div class="plot-cap">Две параболы — до 2 точек</div>
+    </div>
+
+  </div>
+
+  <div class="fact"><b>Запомни:</b> точка пересечения — общее решение двух уравнений. Прямая с параболой или гиперболой может дать 0, 1 или 2 точки; две параболы — до 2 точек; две прямые — 0 или 1 (если не совпадают).</div>
+</div>
+
+</div>
+
+</body>
+</html>

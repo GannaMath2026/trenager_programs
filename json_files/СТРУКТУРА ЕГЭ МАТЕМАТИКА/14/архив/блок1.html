@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Стереометрия: аксиомы и следствия — 3D</title>
+<style>
+  :root{
+    --bg:#0f1520; --line:#2a3a52;
+    --txt:#e6edf7; --muted:#8fa3bf; --accent:#4ecdc4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;overflow:hidden;}
+  body{
+    background:radial-gradient(1200px 800px at 75% 15%, #1c2740 0%, #0b1018 60%, #070a10 100%);
+    color:var(--txt);font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  #app{position:fixed;inset:0;display:flex;}
+
+  .menu{
+    width:340px;height:100%;
+    background:rgba(12,17,26,.92);
+    border-right:1px solid rgba(255,255,255,.08);
+    padding:18px 14px;overflow-y:auto;
+    backdrop-filter:blur(10px);
+  }
+  .menu h2{
+    font-size:13px;text-transform:uppercase;letter-spacing:1px;
+    color:#8fa3bf;margin:0 0 10px 6px;font-weight:700;
+  }
+  .menu h2.section{margin-top:18px;color:#4ecdc4;}
+  .menu button{
+    width:100%;
+    background:rgba(18,24,34,.85);
+    border:1px solid rgba(255,255,255,.10);
+    color:#cfd9e8;font:inherit;font-size:13px;font-weight:600;
+    padding:10px 14px;border-radius:10px;text-align:left;cursor:pointer;
+    transition:.15s;margin-bottom:6px;
+  }
+  .menu button:hover{color:#fff;border-color:rgba(78,205,196,.5);}
+  .menu button.active{
+    background:rgba(78,205,196,.18);color:#fff;
+    border-color:rgba(78,205,196,.65);
+    box-shadow:0 0 0 1px rgba(78,205,196,.4);
+  }
+  .menu button.placeholder{
+    opacity:.45;cursor:not-allowed;font-style:italic;
+  }
+  .menu button.placeholder:hover{
+    color:#cfd9e8;border-color:rgba(255,255,255,.10);
+  }
+
+  .view{position:relative;flex:1;min-width:0;}
+  .view canvas{display:block;}
+
+  .caption{
+    position:absolute;top:18px;left:50%;transform:translateX(-50%);
+    max-width:min(760px, 92%);
+    background:rgba(18,24,34,.88);backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:14px;padding:12px 20px;
+    font-size:13.5px;line-height:1.5;color:#cfd9e8;
+    box-shadow:0 8px 22px rgba(0,0,0,.45);
+    text-align:center;
+  }
+  .caption b{color:#4ecdc4;}
+  .caption .label{
+    display:inline-block;font-size:11px;letter-spacing:1px;
+    color:#8fa3bf;text-transform:uppercase;margin-bottom:4px;
+  }
+
+  .hint{
+    position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+    font-size:11.5px;color:#5f6d82;letter-spacing:.3px;pointer-events:none;
+    background:rgba(15,21,32,.6);padding:6px 12px;border-radius:8px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <aside class="menu" id="menu">
+    <h2 class="section">Аксиомы стереометрии</h2>
+    <button data-id="ax1" class="active">Аксиома 1</button>
+    <button data-id="ax2">Аксиома 2</button>
+    <button data-id="ax3">Аксиома 3</button>
+
+    <h2 class="section">Следствия из аксиом</h2>
+    <button data-id="col1">Следствие 1</button>
+    <button data-id="col2">Следствие 2 (и 3)</button>
+    <button data-id="col4">Следствие 4</button>
+    <button data-id="col6">Следствие 6</button>
+
+    <h2 class="section">Способы задать плоскость</h2>
+    <button data-id="ways">Все 4 способа на одной картинке</button>
+
+    <h2 class="section">Основные теоремы и признаки</h2>
+    <button class="placeholder" disabled>— пул под следующий раздел —</button>
+  </aside>
+
+  <div class="view" id="view">
+    <div class="caption" id="caption"></div>
+    <div class="hint">левая кнопка — вращать · колесо — зум · ПКМ — панорама</div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ============================================================
+   Каркас
+============================================================ */
+const viewEl = document.getElementById('view');
+const captionEl = document.getElementById('caption');
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(viewEl.clientWidth, viewEl.clientHeight);
+viewEl.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0b1018, 0.03);
+
+const camera = new THREE.PerspectiveCamera(42, viewEl.clientWidth/viewEl.clientHeight, 0.1, 200);
+camera.position.set(3.6, 2.8, 4.6);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 1;
+controls.maxDistance = 30;
+controls.target.set(0, 0.3, 0);
+controls.minPolarAngle = Math.PI * 0.05;
+controls.maxPolarAngle = Math.PI * 0.49;
+
+scene.add(new THREE.HemisphereLight(0xdce8ff, 0x1a2233, 1.6));
+const key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(6,9,7); scene.add(key);
+const rim = new THREE.DirectionalLight(0x7fa8ff, 1.0); rim.position.set(-7,-3,-6); scene.add(rim);
+
+const g = new THREE.Group(); scene.add(g);
+
+/* ============================================================
+   Хелперы
+============================================================ */
+const V = (x,y,z)=> new THREE.Vector3(x,y,z);
+
+function fatLine(a, b, color, r=0.028){
+  const grp = new THREE.Group();
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length();
+  if (len < 1e-6) return grp;
+  const mid = a.clone().add(b).multiplyScalar(0.5);
+  const geo = new THREE.CylinderGeometry(r, r, len, 12, 1, false);
+  const mat = new THREE.MeshStandardMaterial({
+    color, roughness:0.35, metalness:0.1, emissive: color, emissiveIntensity: 0.15
+  });
+  const cyl = new THREE.Mesh(geo, mat);
+  cyl.position.copy(mid);
+  cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+  grp.add(cyl);
+  [a, b].forEach(p=>{
+    const sp = new THREE.Mesh(new THREE.SphereGeometry(r*1.05, 10, 8), mat);
+    sp.position.copy(p);
+    grp.add(sp);
+  });
+  return grp;
+}
+
+function dashedLine(a, b, color, dash=0.09, gap=0.07){
+  const grp = new THREE.Group();
+  const mat = new THREE.LineDashedMaterial({color, dashSize:dash, gapSize:gap});
+  const geo = new THREE.BufferGeometry().setFromPoints([a, b]);
+  const line = new THREE.Line(geo, mat);
+  line.computeLineDistances();
+  grp.add(line);
+  return grp;
+}
+
+function point(p, color=0xff6b6b, r=0.08){
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12),
+                           new THREE.MeshBasicMaterial({color}));
+  m.position.copy(p);
+  return m;
+}
+
+function label(p, text, color='#e6edf7'){
+  const c = document.createElement('canvas');
+  const ctx = c.getContext('2d');
+  c.width = 256; c.height = 64;
+  ctx.fillStyle = 'rgba(0,0,0,0)';
+  ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle = color;
+  ctx.font = 'bold 40px ui-sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, 128, 32);
+  const tex = new THREE.CanvasTexture(c);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false}));
+  spr.scale.set(0.55, 0.14, 1);
+  spr.position.copy(p);
+  return spr;
+}
+
+function planePatch(p1, p2, p3, p4, color, opacity=0.18){
+  const verts = [p1, p2, p3, p4];
+  const geo = new THREE.BufferGeometry().setFromPoints(verts);
+  geo.setIndex([0,1,2, 0,2,3]);
+  geo.computeVertexNormals();
+  const mat = new THREE.MeshBasicMaterial({
+    color, transparent:true, opacity, side:THREE.DoubleSide, depthWrite:false
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  const loop = new THREE.LineLoop(
+    new THREE.BufferGeometry().setFromPoints(verts),
+    new THREE.LineBasicMaterial({color, linewidth:1.2, transparent:true, opacity:0.75})
+  );
+  const wrap = new THREE.Group();
+  wrap.add(mesh); wrap.add(loop);
+  return wrap;
+}
+
+function planeBig(c, u, v, s, color, opacity=0.12){
+  const p1 = c.clone().add(u.clone().multiplyScalar(s)).add(v.clone().multiplyScalar(s));
+  const p2 = c.clone().add(u.clone().multiplyScalar(-s)).add(v.clone().multiplyScalar(s));
+  const p3 = c.clone().add(u.clone().multiplyScalar(-s)).add(v.clone().multiplyScalar(-s));
+  const p4 = c.clone().add(u.clone().multiplyScalar(s)).add(v.clone().multiplyScalar(-s));
+  return planePatch(p1, p2, p3, p4, color, opacity);
+}
+
+function clearGroup(grp){
+  while (grp.children.length){
+    const c = grp.children.pop();
+    if (c.geometry) c.geometry.dispose();
+    if (c.material){
+      if (Array.isArray(c.material)) c.material.forEach(m=>m.dispose());
+      else c.material.dispose();
+    }
+    if (c.children && c.children.length) clearGroup(c);
+  }
+}
+
+/* ============================================================
+   Сцены
+============================================================ */
+
+/* Аксиома 1. Три точки — единственная плоскость */
+function sceneAx1(){
+  const A = V(-1.2, 0.2,  0.9);
+  const B = V( 1.3, -0.1, 0.7);
+  const C = V( 0.1, 0.3, -1.2);
+
+  const n = new THREE.Vector3().subVectors(B, A).cross(new THREE.Vector3().subVectors(C, A)).normalize();
+  const e1 = new THREE.Vector3().subVectors(B, A).normalize();
+  const e2 = new THREE.Vector3().crossVectors(n, e1).normalize();
+  const c = A.clone().add(B).add(C).multiplyScalar(1/3);
+  g.add(planeBig(c, e1, e2, 1.8, 0x4ecdc4, 0.16));
+
+  g.add(point(A, 0xff6b6b, 0.09));
+  g.add(point(B, 0xff6b6b, 0.09));
+  g.add(point(C, 0xff6b6b, 0.09));
+  g.add(label(A.clone().add(V(-0.15,0.15,0)), 'A', '#ff6b6b'));
+  g.add(label(B.clone().add(V( 0.15,0.15,0)), 'B', '#ff6b6b'));
+  g.add(label(C.clone().add(V( 0.15,0.15,0)), 'C', '#ff6b6b'));
+}
+
+/* Аксиома 2. Прямая, две точки которой лежат в плоскости, лежит в плоскости. */
+function sceneAx2(){
+  const u = V(1,0,0), v = V(0,0,1);
+  g.add(planeBig(V(0,0,0), u, v, 1.9, 0x4ecdc4, 0.16));
+
+  const A = V(-1.4, 0, 0.6);
+  const B = V( 1.4, 0, 0.6);
+  const dir = new THREE.Vector3().subVectors(B, A).normalize();
+
+  g.add(fatLine(A.clone().add(dir.clone().multiplyScalar(-0.2)),
+                B.clone().add(dir.clone().multiplyScalar( 0.2)), 0xffd93d, 0.030));
+  g.add(dashedLine(A.clone().add(dir.clone().multiplyScalar(-1.6)),
+                   A.clone().add(dir.clone().multiplyScalar(-0.2)), 0xffd93d));
+  g.add(dashedLine(B.clone().add(dir.clone().multiplyScalar( 0.2)),
+                   B.clone().add(dir.clone().multiplyScalar( 1.6)), 0xffd93d));
+
+  g.add(point(A, 0xff6b6b, 0.09));
+  g.add(point(B, 0xff6b6b, 0.09));
+  g.add(label(A.clone().add(V(-0.15,0.15,0)), 'A', '#ff6b6b'));
+  g.add(label(B.clone().add(V( 0.15,0.15,0)), 'B', '#ff6b6b'));
+}
+
+/* Аксиома 3. Две плоскости имеют общую точку → пересекаются по прямой */
+function sceneAx3(){
+  const u1 = V(1,0,0), v1 = V(0,0,1);
+  g.add(planeBig(V(0,0,0), u1, v1, 1.9, 0x4ecdc4, 0.16));
+
+  const u2 = V(0,1,0), v2 = V(0,0,1);
+  g.add(planeBig(V(0,0,0), u2, v2, 1.9, 0xffa94d, 0.16));
+
+  g.add(fatLine(V(0,0,-1.9), V(0,0,1.9), 0xff6b6b, 0.035));
+
+  g.add(point(V(0,0,0), 0xffffff, 0.09));
+  g.add(label(V(0.18,0.18,0), 'O', '#ffffff'));
+}
+
+/* Следствие 1. Прямая + точка вне неё → единственная плоскость */
+function sceneCol1(){
+  const A = V(-1.3, 0.0, 0.4);
+  const B = V( 1.3, 0.0, 0.4);
+  const u = new THREE.Vector3().subVectors(B, A).normalize();
+  const P = V(0.2, 1.1, -0.6);
+
+  const n = new THREE.Vector3().crossVectors(u, new THREE.Vector3().subVectors(P, A)).normalize();
+  const e2 = new THREE.Vector3().crossVectors(n, u).normalize();
+  const c = A.clone().add(B).multiplyScalar(0.5).add(P).multiplyScalar(0.5);
+  g.add(planeBig(c, u, e2, 1.9, 0x4ecdc4, 0.16));
+
+  g.add(fatLine(A, B, 0xffd93d, 0.030));
+  g.add(point(P, 0xff6b6b, 0.09));
+  g.add(label(A.clone().add(V(-0.15,0.15,0)), 'A'));
+  g.add(label(B.clone().add(V( 0.15,0.15,0)), 'B'));
+  g.add(label(P.clone().add(V( 0.15,0.15,0)), 'P', '#ff6b6b'));
+}
+
+/* Следствия 2 и 3. Ровно ДВЕ пересекающиеся прямые, лежащие в плоскости.
+   Прямая №1: A—B (проходит через точку O).
+   Прямая №2: C—D (проходит через точку O). */
+function sceneCol2(){
+  const u = V(1,0,0), v = V(0,0,1);
+  g.add(planeBig(V(0,0,0), u, v, 1.9, 0x4ecdc4, 0.16));
+
+  const O = V(0, 0, 0);
+
+  // Прямая №1: A ——— O ——— B
+  const A = V(-1.6, 0, -0.4);
+  const B = V( 1.6, 0,  0.4);
+  // Прямая №2: C ——— O ——— D
+  const C = V(-1.2, 0,  1.4);
+  const D = V( 1.2, 0, -1.4);
+
+  g.add(fatLine(A, B, 0xffd93d, 0.030));
+  g.add(fatLine(C, D, 0x6ba8ff, 0.030));
+
+  g.add(point(O, 0xffffff, 0.09));
+  g.add(label(O.clone().add(V(0.18,0.18,0)), 'O', '#ffffff'));
+  g.add(label(A.clone().add(V(-0.15,0.15,0)), 'A', '#ffd93d'));
+  g.add(label(B.clone().add(V( 0.15,0.15,0)), 'B', '#ffd93d'));
+  g.add(label(C.clone().add(V(-0.15,0.15,0)), 'C', '#6ba8ff'));
+  g.add(label(D.clone().add(V( 0.15,0.15,0)), 'D', '#6ba8ff'));
+}
+
+/* Следствие 4. Прямая с двумя точками в плоскости → целиком в плоскости */
+function sceneCol4(){
+  const u = V(1,0,0), v = V(0,0,1);
+  g.add(planeBig(V(0,0,0), u, v, 1.9, 0x4ecdc4, 0.16));
+
+  const A = V(-1.2, 0, 0.7);
+  const B = V( 1.2, 0, 0.7);
+  const dir = new THREE.Vector3().subVectors(B, A).normalize();
+
+  g.add(fatLine(A, B, 0xffd93d, 0.030));
+  g.add(point(A, 0xff6b6b, 0.09));
+  g.add(point(B, 0xff6b6b, 0.09));
+  g.add(label(A.clone().add(V(-0.15,0.15,0)), 'A', '#ff6b6b'));
+  g.add(label(B.clone().add(V( 0.15,0.15,0)), 'B', '#ff6b6b'));
+
+  g.add(dashedLine(A.clone().add(dir.clone().multiplyScalar(-1.3)),
+                   A.clone().add(dir.clone().multiplyScalar(-0.2)), 0xffd93d));
+  g.add(dashedLine(B.clone().add(dir.clone().multiplyScalar( 0.2)),
+                   B.clone().add(dir.clone().multiplyScalar( 1.3)), 0xffd93d));
+}
+
+/* Следствие 6. Две параллельные прямые → единственная плоскость */
+function sceneCol6(){
+  const A = V(-1.3, 0.2, 0.7);
+  const B = V( 0.4, 0.2, 0.7);
+  const C = V(-1.3, 0.2, -0.6);
+  const D = V( 0.4, 0.2, -0.6);
+  const u = new THREE.Vector3().subVectors(B, A).normalize();
+  const v = new THREE.Vector3().subVectors(C, A).normalize();
+
+  g.add(planeBig(A.clone().add(u.clone().multiplyScalar(0.5)).add(v.clone().multiplyScalar(0.5)),
+                 u, v, 1.9, 0x4ecdc4, 0.16));
+
+  g.add(fatLine(A, B, 0xffd93d, 0.030));
+  g.add(fatLine(C, D, 0xffd93d, 0.030));
+
+  g.add(dashedLine(A.clone().add(u.clone().multiplyScalar(-1.2)),
+                   A.clone().add(u.clone().multiplyScalar(-0.05)), 0xffd93d));
+  g.add(dashedLine(C.clone().add(u.clone().multiplyScalar(-1.2)),
+                   C.clone().add(u.clone().multiplyScalar(-0.05)), 0xffd93d));
+  g.add(dashedLine(B.clone().add(u.clone().multiplyScalar( 0.05)),
+                   B.clone().add(u.clone().multiplyScalar( 1.2)), 0xffd93d));
+  g.add(dashedLine(D.clone().add(u.clone().multiplyScalar( 0.05)),
+                   D.clone().add(u.clone().multiplyScalar( 1.2)), 0xffd93d));
+}
+
+/* ============================================================
+   СПОСОБЫ ЗАДАТЬ ПЛОСКОСТЬ — все 4 на одной картинке.
+============================================================ */
+function sceneWays(){
+  // Общая плоскость y = 0
+  const u = V(1,0,0), v = V(0,0,1);
+  g.add(planeBig(V(0,0,0), u, v, 2.2, 0x4ecdc4, 0.10));
+
+  // -------- Способ 1: 3 точки, не лежащие на одной прямой --------
+  const A1 = V(-1.6, 0, -1.2);
+  const B1 = V(-0.4, 0, -1.6);
+  const C1 = V(-1.2, 0, -0.2);
+  g.add(point(A1, 0x3ddc97, 0.09));
+  g.add(point(B1, 0x3ddc97, 0.09));
+  g.add(point(C1, 0x3ddc97, 0.09));
+  g.add(label(A1.clone().add(V(-0.15,0.2,0)), 'A', '#3ddc97'));
+  g.add(label(B1.clone().add(V( 0.15,0.2,0)), 'B', '#3ddc97'));
+  g.add(label(C1.clone().add(V( 0.15,0.2,0)), 'C', '#3ddc97'));
+  g.add(dashedLine(A1, B1, 0x3ddc97, 0.06, 0.06));
+  g.add(dashedLine(B1, C1, 0x3ddc97, 0.06, 0.06));
+  g.add(dashedLine(C1, A1, 0x3ddc97, 0.06, 0.06));
+  g.add(label(V(-1.1, 0.15, -1.0), '1) 3 точки', '#3ddc97'));
+
+  // -------- Способ 2: прямая и точка вне неё --------
+  const A2 = V(0.9, 0, -1.4);
+  const B2 = V(2.0, 0, -1.4);
+  const P2 = V(1.4, 0, -0.6);
+  g.add(fatLine(A2, B2, 0xffd93d, 0.026));
+  g.add(point(P2, 0xff6b6b, 0.09));
+  g.add(label(A2.clone().add(V(-0.15,0.2,0)), 'A', '#ffd93d'));
+  g.add(label(B2.clone().add(V( 0.15,0.2,0)), 'B', '#ffd93d'));
+  g.add(label(P2.clone().add(V( 0.15,0.2,0)), 'P', '#ff6b6b'));
+  g.add(label(V(1.4, 0.15, -1.6), '2) прямая + точка', '#ffd93d'));
+
+  // -------- Способ 3: ДВЕ пересекающиеся прямые --------
+  // Прямая №1: A3 ——— O3 ——— B3
+  // Прямая №2: C3 ——— O3 ——— D3
+  const O3 = V(-0.7, 0, 1.3);
+  const A3 = V(-1.5, 0, 0.8);
+  const B3 = V( 0.1, 0, 1.8);
+  const C3 = V(-0.1, 0, 0.6);
+  const D3 = V(-1.3, 0, 2.0);
+  g.add(fatLine(A3, B3, 0x6ba8ff, 0.026));
+  g.add(fatLine(C3, D3, 0x6ba8ff, 0.026));
+  g.add(point(O3, 0xffffff, 0.08));
+  g.add(label(O3.clone().add(V(0.15,0.2,0)), 'O', '#ffffff'));
+  g.add(label(A3.clone().add(V(-0.15,0.2,0)), 'A', '#6ba8ff'));
+  g.add(label(B3.clone().add(V( 0.15,0.2,0)), 'B', '#6ba8ff'));
+  g.add(label(C3.clone().add(V(-0.15,0.2,0)), 'C', '#6ba8ff'));
+  g.add(label(D3.clone().add(V( 0.15,0.2,0)), 'D', '#6ba8ff'));
+  g.add(label(V(-0.7, 0.15, 1.7), '3) две пересекающиеся', '#6ba8ff'));
+
+  // -------- Способ 4: две параллельные прямые --------
+  const F4 = V( 0.9, 0, 0.7);
+  const G4 = V( 2.0, 0, 0.7);
+  const H4 = V( 0.9, 0, 1.5);
+  const I4 = V( 2.0, 0, 1.5);
+  g.add(fatLine(F4, G4, 0xffa94d, 0.026));
+  g.add(fatLine(H4, I4, 0xffa94d, 0.026));
+  g.add(label(F4.clone().add(V(-0.15,0.2,0)), 'F', '#ffa94d'));
+  g.add(label(G4.clone().add(V( 0.15,0.2,0)), 'G', '#ffa94d'));
+  g.add(label(H4.clone().add(V(-0.15,0.2,0)), 'H', '#ffa94d'));
+  g.add(label(I4.clone().add(V( 0.15,0.2,0)), 'I', '#ffa94d'));
+  g.add(label(V(1.4, 0.15, 1.1), '4) две параллельные', '#ffa94d'));
+
+  g.add(label(V(0, 0.4, -2.3), 'Одна и та же плоскость α', '#4ecdc4'));
+}
+
+/* ============================================================
+   Управление
+============================================================ */
+const SCENES = {
+  ax1:  {build: sceneAx1, cap: '<div class="label">Аксиома 1</div>Через любые три точки, не лежащие на одной прямой, проходит плоскость, и притом только одна.', cam:[3.6,2.8,4.6], tgt:[0,0.3,0]},
+  ax2:  {build: sceneAx2, cap: '<div class="label">Аксиома 2</div>Если две точки прямой лежат в плоскости, то вся прямая лежит в этой плоскости.', cam:[3.4,2.8,4.6], tgt:[0,0.2,0]},
+  ax3:  {build: sceneAx3, cap: '<div class="label">Аксиома 3</div>Если две плоскости имеют общую точку, то они пересекаются по прямой.', cam:[3.6,2.8,4.6], tgt:[0,0,0]},
+
+  col1: {build: sceneCol1, cap: '<div class="label">Следствие 1</div>Через прямую и не лежащую на ней точку проходит плоскость, и притом только одна.', cam:[3.6,2.8,4.6], tgt:[0,0.3,0]},
+  col2: {build: sceneCol2, cap: '<div class="label">Следствия 2 и 3</div>Через две пересекающиеся прямые проходит плоскость, и притом только одна. И наоборот: если две прямые пересекаются, то они лежат в одной плоскости.', cam:[3.4,2.8,4.6], tgt:[0,0.2,0]},
+  col4: {build: sceneCol4, cap: '<div class="label">Следствие 4</div>Если прямая имеет с плоскостью две общие точки, то она целиком лежит в этой плоскости.', cam:[3.4,2.8,4.6], tgt:[0,0.2,0]},
+  col6: {build: sceneCol6, cap: '<div class="label">Следствие 6</div>Через две параллельные прямые проходит плоскость, и притом только одна.', cam:[3.6,2.8,4.6], tgt:[0,0.3,0]},
+
+  ways: {build: sceneWays, cap: '<div class="label">Способы задать плоскость</div>Одна и та же плоскость α может быть задана: (1) тремя точками, не лежащими на одной прямой; (2) прямой и точкой вне неё; (3) двумя пересекающимися прямыми; (4) двумя параллельными прямыми.', cam:[5.4,4.6,6.6], tgt:[0,0,0]},
+};
+
+function show(id){
+  clearGroup(g);
+  const s = SCENES[id];
+  s.build();
+  captionEl.innerHTML = s.cap;
+  camera.position.set(...s.cam);
+  controls.target.set(...s.tgt);
+  controls.update();
+}
+
+document.querySelectorAll('#menu button').forEach(btn=>{
+  if (btn.classList.contains('placeholder')) return;
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#menu button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    show(btn.dataset.id);
+  });
+});
+
+addEventListener('resize', ()=>{
+  const w = viewEl.clientWidth, h = viewEl.clientHeight;
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+
+function loop(){
+  requestAnimationFrame(loop);
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+show('ax1');
+loop();
+</script>
+</body>
+</html>

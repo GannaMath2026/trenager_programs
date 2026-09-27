@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Круги Эйлера — ответ красным</title>
+<style>
+  :root{
+    --txt:#e6edf7; --muted:#8fa3bf; --acc:#4ecdc4;
+    --border:rgba(255,255,255,.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;overflow:hidden;color:var(--txt);
+    font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+    background:radial-gradient(1200px 800px at 75% 15%, #1c2740 0%, #0b1018 60%, #070a10 100%);}
+  #app{position:fixed;inset:0;display:grid;
+    grid-template-columns:340px 1fr;grid-template-rows:1fr;}
+
+  /* ========== ЛЕВАЯ ПАНЕЛЬ ========== */
+  .left{
+    background:rgba(12,17,26,.94);border-right:1px solid var(--border);
+    padding:14px 12px;overflow-y:auto;backdrop-filter:blur(10px);
+    display:flex;flex-direction:column;gap:14px;}
+  .left::-webkit-scrollbar{width:6px;}
+  .left::-webkit-scrollbar-thumb{background:#2a3a52;border-radius:3px;}
+
+  .sec h3{
+    margin:0 0 8px;font-size:11px;text-transform:uppercase;
+    letter-spacing:1px;color:var(--muted);font-weight:700;}
+
+  .circles{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;
+    background:rgba(0,0,0,.25);padding:4px;border-radius:10px;
+    border:1px solid var(--border);}
+  .circles button{
+    padding:9px 4px;background:transparent;border:0;
+    color:#cfd9e8;font:inherit;font-size:12px;font-weight:700;
+    border-radius:7px;cursor:pointer;transition:.15s;}
+  .circles button:hover{color:#fff;}
+  .circles button.on{background:rgba(78,205,196,.22);color:#fff;
+    box-shadow:inset 0 0 0 1px rgba(78,205,196,.5);}
+
+  .expr-wrap input{
+    width:100%;padding:11px 13px;font:inherit;font-size:13.5px;font-weight:600;
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+    background:rgba(0,0,0,.35);color:#fff;
+    border:1.5px solid rgba(78,205,196,.35);border-radius:10px;
+    outline:none;transition:.15s;letter-spacing:.3px;}
+  .expr-wrap input:focus{
+    border-color:var(--acc);background:rgba(0,0,0,.45);
+    box-shadow:0 0 0 3px rgba(78,205,196,.12);}
+  #error{min-height:16px;margin-top:5px;font-size:11.5px;color:#ff8a8a;
+    font-family:ui-monospace,Menlo,monospace;}
+
+  .presets{
+    display:flex;flex-wrap:wrap;gap:5px;}
+  .presets button{
+    padding:5px 9px;background:rgba(78,205,196,.08);
+    border:1px solid rgba(78,205,196,.25);border-radius:6px;
+    color:#b6f3ed;font:inherit;font-size:11px;font-weight:700;
+    font-family:ui-monospace,Menlo,monospace;cursor:pointer;transition:.15s;
+    white-space:nowrap;}
+  .presets button:hover{background:rgba(78,205,196,.22);color:#fff;
+    border-color:rgba(78,205,196,.55);}
+  .presets button.on{background:rgba(78,205,196,.30);color:#fff;
+    border-color:rgba(78,205,196,.8);}
+
+  /* ========== ЦЕНТР ========== */
+  .center{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:16px;min-width:0;min-height:0;gap:14px;}
+  .canvas-wrap{position:relative;flex:1;min-height:0;
+    aspect-ratio:1/1;max-width:100%;max-height:100%;
+    border:1px solid var(--border);border-radius:14px;
+    background:#0b1220;overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.55);}
+  #canvas{display:block;width:100%;height:100%;}
+
+  /* Формула под кругами */
+  .formula-under{
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:20px;font-weight:800;
+    color:#ff5b5b;
+    padding:10px 24px;
+    background:rgba(255,60,60,.08);
+    border:1px solid rgba(255,60,60,.35);
+    border-radius:12px;
+    letter-spacing:.5px;
+    text-align:center;
+    max-width:100%;
+    word-break:break-word;
+    text-shadow:0 0 20px rgba(255,60,60,.3);
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+<aside class="left">
+  <div class="sec">
+    <h3>Количество кругов</h3>
+    <div class="circles">
+      <button data-n="1">1 круг</button>
+      <button data-n="2" class="on">2 круга</button>
+      <button data-n="3">3 круга</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3>Логическое выражение</h3>
+    <div class="expr-wrap">
+      <input id="expr" type="text" placeholder="NOT(A OR B)"
+             autocomplete="off" spellcheck="false" value="NOT(A OR B)">
+    </div>
+    <div id="error"></div>
+  </div>
+
+  <div class="sec">
+    <h3>Готовые формулы</h3>
+    <div class="presets" id="presets"></div>
+  </div>
+</aside>
+
+<main class="center">
+  <div class="canvas-wrap">
+    <canvas id="canvas"></canvas>
+  </div>
+  <div class="formula-under" id="formulaUnder">NOT(A OR B)</div>
+</main>
+
+</div>
+
+<script>
+/* ================================================================
+   КОНФИГ
+   ================================================================ */
+const W = 800, H = 800;
+let N = 2;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = W;
+canvas.height = H;
+
+/* ================================================================
+   ГЕОМЕТРИЯ КРУГОВ
+   ================================================================ */
+function getCircles(n){
+  const cx = W/2, cy = H/2;
+  if (n === 1) return [
+    {name:'A', cx, cy, r: 250, labelX: cx, labelY: cy - 270}
+  ];
+  if (n === 2){
+    const r = 215, dx = 100;
+    return [
+      {name:'A', cx: cx - dx, cy, r, labelX: cx - dx, labelY: cy - r - 25},
+      {name:'B', cx: cx + dx, cy, r, labelX: cx + dx, labelY: cy - r - 25}
+    ];
+  }
+  const r = 190;
+  return [
+    {name:'A', cx,        cy: cy - 110, r, labelX: cx,        labelY: cy - 110 - r - 22},
+    {name:'B', cx: cx-108, cy: cy + 65, r, labelX: cx - 108 - r - 22, labelY: cy + 65 + r + 22},
+    {name:'C', cx: cx+108, cy: cy + 65, r, labelX: cx + 108 + r + 22, labelY: cy + 65 + r + 22}
+  ];
+}
+
+/* ================================================================
+   ПАРСЕР
+   ================================================================ */
+function parseExpression(src, vars){
+  const tokens = [];
+  let i = 0;
+  while (i < src.length){
+    const c = src[i];
+    if (/\s/.test(c)){ i++; continue; }
+    if ('()&|!^~'.includes(c)){ tokens.push({t:c}); i++; continue; }
+    if (/[A-Za-zА-Яа-я_]/.test(c)){
+      const m = src.slice(i).match(/^[A-Za-zА-Яа-я_]\w*/);
+      const w = m[0].toUpperCase();
+      if (w === 'AND') tokens.push({t:'&'});
+      else if (w === 'OR') tokens.push({t:'|'});
+      else if (w === 'NOT') tokens.push({t:'!'});
+      else if (w === 'XOR') tokens.push({t:'^'});
+      else if (vars.includes(w)) tokens.push({t:'V', name:w});
+      else throw new Error('Неизвестная переменная: ' + m[0]);
+      i += m[0].length;
+      continue;
+    }
+    throw new Error('Не понимаю символ: «' + c + '»');
+  }
+
+  let pos = 0;
+  const peek = () => tokens[pos];
+  const next = () => tokens[pos++];
+
+  function parseOr(){
+    let left = parseXor();
+    while (peek() && peek().t === '|'){
+      next(); left = {op:'|', a:left, b:parseXor()};
+    }
+    return left;
+  }
+  function parseXor(){
+    let left = parseAnd();
+    while (peek() && peek().t === '^'){
+      next(); left = {op:'^', a:left, b:parseAnd()};
+    }
+    return left;
+  }
+  function parseAnd(){
+    let left = parseNot();
+    while (peek() && peek().t === '&'){
+      next(); left = {op:'&', a:left, b:parseNot()};
+    }
+    return left;
+  }
+  function parseNot(){
+    if (peek() && (peek().t === '!' || peek().t === '~')){
+      next(); return {op:'!', a:parseNot()};
+    }
+    return parseAtom();
+  }
+  function parseAtom(){
+    const tk = peek();
+    if (!tk) throw new Error('Неожиданный конец');
+    if (tk.t === 'V'){ next(); return {var: tk.name}; }
+    if (tk.t === '('){
+      next();
+      const e = parseOr();
+      if (!peek() || peek().t !== ')') throw new Error('Не закрыта скобка');
+      next();
+      return e;
+    }
+    throw new Error('Неожиданный токен');
+  }
+
+  const ast = parseOr();
+  if (pos < tokens.length) throw new Error('Лишние символы в конце');
+  return ast;
+}
+
+/* ================================================================
+   ВЫЧИСЛЕНИЕ
+   ================================================================ */
+function evalAst(ast, assign){
+  if (ast.var) return !!assign[ast.var];
+  if (ast.op === '!') return !evalAst(ast.a, assign);
+  const a = evalAst(ast.a, assign);
+  const b = evalAst(ast.b, assign);
+  if (ast.op === '&') return a && b;
+  if (ast.op === '|') return a || b;
+  if (ast.op === '^') return a !== b;
+  return false;
+}
+
+/* ================================================================
+   РЕНДЕР
+   ================================================================ */
+function render(ast){
+  const circles = getCircles(N);
+  const img = ctx.createImageData(W, H);
+  const data = img.data;
+
+  for (let y = 0; y < H; y++){
+    for (let x = 0; x < W; x++){
+      const assign = {};
+      for (const c of circles){
+        const dx = x - c.cx, dy = y - c.cy;
+        assign[c.name] = dx*dx + dy*dy <= c.r*c.r;
+      }
+      const inside = evalAst(ast, assign);
+      const idx = (y*W + x) * 4;
+      if (inside){
+        /* Ярко-красный — ИТОГ */
+        data[idx]   = 235;
+        data[idx+1] = 45;
+        data[idx+2] = 55;
+      } else {
+        /* Тёмный фон */
+        data[idx]   = 11;
+        data[idx+1] = 18;
+        data[idx+2] = 32;
+      }
+      data[idx+3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+
+  /* Обводка кругов */
+  for (const c of circles){
+    ctx.strokeStyle = 'rgba(230,237,247,.85)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(c.cx, c.cy, c.r, 0, Math.PI*2);
+    ctx.stroke();
+  }
+
+  /* Подписи A / B / C */
+  ctx.font = 'bold 30px ui-sans-serif, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (const c of circles){
+    ctx.fillStyle = 'rgba(0,0,0,.65)';
+    ctx.fillText(c.name, c.labelX + 2, c.labelY + 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(c.name, c.labelX, c.labelY);
+  }
+}
+
+function drawEmpty(){
+  ctx.fillStyle = '#0b1220';
+  ctx.fillRect(0, 0, W, H);
+  const circles = getCircles(N);
+  ctx.strokeStyle = 'rgba(230,237,247,.6)';
+  ctx.lineWidth = 2.5;
+  for (const c of circles){
+    ctx.beginPath();
+    ctx.arc(c.cx, c.cy, c.r, 0, Math.PI*2);
+    ctx.stroke();
+  }
+  ctx.font = 'bold 30px ui-sans-serif, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (const c of circles){
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(c.name, c.labelX, c.labelY);
+  }
+}
+
+/* ================================================================
+   ГЛАВНАЯ
+   ================================================================ */
+function draw(){
+  const exprInput = document.getElementById('expr');
+  const errBox = document.getElementById('error');
+  const formulaBox = document.getElementById('formulaUnder');
+  const src = exprInput.value.trim();
+
+  formulaBox.textContent = src || '—';
+
+  if (!src){
+    errBox.textContent = '';
+    drawEmpty();
+    return;
+  }
+
+  const vars = getCircles(N).map(c => c.name);
+  let ast;
+  try {
+    ast = parseExpression(src, vars);
+    errBox.textContent = '';
+  } catch(e){
+    errBox.textContent = '⚠ ' + e.message;
+    return;
+  }
+  render(ast);
+}
+
+/* ================================================================
+   ПРЕСЕТЫ
+   ================================================================ */
+const PRESETS = {
+  1: ['A', 'NOT A'],
+  2: [
+    'A', 'B',
+    'A & B', 'A | B',
+    'NOT A', 'NOT B',
+    'NOT (A & B)', 'NOT (A | B)',
+    'A XOR B',
+    'NOT (NOT A)', 'NOT (NOT B)',
+    'A & (NOT B)', 'B & (NOT A)',
+    'A | (NOT B)', 'B | (NOT A)',
+    '(NOT A) & (NOT B)', '(NOT A) | (NOT B)',
+    'NOT (A & (NOT B))'
+  ],
+  3: [
+    'A', 'B', 'C',
+    'A & B', 'A & C', 'B & C',
+    'A | B', 'A | C', 'B | C',
+    'NOT A', 'NOT B', 'NOT C',
+    'A & B & C', 'A | B | C',
+    'A & (B | C)', 'B & (A | C)', 'C & (A | B)',
+    '(A | B) & C',
+    'A | (B & C)', 'B | (A & C)', 'C | (A & B)',
+    'NOT (A & B)', 'NOT (A | B)',
+    'A XOR B', 'A XOR C', 'B XOR C',
+    'NOT (A & B & C)', 'NOT (A | B | C)',
+    '(A & B) | C', '(A | B) & (A | C)'
+  ]
+};
+
+function renderPresets(n){
+  const box = document.getElementById('presets');
+  box.innerHTML = '';
+  const cur = document.getElementById('expr').value.trim().toUpperCase();
+  for (const p of PRESETS[n]){
+    const b = document.createElement('button');
+    b.textContent = p;
+    if (p.toUpperCase() === cur) b.classList.add('on');
+    b.onclick = () => {
+      document.getElementById('expr').value = p;
+      draw();
+      document.querySelectorAll('#presets button').forEach(x => {
+        x.classList.toggle('on', x.textContent.toUpperCase() === p.toUpperCase());
+      });
+    };
+    box.appendChild(b);
+  }
+}
+
+/* ================================================================
+   ПЕРЕКЛЮЧАТЕЛЬ
+   ================================================================ */
+document.querySelectorAll('.circles button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.circles button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    N = Number(btn.dataset.n);
+    const def = N === 1 ? 'A' : N === 2 ? 'NOT(A OR B)' : 'A & (B | C)';
+    document.getElementById('expr').value = def;
+    renderPresets(N);
+    draw();
+  });
+});
+
+/* ================================================================
+   ВВОД
+   ================================================================ */
+let debounceId = null;
+document.getElementById('expr').addEventListener('input', () => {
+  clearTimeout(debounceId);
+  debounceId = setTimeout(() => {
+    draw();
+    const cur = document.getElementById('expr').value.trim().toUpperCase();
+    document.querySelectorAll('#presets button').forEach(b => {
+      b.classList.toggle('on', b.textContent.toUpperCase() === cur);
+    });
+  }, 80);
+});
+
+/* ================================================================
+   СТАРТ
+   ================================================================ */
+renderPresets(N);
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Расстояние между скрещивающимися прямыми — 3D</title>
+<style>
+  :root{
+    --bg:#0f1520; --line:#2a3a52;
+    --txt:#e6edf7; --muted:#8fa3bf; --accent:#4ecdc4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;overflow:hidden;}
+  body{
+    background:radial-gradient(1200px 800px at 75% 15%, #1c2740 0%, #0b1018 60%, #070a10 100%);
+    color:var(--txt);font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  #app{position:fixed;inset:0;}
+  .menu{
+    position:absolute;top:20px;left:20px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .menu button{
+    min-width:200px;
+    background:rgba(18,24,34,.85);backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.12);
+    color:#cfd9e8;font:inherit;font-size:13px;font-weight:600;
+    padding:10px 16px;border-radius:12px;text-align:left;cursor:pointer;
+    transition:.15s;
+    box-shadow:0 8px 22px rgba(0,0,0,.45);
+  }
+  .menu button:hover{color:#fff;border-color:rgba(78,205,196,.5);}
+  .menu button.active{
+    background:rgba(78,205,196,.18);color:#fff;
+    border-color:rgba(78,205,196,.65);
+    box-shadow:0 0 0 1px rgba(78,205,196,.4), 0 8px 22px rgba(0,0,0,.45);
+  }
+  .hint{
+    position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+    font-size:11.5px;color:#5f6d82;letter-spacing:.3px;pointer-events:none;
+    background:rgba(15,21,32,.6);padding:6px 12px;border-radius:8px;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="menu">
+  <button data-scene="tetra" class="active">Треугольная пирамида</button>
+  <button data-scene="cube">Куб</button>
+  <button data-scene="pyr">Четырёхугольная пирамида</button>
+</div>
+
+<div class="hint">левая кнопка — вращать · колесо — зум · ПКМ — панорама</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const host = document.getElementById('app');
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth, innerHeight);
+host.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0b1018, 0.035);
+
+const camera = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, 0.1, 200);
+camera.position.set(3.6, 3.0, 4.6);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 1;
+controls.maxDistance = 20;
+controls.target.set(0, 0.9, 0);
+controls.minPolarAngle = Math.PI * 0.03;
+controls.maxPolarAngle = Math.PI * 0.495;
+controls.minAzimuthAngle = -Infinity;
+controls.maxAzimuthAngle =  Infinity;
+
+scene.add(new THREE.HemisphereLight(0xdce8ff, 0x1a2233, 1.6));
+const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(6,9,7); scene.add(key);
+const rim = new THREE.DirectionalLight(0x7fa8ff, 1.1); rim.position.set(-7,-3,-6); scene.add(rim);
+
+const g = new THREE.Group(); scene.add(g);
+
+/* ---------- хелперы ---------- */
+const V = (x,y,z)=> new THREE.Vector3(x,y,z);
+
+function fatLine(a, b, color, r=0.028){
+  const grp = new THREE.Group();
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length();
+  if (len < 1e-6) return grp;
+  const mid = a.clone().add(b).multiplyScalar(0.5);
+
+  const geo = new THREE.CylinderGeometry(r, r, len, 12, 1, false);
+  const mat = new THREE.MeshStandardMaterial({
+    color, roughness:0.35, metalness:0.1, emissive: color, emissiveIntensity: 0.15
+  });
+  const cyl = new THREE.Mesh(geo, mat);
+  cyl.position.copy(mid);
+  cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+  grp.add(cyl);
+
+  [a, b].forEach(p=>{
+    const sp = new THREE.Mesh(new THREE.SphereGeometry(r*1.05, 10, 8), mat);
+    sp.position.copy(p);
+    grp.add(sp);
+  });
+  return grp;
+}
+function dashedFatLine(a, b, color, r=0.02, dash=0.06, gap=0.045){
+  const grp = new THREE.Group();
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length();
+  if (len < 1e-6) return grp;
+  const n = dir.clone().normalize();
+  const total = dash + gap;
+  const count = Math.max(1, Math.floor(len / total));
+  const mat = new THREE.MeshStandardMaterial({
+    color, roughness:0.4, metalness:0.1, emissive: color, emissiveIntensity: 0.15
+  });
+  let t = 0;
+  for (let i=0;i<count;i++){
+    const s0 = a.clone().add(n.clone().multiplyScalar(t));
+    const s1 = a.clone().add(n.clone().multiplyScalar(Math.min(t+dash, len)));
+    const segLen = s0.distanceTo(s1);
+    const mid = s0.clone().add(s1).multiplyScalar(0.5);
+    const geo = new THREE.CylinderGeometry(r, r, segLen, 8);
+    const cyl = new THREE.Mesh(geo, mat);
+    cyl.position.copy(mid);
+    cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), n);
+    grp.add(cyl);
+    t += total;
+  }
+  return grp;
+}
+function point(p, color=0xff6b6b, r=0.06){
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12),
+                           new THREE.MeshBasicMaterial({color}));
+  m.position.copy(p);
+  return m;
+}
+function label(p, text, color='#e6edf7'){
+  const c = document.createElement('canvas');
+  const ctx = c.getContext('2d');
+  c.width = 256; c.height = 64;
+  ctx.fillStyle = 'rgba(0,0,0,0)';
+  ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle = color;
+  ctx.font = 'bold 40px ui-sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, 128, 32);
+  const tex = new THREE.CanvasTexture(c);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false}));
+  spr.scale.set(0.55, 0.14, 1);
+  spr.position.copy(p);
+  return spr;
+}
+function clearGroup(grp){
+  while (grp.children.length){
+    const c = grp.children.pop();
+    if (c.geometry) c.geometry.dispose();
+    if (c.material){
+      if (Array.isArray(c.material)) c.material.forEach(m=>m.dispose());
+      else c.material.dispose();
+    }
+    if (c.children && c.children.length) clearGroup(c);
+  }
+}
+function commonPerp(A, u, B, v){
+  const uu = u.clone().normalize();
+  const vv = v.clone().normalize();
+  const w0 = new THREE.Vector3().subVectors(A, B);
+  const a = uu.dot(uu), b = uu.dot(vv), c = vv.dot(vv);
+  const d = uu.dot(w0), e = vv.dot(w0);
+  const den = a*c - b*b;
+  let t, s;
+  if (Math.abs(den) < 1e-9){ t = 0; s = e/c; }
+  else { t = (b*e - c*d)/den; s = (a*e - b*d)/den; }
+  const P = A.clone().add(uu.clone().multiplyScalar(t));
+  const Q = B.clone().add(vv.clone().multiplyScalar(s));
+  return { P, Q, dist: P.distanceTo(Q), u: uu, v: vv };
+}
+function convexPatch(points, color, opacity=0.24){
+  const c = new THREE.Vector3();
+  points.forEach(p=> c.add(p));
+  c.divideScalar(points.length);
+  const n = new THREE.Vector3().subVectors(points[1], points[0])
+    .cross(new THREE.Vector3().subVectors(points[2], points[0])).normalize();
+  const e1 = new THREE.Vector3().subVectors(points[0], c).normalize();
+  const e2 = new THREE.Vector3().crossVectors(n, e1).normalize();
+  const sorted = points.slice().sort((A,B)=>{
+    const aA = Math.atan2(new THREE.Vector3().subVectors(A,c).dot(e2),
+                          new THREE.Vector3().subVectors(A,c).dot(e1));
+    const aB = Math.atan2(new THREE.Vector3().subVectors(B,c).dot(e2),
+                          new THREE.Vector3().subVectors(B,c).dot(e1));
+    return aA - aB;
+  });
+  const verts = [c];
+  sorted.forEach(p=> verts.push(p));
+  const idx = [];
+  for (let i=1; i<verts.length; i++){
+    const j = (i===verts.length-1) ? 1 : i+1;
+    idx.push(0, i, j);
+  }
+  const geo = new THREE.BufferGeometry().setFromPoints(verts);
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  const mat = new THREE.MeshBasicMaterial({
+    color, transparent:true, opacity, side:THREE.DoubleSide, depthWrite:false
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  const loop = new THREE.LineLoop(
+    new THREE.BufferGeometry().setFromPoints(sorted),
+    new THREE.LineBasicMaterial({color, linewidth:1.4, transparent:true, opacity:0.75})
+  );
+  const wrap = new THREE.Group();
+  wrap.add(mesh); wrap.add(loop);
+  return wrap;
+}
+
+/* ================= 1. ТРЕУГОЛЬНАЯ ПИРАМИДА =================
+   Y-up. Основание ABC в плоскости y=0, вершина D сверху.
+   Ребро AB — переднее; CD — задне-верхнее.
+   Красный отрезок XY — общий перпендикуляр между AB и CD.
+   X — середина AB, Y — середина CD.
+*/
+function sceneTetra(){
+  const R = 1.4;
+  const H = R * Math.sqrt(2);
+  const A = V(-R*Math.sqrt(3)/2, 0,  R/2);
+  const B = V( R*Math.sqrt(3)/2, 0,  R/2);
+  const C = V(0, 0, -R);
+  const D = V(0, H, 0);
+
+  [[A,B],[B,C],[C,A],[A,D],[B,D],[C,D]].forEach(([p,q])=>
+    g.add(fatLine(p, q, 0x2b4770, 0.012))
+  );
+
+  const u = new THREE.Vector3().subVectors(B, A);
+  const v = new THREE.Vector3().subVectors(D, C);
+
+  const X = A.clone().add(B).multiplyScalar(0.5);
+  const Y = C.clone().add(D).multiplyScalar(0.5);
+
+  g.add(fatLine(A.clone().add(u.clone().multiplyScalar(-0.3)),
+                B.clone().add(u.clone().multiplyScalar( 0.3)), 0x4ecdc4, 0.035));
+  g.add(fatLine(C.clone().add(v.clone().multiplyScalar(-0.3)),
+                D.clone().add(v.clone().multiplyScalar( 0.3)), 0xffd93d, 0.035));
+
+  g.add(convexPatch([A, B, Y], 0x3ddc97, 0.24));
+
+  g.add(fatLine(X, Y, 0xff6b6b, 0.035));
+  g.add(point(X, 0xff6b6b, 0.08));
+  g.add(point(Y, 0xff6b6b, 0.08));
+  g.add(label(X.clone().add(V(0.15,0.15,0)), 'X', '#ff6b6b'));
+  g.add(label(Y.clone().add(V(0.15,0.1,0.15)), 'Y=M', '#ff6b6b'));
+
+  g.add(label(A.clone().add(V(-0.15, 0.15, 0)), 'A'));
+  g.add(label(B.clone().add(V( 0.15, 0.15, 0)), 'B'));
+  g.add(label(C.clone().add(V(-0.15, 0.15, 0)), 'C'));
+  g.add(label(D.clone().add(V( 0.15, 0.15, 0)), 'D'));
+}
+
+/* ================= 2. КУБ =================
+   Y-up. Нижняя грань ABCD в y=-s, верхняя A₁B₁C₁D₁ в y=+s.
+   Скрещивающиеся: A C₁ и C D (нижнее ребро).
+   X — основание перпендикуляра на AC₁, Y — на CD.
+   Сечение — прямоугольник через M_CD, M_AB, M_A₁B₁, M_C₁D₁.
+*/
+function sceneCube(){
+  const s = 1.0;
+  const A0  = V(-s, -s,  s);
+  const B0  = V( s, -s,  s);
+  const C0  = V( s, -s, -s);
+  const D0  = V(-s, -s, -s);
+  const A1  = V(-s,  s,  s);
+  const B1  = V( s,  s,  s);
+  const C1  = V( s,  s, -s);
+  const D1  = V(-s,  s, -s);
+
+  const edges = [
+    [A0,B0],[B0,C0],[C0,D0],[D0,A0],
+    [A1,B1],[B1,C1],[C1,D1],[D1,A1],
+    [A0,A1],[B0,B1],[C0,C1],[D0,D1]
+  ];
+  edges.forEach(([p,q])=> g.add(fatLine(p, q, 0x2b4770, 0.012)));
+
+  const A  = A0;
+  const Cc = C1;
+  const Cedge = C0;
+  const Dedge = D0;
+
+  const u = new THREE.Vector3().subVectors(Cc, A);
+  const v = new THREE.Vector3().subVectors(Dedge, Cedge);
+  const perp = commonPerp(A, u, Cedge, v);
+
+  g.add(fatLine(A.clone().add(u.clone().multiplyScalar(-0.2)),
+                Cc.clone().add(u.clone().multiplyScalar( 0.2)), 0x4ecdc4, 0.035));
+  g.add(fatLine(Cedge.clone().add(v.clone().multiplyScalar(-0.3)),
+                Dedge.clone().add(v.clone().multiplyScalar( 0.3)), 0xffd93d, 0.035));
+
+  const M_CD   = Cedge.clone().add(Dedge).multiplyScalar(0.5);
+  const M_AB   = A0.clone().add(B0).multiplyScalar(0.5);
+  const M_A1B1 = A1.clone().add(B1).multiplyScalar(0.5);
+  const M_C1D1 = C1.clone().add(D1).multiplyScalar(0.5);
+
+  g.add(convexPatch([M_CD, M_AB, M_A1B1, M_C1D1], 0x3ddc97, 0.24));
+
+  const M_D1C1 = D1.clone().add(C1).multiplyScalar(0.5);
+  g.add(dashedFatLine(M_AB, M_D1C1, 0xffe066, 0.022, 0.08, 0.055));
+  g.add(point(M_AB,   0xffe066, 0.05));
+  g.add(point(M_D1C1, 0xffe066, 0.05));
+
+  g.add(fatLine(perp.P, perp.Q, 0xff6b6b, 0.035));
+  g.add(point(perp.P, 0xff6b6b, 0.08));
+  g.add(point(perp.Q, 0xff6b6b, 0.08));
+  g.add(label(perp.P.clone().add(V(0.15,0.15,0)), 'X', '#ff6b6b'));
+  g.add(label(perp.Q.clone().add(V(-0.15,0.15,0)), 'Y', '#ff6b6b'));
+
+  g.add(label(A0.clone().add(V(-0.15,-0.15, 0.15)), 'A'));
+  g.add(label(B0.clone().add(V( 0.15,-0.15, 0.15)), 'B'));
+  g.add(label(C0.clone().add(V( 0.15,-0.15,-0.15)), 'C'));
+  g.add(label(D0.clone().add(V(-0.15,-0.15,-0.15)), 'D'));
+  g.add(label(A1.clone().add(V(-0.15, 0.15, 0.15)), 'A₁'));
+  g.add(label(B1.clone().add(V( 0.15, 0.15, 0.15)), 'B₁'));
+  g.add(label(C1.clone().add(V( 0.15, 0.15,-0.15)), 'C₁'));
+  g.add(label(D1.clone().add(V(-0.15, 0.15,-0.15)), 'D₁'));
+}
+
+/* ================= 3. ЧЕТЫРЁХУГОЛЬНАЯ ПИРАМИДА =================
+   Y-up. Основание ABCD в y=0, вершина S сверху.
+   Скрещивающиеся: AC (диагональ основания) и BS (боковое ребро).
+*/
+function scenePyr(){
+  const s = 1.1, h = 1.9;
+  const A = V(-s, 0,  s);
+  const B = V( s, 0,  s);
+  const C = V( s, 0, -s);
+  const D = V(-s, 0, -s);
+  const S = V(0, h, 0);
+
+  [[A,B],[B,C],[C,D],[D,A]].forEach(([p,q])=> g.add(fatLine(p, q, 0x2b4770, 0.012)));
+  [[S,A],[S,B],[S,C],[S,D]].forEach(([p,q])=> g.add(fatLine(p, q, 0x2b4770, 0.012)));
+
+  const u = new THREE.Vector3().subVectors(C, A);
+  const v = new THREE.Vector3().subVectors(S, B);
+  const perp = commonPerp(A, u, B, v);
+
+  g.add(fatLine(A, C, 0x4ecdc4, 0.035));
+  g.add(fatLine(B, S, 0xffd93d, 0.035));
+
+  g.add(convexPatch([B, D, S], 0x3ddc97, 0.24));
+
+  g.add(fatLine(perp.P, perp.Q, 0xff6b6b, 0.035));
+  g.add(point(perp.P, 0xff6b6b, 0.08));
+  g.add(point(perp.Q, 0xff6b6b, 0.08));
+  g.add(label(perp.P.clone().add(V(0.12,0.12,0)), 'X', '#ff6b6b'));
+  g.add(label(perp.Q.clone().add(V(-0.12,0.12,0)), 'Y', '#ff6b6b'));
+
+  g.add(label(S.clone().add(V(0,0.15,0)), 'S'));
+  g.add(label(A.clone().add(V(-0.15,0.1, 0.05)), 'A'));
+  g.add(label(B.clone().add(V( 0.15,0.1, 0.05)), 'B'));
+  g.add(label(C.clone().add(V( 0.15,0.1,-0.05)), 'C'));
+  g.add(label(D.clone().add(V(-0.15,0.1,-0.05)), 'D'));
+}
+
+/* ======================= ПЕРЕКЛЮЧЕНИЕ ======================= */
+function buildScene(name){
+  clearGroup(g);
+  if (name === 'tetra')      sceneTetra();
+  else if (name === 'cube')  sceneCube();
+  else                       scenePyr();
+
+  // Камера «по-учебному» — сверху-сбоку-впереди.
+  if (name === 'cube'){
+    camera.position.set(4.4, 3.6, 5.4);
+    controls.target.set(0, 0, 0);
+  } else if (name === 'pyr'){
+    camera.position.set(3.6, 3.0, 5.4);
+    controls.target.set(0, 1.0, 0);
+  } else {
+    camera.position.set(3.6, 3.0, 4.6);
+    controls.target.set(0, 0.9, 0);
+  }
+  controls.update();
+}
+
+document.querySelectorAll('.menu button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    buildScene(btn.dataset.scene);
+  });
+});
+
+function loop(){
+  requestAnimationFrame(loop);
+  controls.update();
+  renderer.render(scene, camera);
+}
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+buildScene('tetra');
+loop();
+</script>
+</body>
+</html>

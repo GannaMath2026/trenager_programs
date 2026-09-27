@@ -1,0 +1,605 @@
+<!-- ============================================================
+     §4. ПЕРПЕНДИКУЛЯРНОСТЬ ПРЯМЫХ И ПЛОСКОСТЕЙ
+     Полный код: импорты, инфраструктура, 11 сцен, регистрация, меню
+     ============================================================ -->
+
+<!-- ============================================================
+     4.0. HTML — блок меню §4 (добавить в <aside class="menu">)
+     ============================================================ -->
+<details>
+  <summary><span><span class="sec-num">§4</span>Перпендикулярность прямых и плоскостей</span></summary>
+  <button data-id="perpDef">п.15 — перпендикулярные прямые (определение)</button>
+  <button data-id="perpLemma">п.15 — лемма о двух параллельных и третьей</button>
+  <button data-id="perpPara">п.16 — две прямые, ⊥ плоскости, параллельны</button>
+  <button data-id="perpPriznak">п.17 — признак перпендикулярности прямой и плоскости</button>
+  <button data-id="perpExist">п.18 — единственная прямая, ⊥ плоскости</button>
+  <button data-id="perpDist">п.19 — расстояние от точки до плоскости (интерактив)</button>
+  <button data-id="perpTrès">п.20 — теорема о трёх перпендикулярах (интерактив)</button>
+  <button data-id="perpAngle">п.21 — угол между прямой и плоскостью (интерактив)</button>
+  <button data-id="perpDihedral">п.22 — двугранный угол (интерактив)</button>
+  <button data-id="perpPlanePriznak">п.23 — признак перпендикулярности плоскостей</button>
+  <button data-id="perpRectPar">п.24 — прямоугольный параллелепипед</button>
+</details>
+
+
+<!-- ============================================================
+     4.1. JS — добавить к существующему importmap:
+     "three/addons/" уже есть, дополнительный импорт ниже
+     ============================================================ -->
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { DragControls } from 'three/addons/controls/DragControls.js';
+
+/* ... предыдущий код (renderer, scene, camera, controls, g, хелперы) ... */
+
+/* ============================================================
+   4.2. ИНФРАСТРУКТУРА ИНТЕРАКТИВА
+   ============================================================ */
+
+const handlesGroup = new THREE.Group();
+scene.add(handlesGroup);
+
+let dragControls = null;
+const interactState = {};
+
+/* Очистка ручек + отключение DragControls */
+function disposeHandles(){
+  while (handlesGroup.children.length){
+    const c = handlesGroup.children.pop();
+    if (c.geometry) c.geometry.dispose();
+    if (c.material) c.material.dispose();
+  }
+  if (dragControls){
+    dragControls.disconnect();
+    dragControls = null;
+  }
+}
+
+/* Пересборка только статики (ручки не трогаем — они держат drag) */
+function rebuildStatic(id){
+  clearGroup(g);
+  SCENES[id].build();
+}
+
+/* Создание перетаскиваемых ручек для интерактивной сцены */
+function setupHandles(id){
+  disposeHandles();
+  const s = SCENES[id];
+  if (!s || !s.handles) return;
+
+  const list = s.handles();
+  list.forEach(h => {
+    const mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.13, 20, 16),
+      new THREE.MeshStandardMaterial({
+        color: h.color || 0xffb84d,
+        emissive: h.color || 0xffb84d,
+        emissiveIntensity: 0.5,
+        transparent: true,
+        opacity: 0.92
+      })
+    );
+    mesh.position.copy(h.pos);
+    mesh.userData.name = h.name;
+    handlesGroup.add(mesh);
+  });
+
+  if (handlesGroup.children.length > 0){
+    dragControls = new DragControls(handlesGroup.children, camera, renderer.domElement);
+
+    dragControls.addEventListener('dragstart', () => { controls.enabled = false; });
+    dragControls.addEventListener('dragend',   () => { controls.enabled = true;  });
+
+    dragControls.addEventListener('drag', () => {
+      const st = interactState[id];
+      handlesGroup.children.forEach(h => {
+        st[h.userData.name] = h.position.clone();
+      });
+      if (s.restrict) s.restrict(st);
+      handlesGroup.children.forEach(h => {
+        const p = st[h.userData.name];
+        if (p) h.position.copy(p);
+      });
+      rebuildStatic(id);
+    });
+  }
+}
+
+
+/* ============================================================
+   4.3. ОБНОВЛЁННЫЙ showSingle (заменить существующий)
+   ============================================================ */
+function showSingle(id){
+  hideAllViews();
+  singleEl.style.display = 'block';
+  if (!renderer.domElement.parentNode){
+    singleEl.appendChild(renderer.domElement);
+  }
+  renderer.setSize(singleEl.clientWidth, singleEl.clientHeight);
+
+  const s = SCENES[id];
+  if (!s) return;
+
+  clearGroup(g);
+  disposeHandles();
+
+  if (s.interactive && !interactState[id]){
+    interactState[id] = s.initState();
+  }
+
+  try { s.build(); } catch(e){
+    console.error('scene error:', id, e);
+    captionEl.innerHTML = '<b style="color:#ff6b6b">Ошибка сцены:</b> ' + e.message;
+    return;
+  }
+  captionEl.innerHTML = s.cap;
+
+  camera.position.set(...s.cam);
+  controls.target.set(...s.tgt);
+  camera.aspect = singleEl.clientWidth/singleEl.clientHeight;
+  camera.updateProjectionMatrix();
+  controls.update();
+
+  setupHandles(id);
+
+  renderer.render(scene, camera);
+}
+
+
+/* ============================================================
+   4.4. СЦЕНЫ §4
+   ============================================================ */
+
+/* ---------- п.15 — определение перпендикулярных прямых ---------- */
+function scenePerpDef(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.12));
+  const O = V(0,0,0);
+  const a1 = V(-1.7, 0, 0), a2 = V(1.7, 0, 0);
+  const b1 = V(0, 0, -1.7), b2 = V(0, 0, 1.7);
+  g.add(fatLine(a1, a2, 0xff6b6b, 0.030));
+  g.add(fatLine(b1, b2, 0xffd93d, 0.030));
+  g.add(rightAngleAt(O, a2, b2, 0.22, 0xffffff));
+  g.add(point(O, 0xffffff, 0.09));
+  g.add(label(O.clone().add(V(0.15, 0.15, 0.15)), 'O', '#ffffff'));
+  g.add(label(a2.clone().add(V(0.15, 0.15, 0)), 'a', '#ff6b6b'));
+  g.add(label(b2.clone().add(V(0.15, 0.15, 0)), 'b', '#ffd93d'));
+  g.add(label(V(0, 0.3, -1.7), 'α', '#4ecdc4'));
+}
+
+/* ---------- п.15 — лемма о двух параллельных и третьей ---------- */
+function scenePerpLemma(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.12));
+
+  const a1 = V(-1.6, 0, -0.7), a2 = V(1.6, 0, -0.7);
+  const b1 = V(-1.6, 0,  0.7), b2 = V(1.6, 0,  0.7);
+  g.add(fatLine(a1, a2, 0xff6b6b, 0.030));
+  g.add(fatLine(b1, b2, 0xff6b6b, 0.030));
+
+  const c1 = V(0, 1.6, -1.4), c2 = V(0, -1.6, 1.4);
+  g.add(fatLine(c1, c2, 0xffd93d, 0.030));
+
+  const Oa = V(0, 0, -0.7);
+  const Ob = V(0, 0,  0.7);
+
+  g.add(point(Oa, 0xffffff, 0.075));
+  g.add(point(Ob, 0xffffff, 0.075));
+
+  g.add(rightAngleAt(Oa, a2, c1, 0.20, 0xffffff));
+  g.add(rightAngleAt(Ob, b1, c1, 0.20, 0xffffff));
+
+  g.add(label(a1.clone().add(V(-0.15, 0.2, 0)), 'a', '#ff6b6b'));
+  g.add(label(b1.clone().add(V(-0.15, 0.2, 0)), 'b', '#ff6b6b'));
+  g.add(label(c1.clone().add(V(0.15, 0.1, 0)), 'c', '#ffd93d'));
+  g.add(label(V(0, 0.3, -1.7), 'α', '#4ecdc4'));
+}
+
+/* ---------- п.16 — две прямые, ⊥ плоскости, параллельны ---------- */
+function scenePerpPara(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.12));
+
+  const A1 = V(-1.0, 0, 0.4), A2 = V(-1.0, 2.0, 0.4);
+  const B1 = V( 1.0, 0, -0.4), B2 = V( 1.0, 2.0, -0.4);
+  g.add(fatLine(A1, A2, 0xff6b6b, 0.030));
+  g.add(fatLine(B1, B2, 0xffd93d, 0.030));
+
+  const dx = V(1,0,0), dz = V(0,0,1);
+  g.add(dashedLine(A1.clone().add(dx.clone().multiplyScalar(-0.8)),
+                   A1.clone().add(dx.clone().multiplyScalar( 0.8)), 0x4ecdc4, 0.07, 0.05));
+  g.add(dashedLine(A1.clone().add(dz.clone().multiplyScalar(-0.8)),
+                   A1.clone().add(dz.clone().multiplyScalar( 0.8)), 0x4ecdc4, 0.07, 0.05));
+  g.add(dashedLine(B1.clone().add(dx.clone().multiplyScalar(-0.8)),
+                   B1.clone().add(dx.clone().multiplyScalar( 0.8)), 0x4ecdc4, 0.07, 0.05));
+  g.add(dashedLine(B1.clone().add(dz.clone().multiplyScalar(-0.8)),
+                   B1.clone().add(dz.clone().multiplyScalar( 0.8)), 0x4ecdc4, 0.07, 0.05));
+
+  g.add(rightAngle(A1, V(0,1,0), dx, 0.18, 0xffffff));
+  g.add(rightAngle(A1, V(0,1,0), dz, 0.18, 0xffffff));
+  g.add(rightAngle(B1, V(0,1,0), dx, 0.18, 0xffffff));
+  g.add(rightAngle(B1, V(0,1,0), dz, 0.18, 0xffffff));
+
+  g.add(point(A1, 0xffffff, 0.07));
+  g.add(point(B1, 0xffffff, 0.07));
+  g.add(label(A2.clone().add(V(-0.15, 0.1, 0)), 'a', '#ff6b6b'));
+  g.add(label(B2.clone().add(V( 0.15, 0.1, 0)), 'b', '#ffd93d'));
+  g.add(label(V(0, 0.3, -1.7), 'α', '#4ecdc4'));
+  g.add(label(V(0, 2.35, 0), 'a ⊥ α  и  b ⊥ α  ⇒  a ∥ b', '#e6edf7', 0.7));
+}
+
+/* ---------- п.17 — признак ⊥ прямой и плоскости ---------- */
+function scenePerpPriznak(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.12));
+  const O = V(0,0,0);
+
+  g.add(fatLine(V(-1.6, 0, 0), V(1.6, 0, 0), 0xffd93d, 0.028));
+  g.add(fatLine(V(0, 0, -1.6), V(0, 0, 1.6), 0x6ba8ff, 0.028));
+
+  g.add(dashedLine(V(-1.2, 0, -1.0), V(1.2, 0, 0.8), 0x4ecdc4, 0.07, 0.05));
+  g.add(dashedLine(V(-0.9, 0,  1.2), V(1.3, 0, -0.9), 0x4ecdc4, 0.07, 0.05));
+
+  g.add(fatLine(O, V(0, 2.0, 0), 0xff6b6b, 0.035));
+
+  g.add(rightAngle(O, V(0,1,0), V(1,0,0), 0.20, 0xffffff));
+  g.add(rightAngle(O, V(0,1,0), V(0,0,1), 0.20, 0xffffff));
+
+  g.add(point(O, 0xffffff, 0.09));
+  g.add(label(O.clone().add(V(0.15, 0.1, 0.15)), 'O', '#ffffff'));
+  g.add(label(V(0.15, 2.15, 0), 'a', '#ff6b6b'));
+  g.add(label(V(1.75, 0.2, 0), 'p', '#ffd93d'));
+  g.add(label(V(0.15, 0.2, 1.75), 'q', '#6ba8ff'));
+  g.add(label(V(0, 0.25, -1.7), 'α', '#4ecdc4'));
+}
+
+/* ---------- п.18 — единственная прямая, ⊥ плоскости ---------- */
+function scenePerpExist(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.12));
+
+  const M = V(0.5, 1.2, 0.3);
+  const H = V(0.5, 0, 0.3);
+  g.add(fatLine(M, H, 0xff6b6b, 0.030));
+
+  const dx = V(1,0,0), dz = V(0,0,1);
+  g.add(dashedLine(H.clone().add(dx.clone().multiplyScalar(-0.9)),
+                   H.clone().add(dx.clone().multiplyScalar( 0.9)), 0x4ecdc4, 0.07, 0.05));
+  g.add(dashedLine(H.clone().add(dz.clone().multiplyScalar(-0.9)),
+                   H.clone().add(dz.clone().multiplyScalar( 0.9)), 0x4ecdc4, 0.07, 0.05));
+
+  g.add(rightAngle(H, V(0,1,0), dx, 0.18, 0xffffff));
+  g.add(rightAngle(H, V(0,1,0), dz, 0.18, 0xffffff));
+
+  g.add(point(M, 0xffffff, 0.09));
+  g.add(point(H, 0xffffff, 0.09));
+  g.add(label(M.clone().add(V(0.15, 0.15, 0)), 'M', '#ffffff'));
+  g.add(label(H.clone().add(V(0.15, 0.1, 0.1)), 'H', '#ff6b6b'));
+  g.add(label(V(0, 0.25, -1.7), 'α', '#4ecdc4'));
+  g.add(label(V(0, 2.0, 0), 'прямая a — единственная', '#e6edf7', 0.6));
+}
+
+/* ---------- п.19 — расстояние от точки до плоскости (интерактив) ---------- */
+function scenePerpDist(){
+  const st = interactState['perpDist'];
+  const A = st.A.clone();
+  const M = st.M.clone();
+  const H = V(A.x, 0, A.z);
+
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 2.0, 0x4ecdc4, 0.12));
+
+  const dx = V(1,0,0), dz = V(0,0,1);
+  g.add(dashedLine(H.clone().add(dx.clone().multiplyScalar(-0.9)),
+                   H.clone().add(dx.clone().multiplyScalar( 0.9)), 0x4ecdc4, 0.07, 0.05));
+  g.add(dashedLine(H.clone().add(dz.clone().multiplyScalar(-0.9)),
+                   H.clone().add(dz.clone().multiplyScalar( 0.9)), 0x4ecdc4, 0.07, 0.05));
+
+  g.add(fatLine(A, H, 0xff6b6b, 0.032));
+  g.add(fatLine(A, M, 0xffd93d, 0.030));
+  g.add(fatLine(H, M, 0x6ba8ff, 0.030));
+
+  const haDir = new THREE.Vector3().subVectors(A, H);
+  const hmDir = new THREE.Vector3().subVectors(M, H);
+  if (haDir.lengthSq() > 1e-6 && hmDir.lengthSq() > 1e-6){
+    g.add(rightAngle(H, haDir.normalize(), hmDir.normalize(), 0.20, 0xffffff));
+  }
+
+  g.add(point(H, 0xffffff, 0.09));
+  g.add(label(A.clone().add(V(0.15, 0.15, 0)), 'A', '#ff6b6b'));
+  g.add(label(H.clone().add(V(-0.2, 0.1, 0)), 'H', '#ffffff'));
+  g.add(label(M.clone().add(V(0.15, 0.15, 0)), 'M', '#ffd93d'));
+  g.add(label(V(0, 0.25, -1.7), 'α', '#4ecdc4'));
+
+  const AH = A.distanceTo(H);
+  const AM = A.distanceTo(M);
+  g.add(label(V(0, 2.3, 0),
+    `AH = ${AH.toFixed(2)}    AM = ${AM.toFixed(2)}    ⇒  AH < AM`,
+    '#e6edf7', 0.62));
+}
+scenePerpDist.initState = () => ({
+  A: V(-0.5, 1.8, -0.4),
+  M: V( 1.2, 0,   0.7)
+});
+scenePerpDist.handles = () => {
+  const st = interactState['perpDist'];
+  return [
+    { name: 'A', pos: st.A, color: 0xff6b6b },
+    { name: 'M', pos: st.M, color: 0xffd93d }
+  ];
+};
+scenePerpDist.restrict = (st) => {
+  if (st.A.y < 0.4) st.A.y = 0.4;
+  if (Math.abs(st.M.x) > 1.6) st.M.x = Math.sign(st.M.x) * 1.6;
+  if (Math.abs(st.M.z) > 1.6) st.M.z = Math.sign(st.M.z) * 1.6;
+  st.M.y = 0;
+};
+
+/* ---------- п.20 — теорема о трёх перпендикулярах (интерактив) ---------- */
+function scenePerpTrès(){
+  const st = interactState['perpTrès'];
+  const B = st.B.clone();
+
+  const H = V(0, 0, 0);
+  const A = V(0, 1.6, 0);
+
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+
+  const dx = V(1,0,0), dz = V(0,0,1);
+  g.add(dashedLine(H.clone().add(dx.clone().multiplyScalar(-1.2)),
+                   H.clone().add(dx.clone().multiplyScalar( 1.2)), 0x4ecdc4, 0.07, 0.05));
+  g.add(dashedLine(H.clone().add(dz.clone().multiplyScalar(-1.2)),
+                   H.clone().add(dz.clone().multiplyScalar( 1.2)), 0x4ecdc4, 0.07, 0.05));
+
+  g.add(fatLine(A, H, 0xff6b6b, 0.035));
+  g.add(fatLine(A, B, 0xffd93d, 0.035));
+  g.add(fatLine(H, B, 0x6ba8ff, 0.035));
+
+  const hbDir = new THREE.Vector3().subVectors(B, H);
+  hbDir.y = 0;
+  let xDir;
+  if (hbDir.length() < 0.05){
+    xDir = V(1, 0, 0);
+  } else {
+    hbDir.normalize();
+    xDir = V(-hbDir.z, 0, hbDir.x);
+  }
+  const x1 = B.clone().add(xDir.clone().multiplyScalar(-1.4));
+  const x2 = B.clone().add(xDir.clone().multiplyScalar( 1.4));
+  g.add(fatLine(x1, x2, 0xff3d7f, 0.030));
+
+  g.add(rightAngle(H, V(0,1,0), hbDir.lengthSq() > 1e-6 ? hbDir : V(1,0,0), 0.20, 0xffffff));
+  const abDir = new THREE.Vector3().subVectors(A, B).normalize();
+  g.add(rightAngle(B, xDir, hbDir.clone().multiplyScalar(-1), 0.18, 0xffffff));
+  g.add(rightAngle(B, xDir, abDir, 0.18, 0xffffff));
+
+  g.add(point(A, 0xffffff, 0.09));
+  g.add(point(H, 0xffffff, 0.09));
+  g.add(label(A.clone().add(V(0.15, 0.15, 0)), 'A', '#ff6b6b'));
+  g.add(label(H.clone().add(V(-0.15, 0.1, 0.15)), 'H', '#ff6b6b'));
+  g.add(label(B.clone().add(V(0.15, 0.1, 0.15)), 'B', '#ffd93d'));
+  g.add(label(x2.clone().add(V(0.15, 0.1, 0)), 'x', '#ff3d7f'));
+  g.add(label(V(0, 0.25, -1.7), 'β', '#4ecdc4'));
+}
+scenePerpTrès.initState = () => ({ B: V(1.4, 0, 0.2) });
+scenePerpTrès.handles = () => {
+  const st = interactState['perpTrès'];
+  return [{ name: 'B', pos: st.B, color: 0xff3d7f }];
+};
+scenePerpTrès.restrict = (st) => {
+  st.B.y = 0;
+  const r = Math.hypot(st.B.x, st.B.z);
+  if (r < 0.4){ const k = 0.4 / (r || 1); st.B.x *= k; st.B.z *= k; }
+  if (r > 1.7){ const k = 1.7 / r;      st.B.x *= k; st.B.z *= k; }
+};
+
+/* ---------- п.21 — угол между прямой и плоскостью (интерактив) ---------- */
+function scenePerpAngle(){
+  const st = interactState['perpAngle'];
+  const A = st.A.clone();
+  const H = V(A.x, 0, A.z);
+  const O = V(-1.2, 0, -0.4);
+
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 2.0, 0x4ecdc4, 0.12));
+
+  const dx = V(1,0,0), dz = V(0,0,1);
+  g.add(dashedLine(O.clone().add(dx.clone().multiplyScalar(-0.9)),
+                   O.clone().add(dx.clone().multiplyScalar( 0.9)), 0x4ecdc4, 0.07, 0.05));
+  g.add(dashedLine(O.clone().add(dz.clone().multiplyScalar(-0.9)),
+                   O.clone().add(dz.clone().multiplyScalar( 0.9)), 0x4ecdc4, 0.07, 0.05));
+
+  g.add(dashedLine(A, H, 0x8fa3bf, 0.10, 0.08));
+  g.add(fatLine(O, A, 0xff6b6b, 0.030));
+  g.add(fatLine(O, H, 0xffd93d, 0.030));
+
+  const oaDir = new THREE.Vector3().subVectors(A, O);
+  const ohDir = new THREE.Vector3().subVectors(H, O);
+  if (oaDir.lengthSq() > 1e-6 && ohDir.lengthSq() > 1e-6){
+    g.add(arcAngle(O, oaDir.clone().normalize(), ohDir.clone().normalize(), 0.6, 0x3ddc97));
+  }
+
+  g.add(point(H, 0xffffff, 0.09));
+  g.add(point(O, 0xffffff, 0.09));
+  g.add(label(A.clone().add(V(0.15, 0.15, 0)), 'A', '#ff6b6b'));
+  g.add(label(H.clone().add(V(0.15, 0.1, 0.1)), 'H', '#8fa3bf'));
+  g.add(label(O.clone().add(V(-0.15, 0.1, -0.1)), 'O', '#ffffff'));
+
+  const angle = Math.acos(Math.max(-1, Math.min(1,
+    oaDir.normalize().dot(ohDir.normalize()))));
+  const deg = (angle * 180 / Math.PI).toFixed(0);
+  g.add(label(V(0, 2.3, 0), `φ ≈ ${deg}°`, '#3ddc97', 0.7));
+  g.add(label(V(0, 0.25, -1.7), 'α', '#4ecdc4'));
+}
+scenePerpAngle.initState = () => ({ A: V(0.5, 1.6, 0.2) });
+scenePerpAngle.handles = () => {
+  const st = interactState['perpAngle'];
+  return [{ name: 'A', pos: st.A, color: 0xff6b6b }];
+};
+scenePerpAngle.restrict = (st) => {
+  if (st.A.y < 0.4) st.A.y = 0.4;
+};
+
+/* ---------- п.22 — двугранный угол (интерактив) ---------- */
+function scenePerpDihedral(){
+  const st = interactState['perpDihedral'];
+  const P = st.P.clone();
+
+  const R = 1.8;
+  g.add(fatLine(V(0,0,-R), V(0,0,R), 0xffffff, 0.032));
+
+  let phi = Math.atan2(P.y, P.x);
+  const phiDeg = Math.max(10, Math.min(170, phi * 180 / Math.PI));
+  phi = phiDeg * Math.PI / 180;
+
+  const u = V(Math.cos(phi), Math.sin(phi), 0);
+  const v = V(1, 0, 0);
+
+  g.add(planePatch(
+    V(0,0,-R),
+    V(0,0, R),
+    v.clone().multiplyScalar(R).add(V(0,0, R)),
+    v.clone().multiplyScalar(R).add(V(0,0,-R)),
+    0x6ba8ff, 0.22
+  ));
+
+  g.add(planePatch(
+    V(0,0,-R),
+    V(0,0, R),
+    u.clone().multiplyScalar(R).add(V(0,0, R)),
+    u.clone().multiplyScalar(R).add(V(0,0,-R)),
+    0xffa94d, 0.22
+  ));
+
+  g.add(fatLine(V(0,0,0), v.clone().multiplyScalar(1.6), 0xff6b6b, 0.028));
+  g.add(fatLine(V(0,0,0), u.clone().multiplyScalar(1.6), 0xff6b6b, 0.028));
+  g.add(rightAngle(V(0,0,0), V(0,0,1), v, 0.18, 0xffffff));
+  g.add(rightAngle(V(0,0,0), V(0,0,1), u, 0.18, 0xffffff));
+  g.add(arcAngle(V(0,0,0), v, u, 0.6, 0x3ddc97));
+
+  g.add(point(V(0,0,0), 0xffffff, 0.09));
+  g.add(label(V(0, 0, R + 0.15), 'a', '#ffffff'));
+  g.add(label(v.clone().multiplyScalar(R*0.7).add(V(0,0,-0.3)), 'γ', '#6ba8ff', 0.6));
+  g.add(label(u.clone().multiplyScalar(R*0.7).add(V(0,0,-0.3)), 'β', '#ffa94d', 0.6));
+  g.add(label(v.clone().add(u).multiplyScalar(0.5).add(V(0.15, 0, 0)),
+              `${phiDeg.toFixed(0)}°`, '#3ddc97', 0.55));
+}
+scenePerpDihedral.initState = () => ({ P: V(0.8, 1.2, 0) });
+scenePerpDihedral.handles = () => {
+  const st = interactState['perpDihedral'];
+  return [{ name: 'P', pos: st.P, color: 0xffb84d }];
+};
+scenePerpDihedral.restrict = (st) => {
+  st.P.z = 0;
+  const r = Math.hypot(st.P.x, st.P.y);
+  if (r < 0.6){ const k = 0.6/(r||1); st.P.x *= k; st.P.y *= k; }
+  if (r > 1.8){ const k = 1.8/r;      st.P.x *= k; st.P.y *= k; }
+  if (st.P.y < 0.1) st.P.y = 0.1;
+};
+
+/* ---------- п.23 — признак ⊥ плоскостей ---------- */
+function scenePerpPlanePriznak(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x6ba8ff, 0.14));
+  g.add(planeBig(V(0,0,0), V(0,1,0), V(0,0,1), 1.9, 0x3ddc97, 0.14));
+  g.add(fatLine(V(0,-1.9,0), V(0,1.9,0), 0xff6b6b, 0.035));
+  g.add(fatLine(V(-1.7,0,0), V(1.7,0,0), 0xffd93d, 0.030));
+  g.add(fatLine(V(0,0,-1.7), V(0,0,1.7), 0xffd93d, 0.030));
+  g.add(rightAngle(V(0,0,0), V(0,1,0), V(1,0,0), 0.22, 0xffffff));
+  g.add(rightAngle(V(0,0,0), V(0,1,0), V(0,0,1), 0.22, 0xffffff));
+  g.add(point(V(0,0,0), 0xffffff, 0.10));
+  g.add(label(V(0.18, 0.18, 0.18), 'O', '#ffffff'));
+  g.add(label(V(-1.6, 1.4, 0), 'α', '#3ddc97'));
+  g.add(label(V(0, 0.25, -1.7), 'β', '#6ba8ff'));
+  g.add(label(V(0.15, 2.05, 0), 'a', '#ff6b6b'));
+  g.add(label(V(1.85, 0.15, 0), 'b', '#ffd93d'));
+  g.add(label(V(0.15, 0.15, 1.85), 'c', '#ffd93d'));
+}
+
+/* ---------- п.24 — прямоугольный параллелепипед ---------- */
+function scenePerpRectPar(){
+  const a = 1.4, b = 1.0, c = 0.9;
+  const A0 = V(-a,-b, c), B0 = V( a,-b, c);
+  const C0 = V( a,-b,-c), D0 = V(-a,-b,-c);
+  const A1 = V(-a, b, c), B1 = V( a, b, c);
+  const C1 = V( a, b,-c), D1 = V(-a, b,-c);
+
+  [[A0,B0],[B0,C0],[C0,D0],[D0,A0],
+   [A1,B1],[B1,C1],[C1,D1],[D1,A1],
+   [A0,A1],[B0,B1],[C0,C1],[D0,D1]].forEach(([p,q])=>
+    g.add(fatLine(p, q, 0x2b4770, 0.012)));
+
+  g.add(fatLine(A0, B0, 0xffd93d, 0.028));
+  g.add(fatLine(A0, D0, 0x3ddc97, 0.028));
+  g.add(fatLine(A0, A1, 0x6ba8ff, 0.028));
+
+  g.add(fatLine(A0, C1, 0xff6b6b, 0.030));
+
+  g.add(dashedThickLine(A0, C0, 0x9fc3e8, 0.014, 0.10, 0.07));
+  g.add(dashedThickLine(C1, C0, 0x9fc3e8, 0.014, 0.10, 0.07));
+  g.add(dashedThickLine(B0, C0, 0x9fc3e8, 0.014, 0.10, 0.07));
+
+  g.add(rightAngleAt(A0, B0, D0, 0.18, 0xffffff));
+  g.add(rightAngleAt(A0, B0, A1, 0.18, 0xffffff));
+  g.add(rightAngleAt(A0, A1, D0, 0.18, 0xffffff));
+
+  g.add(point(A0, 0xffffff, 0.08));
+  g.add(point(C1, 0xffffff, 0.08));
+
+  g.add(label(A0.clone().add(V(-0.15,-0.1, 0.1)), 'A'));
+  g.add(label(C1.clone().add(V( 0.15, 0.1,-0.1)), 'C₁'));
+  g.add(label(A0.clone().add(V( 0.05,-0.3, 0.15)), 'AB', '#ffd93d', 0.5));
+  g.add(label(A0.clone().add(V(-0.3,-0.15,-0.1)), 'AD', '#3ddc97', 0.5));
+  g.add(label(A0.clone().add(V(-0.3, 0.5, 0.15)), 'AA₁', '#6ba8ff', 0.5));
+  g.add(label(V(0, 1.7, 0), 'AC₁² = AB² + AD² + AA₁²', '#e6edf7', 0.7));
+}
+
+
+/* ============================================================
+   4.5. РЕГИСТРАЦИЯ СЦЕН §4 в общий SCENES
+   ============================================================ */
+const SCENES_P4 = {
+  perpDef:          {build: scenePerpDef,          cap: 'Две прямые называются перпендикулярными, если угол между ними равен 90°.', cam:[4.0,3.4,5.0], tgt:[0,0,0]},
+  perpLemma:        {build: scenePerpLemma,        cap: 'Лемма: если одна из двух параллельных прямых перпендикулярна к третьей прямой, то и другая прямая перпендикулярна к этой прямой.', cam:[4.2,3.4,5.2], tgt:[0,0,0]},
+  perpPara:         {build: scenePerpPara,         cap: 'Теорема: две прямые, перпендикулярные к одной плоскости, параллельны.', cam:[4.0,3.4,5.2], tgt:[0,0.8,0]},
+  perpPriznak:      {build: scenePerpPriznak,      cap: 'Признак: если прямая перпендикулярна двум пересекающимся прямым, лежащим в плоскости, то она перпендикулярна этой плоскости.', cam:[4.0,3.4,5.0], tgt:[0,0.6,0]},
+  perpExist:        {build: scenePerpExist,        cap: 'Теорема: через любую точку пространства проходит прямая, перпендикулярная к данной плоскости, и притом только одна.', cam:[4.0,3.4,5.0], tgt:[0,0.6,0]},
+
+  perpDist: {
+    build: scenePerpDist,
+    cap: 'Расстояние от точки до плоскости — длина перпендикуляра AH. Перпендикуляр меньше любой наклонной: AH < AM. <b>Точки A и M можно перетаскивать.</b>',
+    cam:[4.4,3.6,5.6], tgt:[0,0.6,0],
+    interactive: true,
+    initState: scenePerpDist.initState,
+    handles:   scenePerpDist.handles,
+    restrict:  scenePerpDist.restrict
+  },
+  perpTrès: {
+    build: scenePerpTrès,
+    cap: 'Теорема о трёх перпендикулярах: прямая x, проведённая в плоскости через основание наклонной перпендикулярно к её проекции, перпендикулярна и к самой наклонной. <b>Точку B можно перетаскивать.</b>',
+    cam:[4.4,3.6,5.6], tgt:[0,0.5,0],
+    interactive: true,
+    initState: scenePerpTrès.initState,
+    handles:   scenePerpTrès.handles,
+    restrict:  scenePerpTrès.restrict
+  },
+  perpAngle: {
+    build: scenePerpAngle,
+    cap: 'Углом между прямой и плоскостью называется угол между прямой и её проекцией на эту плоскость. <b>Точку A можно перетаскивать.</b>',
+    cam:[4.4,3.6,5.6], tgt:[0,0.6,0],
+    interactive: true,
+    initState: scenePerpAngle.initState,
+    handles:   scenePerpAngle.handles,
+    restrict:  scenePerpAngle.restrict
+  },
+  perpDihedral: {
+    build: scenePerpDihedral,
+    cap: 'Двугранный угол — фигура из прямой a и двух полуплоскостей с общей границей a. Линейный угол — между перпендикулярами к ребру. <b>Точку P на β можно перетаскивать — угол меняется.</b>',
+    cam:[4.4,3.4,5.4], tgt:[0,0.4,0],
+    interactive: true,
+    initState: scenePerpDihedral.initState,
+    handles:   scenePerpDihedral.handles,
+    restrict:  scenePerpDihedral.restrict
+  },
+
+  perpPlanePriznak:{build: scenePerpPlanePriznak, cap: 'Признак перпендикулярности плоскостей: если одна из двух плоскостей проходит через прямую, перпендикулярную к другой плоскости, то такие плоскости перпендикулярны.', cam:[4.4,3.4,5.4], tgt:[0,0.3,0]},
+  perpRectPar:     {build: scenePerpRectPar,     cap: 'Квадрат диагонали прямоугольного параллелепипеда равен сумме квадратов трёх его измерений: AC₁² = AB² + AD² + AA₁². Пунктиром — диагональ AC, боковое ребро C₁C и ребро BC, противоположное зелёному AD.', cam:[4.4,3.4,5.4], tgt:[0,0.2,0]},
+};
+
+Object.assign(SCENES, SCENES_P4);
+
+</script>

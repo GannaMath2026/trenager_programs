@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Почему V пирамиды = ⅓ V призмы</title>
+<style>
+  :root{
+    --fg:#e8eef7; --muted:#9aa8bd; --accent:#4ecdc4;
+    --panel: rgba(18,24,34,.80);
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;height:100%;overflow:hidden;color:var(--fg);
+    font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1200px 800px at 75% 15%, #1b2740 0%, #0e1116 55%, #080a0e 100%);
+  }
+  canvas{display:block;}
+
+  .panel{
+    position:absolute;top:16px;left:16px;width:340px;max-width:calc(100% - 32px);
+    background:var(--panel);backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.10);border-radius:16px;
+    padding:16px 18px;box-shadow:0 18px 50px rgba(0,0,0,.55);
+    user-select:none;
+  }
+  h1{font-size:15px;line-height:1.3;margin:0 0 12px;font-weight:650;letter-spacing:.2px;}
+  h1 span{color:var(--accent);}
+
+  .tabs{display:flex;gap:6px;background:rgba(255,255,255,.05);
+        padding:4px;border-radius:10px;margin-bottom:14px;}
+  .tabs button{
+    flex:1;border:0;background:transparent;color:var(--muted);
+    font-size:12.5px;padding:8px 4px;border-radius:7px;cursor:pointer;
+    font-family:inherit;font-weight:600;transition:.18s;white-space:nowrap;
+  }
+  .tabs button:hover{color:#dfe8f5;}
+  .tabs button.active{background:rgba(78,205,196,.16);color:var(--accent);
+        box-shadow:inset 0 0 0 1px rgba(78,205,196,.35);}
+
+  .slider-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .slider-row label{font-size:11px;color:var(--muted);white-space:nowrap;
+        text-transform:uppercase;letter-spacing:.6px;}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;flex:1;height:4px;border-radius:4px;
+    background:linear-gradient(90deg,#4ecdc4,#ffd93d);outline:none;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:#fff;border:2px solid #2a3546;box-shadow:0 2px 8px rgba(0,0,0,.5);cursor:grab;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;background:#fff;
+    border:2px solid #2a3546;cursor:grab;
+  }
+
+  #info{font-size:12.5px;line-height:1.5;color:#c3cede;margin:10px 0 12px;}
+  #info b{color:#fff;}
+
+  #stats{border-top:1px solid rgba(255,255,255,.09);padding-top:10px;display:grid;gap:6px;}
+  .stat{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);}
+  .stat b{color:#fff;font-variant-numeric:tabular-nums;font-weight:600;}
+  .stat.ok b{color:var(--accent);}
+
+  .hint{
+    position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+    font-size:11.5px;color:#5f6d82;letter-spacing:.3px;pointer-events:none;
+  }
+  @media (max-width:520px){
+    .panel{top:8px;left:8px;right:8px;width:auto;padding:12px 14px;}
+    h1{font-size:13px;}
+    .tabs button{font-size:11px;}
+    #info{font-size:11.5px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <h1>Почему объём пирамиды = <span>⅓</span> объёма призмы</h1>
+
+  <div class="tabs">
+    <button data-stage="0" class="active">Куб</button>
+    <button data-stage="1">Параллелепипед</button>
+    <button data-stage="2">Призма</button>
+  </div>
+
+  <div class="slider-row">
+    <label>Разобрано</label>
+    <input id="slider" type="range" min="0" max="100" value="0" />
+    <label>Собрано</label>
+  </div>
+
+  <p id="info"></p>
+  <div id="stats"></div>
+</div>
+
+<div class="hint">вращайте мышью · колесо — зум</div>
+
+<div id="app"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
+
+/* ------------------------------------------------------------------ */
+/*  СЦЕНА                                                              */
+/* ------------------------------------------------------------------ */
+const host = document.getElementById('app');
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+host.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 500);
+camera.position.set(3.2, 2.6, 3.9);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.09;
+controls.minDistance = 0.8;
+controls.maxDistance = 60;
+
+scene.add(new THREE.HemisphereLight(0xdce8ff, 0x1a2233, 1.9));
+
+const key = new THREE.DirectionalLight(0xffffff, 2.4);
+key.position.set(6, 9, 7);
+scene.add(key);
+
+const rim = new THREE.DirectionalLight(0x7fa8ff, 1.3);
+rim.position.set(-7, -3, -6);
+scene.add(rim);
+
+const stageGroup = new THREE.Group();
+scene.add(stageGroup);
+
+/* ------------------------------------------------------------------ */
+/*  ГЕОМЕТРИЧЕСКИЕ ДАННЫЕ                                              */
+/* ------------------------------------------------------------------ */
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+
+/* Куб [0,1]^3, вершина A=(0,0,0), три грани напротив неё — основания */
+function cubeData() {
+  const O   = V(0, 0, 0);
+  const X   = V(1, 0, 0);
+  const Y   = V(0, 1, 0);
+  const Z   = V(0, 0, 1);
+  const XY  = V(1, 1, 0);
+  const XZ  = V(1, 0, 1);
+  const YZ  = V(0, 1, 1);
+  const XYZ = V(1, 1, 1);
+
+  const pieces = [
+    [O, X, XY, XYZ, XZ],   // пирамида с основанием x = 1
+    [O, Y, XY, XYZ, YZ],   // пирамида с основанием y = 1
+    [O, Z, XZ, XYZ, YZ],   // пирамида с основанием z = 1
+  ];
+  // порядок: 0..3 — низ, 4..7 — верх
+  const corners = [O, X, XY, Y, Z, XZ, XYZ, YZ];
+  const edges = [
+    [0,1],[1,2],[2,3],[3,0],
+    [4,5],[5,6],[6,7],[7,4],
+    [0,4],[1,5],[2,6],[3,7]
+  ];
+  return { pieces, corners, edges };
+}
+
+/* Треугольная призма + 3 тетраэдра */
+function prismData() {
+  const A = V( 0.00, 0.00, 0);
+  const B = V( 1.20, 0.00, 0);
+  const C = V( 0.32, 1.05, 0);
+  const h = 1.15;
+  const up = V(0, 0, h);
+  const A2 = A.clone().add(up);
+  const B2 = B.clone().add(up);
+  const C2 = C.clone().add(up);
+
+  const pieces = [
+    [A, B, C, A2],       // тетраэдр 1
+    [B, C, A2, B2],      // тетраэдр 2
+    [C, A2, B2, C2],     // тетраэдр 3
+  ];
+  const corners = [A, B, C, A2, B2, C2];
+  const edges = [
+    [0,1],[1,2],[2,0],
+    [3,4],[4,5],[5,3],
+    [0,3],[1,4],[2,5]
+  ];
+  return { pieces, corners, edges };
+}
+
+/* Аффинное преобразование куба в «скошенный» параллелепипед */
+const SHEAR = new THREE.Matrix3().set(
+  1.20, 0.55, 0.00,
+  0.00, 0.95, 0.25,
+  0.10, 0.00, 1.10
+);
+
+function applyMatrixToData(data, m) {
+  const f = v => v.clone().applyMatrix3(m);
+  return {
+    pieces:  data.pieces.map(p => p.map(f)),
+    corners: data.corners.map(f),
+    edges:   data.edges
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  ОБЪЁМ ПО ГЕОМЕТРИИ                                                 */
+/* ------------------------------------------------------------------ */
+function geometryVolume(geo) {
+  const pos = geo.attributes.position;
+  const ref = new THREE.Vector3();
+  const tmp = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    tmp.fromBufferAttribute(pos, i);
+    ref.add(tmp);
+  }
+  ref.divideScalar(pos.count);          // точка внутри выпуклой оболочки
+
+  let vol = 0;
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+  const ab = new THREE.Vector3(), ac = new THREE.Vector3(), ad = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i += 3) {
+    a.fromBufferAttribute(pos, i);
+    b.fromBufferAttribute(pos, i + 1);
+    c.fromBufferAttribute(pos, i + 2);
+    ab.subVectors(b, a);
+    ac.subVectors(c, a);
+    ad.subVectors(ref, a);
+    vol += Math.abs(ab.dot(ac.clone().cross(ad))) / 6;
+  }
+  return vol;
+}
+
+/* ------------------------------------------------------------------ */
+/*  ПОСТРОЕНИЕ ЭТАПА                                                   */
+/* ------------------------------------------------------------------ */
+const COLORS = [0xff6b6b, 0x4ecdc4, 0xffd93d];
+
+let pieces = [];        // { mesh, dir }
+let explodeDist = 1;
+let t = 0;              // 0 — разобрано, 1 — собрано
+let targetT = 1;
+
+function disposeStage() {
+  stageGroup.traverse(o => {
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) {
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      mats.forEach(m => m.dispose());
+    }
+  });
+  stageGroup.clear();
+  pieces = [];
+}
+
+function buildStage(index) {
+  disposeStage();
+
+  let data;
+  if (index === 0)      data = cubeData();
+  else if (index === 1) data = applyMatrixToData(cubeData(), SHEAR);
+  else                  data = prismData();
+
+  /* все вершины -> центр в начале координат */
+  const all = [];
+  data.pieces.forEach(p => p.forEach(v => all.push(v)));
+
+  const box = new THREE.Box3().setFromPoints(all);
+  const center = box.getCenter(new THREE.Vector3());
+  const radius = Math.max(...all.map(v => v.distanceTo(center)));
+
+  const shift = center.clone().negate();
+  data.pieces  = data.pieces.map(p => p.map(v => v.clone().add(shift)));
+  data.corners = data.corners.map(v => v.clone().add(shift));
+
+  explodeDist = radius * 1.35;
+
+  /* --- сами пирамиды --- */
+  data.pieces.forEach((verts, i) => {
+    const geo = new ConvexGeometry(verts);
+    geo.computeVertexNormals();
+
+    const mat = new THREE.MeshStandardMaterial({
+      color: COLORS[i % COLORS.length],
+      flatShading: true,
+      roughness: 0.52,
+      metalness: 0.10,
+      transparent: true,
+      opacity: 0.93,
+      side: THREE.DoubleSide
+    });
+
+    const mesh = new THREE.Mesh(geo, mat);
+
+    /* рёбра */
+    const eg = new THREE.EdgesGeometry(geo, 14);
+    const lines = new THREE.LineSegments(
+      eg,
+      new THREE.LineBasicMaterial({ color: 0x0a0d12, transparent: true, opacity: 0.55 })
+    );
+    mesh.add(lines);
+
+    stageGroup.add(mesh);
+
+    /* направление «разлёта» — от центра фигуры к центру куска */
+    const c = new THREE.Vector3();
+    verts.forEach(v => c.add(v));
+    c.divideScalar(verts.length);
+    const dir = c.clone().normalize();
+
+    pieces.push({ mesh, dir, volume: geometryVolume(geo) });
+  });
+
+  /* --- контур целевой фигуры --- */
+  const pts = [];
+  data.edges.forEach(([a, b]) => pts.push(data.corners[a], data.corners[b]));
+  const outlineGeo = new THREE.BufferGeometry().setFromPoints(pts);
+  const outline = new THREE.LineSegments(
+    outlineGeo,
+    new THREE.LineBasicMaterial({ color: 0x7aa2ff, transparent: true, opacity: 0.6 })
+  );
+  stageGroup.add(outline);
+
+  frameCamera(radius);
+  updateUI(index);
+}
+
+function frameCamera(radius) {
+  const fovRad = THREE.MathUtils.degToRad(camera.fov);
+  const dist = (radius * 1.85) / Math.sin(fovRad / 2);
+  const dir = new THREE.Vector3(0.78, 0.58, 1.0).normalize();
+  camera.position.copy(dir.multiplyScalar(dist));
+  controls.target.set(0, 0, 0);
+  controls.update();
+}
+
+/* ------------------------------------------------------------------ */
+/*  АНИМАЦИЯ                                                           */
+/* ------------------------------------------------------------------ */
+function applyT() {
+  const e = (1 - t) * explodeDist;
+  for (const p of pieces) {
+    p.mesh.position.copy(p.dir).multiplyScalar(e);
+  }
+}
+
+const clock = new THREE.Clock();
+
+function loop() {
+  requestAnimationFrame(loop);
+
+  const dt = Math.min(clock.getDelta(), 0.05);
+  t += (targetT - t) * Math.min(1, dt * 7);
+  if (Math.abs(targetT - t) < 0.0015) t = targetT;
+
+  applyT();
+  slider.value = Math.round(t * 100);
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+/* ------------------------------------------------------------------ */
+/*  UI                                                                 */
+/* ------------------------------------------------------------------ */
+const slider  = document.getElementById('slider');
+const infoEl  = document.getElementById('info');
+const statsEl = document.getElementById('stats');
+const tabs    = [...document.querySelectorAll('.tabs button')];
+
+const TEXTS = [
+  `<b>Куб</b> разрезан на <b>три одинаковые</b> четырёхугольные пирамиды.
+   У всех общая вершина, а основания — три дальние грани куба.
+   Поворот куба на 120° вокруг главной диагонали переставляет эти грани,
+   значит пирамиды равны. Три равные части заполняют целый куб →
+   каждая равна <b>⅓</b>.`,
+  `Тот же самый куб, но <b>растянутый и скошенный</b> (аффинное преобразование).
+   При таком преобразовании <b>все объёмы умножаются на один и тот же
+   коэффициент</b>, поэтому отношение 1 : 3 сохраняется.
+   Значит и у параллелепипеда пирамида = <b>⅓</b> его объёма.`,
+  `Треугольная призма делится на <b>три треугольные пирамиды</b>
+   (тетраэдра) равного объёма: они построены «по цепочке» и
+   исчерпывают призму без зазоров. Каждая = <b>⅓</b> призмы.
+   Общий принцип: <b>V = ⅓ · S · h</b>.`
+];
+
+function updateUI(index) {
+  infoEl.innerHTML = TEXTS[index];
+
+  const total = pieces.reduce((s, p) => s + p.volume, 0);
+  const one   = total / 3;
+
+  statsEl.innerHTML = `
+    <div class="stat"><span>Объём фигуры</span><b>${total.toFixed(3)}</b></div>
+    <div class="stat"><span>Объём одной пирамиды</span><b>${one.toFixed(3)}</b></div>
+    <div class="stat ok"><span>3 × ${one.toFixed(3)}</span><b>= ${(one * 3).toFixed(3)} ✓</b></div>
+  `;
+}
+
+/* переключение этапов */
+let currentStage = 0;
+tabs.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx = Number(btn.dataset.stage);
+    if (idx === currentStage) return;
+    currentStage = idx;
+    tabs.forEach(b => b.classList.toggle('active', b === btn));
+
+    buildStage(idx);
+    t = 0;
+    targetT = 1;   // плавно собираем
+  });
+});
+
+/* ручной ползунок */
+slider.addEventListener('input', () => {
+  t = targetT = slider.value / 100;
+  applyT();
+});
+
+/* ресайз */
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+/* старт */
+buildStage(0);
+t = 0;
+targetT = 1;
+loop();
+</script>
+</body>
+</html>

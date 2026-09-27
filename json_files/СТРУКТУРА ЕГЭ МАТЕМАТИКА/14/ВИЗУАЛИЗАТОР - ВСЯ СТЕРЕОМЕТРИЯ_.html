@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Стереометрия — интерактивный справочник</title>
+<style>
+  :root{ --txt:#e6edf7; --muted:#8fa3bf; --acc:#4ecdc4; }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;overflow:hidden;}
+  body{
+    background:radial-gradient(1200px 800px at 75% 15%, #1c2740 0%, #0b1018 60%, #070a10 100%);
+    color:var(--txt);font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  #app{position:fixed;inset:0;display:flex;}
+
+  .menu{
+    width:400px;height:100%;
+    background:rgba(12,17,26,.94);
+    border-right:1px solid rgba(255,255,255,.08);
+    padding:14px 12px;overflow-y:auto;
+    backdrop-filter:blur(10px);
+  }
+  .menu::-webkit-scrollbar{width:6px;}
+  .menu::-webkit-scrollbar-thumb{background:#2a3a52;border-radius:3px;}
+
+  details{
+    margin-bottom:6px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:12px;
+    background:rgba(15,21,32,.55);
+    overflow:hidden;
+  }
+  details[open]{ background:rgba(15,21,32,.8); border-color:rgba(78,205,196,.25); }
+  details.draft{ opacity:.78; }
+  details.draft[open]{ border-color:rgba(255,169,77,.25); }
+  details.draft > summary{ color:#a8895a; }
+  details.draft[open] > summary{ color:#ffa94d; border-bottom-color:rgba(255,169,77,.15); }
+
+  summary{
+    list-style:none;cursor:pointer;
+    padding:11px 14px;
+    font-size:13px;font-weight:700;
+    color:#cfd9e8;letter-spacing:.2px;
+    display:flex;justify-content:space-between;align-items:center;
+    user-select:none;transition:.15s;
+  }
+  summary::-webkit-details-marker{display:none;}
+  summary::after{ content:'▾';color:var(--muted); transition:.2s;font-size:12px; }
+  details[open] summary::after{transform:rotate(180deg);color:var(--acc);}
+  details.draft[open] summary::after{color:#ffa94d;}
+  summary:hover{color:#fff;background:rgba(78,205,196,.06);}
+  details[open] summary{ color:var(--acc); border-bottom:1px solid rgba(255,255,255,.06); }
+  .sec-num{
+    display:inline-block;min-width:30px;
+    color:var(--acc);font-weight:800;
+    margin-right:8px;
+  }
+  details.draft .sec-num{ color:#ffa94d; }
+
+  .menu button{
+    width:calc(100% - 20px);
+    margin:6px 10px;padding:9px 12px;
+    background:rgba(18,24,34,.85);
+    border:1px solid rgba(255,255,255,.10);
+    color:#cfd9e8;font:inherit;font-size:12.5px;font-weight:600;
+    border-radius:9px;text-align:left;cursor:pointer;
+    transition:.15s;line-height:1.35;
+  }
+  .menu button:hover{color:#fff;border-color:rgba(78,205,196,.5);}
+  .menu button.active{
+    background:rgba(78,205,196,.18);color:#fff;
+    border-color:rgba(78,205,196,.65);
+    box-shadow:0 0 0 1px rgba(78,205,196,.4);
+  }
+  details > button:last-child{margin-bottom:10px;}
+
+  .view{position:relative;flex:1;min-width:0;}
+  .view canvas{display:block;}
+
+  .single{position:absolute;inset:0;}
+  .triple{
+    position:absolute;inset:0;display:grid;
+    grid-template-columns:1fr;grid-template-rows:1fr 1fr 1fr;
+  }
+  .quad{
+    position:absolute;inset:0;display:grid;
+    grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+  }
+  .triple .mini, .quad .mini{
+    position:relative;min-height:0;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    border-right:1px solid rgba(255,255,255,.08);
+  }
+  .triple .mini:last-child{border-bottom:none;}
+  .quad .mini:nth-child(2n){border-right:none;}
+  .quad .mini:nth-child(n+3){border-bottom:none;}
+  .mini canvas{display:block;}
+
+  .mini-label{
+    position:absolute;top:8px;left:12px;right:12px;
+    font-size:12px;color:#cfd9e8;letter-spacing:.3px;
+    background:rgba(15,21,32,.78);padding:7px 12px;border-radius:8px;
+    pointer-events:none;z-index:5;line-height:1.4;
+    border:1px solid rgba(78,205,196,.18);
+  }
+  .mini-label b{color:var(--acc);font-weight:700;}
+
+  .caption{
+    position:absolute;top:18px;left:50%;transform:translateX(-50%);
+    max-width:min(1344px, 96%);
+    background:rgba(18,24,34,.92);backdrop-filter:blur(10px);
+    border:1px solid rgba(78,205,196,.28);
+    border-radius:14px;padding:14px 24px;
+    font-size:16px;line-height:1.55;color:#f3f8ff;
+    font-weight:500;letter-spacing:.15px;
+    box-shadow:0 10px 26px rgba(0,0,0,.55);
+    text-align:center;z-index:10;
+  }
+  .caption b{color:var(--acc);font-weight:700;}
+
+  .hint{
+    position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+    font-size:11.5px;color:#5f6d82;letter-spacing:.3px;pointer-events:none;
+    background:rgba(15,21,32,.6);padding:6px 12px;border-radius:8px;
+    z-index:10;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+<aside class="menu" id="menu">
+
+  <details open>
+    <summary><span><span class="sec-num">Вв</span>Введение. Аксиомы и следствия</span></summary>
+    <button data-id="ax1" class="active">Аксиома 1 — три точки задают плоскость</button>
+    <button data-id="ax2">Аксиома 2 — прямая через две точки плоскости</button>
+    <button data-id="ax3">Аксиома 3 — пересечение двух плоскостей</button>
+    <button data-id="col1">Следствие 1 — прямая и точка вне неё</button>
+    <button data-id="col2">Следствие 2 — две пересекающиеся прямые</button>
+    <button data-id="ways">Способы задать плоскость</button>
+  </details>
+
+  <details>
+    <summary><span><span class="sec-num">§1</span>Параллельные прямые, прямая и плоскость</span></summary>
+    <button data-id="p1">п.4 — определение параллельных</button>
+    <button data-id="p1b">п.4 — непараллельные прямые в одной плоскости</button>
+    <button data-id="p2">п.4 — единственная параллельная через точку</button>
+    <button data-id="p3">п.5 — лемма о пересечении плоскости</button>
+    <button data-id="p4">п.5 — транзитивность параллельных</button>
+    <button data-id="l1">п.6 — три случая: прямая и плоскость</button>
+    <button data-id="l2">п.6 — определение параллельности</button>
+    <button data-id="l3">п.6 — признак параллельности</button>
+    <button data-id="s1">п.6 — свойство 1° (плоскость через параллельную)</button>
+    <button data-id="s2a">п.6 — свойство 2° (одна из двух ∥ плоскости)</button>
+  </details>
+
+  <details>
+    <summary><span><span class="sec-num">§2</span>Взаимное расположение прямых. Угол</span></summary>
+    <button data-id="cross1">п.7 — определение скрещивающихся</button>
+    <button data-id="cross2">п.7 — признак скрещивающихся</button>
+    <button data-id="cross3">п.7 — три случая взаимного расположения</button>
+    <button data-id="crossPlane">п.7 — плоскость через скрещивающиеся</button>
+    <button data-id="crossFromPoint">п.7 — две прямые через точку вне прямой</button>
+    <button data-id="halfplanes">п.8 — полуплоскости</button>
+    <button data-id="def1">п.8 — сонаправленные лучи (не на одной прямой)</button>
+    <button data-id="def2">п.8 — сонаправленные лучи (на одной прямой)</button>
+    <button data-id="not">п.8 — не сонаправленные лучи</button>
+    <button data-id="theorem">п.8 — теорема об углах с сонаправленными сторонами</button>
+    <button data-id="angle">п.9 — угол между пересекающимися</button>
+    <button data-id="crossAngle">п.9 — угол между скрещивающимися</button>
+    <button data-id="crossAngleIndep">п.9 — независимость угла от выбора точки</button>
+  </details>
+
+  <details>
+    <summary><span><span class="sec-num">§3</span>Параллельность плоскостей</span></summary>
+    <button data-id="t1">п.10 — признак параллельности плоскостей</button>
+    <button data-id="t1b">п.10 — замечание: транзитивность плоскостей</button>
+    <button data-id="t2">п.11 — свойство 1° (линии пересечения)</button>
+    <button data-id="t2b">п.11 — свойство 2° (равные отрезки)</button>
+  </details>
+
+  <details>
+    <summary><span><span class="sec-num">3П</span>3 плоскости — сводная картина</span></summary>
+    <button data-id="tpQuad">Сводная картина — 4 панели</button>
+  </details>
+
+  <details class="draft">
+    <summary><span><span class="sec-num">Ч</span>Из следующих параграфов (черновик)</span></summary>
+    <button data-id="pp1">Прямая ⊥ плоскости — определение</button>
+    <button data-id="pp2">Признак перпендикулярности прямой и плоскости</button>
+    <button data-id="pp3">Перпендикулярность плоскостей</button>
+    <button data-id="pp4">Теорема о трёх перпендикулярах</button>
+    <button data-id="pp5">Противоположные рёбра пирамиды</button>
+    <button data-id="distTetra">Расстояние — треугольная пирамида</button>
+    <button data-id="distCube">Расстояние — куб</button>
+    <button data-id="distPyr">Расстояние — четырёхугольная пирамида</button>
+    <button data-id="angTetra">Угол — тетраэдр, ребро AB</button>
+    <button data-id="angCube">Угол — куб, ребро AB</button>
+    <button data-id="angPyr">Угол — пирамида, ребро AB</button>
+  </details>
+
+</aside>
+
+<div class="view" id="view">
+  <div class="single" id="single"></div>
+  <div class="triple" id="triple" style="display:none;"></div>
+  <div class="quad"   id="quad"   style="display:none;"></div>
+  <div class="caption" id="caption"></div>
+  <div class="hint">левая кнопка — вращать · колесо — зум · ПКМ — панорама</div>
+</div>
+
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const viewEl   = document.getElementById('view');
+const singleEl = document.getElementById('single');
+const tripleEl = document.getElementById('triple');
+const quadEl   = document.getElementById('quad');
+const captionEl= document.getElementById('caption');
+
+/* =============== ГЛАВНЫЙ RENDERER =============== */
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(singleEl.clientWidth, singleEl.clientHeight);
+singleEl.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, singleEl.clientWidth/singleEl.clientHeight, 0.1, 200);
+camera.position.set(3.8, 3.2, 4.8);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 1;
+controls.maxDistance = 30;
+controls.target.set(0, 0.3, 0);
+controls.minPolarAngle = Math.PI * 0.05;
+controls.maxPolarAngle = Math.PI * 0.49;
+
+scene.add(new THREE.HemisphereLight(0xdce8ff, 0x1a2233, 1.6));
+const key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(6,9,7); scene.add(key);
+const rim = new THREE.DirectionalLight(0x7fa8ff, 1.0); rim.position.set(-7,-3,-6); scene.add(rim);
+
+const g = new THREE.Group(); scene.add(g);
+
+/* =============== ОБЩИЕ ХЕЛПЕРЫ =============== */
+const V = (x,y,z)=> new THREE.Vector3(x,y,z);
+
+function fatLine(a, b, color, r=0.024){
+  const grp = new THREE.Group();
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length();
+  if (len < 1e-6) return grp;
+  const mid = a.clone().add(b).multiplyScalar(0.5);
+  const geo = new THREE.CylinderGeometry(r, r, len, 12, 1, false);
+  const mat = new THREE.MeshStandardMaterial({
+    color, roughness:0.35, metalness:0.1, emissive: color, emissiveIntensity: 0.15
+  });
+  const cyl = new THREE.Mesh(geo, mat);
+  cyl.position.copy(mid);
+  cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+  grp.add(cyl);
+  [a, b].forEach(p=>{
+    const sp = new THREE.Mesh(new THREE.SphereGeometry(r*1.05, 10, 8), mat);
+    sp.position.copy(p);
+    grp.add(sp);
+  });
+  return grp;
+}
+
+function dashedThickLine(a, b, color, r=0.018, dash=0.13, gap=0.09){
+  const grp = new THREE.Group();
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length();
+  if (len < 1e-6) return grp;
+  const n = dir.clone().normalize();
+  const total = dash + gap;
+  let t = 0;
+  while (t < len){
+    const s0 = a.clone().add(n.clone().multiplyScalar(t));
+    const s1 = a.clone().add(n.clone().multiplyScalar(Math.min(t+dash, len)));
+    grp.add(fatLine(s0, s1, color, r));
+    t += total;
+  }
+  return grp;
+}
+
+function dashedLine(a, b, color, dash=0.09, gap=0.07){
+  const mat = new THREE.LineDashedMaterial({color, dashSize:dash, gapSize:gap});
+  const geo = new THREE.BufferGeometry().setFromPoints([a, b]);
+  const line = new THREE.Line(geo, mat);
+  line.computeLineDistances();
+  const grp = new THREE.Group();
+  grp.add(line);
+  return grp;
+}
+
+function point(p, color=0xff6b6b, r=0.075){
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12),
+                           new THREE.MeshBasicMaterial({color}));
+  m.position.copy(p);
+  return m;
+}
+
+function label(p, text, color='#e6edf7', size=0.55){
+  const c = document.createElement('canvas');
+  const ctx = c.getContext('2d');
+  c.width = 512; c.height = 128;
+  ctx.fillStyle = 'rgba(0,0,0,0)';
+  ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle = color;
+  ctx.font = 'bold 72px ui-sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, 256, 64);
+  const tex = new THREE.CanvasTexture(c);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false}));
+  spr.scale.set(size, size*0.25, 1);
+  spr.position.copy(p);
+  return spr;
+}
+
+function planePatch(p1, p2, p3, p4, color, opacity=0.16){
+  const verts = [p1, p2, p3, p4];
+  const geo = new THREE.BufferGeometry().setFromPoints(verts);
+  geo.setIndex([0,1,2, 0,2,3]);
+  geo.computeVertexNormals();
+  const mat = new THREE.MeshBasicMaterial({
+    color, transparent:true, opacity, side:THREE.DoubleSide, depthWrite:false
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  const loop = new THREE.LineLoop(
+    new THREE.BufferGeometry().setFromPoints(verts),
+    new THREE.LineBasicMaterial({color, linewidth:1.2, transparent:true, opacity:0.7})
+  );
+  const wrap = new THREE.Group();
+  wrap.add(mesh); wrap.add(loop);
+  return wrap;
+}
+const quadPatch = planePatch;
+
+/* Простой веерный полигон — работает для выпуклых и упорядоченных точек */
+function polyPatch(points, color, opacity=0.16){
+  if (points.length < 3) return new THREE.Group();
+  const c = new THREE.Vector3();
+  points.forEach(p=> c.add(p));
+  c.divideScalar(points.length);
+  const verts = [c, ...points];
+  const idx = [];
+  for (let i=1; i<verts.length; i++){
+    const j = (i===verts.length-1) ? 1 : i+1;
+    idx.push(0, i, j);
+  }
+  const geo = new THREE.BufferGeometry().setFromPoints(verts);
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  const mat = new THREE.MeshBasicMaterial({
+    color, transparent:true, opacity, side:THREE.DoubleSide, depthWrite:false
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  const loop = new THREE.LineLoop(
+    new THREE.BufferGeometry().setFromPoints(points),
+    new THREE.LineBasicMaterial({color, transparent:true, opacity:0.55})
+  );
+  const wrap = new THREE.Group();
+  wrap.add(mesh); wrap.add(loop);
+  return wrap;
+}
+
+function planeBig(c, u, v, s, color, opacity=0.12){
+  const p1 = c.clone().add(u.clone().multiplyScalar(s)).add(v.clone().multiplyScalar(s));
+  const p2 = c.clone().add(u.clone().multiplyScalar(-s)).add(v.clone().multiplyScalar(s));
+  const p3 = c.clone().add(u.clone().multiplyScalar(-s)).add(v.clone().multiplyScalar(-s));
+  const p4 = c.clone().add(u.clone().multiplyScalar(s)).add(v.clone().multiplyScalar(-s));
+  return planePatch(p1, p2, p3, p4, color, opacity);
+}
+
+function rightAngle(O, dir1, dir2, size, color){
+  const d1 = dir1.clone().normalize();
+  const d2 = dir2.clone().normalize();
+  const a = O.clone().add(d1.clone().multiplyScalar(size));
+  const b = O.clone().add(d1.clone().multiplyScalar(size)).add(d2.clone().multiplyScalar(size));
+  const c = O.clone().add(d2.clone().multiplyScalar(size));
+  const geo = new THREE.BufferGeometry().setFromPoints([a, b, c]);
+  const mat = new THREE.LineBasicMaterial({color});
+  const line = new THREE.Line(geo, mat);
+  const grp = new THREE.Group();
+  grp.add(line);
+  return grp;
+}
+function rightAngleAt(O, P1, P2, size, color){
+  const d1 = P1.clone().sub(O).normalize();
+  const d2 = P2.clone().sub(O).normalize();
+  return rightAngle(O, d1, d2, size, color);
+}
+
+function arcAngle(O, dir1, dir2, radius, color){
+  const d1 = dir1.clone().normalize();
+  const d2 = dir2.clone().normalize();
+  const arcPts = [];
+  const N = 24;
+  let e2 = d2.clone().sub(d1.clone().multiplyScalar(d1.dot(d2)));
+  if (e2.length() < 1e-6) e2 = new THREE.Vector3(0,1,0).cross(d1);
+  e2.normalize();
+  const angle = Math.acos(Math.max(-1, Math.min(1, d1.dot(d2))));
+  for (let i=0; i<=N; i++){
+    const t = i/N * angle;
+    const p = O.clone()
+      .add(d1.clone().multiplyScalar(Math.cos(t) * radius))
+      .add(e2.clone().multiplyScalar(Math.sin(t) * radius));
+    arcPts.push(p);
+  }
+  const geo = new THREE.BufferGeometry().setFromPoints(arcPts);
+  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({color}));
+  const grp = new THREE.Group();
+  grp.add(line);
+  return grp;
+}
+
+function ray(a, b, color, r=0.026){
+  const grp = new THREE.Group();
+  const dir = new THREE.Vector3().subVectors(b, a).normalize();
+  const end = b.clone().add(dir.clone().multiplyScalar(-r*6));
+  grp.add(fatLine(a, end, color, r));
+  const cone = new THREE.Mesh(
+    new THREE.ConeGeometry(r*2.5, r*7, 14),
+    new THREE.MeshStandardMaterial({color, emissive:color, emissiveIntensity:0.25})
+  );
+  cone.position.copy(b.clone().add(dir.clone().multiplyScalar(-r*3.5)));
+  cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
+  grp.add(cone);
+  return grp;
+}
+
+function convexPatch(points, color, opacity=0.22){
+  const c = new THREE.Vector3();
+  points.forEach(p=> c.add(p));
+  c.divideScalar(points.length);
+  const n = new THREE.Vector3().subVectors(points[1], points[0])
+    .cross(new THREE.Vector3().subVectors(points[2], points[0])).normalize();
+  const e1 = new THREE.Vector3().subVectors(points[0], c).normalize();
+  const e2 = new THREE.Vector3().crossVectors(n, e1).normalize();
+  const sorted = points.slice().sort((A,B)=>{
+    const aA = Math.atan2(new THREE.Vector3().subVectors(A,c).dot(e2),
+                          new THREE.Vector3().subVectors(A,c).dot(e1));
+    const aB = Math.atan2(new THREE.Vector3().subVectors(B,c).dot(e2),
+                          new THREE.Vector3().subVectors(B,c).dot(e1));
+    return aA - aB;
+  });
+  const verts = [c];
+  sorted.forEach(p=> verts.push(p));
+  const idx = [];
+  for (let i=1; i<verts.length; i++){
+    const j = (i===verts.length-1) ? 1 : i+1;
+    idx.push(0, i, j);
+  }
+  const geo = new THREE.BufferGeometry().setFromPoints(verts);
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  const mat = new THREE.MeshBasicMaterial({
+    color, transparent:true, opacity, side:THREE.DoubleSide, depthWrite:false
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  const loop = new THREE.LineLoop(
+    new THREE.BufferGeometry().setFromPoints(sorted),
+    new THREE.LineBasicMaterial({color, linewidth:1.3, transparent:true, opacity:0.7})
+  );
+  const wrap = new THREE.Group();
+  wrap.add(mesh); wrap.add(loop);
+  return wrap;
+}
+
+function commonPerp(A, u, B, v){
+  const uu = u.clone().normalize();
+  const vv = v.clone().normalize();
+  const w0 = new THREE.Vector3().subVectors(A, B);
+  const a = uu.dot(uu), b = uu.dot(vv), c = vv.dot(vv);
+  const d = uu.dot(w0), e = vv.dot(w0);
+  const den = a*c - b*b;
+  let t, s;
+  if (Math.abs(den) < 1e-9){ t = 0; s = e/c; }
+  else { t = (b*e - c*d)/den; s = (a*e - b*d)/den; }
+  const P = A.clone().add(uu.clone().multiplyScalar(t));
+  const Q = B.clone().add(vv.clone().multiplyScalar(s));
+  return { P, Q, dist: P.distanceTo(Q), u: uu, v: vv };
+}
+
+function clearGroup(grp){
+  while (grp.children.length){
+    const c = grp.children.pop();
+    if (c.geometry) c.geometry.dispose();
+    if (c.material){
+      if (Array.isArray(c.material)) c.material.forEach(m=>m.dispose());
+      else c.material.dispose();
+    }
+    if (c.children && c.children.length) clearGroup(c);
+  }
+}
+
+/* ============================================================
+   ВВЕДЕНИЕ. АКСИОМЫ И СЛЕДСТВИЯ
+   ============================================================ */
+function sceneAx1(){
+  const A = V(-1.2, 0.2, 0.9), B = V(1.3, -0.1, 0.7), C = V(0.1, 0.3, -1.2);
+  const n = new THREE.Vector3().subVectors(B, A).cross(new THREE.Vector3().subVectors(C, A)).normalize();
+  const e1 = new THREE.Vector3().subVectors(B, A).normalize();
+  const e2 = new THREE.Vector3().crossVectors(n, e1).normalize();
+  const c = A.clone().add(B).add(C).multiplyScalar(1/3);
+  g.add(planeBig(c, e1, e2, 1.8, 0x4ecdc4, 0.16));
+  g.add(point(A, 0xff6b6b, 0.09));
+  g.add(point(B, 0xff6b6b, 0.09));
+  g.add(point(C, 0xff6b6b, 0.09));
+  g.add(label(A.clone().add(V(-0.15,0.15,0)), 'A', '#ff6b6b'));
+  g.add(label(B.clone().add(V( 0.15,0.15,0)), 'B', '#ff6b6b'));
+  g.add(label(C.clone().add(V( 0.15,0.15,0)), 'C', '#ff6b6b'));
+}
+
+function sceneAx2(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.16));
+  const A = V(-1.4, 0, 0.6), B = V(1.4, 0, 0.6);
+  const dir = new THREE.Vector3().subVectors(B, A).normalize();
+  g.add(fatLine(A.clone().add(dir.clone().multiplyScalar(-0.2)),
+                B.clone().add(dir.clone().multiplyScalar( 0.2)), 0xffd93d, 0.030));
+  g.add(dashedLine(A.clone().add(dir.clone().multiplyScalar(-1.6)),
+                   A.clone().add(dir.clone().multiplyScalar(-0.2)), 0xffd93d));
+  g.add(dashedLine(B.clone().add(dir.clone().multiplyScalar( 0.2)),
+                   B.clone().add(dir.clone().multiplyScalar( 1.6)), 0xffd93d));
+  g.add(point(A, 0xff6b6b, 0.09));
+  g.add(point(B, 0xff6b6b, 0.09));
+  g.add(label(A.clone().add(V(-0.15,0.15,0)), 'A', '#ff6b6b'));
+  g.add(label(B.clone().add(V( 0.15,0.15,0)), 'B', '#ff6b6b'));
+}
+
+function sceneAx3(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.16));
+  g.add(planeBig(V(0,0,0), V(0,1,0), V(0,0,1), 1.9, 0xffa94d, 0.16));
+  g.add(fatLine(V(0,0,-1.9), V(0,0,1.9), 0xff6b6b, 0.035));
+  g.add(point(V(0,0,0), 0xffffff, 0.09));
+  g.add(label(V(0.18,0.18,0), 'O', '#ffffff'));
+}
+
+function sceneCol1(){
+  const A = V(-1.3, 0, 0.4), B = V(1.3, 0, 0.4);
+  const u = new THREE.Vector3().subVectors(B, A).normalize();
+  const P = V(0.2, 1.1, -0.6);
+  const n = new THREE.Vector3().crossVectors(u, new THREE.Vector3().subVectors(P, A)).normalize();
+  const e2 = new THREE.Vector3().crossVectors(n, u).normalize();
+  const c = A.clone().add(B).multiplyScalar(0.5).add(P).multiplyScalar(0.5);
+  g.add(planeBig(c, u, e2, 1.9, 0x4ecdc4, 0.16));
+  g.add(fatLine(A, B, 0xffd93d, 0.030));
+  g.add(point(P, 0xff6b6b, 0.09));
+  g.add(label(A.clone().add(V(-0.15,0.15,0)), 'A'));
+  g.add(label(B.clone().add(V( 0.15,0.15,0)), 'B'));
+  g.add(label(P.clone().add(V( 0.15,0.15,0)), 'P', '#ff6b6b'));
+}
+
+function sceneCol2(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.16));
+  const O = V(0,0,0);
+  const A = V(-1.6, 0, -0.4), B = V(1.6, 0, 0.4);
+  const C = V(-1.2, 0, 1.4), D = V(1.2, 0, -1.4);
+  g.add(fatLine(A, B, 0xffd93d, 0.030));
+  g.add(fatLine(C, D, 0x6ba8ff, 0.030));
+  g.add(point(O, 0xffffff, 0.09));
+  g.add(label(O.clone().add(V(0.18,0.18,0)), 'O', '#ffffff'));
+  g.add(label(A.clone().add(V(-0.15,0.15,0)), 'A', '#ffd93d'));
+  g.add(label(B.clone().add(V( 0.15,0.15,0)), 'B', '#ffd93d'));
+  g.add(label(C.clone().add(V(-0.15,0.15,0)), 'C', '#6ba8ff'));
+  g.add(label(D.clone().add(V( 0.15,0.15,0)), 'D', '#6ba8ff'));
+}
+
+function sceneWays(){
+  const u = V(1,0,0), v = V(0,0,1);
+  g.add(planeBig(V(0,0,0), u, v, 2.2, 0x4ecdc4, 0.10));
+
+  const A1 = V(-1.6, 0, -1.2), B1 = V(-0.4, 0, -1.6), C1 = V(-1.2, 0, -0.2);
+  g.add(point(A1, 0x3ddc97, 0.09));
+  g.add(point(B1, 0x3ddc97, 0.09));
+  g.add(point(C1, 0x3ddc97, 0.09));
+  g.add(label(A1.clone().add(V(-0.15,0.2,0)), 'A', '#3ddc97'));
+  g.add(label(B1.clone().add(V( 0.15,0.2,0)), 'B', '#3ddc97'));
+  g.add(label(C1.clone().add(V( 0.15,0.2,0)), 'C', '#3ddc97'));
+  g.add(dashedLine(A1, B1, 0x3ddc97, 0.06, 0.06));
+  g.add(dashedLine(B1, C1, 0x3ddc97, 0.06, 0.06));
+  g.add(dashedLine(C1, A1, 0x3ddc97, 0.06, 0.06));
+  g.add(label(V(-1.1, 0.15, -1.0), '1) 3 точки', '#3ddc97'));
+
+  const A2 = V(0.9, 0, -1.4), B2 = V(2.0, 0, -1.4), P2 = V(1.4, 0, -0.6);
+  g.add(fatLine(A2, B2, 0xffd93d, 0.026));
+  g.add(point(P2, 0xff6b6b, 0.09));
+  g.add(label(A2.clone().add(V(-0.15,0.2,0)), 'A', '#ffd93d'));
+  g.add(label(B2.clone().add(V( 0.15,0.2,0)), 'B', '#ffd93d'));
+  g.add(label(P2.clone().add(V( 0.15,0.2,0)), 'P', '#ff6b6b'));
+  g.add(label(V(1.4, 0.15, -1.6), '2) прямая + точка', '#ffd93d'));
+
+  const O3 = V(-0.7, 0, 1.3);
+  const A3 = V(-1.5, 0, 0.8), B3 = V(0.1, 0, 1.8);
+  const C3 = V(-0.1, 0, 0.6), D3 = V(-1.3, 0, 2.0);
+  g.add(fatLine(A3, B3, 0x6ba8ff, 0.026));
+  g.add(fatLine(C3, D3, 0x6ba8ff, 0.026));
+  g.add(point(O3, 0xffffff, 0.08));
+  g.add(label(O3.clone().add(V(0.15,0.2,0)), 'O', '#ffffff'));
+  g.add(label(A3.clone().add(V(-0.15,0.2,0)), 'A', '#6ba8ff'));
+  g.add(label(B3.clone().add(V( 0.15,0.2,0)), 'B', '#6ba8ff'));
+  g.add(label(C3.clone().add(V(-0.15,0.2,0)), 'C', '#6ba8ff'));
+  g.add(label(D3.clone().add(V( 0.15,0.2,0)), 'D', '#6ba8ff'));
+  g.add(label(V(-0.7, 0.15, 1.7), '3) две пересекающиеся', '#6ba8ff'));
+
+  const F4 = V(0.9, 0, 0.7), G4 = V(2.0, 0, 0.7);
+  const H4 = V(0.9, 0, 1.5), I4 = V(2.0, 0, 1.5);
+  g.add(fatLine(F4, G4, 0xffa94d, 0.026));
+  g.add(fatLine(H4, I4, 0xffa94d, 0.026));
+  g.add(label(F4.clone().add(V(-0.15,0.2,0)), 'F', '#ffa94d'));
+  g.add(label(G4.clone().add(V( 0.15,0.2,0)), 'G', '#ffa94d'));
+  g.add(label(H4.clone().add(V(-0.15,0.2,0)), 'H', '#ffa94d'));
+  g.add(label(I4.clone().add(V( 0.15,0.2,0)), 'I', '#ffa94d'));
+  g.add(label(V(1.4, 0.15, 1.1), '4) две параллельные', '#ffa94d'));
+
+  g.add(label(V(0, 0.4, -2.3), 'Одна и та же плоскость α', '#4ecdc4'));
+}
+
+/* ============================================================
+   §1. ПАРАЛЛЕЛЬНЫЕ ПРЯМЫЕ, ПРЯМАЯ И ПЛОСКОСТЬ
+   ============================================================ */
+function sceneP1(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+  const A = V(-1.6, 0, -0.6), B = V( 1.6, 0, -0.6);
+  const C = V(-1.6, 0,  0.6), D = V( 1.6, 0,  0.6);
+  g.add(fatLine(A, B, 0xff6b6b, 0.030));
+  g.add(fatLine(C, D, 0xffd93d, 0.030));
+  g.add(label(A.clone().add(V(-0.15,0.2,0)), 'a', '#ff6b6b'));
+  g.add(label(C.clone().add(V(-0.15,0.2,0)), 'b', '#ffd93d'));
+  g.add(label(V(0, 0.3, -1.0), 'α', '#4ecdc4'));
+}
+
+function sceneP1b(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 2.0, 0x4ecdc4, 0.13));
+  const a1 = V(-1.9, 0, -0.9), a2 = V(1.9, 0, -0.9);
+  const b1 = V(-1.9, 0,  0.2), b2 = V(1.9, 0,  0.2);
+  g.add(fatLine(a1, a2, 0xff6b6b, 0.028));
+  g.add(fatLine(b1, b2, 0xffd93d, 0.028));
+  const c1 = V(-1.2, 0, 1.6), c2 = V(0.6, 0, -1.6);
+  g.add(fatLine(c1, c2, 0x6ba8ff, 0.028));
+  const d1 = V(1.5, 0, 1.6), d2 = V(-0.4, 0, -1.6);
+  g.add(fatLine(d1, d2, 0x3ddc97, 0.028));
+  g.add(label(a1.clone().add(V(-0.15, 0.2, 0)), 'a', '#ff6b6b'));
+  g.add(label(b1.clone().add(V(-0.15, 0.2, 0)), 'b', '#ffd93d'));
+  g.add(label(c1.clone().add(V( 0.0, 0.2, 0)), 'c', '#6ba8ff'));
+  g.add(label(d1.clone().add(V( 0.0, 0.2, 0)), 'd', '#3ddc97'));
+  g.add(label(V(0, 0.3, -1.7), 'α', '#4ecdc4'));
+}
+
+function sceneP2(){
+  const A = V(-1.8, 0.4, 0.6), B = V( 1.8, 0.4, 0.6);
+  const M = V(0.0, 0.4, -0.7);
+  g.add(fatLine(A, B, 0xff6b6b, 0.030));
+  const dir = new THREE.Vector3().subVectors(B, A).normalize();
+  const Mb = M.clone().add(dir.clone().multiplyScalar(-1.4));
+  const Mc = M.clone().add(dir.clone().multiplyScalar( 1.4));
+  g.add(fatLine(Mb, Mc, 0xffd93d, 0.030));
+  g.add(dashedLine(M.clone().add(V(-1.2,0,-0.4)),
+                   M.clone().add(V( 1.2,0, 0.4)), 0x555f75, 0.06, 0.06));
+  g.add(point(M, 0xffffff, 0.09));
+  g.add(label(M.clone().add(V(0.15,0.2,0)), 'M', '#ffffff'));
+  g.add(label(A.clone().add(V(-0.15,0.2,0)), 'a', '#ff6b6b'));
+  g.add(label(Mc.clone().add(V(0.15,0.2,0)), 'b', '#ffd93d'));
+}
+
+function sceneP3(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+  const A_top = V(-0.9, 1.2, 0.4), A_hit = V(-0.9, 0, 0.4), A_bot = V(-0.9, -0.7, 0.4);
+  const B_top = V( 0.9, 1.2, 0.4), B_hit = V( 0.9, 0, 0.4), B_bot = V( 0.9, -0.7, 0.4);
+  g.add(fatLine(A_top, A_hit, 0xff6b6b, 0.030));
+  g.add(fatLine(B_top, B_hit, 0xffd93d, 0.030));
+  g.add(dashedLine(A_hit, A_bot, 0xff6b6b, 0.10, 0.08));
+  g.add(dashedLine(B_hit, B_bot, 0xffd93d, 0.10, 0.08));
+  g.add(point(A_hit, 0xff6b6b, 0.09));
+  g.add(point(B_hit, 0xffd93d, 0.09));
+  g.add(label(A_top.clone().add(V(-0.15,0.15,0)), 'a', '#ff6b6b'));
+  g.add(label(B_top.clone().add(V( 0.15,0.15,0)), 'b', '#ffd93d'));
+  g.add(label(V(0, 0.3, 1.4), 'α', '#4ecdc4'));
+}
+
+function sceneP4(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.12));
+  const a1 = V(-1.6, 0, -0.5), a2 = V(1.6, 0, -0.5);
+  const b1 = V(-1.6, 0,  0.5), b2 = V(1.6, 0,  0.5);
+  g.add(fatLine(a1, a2, 0xff6b6b, 0.028));
+  g.add(fatLine(b1, b2, 0xff6b6b, 0.028));
+  const c1 = V(-1.6, 1.0, 0), c2 = V(1.6, 1.0, 0);
+  g.add(fatLine(c1, c2, 0x6ba8ff, 0.030));
+  g.add(label(a1.clone().add(V(-0.15,0.2,0)), 'a', '#ff6b6b'));
+  g.add(label(b1.clone().add(V(-0.15,0.2,0)), 'b', '#ff6b6b'));
+  g.add(label(c1.clone().add(V(-0.15,0.2,0)), 'c', '#6ba8ff'));
+  g.add(label(V(0, 0.3, -1.4), 'α', '#4ecdc4'));
+}
+
+function sceneL1(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 2.2, 0x4ecdc4, 0.10));
+  g.add(fatLine(V(-2.2, 0, 0.9), V(2.2, 0, 0.9), 0xff6b6b, 0.028));
+  g.add(label(V(0, 0.2, 1.6), 'a ⊂ α', '#ff6b6b'));
+  const P = V(0, 0, -1.1);
+  g.add(fatLine(V(0, 1.2, -1.1), V(0, -1.2, -1.1), 0xffd93d, 0.028));
+  g.add(point(P, 0xffffff, 0.09));
+  g.add(label(V(0.7, 0.2, -1.6), 'a ∩ α', '#ffd93d'));
+  g.add(fatLine(V(-1.5, 1.2, -0.4), V(1.5, 1.2, -0.4), 0x6ba8ff, 0.028));
+  g.add(label(V(-1.5, 1.4, -0.4), 'a || α', '#6ba8ff'));
+}
+
+function sceneL2(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+  const A = V(-1.5, 0.9, 0.5), B = V(1.5, 0.9, 0.5);
+  g.add(fatLine(A, B, 0xffd93d, 0.030));
+  g.add(label(V(0, 0.3, -1.4), 'α', '#4ecdc4'));
+  g.add(label(A.clone().add(V(-0.15,0.15,0)), 'a', '#ffd93d'));
+  g.add(label(V(0, 1.8, 0.5), 'a ∩ α = ∅', '#ff6b6b', 1.4));
+}
+
+function sceneL3(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+  g.add(fatLine(V(-1.5, 0, -0.4), V(1.5, 0, -0.4), 0x6ba8ff, 0.030));
+  g.add(fatLine(V(-1.5, 1.1, -0.4), V(1.5, 1.1, -0.4), 0xffd93d, 0.030));
+  g.add(label(V(-1.5, 0.2, -0.4), 'b', '#6ba8ff'));
+  g.add(label(V(-1.5, 1.3, -0.4), 'a', '#ffd93d'));
+  g.add(label(V(0, 0.3, -1.4), 'α', '#4ecdc4'));
+}
+
+/* п.6 — свойство 1°: одна из прямых (b) — жёлтая */
+function sceneS1(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+  g.add(fatLine(V(-1.9,0,0), V(1.9,0,0), 0xffd93d, 0.032));
+  const wB = V(0, 1.0, 0.6).normalize();
+  g.add(planeBig(V(0, 0.5, 0.3), V(1,0,0), wB, 1.9, 0xffa94d, 0.16));
+  g.add(fatLine(V(-1.4, 1.0, 0.6), V(1.4, 1.0, 0.6), 0xff6b6b, 0.030));
+  g.add(label(V(-1.4, 1.2, 0.6), 'a', '#ff6b6b'));
+  g.add(label(V(1.9, 0.2, 0), 'b', '#ffd93d'));
+  g.add(label(V(0, 0.3, -1.5), 'α', '#4ecdc4'));
+  g.add(label(V(-1.6, 1.4, 0.6), 'β', '#ffa94d'));
+}
+
+/* п.6 — свойство 2°: b — жёлтая */
+function sceneS2a(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 2.1, 0x4ecdc4, 0.12));
+  g.add(fatLine(V(-1.6, 1.0, -0.4), V(1.6, 1.0, -0.4), 0xff6b6b, 0.028));
+  g.add(fatLine(V(-1.6, 1.0, 0.8),  V(1.6, 1.0, 0.8),  0xffd93d, 0.028));
+  g.add(fatLine(V(-1.6, 0.0, 1.6),  V(1.6, 0.0, 1.6),  0x6ba8ff, 0.030));
+  g.add(label(V(-1.6, 1.2, -0.4), 'a', '#ff6b6b'));
+  g.add(label(V(-1.6, 1.2, 0.8),  'b', '#ffd93d'));
+  g.add(label(V(-1.6, 0.2, 1.6),  'c', '#6ba8ff'));
+  g.add(label(V(0, 0.4, -1.7), 'α', '#4ecdc4'));
+}
+
+/* ============================================================
+   §2. ВЗАИМНОЕ РАСПОЛОЖЕНИЕ ПРЯМЫХ. УГОЛ
+   ============================================================ */
+function sceneCross1(){
+  g.add(planeBig(V(0, -0.4, 0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+  g.add(fatLine(V(-1.5, -0.4, 0.7), V(1.5, -0.4, -0.5), 0xff6b6b, 0.032));
+  g.add(fatLine(V(-1.2, 1.0, -0.4), V(1.4, 1.0, 0.5), 0xffd93d, 0.032));
+  g.add(label(V(-1.5, -0.2, 0.7), 'a', '#ff6b6b'));
+  g.add(label(V(-1.2, 1.2, -0.4), 'b', '#ffd93d'));
+  g.add(label(V(0, 0.1, -1.7), 'α', '#4ecdc4'));
+}
+
+function sceneCross2(){
+  g.add(planeBig(V(0, 0, 0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+  g.add(fatLine(V(-1.6, 0, 0.4), V(1.6, 0, 0.4), 0xff6b6b, 0.032));
+  const bTop = V(-0.5, 1.5, -0.2), bBot = V(0.9, -1.0, -0.8);
+  const t = (0 - bTop.y) / (bBot.y - bTop.y);
+  const M = bTop.clone().lerp(bBot, t);
+  g.add(fatLine(bTop, M, 0xffd93d, 0.032));
+  g.add(dashedThickLine(M, bBot, 0xffd93d, 0.018, 0.13, 0.09));
+  g.add(point(M, 0xffffff, 0.09));
+  g.add(label(M.clone().add(V(0.2, 0.15, 0)), 'M', '#ffffff'));
+  g.add(label(V(-1.6, 0.25, 0.4), 'a', '#ff6b6b'));
+  g.add(label(bTop.clone().add(V(-0.15, 0.15, 0)), 'b', '#ffd93d'));
+  g.add(label(V(0, 0.2, -1.7), 'α', '#4ecdc4'));
+}
+
+function miniA_intersect(grp){
+  grp.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.0, 0x4ecdc4, 0.10));
+  grp.add(fatLine(V(-0.85, 0, -0.85), V(0.85, 0, 0.85), 0xff6b6b, 0.026));
+  grp.add(fatLine(V(-0.85, 0,  0.85), V(0.85, 0, -0.85), 0xffd93d, 0.026));
+}
+function miniB_parallel(grp){
+  grp.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.0, 0x4ecdc4, 0.10));
+  grp.add(fatLine(V(-0.85, 0, -0.5), V(0.85, 0, -0.5), 0xff6b6b, 0.026));
+  grp.add(fatLine(V(-0.85, 0,  0.5), V(0.85, 0,  0.5), 0xffd93d, 0.026));
+}
+function miniC_skew(grp){
+  grp.add(planeBig(V(0, 0.5, 0), V(1,0,0), V(0,0,1), 0.9, 0x4ecdc4, 0.12));
+  grp.add(planeBig(V(0,-0.5, 0), V(1,0,0), V(0,0,1), 0.9, 0xffa94d, 0.12));
+  grp.add(fatLine(V(-0.8, 0.5, -0.3), V(0.8, 0.5, -0.3), 0xff6b6b, 0.026));
+  grp.add(fatLine(V(-0.7,-0.5,  0.4), V(0.8,-0.5, -0.1), 0xffd93d, 0.026));
+}
+
+function sceneCrossPlane(){
+  g.add(planeBig(V(0, -0.3, 0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+  const a1 = V(-1.5, -0.3, 0.5), a2 = V(1.5, -0.3, 0.5);
+  g.add(fatLine(a1, a2, 0xff6b6b, 0.032));
+  const b1 = V(-1.2, 1.2, -0.5), b2 = V(1.0, 1.2, 0.2);
+  g.add(fatLine(b1, b2, 0xffd93d, 0.032));
+  const bDir = new THREE.Vector3().subVectors(b2, b1).normalize();
+  const O = V(0, -0.3, 0.5);
+  const bP1 = O.clone().add(bDir.clone().multiplyScalar(-1.6));
+  const bP2 = O.clone().add(bDir.clone().multiplyScalar( 1.6));
+  g.add(dashedThickLine(bP1, bP2, 0xffd93d, 0.018, 0.13, 0.09));
+  g.add(point(O, 0xffffff, 0.08));
+  g.add(label(a1.clone().add(V(-0.15, 0.15, 0)), 'a', '#ff6b6b'));
+  g.add(label(b1.clone().add(V(-0.15, 0.2, 0)), 'b', '#ffd93d'));
+  g.add(label(bP1.clone().add(V(-0.15, 0.1, 0)), "b'", '#ffd93d'));
+  g.add(label(V(0, 0.05, -1.7), 'α ∥ b', '#4ecdc4'));
+}
+
+function sceneCrossFromPoint(){
+  g.add(planeBig(V(0, -0.6, 0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.12));
+  const a1 = V(-1.8, -0.6, 0.3), a2 = V(1.8, -0.6, 0.3);
+  g.add(fatLine(a1, a2, 0xff6b6b, 0.032));
+  g.add(label(a1.clone().add(V(-0.2, 0.15, 0)), 'a', '#ff6b6b'));
+  g.add(label(V(0, -0.45, -1.7), 'α', '#4ecdc4'));
+
+  const M = V(0.2, 1.0, 0.3);
+  g.add(point(M, 0xffffff, 0.10));
+  g.add(label(M.clone().add(V(0.15, 0.15, 0)), 'M', '#ffffff'));
+
+  const bDir = new THREE.Vector3().subVectors(a2, a1).normalize();
+  const b1 = M.clone().add(bDir.clone().multiplyScalar(-1.4));
+  const b2 = M.clone().add(bDir.clone().multiplyScalar( 1.4));
+  g.add(fatLine(b1, b2, 0xffd93d, 0.030));
+  g.add(label(b2.clone().add(V(0.15, 0.15, 0)), 'b ∥ a', '#ffd93d', 0.55));
+
+  const cDir = V(0.5, 0.0, 1.0).normalize();
+  const c1b = M.clone().add(cDir.clone().multiplyScalar(-1.3));
+  const c2b = M.clone().add(cDir.clone().multiplyScalar( 1.6));
+  g.add(fatLine(c1b, c2b, 0x6ba8ff, 0.030));
+  g.add(label(c2b.clone().add(V(0.15, 0.15, 0)), 'c — скрещивается с a', '#6ba8ff', 0.55));
+
+  g.add(dashedLine(M, V(0.2, -0.6, 0.3), 0x8fa3bf, 0.09, 0.07));
+}
+
+function sceneHalfplanes(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 2.0, 0x4ecdc4, 0.14));
+  g.add(fatLine(V(-2.0, 0, 0), V(2.0, 0, 0), 0xffffff, 0.032));
+  g.add(label(V(2.15, 0.1, 0), 'a', '#ffffff'));
+  const A = V(-1.0, 0, 0.9), B = V(1.1, 0, 1.2);
+  g.add(point(A, 0x3ddc97, 0.09)); g.add(point(B, 0x3ddc97, 0.09));
+  g.add(label(A.clone().add(V(-0.15, 0.2, 0)), 'A', '#3ddc97'));
+  g.add(label(B.clone().add(V( 0.15, 0.2, 0)), 'B', '#3ddc97'));
+  const C = V(-1.2, 0, -0.9), D = V(0.9, 0, -0.7);
+  g.add(point(C, 0xff6b6b, 0.09)); g.add(point(D, 0xff6b6b, 0.09));
+  g.add(label(C.clone().add(V(-0.15, 0.2, 0)), 'C', '#ff6b6b'));
+  g.add(label(D.clone().add(V( 0.15, 0.2, 0)), 'D', '#ff6b6b'));
+  g.add(label(V(0, 0.4, 1.6), 'одна полуплоскость', '#3ddc97', 0.55));
+  g.add(label(V(0, 0.4, -1.6), 'другая полуплоскость', '#ff6b6b', 0.55));
+}
+
+function sceneDef1(){
+  const O  = V(-0.8, 0, 0);
+  const O1 = V( 0.4, 0, 0);
+  const xL = -2.6, xR = 2.6, yT = 2.0;
+  g.add(fatLine(V(xL, 0, 0), V(xR, 0, 0), 0x8fa3bf, 0.014));
+  g.add(planePatch(V(xL,0,0), V(xR,0,0), V(xR,yT,0), V(xL,yT,0), 0x3ddc97, 0.16));
+  g.add(planePatch(V(xL,0,0), V(xR,0,0), V(xR,-1.6,0), V(xL,-1.6,0), 0x4a6a9a, 0.10));
+  const d = V(0.55, 0.83, 0).normalize();
+  const A  = O.clone().add(d.clone().multiplyScalar(1.5));
+  const A1 = O1.clone().add(d.clone().multiplyScalar(1.5));
+  g.add(ray(O, A, 0xff6b6b, 0.024));
+  g.add(ray(O1, A1, 0xffd93d, 0.024));
+  g.add(point(O, 0xffffff, 0.08));
+  g.add(point(O1, 0xffffff, 0.08));
+  g.add(label(O.clone().add(V(-0.15, -0.15, 0.1)), 'O', '#ffffff'));
+  g.add(label(O1.clone().add(V(0.15, -0.15, 0.1)), 'O₁', '#ffffff'));
+  g.add(label(A.clone().add(V(0.1, 0.1, 0)), 'A', '#ff6b6b'));
+  g.add(label(A1.clone().add(V(0.1, 0.1, 0)), 'A₁', '#ffd93d'));
+  g.add(label(V(0, 1.0, 0), 'одна полуплоскость', '#3ddc97', 0.5));
+  g.add(label(V(0, -0.9, 0), 'другая полуплоскость', '#8fa3bf', 0.5));
+  g.add(label(V(0, 2.3, 0), 'OA ↑↑ O₁A₁', '#3ddc97', 0.55));
+}
+
+function sceneDef2(){
+  const bY = 0.2;
+  const Oa = V(-1.5, bY, 0.8), Oa1 = V(-1.5, bY, 0.3);
+  g.add(ray(Oa,  Oa.clone().add(V(1.2,0,0)), 0xff6b6b, 0.026));
+  g.add(ray(Oa1, Oa1.clone().add(V(1.2,0,0)), 0xffd93d, 0.026));
+  g.add(point(Oa, 0xffffff, 0.075)); g.add(point(Oa1, 0xffffff, 0.075));
+  g.add(label(Oa.clone().add(V(-0.2, 0.1, 0)), 'O', '#ffffff'));
+  g.add(label(Oa1.clone().add(V(-0.2, 0.1, 0)), 'O₁', '#ffffff'));
+  g.add(label(V(-1.5, bY + 0.6, 0.6), 'а) совпадают — сонаправлены', '#3ddc97', 0.55));
+  const Ob = V(-1.5, bY, -0.6);
+  g.add(ray(Ob, V(0.6, bY, -0.6), 0xff6b6b, 0.026));
+  g.add(ray(Ob, V(0.0, bY, -0.6), 0x6ba8ff, 0.026));
+  g.add(point(Ob, 0xffffff, 0.075));
+  g.add(label(Ob.clone().add(V(-0.2, 0.1, 0)), 'O', '#ffffff'));
+  g.add(label(V(0.6, bY + 0.1, -0.6), 'B₁', '#ff6b6b'));
+  g.add(label(V(0.0, bY + 0.1, -0.6), 'B₂', '#6ba8ff'));
+  g.add(label(V(-1.5, bY + 0.6, -0.6), 'б) один содержит другой — сонаправлены', '#3ddc97', 0.55));
+}
+
+/* п.8 — не сонаправленные: O2A2 направлен в противоположную сторону (влево-вверх) */
+function sceneNot(){
+  const O  = V(-1.2, 0, 0);
+  const O2 = V( 1.2, 0, 0);
+  g.add(fatLine(V(-2.0,0,0), V(2.0,0,0), 0x8fa3bf, 0.014));
+  g.add(planePatch(V(-2.0,0,0), V(2.0,0,0), V(2.0,1.8,0), V(-2.0,1.8,0), 0x3ddc97, 0.14));
+  g.add(planePatch(V(-2.0,0,0), V(2.0,0,0), V(2.0,-1.8,0), V(-2.0,-1.8,0), 0xff9a3c, 0.14));
+
+  // OA — вправо-вверх, верхняя полуплоскость
+  const A_upper = O.clone().add(V(1.6, 0.7, 0));
+  g.add(ray(O, A_upper, 0xff6b6b, 0.026));
+
+  // O2A2 — параллелен OA, но направлен ПРОТИВОПОЛОЖНО (влево-вверх)
+  const A2_upper = O2.clone().add(V(-1.6, 0.7, 0));
+  g.add(ray(O2, A2_upper, 0x6ba8ff, 0.026));
+
+  // O3A3 — параллелен OA, но в нижней полуплоскости
+  const O3 = V(-0.6, -0.6, 0);
+  const A3 = O3.clone().add(V(1.6, 0.7, 0));
+  g.add(ray(O3, A3, 0x6ba8ff, 0.026));
+
+  g.add(point(O, 0xffffff, 0.08)); g.add(point(O2, 0xffffff, 0.08));
+  g.add(point(O3, 0xffffff, 0.08));
+  g.add(label(O.clone().add(V(-0.1, -0.2, 0.1)), 'O', '#ffffff'));
+  g.add(label(O2.clone().add(V(0.1, -0.2, 0.1)), 'O₂', '#ffffff'));
+  g.add(label(O3.clone().add(V(-0.2, -0.15, 0.1)), 'O₃', '#ffffff'));
+  g.add(label(A_upper.clone().add(V(0.1, 0.15, 0)), 'A', '#ff6b6b'));
+  g.add(label(A2_upper.clone().add(V(-0.2, 0.15, 0)), 'A₂', '#6ba8ff'));
+  g.add(label(A3.clone().add(V(0.1, 0.15, 0)), 'A₃', '#6ba8ff'));
+  g.add(label(V(0, 1.1, 0), 'OA, O₂A₂ — верхняя полуплоскость', '#3ddc97', 0.55));
+  g.add(label(V(0, -1.0, 0), 'O₃A₃ — нижняя полуплоскость', '#ff9a3c', 0.55));
+  g.add(label(V(0, -1.5, 0), 'Параллельны, но НЕ сонаправлены', '#ff5f5f', 0.6));
+}
+
+function sceneTheorem(){
+  const O  = V(0,  1.0, 0);
+  const O1 = V(0, -1.0, 0);
+  const leftDir  = V(-1, 0, 0).normalize();
+  const rightDir = V( 0, 0, 1).normalize();
+  const L = 2.6;
+  const yT = 2.2, yB = -2.2;
+  const eT = V(0, yT, 0), eB = V(0, yB, 0);
+
+  // Полуплоскости
+  g.add(planePatch(
+    [eB, eT,
+     eT.clone().add(leftDir.clone().multiplyScalar(L)),
+     eB.clone().add(leftDir.clone().multiplyScalar(L))],
+    0x9fc3e8, 0.36));
+  g.add(planePatch(
+    [eB, eT,
+     eT.clone().add(rightDir.clone().multiplyScalar(L)),
+     eB.clone().add(rightDir.clone().multiplyScalar(L))],
+    0xf4a4c4, 0.36));
+
+  // Лучи
+  const A  = O.clone().add(leftDir.clone().multiplyScalar(1.9));
+  const A1 = O1.clone().add(leftDir.clone().multiplyScalar(1.9));
+  const B  = O.clone().add(rightDir.clone().multiplyScalar(1.9));
+  const B1 = O1.clone().add(rightDir.clone().multiplyScalar(1.9));
+
+  g.add(ray(O, A, 0xff3d7f, 0.028));
+  g.add(ray(O, B, 0xff3d7f, 0.028));
+  g.add(ray(O1, A1, 0x1f6fbf, 0.028));
+  g.add(ray(O1, B1, 0x1f6fbf, 0.028));
+
+  // Соединительные пунктиры
+  g.add(dashedLine(O, O1, 0xcfd9e8, 0.10, 0.07));
+  g.add(dashedLine(A, A1, 0xcfd9e8, 0.10, 0.07));
+  g.add(dashedLine(B, B1, 0xcfd9e8, 0.10, 0.07));
+
+  // Заливки углов
+  g.add(polyPatch([O, A, B], 0xffe066, 0.35));
+  g.add(polyPatch([O1, A1, B1], 0xffe066, 0.35));
+
+  // Точки
+  g.add(point(O, 0xffffff, 0.075)); g.add(point(O1, 0xffffff, 0.075));
+  g.add(point(A, 0xff3d7f, 0.06)); g.add(point(A1, 0x1f6fbf, 0.06));
+  g.add(point(B, 0xff3d7f, 0.06)); g.add(point(B1, 0x1f6fbf, 0.06));
+
+  // Подписи
+  g.add(label(O.clone().add(V(-0.15, 0.15, 0.1)), 'O', '#ffffff'));
+  g.add(label(O1.clone().add(V(-0.15, -0.15, 0.1)), 'O₁', '#ffffff'));
+  g.add(label(A.clone().add(V(-0.2, 0.1, 0)), 'A', '#ff3d7f'));
+  g.add(label(A1.clone().add(V(-0.2, -0.1, 0)), 'A₁', '#1f6fbf'));
+  g.add(label(B.clone().add(V(0.1, 0.1, 0.1)), 'B', '#ff3d7f'));
+  g.add(label(B1.clone().add(V(0.1, -0.1, 0.1)), 'B₁', '#1f6fbf'));
+  g.add(label(V(0, 2.7, 0), 'OA ↑↑ O₁A₁,  OB ↑↑ O₁B₁  ⇒  ∠O = ∠O₁', '#3ddc97', 0.6));
+}
+
+function sceneAngle(){
+  g.add(planeBig(V(0, 0, 0), V(1,0,0), V(0,0,1), 2.1, 0x4ecdc4, 0.10));
+  const O = V(0,0,0);
+  const d1 = V(1, 0, 0.2).normalize();
+  const d2 = V(0.2, 0, 1).normalize();
+  const L = 1.8;
+  g.add(fatLine(O.clone().add(d1.clone().multiplyScalar(-L)),
+                O.clone().add(d1.clone().multiplyScalar( L)), 0xff6b6b, 0.030));
+  g.add(fatLine(O.clone().add(d2.clone().multiplyScalar(-L)),
+                O.clone().add(d2.clone().multiplyScalar( L)), 0xffd93d, 0.030));
+  g.add(arcAngle(O, d1.clone(), d2.clone(), 0.55, 0x3ddc97));
+  g.add(arcAngle(O, d2.clone(), d1.clone().multiplyScalar(-1), 0.55, 0x6ba8ff));
+  g.add(arcAngle(O, d1.clone().multiplyScalar(-1), d2.clone().multiplyScalar(-1), 0.55, 0x6ba8ff));
+  g.add(arcAngle(O, d2.clone().multiplyScalar(-1), d1.clone(), 0.55, 0x6ba8ff));
+  g.add(label(O.clone().add(d1.clone().add(d2).multiplyScalar(0.42)).add(V(0,0.15,0)), 'α', '#3ddc97', 0.7));
+  g.add(point(O, 0xffffff, 0.08));
+  g.add(label(O.clone().add(V(-0.15,-0.15,0)), 'O', '#ffffff'));
+  g.add(label(V(0, 0.35, -1.7), '0° < α ≤ 90°', '#e6edf7', 0.6));
+  g.add(label(O.clone().add(d1.clone().multiplyScalar(1.9)).add(V(0,0.15,0)), 'a', '#ff6b6b'));
+  g.add(label(O.clone().add(d2.clone().multiplyScalar(1.9)).add(V(0,0.15,0)), 'b', '#ffd93d'));
+}
+
+function sceneCrossAngle(){
+  g.add(planeBig(V(0, 0.7, 0), V(1,0,0), V(0,0,1), 1.7, 0x4ecdc4, 0.14));
+  const a1 = V(-1.5, 0.7, -0.3), a2 = V(1.4, 0.7, 0.5);
+  g.add(fatLine(a1, a2, 0xff6b6b, 0.030));
+  const b1 = V(-1.0, -0.9, 0.6), b2 = V(1.2, -0.9, -0.4);
+  g.add(fatLine(b1, b2, 0xffd93d, 0.030));
+  const O = a1.clone().lerp(a2, 0.5);
+  g.add(point(O, 0xffffff, 0.08));
+  const bDir = new THREE.Vector3().subVectors(b2, b1).normalize();
+  const aDir = new THREE.Vector3().subVectors(a2, a1).normalize();
+  let bDirO = bDir.clone();
+  if (aDir.dot(bDirO) < 0) bDirO.negate();
+  const bP1 = O.clone().add(bDir.clone().multiplyScalar(-1.4));
+  const bP2 = O.clone().add(bDir.clone().multiplyScalar( 1.4));
+  g.add(dashedThickLine(bP1, bP2, 0xffd93d, 0.018, 0.13, 0.09));
+  g.add(arcAngle(O, aDir.clone(), bDirO.clone(), 0.55, 0x3ddc97));
+  g.add(label(a1.clone().add(V(-0.2, 0.15, 0)), 'a', '#ff6b6b'));
+  g.add(label(b1.clone().add(V(-0.15,-0.2, 0)), 'b', '#ffd93d'));
+  g.add(label(bP1.clone().add(V(-0.15, 0.15, 0)), "b'", '#ffd93d'));
+  g.add(label(O.clone().add(V(0.15, 0.15, 0.15)), 'O', '#ffffff'));
+  g.add(label(V(0, -1.6, 0), 'искомый угол = ∠(a, b\u2032)', '#3ddc97', 0.55));
+}
+
+function sceneCrossAngleIndep(){
+  const a1 = V(-1.4, 1.0, -0.4), a2 = V(1.4, 1.0, 0.6);
+  const b1 = V(-1.6, -0.5, 0.6), b2 = V(1.6, -0.5, -0.6);
+  g.add(fatLine(a1, a2, 0xff6b6b, 0.032));
+  g.add(fatLine(b1, b2, 0xffd93d, 0.032));
+
+  const M1 = b1.clone().lerp(b2, 0.35);
+  const M2 = b1.clone().lerp(b2, 0.68);
+
+  const aDir = new THREE.Vector3().subVectors(a2, a1).normalize();
+  const M1a = M1.clone().add(aDir.clone().multiplyScalar(-0.9));
+  const M1b = M1.clone().add(aDir.clone().multiplyScalar( 0.9));
+  const M2a = M2.clone().add(aDir.clone().multiplyScalar(-0.9));
+  const M2b = M2.clone().add(aDir.clone().multiplyScalar( 0.9));
+
+  g.add(fatLine(M1a, M1b, 0x6ba8ff, 0.026));
+  g.add(fatLine(M2a, M2b, 0x3ddc97, 0.026));
+
+  const bDir = new THREE.Vector3().subVectors(b2, b1).normalize();
+  g.add(arcAngle(M1, aDir.clone(), bDir.clone(), 0.42, 0xffffff));
+  g.add(arcAngle(M2, aDir.clone(), bDir.clone(), 0.42, 0xffffff));
+
+  g.add(point(M1, 0xffffff, 0.07));
+  g.add(point(M2, 0xffffff, 0.07));
+
+  g.add(label(a1.clone().add(V(-0.15, 0.15, 0)), 'a', '#ff6b6b'));
+  g.add(label(b1.clone().add(V(-0.2, -0.15, 0)), 'b', '#ffd93d'));
+  g.add(label(M1.clone().add(V(-0.15, 0.15, 0.1)), 'M₁', '#ffffff'));
+  g.add(label(M2.clone().add(V( 0.15, 0.15, 0.1)), 'M₂', '#ffffff'));
+  g.add(label(M1b.clone().add(V(0.15, 0.15, 0)), "a′₁ ∥ a", '#6ba8ff', 0.55));
+  g.add(label(M2b.clone().add(V(0.15, 0.15, 0)), "a′₂ ∥ a", '#3ddc97', 0.55));
+  g.add(label(V(0, -1.6, 0), '∠(a, a′₁) = ∠(a, a′₂)', '#e6edf7', 0.65));
+}
+
+/* ============================================================
+   §3. ПАРАЛЛЕЛЬНОСТЬ ПЛОСКОСТЕЙ
+   ============================================================ */
+function sceneT1(){
+  g.add(planeBig(V(0, 0.8, 0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+  g.add(planeBig(V(0,-0.8, 0), V(1,0,0), V(0,0,1), 1.9, 0x6ba8ff, 0.14));
+  g.add(fatLine(V(-1.5, 0.8, 0), V(1.5, 0.8, 0), 0xff6b6b, 0.028));
+  g.add(fatLine(V(0, 0.8, -1.5), V(0, 0.8, 1.5), 0xffd93d, 0.028));
+  g.add(fatLine(V(-1.5, -0.8, 0), V(1.5, -0.8, 0), 0xff6b6b, 0.028));
+  g.add(fatLine(V(0, -0.8, -1.5), V(0, -0.8, 1.5), 0xffd93d, 0.028));
+  g.add(point(V(0, 0.8, 0), 0xffffff, 0.08));
+  g.add(point(V(0, -0.8, 0), 0xffffff, 0.08));
+  g.add(label(V(1.5, 0.95, 0), 'a', '#ff6b6b'));
+  g.add(label(V(0, 0.95, 1.5), 'b', '#ffd93d'));
+  g.add(label(V(1.5, -0.65, 0), "a'", '#ff6b6b'));
+  g.add(label(V(0, -0.65, 1.5), "b'", '#ffd93d'));
+  g.add(label(V(-1.6, 0.9, -1.6), 'α', '#4ecdc4'));
+  g.add(label(V(-1.6, -0.7, -1.6), 'β', '#6ba8ff'));
+}
+
+function sceneT1b(){
+  g.add(planeBig(V(0, 0.9, 0), V(1,0,0), V(0,0,1), 1.8, 0x4ecdc4, 0.14));
+  g.add(planeBig(V(0, 0.0, 0), V(1,0,0), V(0,0,1), 1.8, 0xffa94d, 0.14));
+  g.add(planeBig(V(0,-0.9, 0), V(1,0,0), V(0,0,1), 1.8, 0x6ba8ff, 0.14));
+  g.add(label(V(-1.6, 1.0, -1.5), 'α', '#4ecdc4'));
+  g.add(label(V(-1.6, 0.1, -1.5), 'β', '#ffa94d'));
+  g.add(label(V(-1.6, -0.8, -1.5), 'γ', '#6ba8ff'));
+  g.add(label(V(0, 1.55, 0), 'α ∥ γ  и  β ∥ γ  ⇒  α ∥ β', '#e6edf7', 0.7));
+}
+
+function sceneT2(){
+  g.add(planeBig(V(0, 0.8, 0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+  g.add(planeBig(V(0,-0.8, 0), V(1,0,0), V(0,0,1), 1.9, 0x6ba8ff, 0.14));
+  g.add(planeBig(V(0, 0, 0), V(0,1,0), V(0,0,1), 1.9, 0x3ddc97, 0.16));
+  g.add(fatLine(V(0, 0.8, -1.9), V(0, 0.8, 1.9), 0xff6b6b, 0.032));
+  g.add(fatLine(V(0, -0.8, -1.9), V(0, -0.8, 1.9), 0xffd93d, 0.032));
+  g.add(label(V(-0.2, 0.95, -1.9), 'a', '#ff6b6b'));
+  g.add(label(V(-0.2, -0.65, -1.9), 'b', '#ffd93d'));
+  g.add(label(V(-1.6, 0.9, -1.6), 'α', '#4ecdc4'));
+  g.add(label(V(-1.6, -0.7, -1.6), 'β', '#6ba8ff'));
+  g.add(label(V(1.6, 0.1, 1.6), 'γ', '#3ddc97'));
+}
+
+function sceneT2b(){
+  g.add(planeBig(V(0, 0.85, 0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.13));
+  g.add(planeBig(V(0,-0.85, 0), V(1,0,0), V(0,0,1), 1.9, 0x6ba8ff, 0.13));
+
+  const A = V(-1.4, 0.85, 0.5);
+  const B = V(-0.9,-0.85, 0.85);
+  const C = V( 1.0, 0.85,-0.7);
+  const D = V( 1.5,-0.85,-0.35);
+
+  g.add(convexPatch([A, B, D, C], 0x3ddc97, 0.16));
+
+  g.add(fatLine(A, B, 0xff6b6b, 0.032));
+  g.add(fatLine(C, D, 0xffd93d, 0.032));
+
+  g.add(dashedThickLine(A, C, 0x9fc3e8, 0.014, 0.10, 0.07));
+  g.add(dashedThickLine(B, D, 0x9fc3e8, 0.014, 0.10, 0.07));
+
+  g.add(point(A, 0xffffff, 0.06));
+  g.add(point(B, 0xffffff, 0.06));
+  g.add(point(C, 0xffffff, 0.06));
+  g.add(point(D, 0xffffff, 0.06));
+
+  g.add(label(A.clone().add(V(-0.15, 0.15, 0.1)), 'A', '#ffffff'));
+  g.add(label(B.clone().add(V(-0.15,-0.15, 0.1)), 'B', '#ff6b6b'));
+  g.add(label(C.clone().add(V( 0.15, 0.15,-0.1)), 'C', '#ffffff'));
+  g.add(label(D.clone().add(V( 0.15,-0.15,-0.1)), 'D', '#ffd93d'));
+  g.add(label(V(-1.6, 1.0, -1.6), 'α', '#4ecdc4'));
+  g.add(label(V(-1.6,-0.7, -1.6), 'β', '#6ba8ff'));
+  g.add(label(V(0, 1.5, 0.4), 'AB ∥ CD  ⇒  AB = CD', '#e6edf7', 0.7));
+}
+
+/* ============================================================
+   СВОДНЫЕ 4-ПАНЕЛЬНЫЕ СЦЕНЫ
+   ============================================================ */
+function buildTPPoint(grp){
+  const R = 1.4;
+  grp.add(quadPatch(V(-R,0,-R), V(R,0,-R), V(R,0,R), V(-R,0,R), 0x4ecdc4, 0.16));
+  grp.add(quadPatch(V(0,-R,-R), V(0,R,-R), V(0,R,R), V(0,-R,R), 0xffa94d, 0.14));
+  grp.add(quadPatch(V(-R,-R,0), V(R,-R,0), V(R,R,0), V(-R,R,0), 0x6ba8ff, 0.14));
+  grp.add(fatLine(V(-R,0,0), V(R,0,0), 0xffd93d, 0.030));
+  grp.add(fatLine(V(0,-R,0), V(0,R,0), 0x3ddc97, 0.030));
+  grp.add(fatLine(V(0,0,-R), V(0,0,R), 0xff6b6b, 0.030));
+  grp.add(point(V(0,0,0), 0xffffff, 0.10));
+  grp.add(label(V(0.16,0.16,0), 'O', '#ffffff'));
+  grp.add(label(V(R*0.82, 0.22, R*0.82), 'α', '#4ecdc4'));
+  grp.add(label(V(0.22, R*0.82, R*0.82), 'β', '#ffa94d'));
+  grp.add(label(V(R*0.82, R*0.82, 0.22), 'γ', '#6ba8ff'));
+}
+function buildTPParallel(grp){
+  const Rz = 1.4, Z = 1.4;
+  grp.add(quadPatch(V(-Rz,0,-Z), V(Rz,0,-Z), V(Rz,0,Z), V(-Rz,0,Z), 0x3ddc97, 0.14));
+  {
+    const c = V(0,0.7,0);
+    const u = V(1,1,0).normalize().multiplyScalar(Rz);
+    const w = V(0,0,1).multiplyScalar(Z);
+    grp.add(quadPatch(
+      c.clone().add(u).add(w),
+      c.clone().add(u.clone().multiplyScalar(-1)).add(w),
+      c.clone().add(u.clone().multiplyScalar(-1)).add(w.clone().multiplyScalar(-1)),
+      c.clone().add(u).add(w.clone().multiplyScalar(-1)),
+      0xffa94d, 0.14));
+  }
+  {
+    const c = V(0,0.7,0);
+    const u = V(1,-1,0).normalize().multiplyScalar(Rz);
+    const w = V(0,0,1).multiplyScalar(Z);
+    grp.add(quadPatch(
+      c.clone().add(u).add(w),
+      c.clone().add(u.clone().multiplyScalar(-1)).add(w),
+      c.clone().add(u.clone().multiplyScalar(-1)).add(w.clone().multiplyScalar(-1)),
+      c.clone().add(u).add(w.clone().multiplyScalar(-1)),
+      0x6ba8ff, 0.14));
+  }
+  grp.add(fatLine(V(-0.7,0,-Z), V(-0.7,0,Z), 0x3ddc97, 0.030));
+  grp.add(fatLine(V( 0.7,0,-Z), V( 0.7,0,Z), 0xffd93d, 0.030));
+  grp.add(fatLine(V(0, 0.7,-Z), V(0, 0.7,Z), 0xff6b6b, 0.030));
+  grp.add(label(V(-0.7, 0, Z+0.2), 'a', '#3ddc97'));
+  grp.add(label(V( 0.7, 0, Z+0.2), 'b', '#ffd93d'));
+  grp.add(label(V( 0, 0.7, Z+0.2), 'c', '#ff6b6b'));
+}
+function buildPyramidTP(grp){
+  const A1 = V(-1.1, 0,  0.6);
+  const B1 = V( 1.1, 0,  0.6);
+  const C1 = V( 0.0, 0, -1.1);
+  const A2 = V(-0.7, 1.0,  0.4);
+  const B2 = V( 0.7, 1.0,  0.4);
+  const C2 = V( 0.0, 1.0, -0.7);
+  const S  = V(0, 2.2, 0);
+  grp.add(quadPatch(A1, B1, B2, A2, 0x3ddc97, 0.20));
+  grp.add(quadPatch(B1, C1, C2, B2, 0xffa94d, 0.20));
+  grp.add(quadPatch(C1, A1, A2, C2, 0x6ba8ff, 0.20));
+  grp.add(fatLine(A1, B1, 0x3ddc97, 0.022));
+  grp.add(fatLine(B1, C1, 0xffa94d, 0.022));
+  grp.add(fatLine(C1, A1, 0x6ba8ff, 0.022));
+  grp.add(fatLine(A2, B2, 0x3ddc97, 0.022));
+  grp.add(fatLine(B2, C2, 0xffa94d, 0.022));
+  grp.add(fatLine(C2, A2, 0x6ba8ff, 0.022));
+  grp.add(fatLine(A1, A2, 0x3ddc97, 0.022));
+  grp.add(fatLine(B1, B2, 0xffa94d, 0.022));
+  grp.add(fatLine(C1, C2, 0x6ba8ff, 0.022));
+  grp.add(dashedThickLine(A2, S, 0x3ddc97, 0.018));
+  grp.add(dashedThickLine(B2, S, 0xffa94d, 0.018));
+  grp.add(dashedThickLine(C2, S, 0x6ba8ff, 0.018));
+  grp.add(point(S, 0xffffff, 0.09));
+  grp.add(label(S.clone().add(V(0, 0.2, 0)), 'S', '#ffffff'));
+  grp.add(label(V(0, 0.5, 0.5), 'P₁', '#3ddc97'));
+  grp.add(label(V(0.8, 0.5, -0.5), 'P₂', '#ffa94d'));
+  grp.add(label(V(-0.8, 0.5, -0.5), 'P₃', '#6ba8ff'));
+}
+function buildPrismTP(grp){
+  const yTop = 1.4, yBot = -0.4, r = 1.0;
+  const A_bot = V(-r*Math.sqrt(3)/2, yBot,  r/2);
+  const B_bot = V( r*Math.sqrt(3)/2, yBot,  r/2);
+  const C_bot = V(0, yBot, -r);
+  const A_top = V(-r*Math.sqrt(3)/2, yTop,  r/2);
+  const B_top = V( r*Math.sqrt(3)/2, yTop,  r/2);
+  const C_top = V(0, yTop, -r);
+  grp.add(quadPatch(A_bot, B_bot, B_top, A_top, 0x3ddc97, 0.20));
+  grp.add(quadPatch(B_bot, C_bot, C_top, B_top, 0xffa94d, 0.20));
+  grp.add(quadPatch(C_bot, A_bot, A_top, C_top, 0x6ba8ff, 0.20));
+  grp.add(fatLine(A_bot, A_top, 0x3ddc97, 0.030));
+  grp.add(fatLine(B_bot, B_top, 0xffa94d, 0.030));
+  grp.add(fatLine(C_bot, C_top, 0x6ba8ff, 0.030));
+  grp.add(dashedThickLine(A_top, V(A_top.x, yTop + 0.7, A_top.z), 0x3ddc97, 0.016));
+  grp.add(dashedThickLine(A_bot, V(A_bot.x, yBot - 0.7, A_bot.z), 0x3ddc97, 0.016));
+  grp.add(dashedThickLine(B_top, V(B_top.x, yTop + 0.7, B_top.z), 0xffa94d, 0.016));
+  grp.add(dashedThickLine(B_bot, V(B_bot.x, yBot - 0.7, B_bot.z), 0xffa94d, 0.016));
+  grp.add(dashedThickLine(C_top, V(C_top.x, yTop + 0.7, C_top.z), 0x6ba8ff, 0.016));
+  grp.add(dashedThickLine(C_bot, V(C_bot.x, yBot - 0.7, C_bot.z), 0x6ba8ff, 0.016));
+  grp.add(label(V(0, 0.5, 0.7), 'P₁', '#3ddc97'));
+  grp.add(label(V(0.8, 0.5, -0.6), 'P₂', '#ffa94d'));
+  grp.add(label(V(-0.8, 0.5, -0.6), 'P₃', '#6ba8ff'));
+}
+
+/* ============================================================
+   ЧЕРНОВИК: ПЕРПЕНДИКУЛЯРНОСТЬ, РАССТОЯНИЯ, УГЛЫ
+   ============================================================ */
+function scenePP1(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+  g.add(fatLine(V(0,0,0), V(0,2.0,0), 0xff6b6b, 0.035));
+  const dirs = [V(1,0,0), V(0,0,1), V(1,0,1).normalize(), V(1,0,-1).normalize()];
+  dirs.forEach(d=>{
+    g.add(dashedLine(d.clone().multiplyScalar(-1.6), d.clone().multiplyScalar(1.6), 0xffd93d, 0.08, 0.06));
+  });
+  dirs.slice(0,2).forEach(d=>{
+    g.add(rightAngle(V(0,0,0), V(0,1,0), d, 0.18, 0xffffff));
+  });
+  g.add(point(V(0,0,0), 0xffffff, 0.09));
+  g.add(label(V(0.15,0.1,0.15), 'O', '#ffffff'));
+  g.add(label(V(0.15,2.15,0), 'a', '#ff6b6b'));
+  g.add(label(V(0, 0.25, -1.7), 'α', '#4ecdc4'));
+}
+
+function scenePP2(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+  g.add(fatLine(V(-1.6,0,0), V(1.6,0,0), 0xffd93d, 0.030));
+  g.add(fatLine(V(0,0,-1.6), V(0,0,1.6), 0x6ba8ff, 0.030));
+  g.add(fatLine(V(0,0,0), V(0,2.0,0), 0xff6b6b, 0.035));
+  g.add(rightAngle(V(0,0,0), V(0,1,0), V(1,0,0), 0.20, 0xffffff));
+  g.add(rightAngle(V(0,0,0), V(0,1,0), V(0,0,1), 0.20, 0xffffff));
+  g.add(point(V(0,0,0), 0xffffff, 0.09));
+  g.add(label(V(0.15,0.1,0.15), 'O', '#ffffff'));
+  g.add(label(V(0.15,2.15,0), 'a', '#ff6b6b'));
+  g.add(label(V(1.75,0.2,0), 'b', '#ffd93d'));
+  g.add(label(V(0.15,0.2,1.75), 'c', '#6ba8ff'));
+  g.add(label(V(0, 0.25, -1.7), 'α', '#4ecdc4'));
+}
+
+function scenePP3(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x6ba8ff, 0.14));
+  g.add(planeBig(V(0,0,0), V(0,1,0), V(0,0,1), 1.9, 0x3ddc97, 0.14));
+  g.add(fatLine(V(0,-1.9,0), V(0,1.9,0), 0xff6b6b, 0.035));
+  g.add(fatLine(V(-1.7,0,0), V(1.7,0,0), 0xffd93d, 0.030));
+  g.add(fatLine(V(0,0,-1.7), V(0,0,1.7), 0xffd93d, 0.030));
+  g.add(rightAngle(V(0,0,0), V(0,1,0), V(1,0,0), 0.22, 0xffffff));
+  g.add(rightAngle(V(0,0,0), V(0,1,0), V(0,0,1), 0.22, 0xffffff));
+  g.add(point(V(0,0,0), 0xffffff, 0.10));
+  g.add(label(V(0.18, 0.18, 0.18), 'O', '#ffffff'));
+  g.add(label(V(-1.6, 1.4, 0), 'α', '#3ddc97'));
+  g.add(label(V(0, 0.25, -1.7), 'β', '#6ba8ff'));
+  g.add(label(V(0.15, 2.05, 0), 'a', '#ff6b6b'));
+  g.add(label(V(1.85, 0.15, 0), 'b', '#ffd93d'));
+  g.add(label(V(0.15, 0.15, 1.85), 'c', '#ffd93d'));
+}
+
+function scenePP4(){
+  g.add(planeBig(V(0,0,0), V(1,0,0), V(0,0,1), 1.9, 0x4ecdc4, 0.14));
+  const H = V(0,0,0), A = V(0,1.6,0), B = V(1.4,0,0);
+  g.add(fatLine(A, H, 0xff6b6b, 0.035));
+  g.add(fatLine(A, B, 0xffd93d, 0.035));
+  g.add(fatLine(B, H, 0x6ba8ff, 0.035));
+  g.add(fatLine(V(1.4,0,-1.4), V(1.4,0,1.4), 0xff6b6b, 0.030));
+  g.add(rightAngleAt(H, A, B, 0.20, 0xffffff));
+  g.add(rightAngleAt(B, V(1.4,0,1), H, 0.18, 0xffffff));
+  g.add(rightAngleAt(B, V(1.4,0,1), A, 0.18, 0xffffff));
+  g.add(point(A, 0xffffff, 0.09));
+  g.add(point(H, 0xffffff, 0.09));
+  g.add(point(B, 0xffffff, 0.09));
+  g.add(label(A.clone().add(V(0.15,0.15,0)), 'A', '#ff6b6b'));
+  g.add(label(H.clone().add(V(-0.15,0.1,0.15)), 'H', '#ff6b6b'));
+  g.add(label(B.clone().add(V(0.15,0.1,0.15)), 'B', '#ffd93d'));
+  g.add(label(V(1.55,0.2,0), 'x', '#ff6b6b'));
+  g.add(label(V(0, 0.25, -1.7), 'β', '#4ecdc4'));
+}
+
+function scenePP5(){
+  const s = 1.1, h = 2.0;
+  const A = V(-s,0,s), B = V(s,0,s), C = V(s,0,-s), D = V(-s,0,-s), S = V(0,h,0);
+  [[A,B],[B,C],[C,D],[D,A]].forEach(([p,q]) => g.add(fatLine(p, q, 0x2b4770, 0.012)));
+  [[S,A],[S,B],[S,C],[S,D]].forEach(([p,q]) => g.add(fatLine(p, q, 0x2b4770, 0.012)));
+  const M = A.clone().add(B).multiplyScalar(0.5);
+  const N = C.clone().add(D).multiplyScalar(0.5);
+  g.add(convexPatch([S, M, N], 0x3ddc97, 0.22));
+  g.add(fatLine(A, B, 0xff6b6b, 0.035));
+  g.add(fatLine(S, D, 0x6ba8ff, 0.035));
+  g.add(fatLine(S, M, 0xffd93d, 0.030));
+  g.add(fatLine(M, N, 0xffd93d, 0.030));
+  g.add(rightAngleAt(M, A, S, 0.20, 0xffffff));
+  g.add(rightAngleAt(M, A, N, 0.20, 0xffffff));
+  g.add(point(M, 0xffd93d, 0.08));
+  g.add(point(N, 0xffd93d, 0.08));
+  g.add(label(A.clone().add(V(-0.15, 0.15, 0.1)), 'A'));
+  g.add(label(B.clone().add(V( 0.15, 0.15, 0.1)), 'B'));
+  g.add(label(C.clone().add(V( 0.15, 0.15,-0.1)), 'C'));
+  g.add(label(D.clone().add(V(-0.15, 0.15,-0.1)), 'D'));
+  g.add(label(S.clone().add(V(0, 0.15, 0)), 'S'));
+  g.add(label(M.clone().add(V(0.1,-0.18, 0.1)), 'M', '#ffd93d'));
+  g.add(label(N.clone().add(V(0.1,-0.18,-0.1)), 'N', '#ffd93d'));
+  g.add(label(A.clone().add(V(-0.5, 0.3, 0.1)), 'AB ⊥ SD', '#ff6b6b', 0.7));
+}
+
+function distTetra(){
+  const R = 1.4;
+  const H = R * Math.sqrt(2);
+  const A = V(-R*Math.sqrt(3)/2, 0, R/2);
+  const B = V( R*Math.sqrt(3)/2, 0, R/2);
+  const C = V(0, 0, -R), D = V(0, H, 0);
+  [[A,B],[B,C],[C,A],[A,D],[B,D],[C,D]].forEach(([p,q])=>
+    g.add(fatLine(p, q, 0x2b4770, 0.012)));
+  const u = new THREE.Vector3().subVectors(B, A);
+  const v = new THREE.Vector3().subVectors(D, C);
+  const X = A.clone().add(B).multiplyScalar(0.5);
+  const Y = C.clone().add(D).multiplyScalar(0.5);
+  const N = X;
+  g.add(fatLine(A.clone().add(u.clone().multiplyScalar(-0.3)),
+                B.clone().add(u.clone().multiplyScalar( 0.3)), 0x4ecdc4, 0.035));
+  g.add(fatLine(C.clone().add(v.clone().multiplyScalar(-0.3)),
+                D.clone().add(v.clone().multiplyScalar( 0.3)), 0xffd93d, 0.035));
+  g.add(convexPatch([N, D, C], 0x3ddc97, 0.24));
+  g.add(fatLine(N, Y, 0xff6b6b, 0.035));
+  g.add(point(N, 0xff6b6b, 0.08));
+  g.add(point(Y, 0xff6b6b, 0.08));
+  g.add(label(N.clone().add(V(0.15,0.15,0)), 'N', '#ff6b6b'));
+  g.add(label(Y.clone().add(V(0.15,0.1,0.15)), 'Y', '#ff6b6b'));
+  g.add(label(A.clone().add(V(-0.15,0.15,0)), 'A'));
+  g.add(label(B.clone().add(V(0.15,0.15,0)), 'B'));
+  g.add(label(C.clone().add(V(-0.15,0.15,0)), 'C'));
+  g.add(label(D.clone().add(V(0.15,0.15,0)), 'D'));
+}
+
+function distCube(){
+  const s = 1.0;
+  const A0  = V(-s,-s, s), B0  = V( s,-s, s);
+  const C0  = V( s,-s,-s), D0  = V(-s,-s,-s);
+  const A1  = V(-s, s, s), B1  = V( s, s, s);
+  const C1  = V( s, s,-s), D1  = V(-s, s,-s);
+  [[A0,B0],[B0,C0],[C0,D0],[D0,A0],[A1,B1],[B1,C1],[C1,D1],[D1,A1],
+   [A0,A1],[B0,B1],[C0,C1],[D0,D1]].forEach(([p,q])=> g.add(fatLine(p, q, 0x2b4770, 0.012)));
+  const u = new THREE.Vector3().subVectors(C1, A0);
+  const v = new THREE.Vector3().subVectors(D0, C0);
+  const perp = commonPerp(A0, u, C0, v);
+  g.add(fatLine(A0.clone().add(u.clone().multiplyScalar(-0.2)),
+                C1.clone().add(u.clone().multiplyScalar( 0.2)), 0x4ecdc4, 0.035));
+  g.add(fatLine(C0.clone().add(v.clone().multiplyScalar(-0.3)),
+                D0.clone().add(v.clone().multiplyScalar( 0.3)), 0xffd93d, 0.035));
+  const M_CD   = C0.clone().add(D0).multiplyScalar(0.5);
+  const M_AB   = A0.clone().add(B0).multiplyScalar(0.5);
+  const M_A1B1 = A1.clone().add(B1).multiplyScalar(0.5);
+  const M_C1D1 = C1.clone().add(D1).multiplyScalar(0.5);
+  g.add(convexPatch([M_CD, M_AB, M_A1B1, M_C1D1], 0x3ddc97, 0.24));
+  const M_D1C1 = D1.clone().add(C1).multiplyScalar(0.5);
+  g.add(dashedThickLine(M_AB, M_D1C1, 0xffe066, 0.022, 0.08, 0.055));
+  g.add(point(M_AB, 0xffe066, 0.05));
+  g.add(point(M_D1C1, 0xffe066, 0.05));
+  g.add(fatLine(perp.P, perp.Q, 0xff6b6b, 0.035));
+  g.add(point(perp.P, 0xff6b6b, 0.08));
+  g.add(point(perp.Q, 0xff6b6b, 0.08));
+  g.add(label(perp.P.clone().add(V(0.15,0.15,0)), 'X', '#ff6b6b'));
+  g.add(label(perp.Q.clone().add(V(-0.15,0.15,0)), 'Y', '#ff6b6b'));
+  g.add(label(A0.clone().add(V(-0.15,-0.15, 0.15)), 'A'));
+  g.add(label(B0.clone().add(V( 0.15,-0.15, 0.15)), 'B'));
+  g.add(label(C0.clone().add(V( 0.15,-0.15,-0.15)), 'C'));
+  g.add(label(D0.clone().add(V(-0.15,-0.15,-0.15)), 'D'));
+  g.add(label(A1.clone().add(V(-0.15, 0.15, 0.15)), 'A₁'));
+  g.add(label(B1.clone().add(V( 0.15, 0.15, 0.15)), 'B₁'));
+  g.add(label(C1.clone().add(V( 0.15, 0.15,-0.15)), 'C₁'));
+  g.add(label(D1.clone().add(V(-0.15, 0.15,-0.15)), 'D₁'));
+}
+
+function distPyr(){
+  const s = 1.1, h = 1.9;
+  const A = V(-s, 0, s), B = V(s, 0, s), C = V(s, 0, -s), D = V(-s, 0, -s), S = V(0, h, 0);
+  [[A,B],[B,C],[C,D],[D,A]].forEach(([p,q])=> g.add(fatLine(p, q, 0x2b4770, 0.012)));
+  [[S,A],[S,B],[S,C],[S,D]].forEach(([p,q])=> g.add(fatLine(p, q, 0x2b4770, 0.012)));
+  const u = new THREE.Vector3().subVectors(C, A);
+  const v = new THREE.Vector3().subVectors(S, B);
+  const perp = commonPerp(A, u, B, v);
+  g.add(fatLine(A, C, 0x4ecdc4, 0.035));
+  g.add(fatLine(B, S, 0xffd93d, 0.035));
+  g.add(convexPatch([B, D, S], 0x3ddc97, 0.24));
+  g.add(fatLine(perp.P, perp.Q, 0xff6b6b, 0.035));
+  g.add(point(perp.P, 0xff6b6b, 0.08));
+  g.add(point(perp.Q, 0xff6b6b, 0.08));
+  g.add(label(perp.P.clone().add(V(0.12,0.12,0)), 'X', '#ff6b6b'));
+  g.add(label(perp.Q.clone().add(V(-0.12,0.12,0)), 'Y', '#ff6b6b'));
+  g.add(label(S.clone().add(V(0,0.15,0)), 'S'));
+  g.add(label(A.clone().add(V(-0.15,0.1, 0.05)), 'A'));
+  g.add(label(B.clone().add(V( 0.15,0.1, 0.05)), 'B'));
+  g.add(label(C.clone().add(V( 0.15,0.1,-0.05)), 'C'));
+  g.add(label(D.clone().add(V(-0.15,0.1,-0.05)), 'D'));
+}
+
+function angTetra(){
+  const R = 1.4;
+  const H = R * Math.sqrt(2);
+  const A = V(-R*Math.sqrt(3)/2, 0, R/2);
+  const B = V( R*Math.sqrt(3)/2, 0, R/2);
+  const C = V(0, 0, -R), D = V(0, H, 0);
+  [[A,B],[B,C],[C,A],[A,D],[B,D],[C,D]].forEach(([p,q]) =>
+    g.add(fatLine(p, q, 0x2b4770, 0.012)));
+  g.add(fatLine(A, B, 0xffd93d, 0.035));
+  const M = A.clone().add(B).multiplyScalar(0.5);
+  g.add(fatLine(M, C, 0x4ecdc4, 0.030));
+  g.add(fatLine(M, D, 0x4ecdc4, 0.030));
+  g.add(convexPatch([A, B, C], 0x3ddc97, 0.20));
+  g.add(convexPatch([A, B, D], 0xffa94d, 0.22));
+  g.add(rightAngleAt(M, A, C, 0.16, 0xff6b6b));
+  g.add(rightAngleAt(M, A, D, 0.16, 0xff6b6b));
+  g.add(point(M, 0xff6b6b, 0.07));
+  g.add(label(M.clone().add(V(-0.05,-0.15,-0.1)), 'M', '#ff6b6b'));
+  g.add(label(A.clone().add(V(-0.15, 0.15, 0)), 'A'));
+  g.add(label(B.clone().add(V( 0.15, 0.15, 0)), 'B'));
+  g.add(label(C.clone().add(V(-0.15, 0.15, 0)), 'C'));
+  g.add(label(D.clone().add(V( 0.15, 0.15, 0)), 'D'));
+}
+
+function angCube(){
+  const s = 1.0;
+  const A0 = V(-s,-s, s), B0 = V(s,-s, s), C0 = V(s,-s,-s), D0 = V(-s,-s,-s);
+  const A1 = V(-s, s, s), B1 = V(s, s, s), C1 = V(s, s,-s), D1 = V(-s, s,-s);
+  [[A0,B0],[B0,C0],[C0,D0],[D0,A0],[A1,B1],[B1,C1],[C1,D1],[D1,A1],
+   [A0,A1],[B0,B1],[C0,C1],[D0,D1]].forEach(([p,q]) => g.add(fatLine(p, q, 0x2b4770, 0.012)));
+  g.add(fatLine(A0, B0, 0xffd93d, 0.035));
+  g.add(fatLine(B0, C0, 0x4ecdc4, 0.030));
+  g.add(fatLine(B0, B1, 0x4ecdc4, 0.030));
+  g.add(convexPatch([A0, B0, C0, D0], 0x3ddc97, 0.20));
+  g.add(convexPatch([A0, B0, B1, A1], 0xffa94d, 0.24));
+  g.add(rightAngleAt(B0, A0, C0, 0.20, 0xff6b6b));
+  g.add(rightAngleAt(B0, A0, B1, 0.20, 0xff6b6b));
+  g.add(point(B0, 0xff6b6b, 0.07));
+  g.add(label(B0.clone().add(V(0.15, -0.05, 0.1)), 'B', '#ff6b6b'));
+  g.add(label(A0.clone().add(V(-0.15,-0.15, 0.1)), 'A'));
+  g.add(label(C0.clone().add(V( 0.15,-0.15,-0.1)), 'C'));
+  g.add(label(D0.clone().add(V(-0.15,-0.15,-0.1)), 'D'));
+  g.add(label(A1.clone().add(V(-0.15, 0.15, 0.1)), 'A₁'));
+  g.add(label(B1.clone().add(V( 0.15, 0.15, 0.1)), 'B₁'));
+  g.add(label(C1.clone().add(V( 0.15, 0.15,-0.1)), 'C₁'));
+  g.add(label(D1.clone().add(V(-0.15, 0.15,-0.1)), 'D₁'));
+}
+
+function angPyr(){
+  const s = 1.1, h = 1.9;
+  const A = V(-s,0,s), B = V(s,0,s), C = V(s,0,-s), D = V(-s,0,-s), S = V(0,h,0), O = V(0,0,0);
+  [[A,B],[B,C],[C,D],[D,A]].forEach(([p,q])=> g.add(fatLine(p, q, 0x2b4770, 0.012)));
+  [[S,A],[S,B],[S,C],[S,D]].forEach(([p,q])=> g.add(fatLine(p, q, 0x2b4770, 0.012)));
+  g.add(fatLine(A, B, 0xffd93d, 0.035));
+  const M = A.clone().add(B).multiplyScalar(0.5);
+  g.add(fatLine(M, O, 0x4ecdc4, 0.030));
+  g.add(fatLine(M, S, 0x4ecdc4, 0.030));
+  g.add(convexPatch([A, B, C, D], 0x3ddc97, 0.20));
+  g.add(convexPatch([A, B, S], 0xffa94d, 0.24));
+  g.add(rightAngleAt(M, A, O, 0.16, 0xff6b6b));
+  g.add(rightAngleAt(M, A, S, 0.16, 0xff6b6b));
+  g.add(point(M, 0xff6b6b, 0.07));
+  g.add(label(M.clone().add(V(0.1,-0.15, 0.1)), 'M', '#ff6b6b'));
+  g.add(label(S.clone().add(V(0, 0.15, 0)), 'S'));
+  g.add(label(A.clone().add(V(-0.15, 0.1, 0)), 'A'));
+  g.add(label(B.clone().add(V( 0.15, 0.1, 0)), 'B'));
+  g.add(label(C.clone().add(V( 0.15, 0.1,-0.05)), 'C'));
+  g.add(label(D.clone().add(V(-0.15, 0.1,-0.05)), 'D'));
+}
+
+/* =============== КАРТА СЦЕН =============== */
+const SCENES = {
+  ax1:  {build: sceneAx1, cap: 'Через любые три точки, не лежащие на одной прямой, проходит плоскость, и притом только одна.', cam:[3.6,2.8,4.6], tgt:[0,0.3,0]},
+  ax2:  {build: sceneAx2, cap: 'Если две точки прямой лежат в плоскости, то вся прямая лежит в этой плоскости.', cam:[3.4,2.8,4.6], tgt:[0,0.2,0]},
+  ax3:  {build: sceneAx3, cap: 'Если две плоскости имеют общую точку, то они пересекаются по прямой.', cam:[3.6,2.8,4.6], tgt:[0,0,0]},
+  col1: {build: sceneCol1, cap: 'Через прямую и не лежащую на ней точку проходит плоскость, и притом только одна.', cam:[3.6,2.8,4.6], tgt:[0,0.3,0]},
+  col2: {build: sceneCol2, cap: 'Через две пересекающиеся прямые проходит плоскость, и притом только одна.', cam:[3.4,2.8,4.6], tgt:[0,0.2,0]},
+  ways: {build: sceneWays, cap: 'Одна и та же плоскость α может быть задана: (1) тремя точками; (2) прямой и точкой вне неё; (3) двумя пересекающимися прямыми; (4) двумя параллельными прямыми.', cam:[5.4,4.6,6.6], tgt:[0,0,0]},
+
+  p1:  {build: sceneP1,  cap: 'Две прямые в пространстве называются параллельными, если они лежат в одной плоскости и не пересекаются.', cam:[4.0,3.2,5.0], tgt:[0,0.2,0]},
+  p1b: {build: sceneP1b, cap: 'На рисунке a ∥ b. Пары (a, c), (a, d), (b, c), (b, d) — не параллельны: одни пересекаются, другие скрещиваются.', cam:[4.2,3.6,5.2], tgt:[0,0.2,0]},
+  p2:  {build: sceneP2,  cap: 'Через любую точку пространства, не лежащую на данной прямой, проходит прямая, параллельная данной, и притом только одна.', cam:[4.0,3.2,5.0], tgt:[0,0.3,0]},
+  p3:  {build: sceneP3,  cap: 'Если одна из двух параллельных прямых пересекает данную плоскость, то и другая прямая пересекает эту плоскость.', cam:[4.0,3.2,5.0], tgt:[0,0.2,0]},
+  p4:  {build: sceneP4,  cap: 'Если две прямые параллельны третьей прямой, то они параллельны.', cam:[4.0,3.6,5.4], tgt:[0,0.4,0]},
+  l1:  {build: sceneL1,  cap: 'Прямая и плоскость: (1) прямая лежит в плоскости; (2) прямая пересекает плоскость в одной точке; (3) прямая параллельна плоскости.', cam:[5.0,4.2,6.0], tgt:[0,0.3,0]},
+  l2:  {build: sceneL2,  cap: 'Прямая и плоскость называются параллельными, если они не имеют общих точек.', cam:[4.0,3.2,5.0], tgt:[0,0.5,0]},
+  l3:  {build: sceneL3,  cap: 'Если прямая, не лежащая в плоскости, параллельна какой-нибудь прямой в этой плоскости, то она параллельна самой плоскости.', cam:[4.0,3.2,5.0], tgt:[0,0.4,0]},
+  s1:  {build: sceneS1,  cap: 'Если плоскость β проходит через прямую a, параллельную плоскости α, и пересекает α, то линия пересечения b параллельна прямой a.', cam:[4.8,3.8,5.8], tgt:[0,0.4,0]},
+  s2a: {build: sceneS2a, cap: 'Если одна из двух параллельных прямых параллельна данной плоскости, то другая прямая либо тоже параллельна ей, либо лежит в ней.', cam:[4.6,3.8,5.6], tgt:[0,0.3,0]},
+
+  cross1: {build: sceneCross1, cap: 'Две прямые называются скрещивающимися, если они не лежат в одной плоскости.', cam:[4.2,3.2,5.0], tgt:[0,0.1,0]},
+  cross2: {build: sceneCross2, cap: 'Если одна прямая лежит в плоскости, а другая пересекает эту плоскость в точке, не лежащей на первой прямой, то эти прямые скрещиваются.', cam:[4.2,3.0,5.0], tgt:[0,0.1,0]},
+  crossPlane: {build: sceneCrossPlane, cap: 'Через каждую из двух скрещивающихся прямых проходит плоскость, параллельная другой прямой, и притом только одна.', cam:[4.4,3.2,5.2], tgt:[0,0.2,0]},
+  crossFromPoint: {build: sceneCrossFromPoint, cap: 'Через точку M вне прямой a можно провести две прямые, не пересекающие a. Хотя бы одна из них скрещивается с a: если бы обе были параллельны a, они совпали бы.', cam:[4.6,3.4,5.6], tgt:[0,0.2,0]},
+  halfplanes: {build: sceneHalfplanes, cap: 'Прямая a делит плоскость на две полуплоскости. Точки одной лежат по одну сторону от a, разных — по разные.', cam:[3.8,3.6,5.2], tgt:[0,0,0]},
+  def1: {build: sceneDef1, cap: 'Лучи OA и O₁A₁ называются сонаправленными, если они параллельны и лежат в одной полуплоскости с границей OO₁.', cam:[3.4,3.6,5.2], tgt:[0,0.4,0]},
+  def2: {build: sceneDef2, cap: 'Лучи OA и O₁A₁, лежащие на одной прямой, сонаправлены, если совпадают или один содержит другой.', cam:[4.6,4.0,5.6], tgt:[0,0.2,0]},
+  not:  {build: sceneNot,  cap: 'Луч O₂A₂ параллелен OA, но направлен в противоположную сторону. Луч O₃A₃ параллелен OA, но лежит в другой полуплоскости. Оба — не сонаправлены с OA.', cam:[3.6,3.4,5.2], tgt:[0,0.1,0]},
+  theorem: {build: sceneTheorem, cap: 'Если стороны двух углов соответственно сонаправлены, то такие углы равны: OA ↑↑ O₁A₁ и OB ↑↑ O₁B₁ ⇒ ∠O = ∠O₁.', cam:[4.6,3.8,5.8], tgt:[0,0.2,0]},
+  angle: {build: sceneAngle, cap: 'Две пересекающиеся прямые образуют четыре угла. Угол между прямыми — меньший из них: 0° < α ≤ 90°.', cam:[3.8,3.4,5.0], tgt:[0,0,0]},
+  crossAngle: {build: sceneCrossAngle, cap: 'Через точку O на прямой a проводим прямую b′ ∥ b. Угол между скрещивающимися a и b равен углу между a и b′.', cam:[4.2,3.4,5.2], tgt:[0,0,0]},
+  crossAngleIndep: {build: sceneCrossAngleIndep, cap: 'Угол между скрещивающимися прямыми не зависит от выбора точки M на прямой: ∠(a, a′₁) = ∠(a, a′₂).', cam:[4.4,3.4,5.4], tgt:[0,0.2,0]},
+
+  t1:  {build: sceneT1,  cap: 'Если две пересекающиеся прямые одной плоскости соответственно параллельны двум пересекающимся прямым другой плоскости, то эти плоскости параллельны.', cam:[5.0,3.8,6.0], tgt:[0,0,0]},
+  t1b: {build: sceneT1b, cap: 'Если α ∥ γ и β ∥ γ, то α ∥ β: две плоскости, параллельные третьей, параллельны между собой.', cam:[4.4,3.6,5.6], tgt:[0,0,0]},
+  t2:  {build: sceneT2,  cap: 'Если две параллельные плоскости пересечены третьей, то линии их пересечения параллельны.', cam:[5.0,3.8,6.0], tgt:[0,0,0]},
+  t2b: {build: sceneT2b, cap: 'Отрезки параллельных прямых, заключённые между параллельными плоскостями, равны: AB ∥ CD ⇒ AB = CD.', cam:[4.4,3.6,5.6], tgt:[0,0,0]},
+
+  pp1: {build: scenePP1, cap: 'Прямая перпендикулярна плоскости, если она перпендикулярна любой прямой в этой плоскости.', cam:[4.0,3.4,5.0], tgt:[0,0.6,0]},
+  pp2: {build: scenePP2, cap: 'Если прямая перпендикулярна двум пересекающимся прямым, лежащим в плоскости, то она перпендикулярна этой плоскости.', cam:[4.0,3.4,5.0], tgt:[0,0.6,0]},
+  pp3: {build: scenePP3, cap: 'Если плоскость содержит прямую, перпендикулярную другой плоскости, то эти плоскости перпендикулярны.', cam:[4.4,3.4,5.4], tgt:[0,0.3,0]},
+  pp4: {build: scenePP4, cap: 'Теорема о трёх перпендикулярах: AH — перпендикуляр, AB — наклонная, BH — проекция. Прямая x ⊂ β: x ⊥ AB ⇔ x ⊥ BH.', cam:[4.4,3.6,5.6], tgt:[0,0.5,0]},
+  pp5: {build: scenePP5, cap: 'В правильной пирамиде SABCD ребро AB перпендикулярно SD. Через AB проведена плоскость SMN, прямые SM и MN перпендикулярны AB, значит AB ⊥ SMN, а SD в ней лежит.', cam:[4.8,4.0,5.8], tgt:[0,1.0,0]},
+
+  distTetra: {build: distTetra, cap: 'Красный отрезок NY — общий перпендикуляр между скрещивающимися рёбрами AB и CD. N — середина AB, Y — середина CD. Зелёное сечение — треугольник NDC.', cam:[3.6,3.0,4.6], tgt:[0,0.9,0]},
+  distCube:  {build: distCube,  cap: 'Красный отрезок XY — общий перпендикуляр между скрещивающимися AC₁ и CD. Зелёное сечение — плоскость, параллельная обеим прямым.', cam:[4.4,3.6,5.4], tgt:[0,0,0]},
+  distPyr:   {build: distPyr,   cap: 'Красный отрезок XY — общий перпендикуляр между скрещивающимися AC и BS.', cam:[3.6,3.0,5.4], tgt:[0,1.0,0]},
+
+  angTetra: {build: angTetra, cap: 'Двугранный угол при ребре AB: MC и MD — перпендикуляры к AB в гранях ABC и ABD. ∠CMD — линейный угол.', cam:[3.5,3.0,5.5], tgt:[0,0.9,0]},
+  angCube:  {build: angCube,  cap: 'Двугранный угол при ребре AB: BC и BB₁ — перпендикуляры к AB в соседних гранях. ∠CBB₁ — линейный угол.', cam:[4.5,3.8,5.5], tgt:[0,0,0]},
+  angPyr:   {build: angPyr,   cap: 'Двугранный угол при ребре AB основания: MO ⊥ AB в основании, MS ⊥ AB в грани ABS. ∠MOS — линейный угол.', cam:[3.5,3.0,5.5], tgt:[0,1.0,0]},
+};
+
+/* =============== УПРАВЛЕНИЕ =============== */
+const miniScenes = [];
+
+function createMiniScene(parentEl, buildFn, labelHtml, camPos=[2.6, 2.4, 3.4]){
+  const labelEl = document.createElement('div');
+  labelEl.className = 'mini-label';
+  labelEl.innerHTML = labelHtml;
+  parentEl.appendChild(labelEl);
+
+  const r = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio, 2));
+  r.setSize(parentEl.clientWidth, parentEl.clientHeight);
+  parentEl.appendChild(r.domElement);
+
+  const s = new THREE.Scene();
+  const c = new THREE.PerspectiveCamera(42, parentEl.clientWidth/parentEl.clientHeight, 0.1, 200);
+  c.position.set(...camPos);
+  c.lookAt(0, 0, 0);
+
+  const ctr = new OrbitControls(c, r.domElement);
+  ctr.enableDamping = true;
+  ctr.dampingFactor = 0.08;
+  ctr.minDistance = 0.5;
+  ctr.maxDistance = 20;
+  ctr.target.set(0, 0, 0);
+  ctr.minPolarAngle = Math.PI * 0.05;
+  ctr.maxPolarAngle = Math.PI * 0.49;
+  ctr.update();
+
+  s.add(new THREE.HemisphereLight(0xdce8ff, 0x1a2233, 1.6));
+  const kk = new THREE.DirectionalLight(0xffffff, 2.0); kk.position.set(6,9,7); s.add(kk);
+  const rr = new THREE.DirectionalLight(0x7fa8ff, 1.0); rr.position.set(-7,-3,-6); s.add(rr);
+
+  const grp = new THREE.Group(); s.add(grp);
+  buildFn(grp);
+
+  const entry = { renderer:r, scene:s, camera:c, controls:ctr, el: parentEl };
+  miniScenes.push(entry);
+  return entry;
+}
+
+function destroyMiniScenes(){
+  while (miniScenes.length){
+    const m = miniScenes.pop();
+    m.renderer.dispose();
+    if (m.renderer.domElement.parentNode){
+      m.renderer.domElement.parentNode.removeChild(m.renderer.domElement);
+    }
+  }
+  tripleEl.innerHTML = '';
+  quadEl.innerHTML = '';
+}
+
+let threeMode = false;
+let quadMode = false;
+
+function hideAllViews(){
+  singleEl.style.display = 'none';
+  tripleEl.style.display = 'none';
+  quadEl.style.display   = 'none';
+  destroyMiniScenes();
+  threeMode = false;
+  quadMode = false;
+}
+
+function showSingle(id){
+  hideAllViews();
+  singleEl.style.display = 'block';
+  if (!renderer.domElement.parentNode){
+    singleEl.appendChild(renderer.domElement);
+  }
+  renderer.setSize(singleEl.clientWidth, singleEl.clientHeight);
+
+  clearGroup(g);
+  const s = SCENES[id];
+  if (!s) return;
+  try { s.build(); } catch(e){ console.error('scene error:', id, e); }
+  captionEl.innerHTML = s.cap;
+  camera.position.set(...s.cam);
+  controls.target.set(...s.tgt);
+  camera.aspect = singleEl.clientWidth/singleEl.clientHeight;
+  camera.updateProjectionMatrix();
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+function showThree(){
+  hideAllViews();
+  tripleEl.style.display = 'grid';
+  threeMode = true;
+
+  const m1 = document.createElement('div'); m1.className='mini'; tripleEl.appendChild(m1);
+  const m2 = document.createElement('div'); m2.className='mini'; tripleEl.appendChild(m2);
+  const m3 = document.createElement('div'); m3.className='mini'; tripleEl.appendChild(m3);
+
+  requestAnimationFrame(() => {
+    createMiniScene(m1, miniA_intersect, '<b>а)</b> пересекаются');
+    createMiniScene(m2, miniB_parallel, '<b>б)</b> параллельны');
+    createMiniScene(m3, miniC_skew,     '<b>в)</b> скрещиваются');
+  });
+
+  captionEl.innerHTML = 'Три случая взаимного расположения двух прямых: <b>а)</b> пересекаются; <b>б)</b> параллельны; <b>в)</b> скрещиваются.';
+}
+
+function showQuad(){
+  hideAllViews();
+  quadEl.style.display = 'grid';
+  quadMode = true;
+
+  // Скрываем верхнюю единую плашку — подписи у каждой панели
+  captionEl.style.display = 'none';
+
+  const m1 = document.createElement('div'); m1.className='mini'; quadEl.appendChild(m1);
+  const m2 = document.createElement('div'); m2.className='mini'; quadEl.appendChild(m2);
+  const m3 = document.createElement('div'); m3.className='mini'; quadEl.appendChild(m3);
+  const m4 = document.createElement('div'); m4.className='mini'; quadEl.appendChild(m4);
+
+  const CAM = [3.0, 2.6, 3.8];
+
+  requestAnimationFrame(() => {
+    createMiniScene(m1, buildTPPoint,
+      '<b>1. Три плоскости — в одной точке.</b> Линии пересечения попарно пересекаются в O.',
+      CAM);
+    createMiniScene(m2, buildTPParallel,
+      '<b>2. Три плоскости — по параллельным.</b> Линии пересечения попарно параллельны.',
+      CAM);
+    createMiniScene(m3, buildPyramidTP,
+      '<b>3. Пирамида.</b> Продолжение боковых граней до общей вершины S.',
+      CAM);
+    createMiniScene(m4, buildPrismTP,
+      '<b>4. Призма без оснований.</b> Три плоскости параллельны общей прямой.',
+      CAM);
+  });
+}
+
+/* При переключении режимов возвращаем плашку */
+const _origShowSingle = showSingle;
+showSingle = function(id){
+  captionEl.style.display = '';
+  _origShowSingle(id);
+};
+const _origShowThree = showThree;
+showThree = function(){
+  captionEl.style.display = '';
+  _origShowThree();
+};
+
+document.querySelectorAll('#menu button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#menu button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const id = btn.dataset.id;
+    if (id === 'cross3')      showThree();
+    else if (id === 'tpQuad') showQuad();
+    else                      showSingle(id);
+  });
+});
+
+/* --- Аккордеон: при открытии одного раздела закрываем остальные --- */
+document.querySelectorAll('.menu details').forEach(det=>{
+  det.addEventListener('toggle', ()=>{
+    if (det.open){
+      document.querySelectorAll('.menu details').forEach(other=>{
+        if (other !== det && other.open) other.open = false;
+      });
+    }
+  });
+});
+
+addEventListener('resize', ()=>{
+  if (threeMode || quadMode){
+    miniScenes.forEach(m=>{
+      const w = m.el.clientWidth, h = m.el.clientHeight;
+      m.camera.aspect = w/h;
+      m.camera.updateProjectionMatrix();
+      m.renderer.setSize(w, h);
+    });
+  } else {
+    const w = singleEl.clientWidth, h = singleEl.clientHeight;
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
+});
+
+function loop(){
+  requestAnimationFrame(loop);
+  if (threeMode || quadMode){
+    miniScenes.forEach(m=>{
+      m.controls.update();
+      m.renderer.render(m.scene, m.camera);
+    });
+  } else {
+    controls.update();
+    renderer.render(scene, camera);
+  }
+}
+
+showSingle('ax1');
+loop();
+</script>
+</body>
+</html>

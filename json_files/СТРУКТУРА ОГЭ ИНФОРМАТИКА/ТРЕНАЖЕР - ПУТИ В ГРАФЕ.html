@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Подсчёт путей — 3 урока</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;overflow:hidden;}
+  body{
+    font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;
+    background:radial-gradient(1200px 800px at 70% 20%, #1b2740 0%, #0b1018 60%, #070a10 100%);
+    color:#e6edf7;
+  }
+  #app{position:fixed;inset:0;display:grid;grid-template-columns:320px 1fr;}
+
+  aside{
+    background:rgba(12,17,26,.94);
+    border-right:1px solid rgba(255,255,255,.08);
+    padding:16px 14px;overflow-y:auto;backdrop-filter:blur(10px);
+    display:flex;flex-direction:column;gap:13px;
+  }
+  aside::-webkit-scrollbar{width:6px;}
+  aside::-webkit-scrollbar-thumb{background:#2a3a52;border-radius:3px;}
+  aside h2{font-size:14px;color:#fff;letter-spacing:.3px;}
+
+  .lessons{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:5px;
+    background:rgba(0,0,0,.25);padding:5px;border-radius:10px;
+    border:1px solid rgba(255,255,255,.08);
+  }
+  .lessons button{
+    padding:10px 4px;background:transparent;border:0;
+    color:#cfd9e8;font:inherit;font-size:12px;font-weight:700;
+    border-radius:7px;cursor:pointer;transition:.15s;line-height:1.2;
+  }
+  .lessons button small{display:block;font-size:9px;opacity:.65;font-weight:600;margin-top:2px;}
+  .lessons button:hover{color:#fff;}
+  .lessons button.on{background:rgba(78,205,196,.22);color:#fff;
+    box-shadow:inset 0 0 0 1px rgba(78,205,196,.55);}
+
+  .lesson-info{
+    font-size:12.5px;line-height:1.6;color:#b5c2d3;
+    background:rgba(78,205,196,.06);
+    border:1px solid rgba(78,205,196,.20);
+    border-radius:10px;padding:10px 12px;
+  }
+  .lesson-info b{color:#4ecdc4;}
+
+  .speed-row{display:flex;align-items:center;gap:10px;}
+  .speed-row label{font-size:11px;text-transform:uppercase;
+    letter-spacing:.8px;color:#8fa3bf;font-weight:700;white-space:nowrap;}
+  .speed-row input[type=range]{
+    -webkit-appearance:none;appearance:none;flex:1;height:4px;
+    border-radius:4px;outline:none;cursor:pointer;
+    background:linear-gradient(90deg,#4ecdc4,#ffd93d);
+  }
+  .speed-row input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:#fff;border:2px solid #2a3546;cursor:grab;
+    box-shadow:0 2px 6px rgba(0,0,0,.5);
+  }
+  .speed-row .val{font-size:12px;color:#4ecdc4;font-weight:700;
+    font-family:ui-monospace,Menlo,monospace;min-width:36px;text-align:right;}
+
+  aside button.action{
+    width:100%;padding:10px 12px;
+    background:rgba(78,205,196,.14);
+    border:1px solid rgba(78,205,196,.4);
+    color:#4ecdc4;border-radius:9px;
+    font:inherit;font-size:12.5px;font-weight:800;
+    cursor:pointer;transition:.15s;letter-spacing:.3px;
+  }
+  aside button.action:hover{background:rgba(78,205,196,.28);color:#fff;}
+  aside button.action:disabled{opacity:.4;cursor:default;}
+  aside button.action.reset{
+    background:rgba(255,107,107,.14);
+    border-color:rgba(255,107,107,.4);
+    color:#ff6b6b;
+  }
+  aside button.action.reset:hover{background:rgba(255,107,107,.28);color:#fff;}
+  aside button.action.warm{
+    background:rgba(255,217,61,.14);
+    border-color:rgba(255,217,61,.4);
+    color:#ffd93d;
+  }
+  aside button.action.warm:hover{background:rgba(255,217,61,.28);color:#fff;}
+
+  main{
+    position:relative;display:flex;flex-direction:column;
+    min-width:0;min-height:0;
+  }
+  .canvas-wrap{
+    flex:1;min-height:0;display:flex;
+    align-items:center;justify-content:center;
+    padding:8px;
+  }
+  canvas{display:block;max-width:100%;max-height:100%;cursor:default;}
+
+  .formula{
+    padding:10px 22px;margin:0 auto 12px auto;
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:14.5px;font-weight:700;
+    color:#c9faf4;
+    background:rgba(78,205,196,.08);
+    border:1px solid rgba(78,205,196,.25);
+    border-radius:10px;
+    text-align:center;
+    max-width:92%;
+    min-height:38px;
+    line-height:1.5;
+    word-break:break-word;
+  }
+  .formula .hl{color:#ffd93d;}
+  .formula .fin{color:#4ecdc4;font-weight:900;font-size:16px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<aside>
+  <h2>Подсчёт путей в графе</h2>
+
+  <div class="lessons" id="lessons">
+    <button data-l="1" class="on">Урок 1<small>×</small></button>
+    <button data-l="2">Урок 2<small>+</small></button>
+    <button data-l="3">Урок 3<small>граф</small></button>
+  </div>
+
+  <div class="lesson-info" id="lessonInfo"></div>
+
+  <div class="speed-row">
+    <label>Скорость</label>
+    <input id="speed" type="range" min="30" max="300" value="100">
+    <span class="val" id="speedVal">1.0×</span>
+  </div>
+
+  <button class="action" id="solveAll">▶ Решить до финиша</button>
+  <button class="action warm" id="runAllPaths">🐛 Пробежать все пути</button>
+  <button class="action reset" id="reset">⟲ Сброс (и вернуть вершины)</button>
+</aside>
+
+<main>
+  <div class="canvas-wrap"><canvas id="canvas"></canvas></div>
+  <div class="formula" id="formula">—</div>
+</main>
+
+</div>
+
+<script>
+/* ================================================================
+   УРОКИ
+   ================================================================ */
+const LESSONS = {
+  1: {
+    info: 'Из <b>А</b> в <b>Б</b> ведут <b>3</b> дороги. Из <b>Б</b> в <b>С</b> — <b>5</b> дорог. ' +
+          'Пробегаем каждую: <b>3 · 5 = 15</b>.',
+    vertices: ['А','Б','С'],
+    pos: { А:[150,400], Б:[550,400], С:[950,400] },
+    edges: [
+      ['А','Б'], ['А','Б'], ['А','Б'],
+      ['Б','С'], ['Б','С'], ['Б','С'], ['Б','С'], ['Б','С']
+    ],
+    start: 'А', finish: 'С',
+    parallelGap: 26
+  },
+  2: {
+    info: 'Из <b>Б</b> в <b>С</b> — <b>3</b> дороги, из <b>С</b> в <b>Д</b> — <b>2</b> дороги. ' +
+          'Из <b>В</b> в <b>Д</b> — <b>2</b> дороги. ' +
+          'Через Б: 3·2 = 6 путей, через В: 2 пути. Итого <b>8</b>.',
+    vertices: ['А','Б','В','С','Д'],
+    pos: { А:[100,400], Б:[400,200], В:[400,600], С:[700,200], Д:[1000,400] },
+    edges: [
+      ['А','Б'],
+      ['А','В'],
+      ['Б','С'], ['Б','С'], ['Б','С'],
+      ['С','Д'], ['С','Д'],
+      ['В','Д'], ['В','Д']
+    ],
+    start: 'А', finish: 'Д',
+    parallelGap: 22
+  },
+  3: {
+    info: 'Граф из задачи. Все дороги — по одной. Считаем по вершинам: ' +
+          'значение каждой вершины = сумма значений всех входящих.',
+    vertices: ['А','Б','В','Г','Д','Е','Ж','И','К'],
+    pos: {
+      А:[100,400], Б:[250,210], В:[420,400], Г:[250,590],
+      Д:[560,200], Е:[600,400], Ж:[780,230], И:[720,550], К:[940,400]
+    },
+    edges: [
+      ['А','Б'], ['А','В'], ['А','Г'],
+      ['Б','Д'], ['Б','В'],
+      ['В','Д'], ['В','Е'], ['В','И'],
+      ['Г','В'], ['Г','И'],
+      ['Д','Е'], ['Д','Ж'], ['Д','К'],
+      ['Е','Ж'], ['Е','К'],
+      ['Ж','К'], ['И','К']
+    ],
+    start: 'А', finish: 'К',
+    parallelGap: 22
+  }
+};
+
+const TOPO_ORDER = {
+  1: ['А','Б','С'],
+  2: ['А','Б','В','С','Д'],
+  3: ['А','Б','Г','В','Д','Е','Ж','И','К']
+};
+
+/* ================================================================
+   СОСТОЯНИЕ
+   ================================================================ */
+let currentLesson = 1;
+let L = null;
+let V = {};
+let EDGES = [];
+let ADJ = {}, PREDS = {};
+let resizeScale = 1, resizeOx = 0, resizeOy = 0;
+const DATA_W = 1150, DATA_H = 850;
+
+const state = {
+  values: {},
+  forbidden: new Set(),
+  forced: new Set(),
+  allowedEdges: null,
+  worms: [],
+  hover: null,
+  running: false,
+  speed: 1.0,
+  pathsDone: 0,
+  totalPaths: 0,
+  trailEdges: []   // след текущего пробега (индексы рёбер)
+};
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+/* ================================================================
+   ЗАГРУЗКА УРОКА
+   ================================================================ */
+function loadLesson(n){
+  currentLesson = n;
+  L = LESSONS[n];
+
+  V = {};
+  for (const name of L.vertices){
+    const [x, y] = L.pos[name];
+    V[name] = { x, y, origX: x, origY: y, px: 0, py: 0, r: 30 };
+  }
+
+  EDGES = L.edges.map(([u, v]) => ({ u, v, offset: 0 }));
+
+  const groups = {};
+  EDGES.forEach((e, i) => {
+    const k = e.u + '→' + e.v;
+    (groups[k] = groups[k] || []).push(i);
+  });
+  for (const k in groups){
+    const ids = groups[k];
+    const nn = ids.length;
+    const gap = L.parallelGap || 22;
+    ids.forEach((idx, i) => {
+      EDGES[idx].offset = (i - (nn - 1) / 2) * gap;
+    });
+  }
+
+  ADJ = {}; PREDS = {};
+  for (const name of L.vertices){ ADJ[name] = []; PREDS[name] = []; }
+  EDGES.forEach((e, i) => {
+    ADJ[e.u].push(i);
+    PREDS[e.v].push(i);
+  });
+
+  document.getElementById('lessonInfo').innerHTML = L.info;
+  document.getElementById('formula').textContent = 'Кликни по вершине — запустить. Тяни — двигать.';
+
+  state.values = {};
+  state.forbidden.clear();
+  state.forced.clear();
+  state.allowedEdges = null;
+  state.worms.length = 0;
+  state.hover = null;
+  state.pathsDone = 0;
+  state.totalPaths = 0;
+  state.trailEdges = [];
+
+  resize();
+  draw();
+}
+
+/* ================================================================
+   МАСШТАБ
+   ================================================================ */
+function resize(){
+  const parent = canvas.parentElement;
+  canvas.width  = parent.clientWidth;
+  canvas.height = parent.clientHeight;
+
+  const W = canvas.width, H = canvas.height;
+  resizeScale = Math.min(W / DATA_W, H / DATA_H);
+  resizeOx = W/2 - DATA_W/2 * resizeScale;
+  resizeOy = H/2 - DATA_H/2 * resizeScale;
+
+  for (const n of L.vertices){
+    const v = V[n];
+    v.px = v.x * resizeScale + resizeOx;
+    v.py = v.y * resizeScale + resizeOy;
+    v.r  = Math.max(20, 30 * resizeScale);
+  }
+}
+addEventListener('resize', () => { resize(); draw(); });
+
+function screenToData(sx, sy){
+  return { x: (sx - resizeOx) / resizeScale, y: (sy - resizeOy) / resizeScale };
+}
+
+/* ================================================================
+   ГЕОМЕТРИЯ РЕБРА
+   ================================================================ */
+function edgeGeom(edge){
+  const a = V[edge.u], b = V[edge.v];
+  const dx = b.px - a.px, dy = b.py - a.py;
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx/len, uy = dy/len;
+  const px = -uy, py = ux;
+  const off = edge.offset || 0;
+
+  const ax = a.px + px * off;
+  const ay = a.py + py * off;
+  const bx = b.px + px * off;
+  const by = b.py + py * off;
+
+  const sx = ax + ux * (a.r + 3);
+  const sy = ay + uy * (a.r + 3);
+  const ex = bx - ux * (b.r + 14);
+  const ey = by - uy * (b.r + 14);
+
+  return { ax, ay, bx, by, sx, sy, ex, ey, ux, uy, px, py, a, b };
+}
+
+/* ================================================================
+   РАЗРЕШЕНИЕ РЁБЕР
+   ================================================================ */
+function pathExistsThrough(u, v, F){
+  let ok = false;
+  function dfs(node, seenF, usedEdge, seen){
+    if (ok) return;
+    if (node === L.finish){
+      if (seenF && usedEdge) ok = true;
+      return;
+    }
+    for (const ei of ADJ[node]){
+      const nx = EDGES[ei].v;
+      if (state.forbidden.has(nx)) continue;
+      if (seen.has(nx)) continue;
+      const useNow = (node === u && nx === v);
+      seen.add(nx);
+      dfs(nx, seenF || (nx === F), usedEdge || useNow, seen);
+      seen.delete(nx);
+    }
+  }
+  const s = new Set([L.start]);
+  dfs(L.start, L.start === F, false, s);
+  return ok;
+}
+
+function recomputeAllowedEdges(){
+  if (state.forced.size === 0){ state.allowedEdges = null; return; }
+  const allowed = new Set();
+  EDGES.forEach((e, i) => {
+    if (state.forbidden.has(e.u) || state.forbidden.has(e.v)) return;
+    let ok = true;
+    for (const F of state.forced){
+      if (!pathExistsThrough(e.u, e.v, F)){ ok = false; break; }
+    }
+    if (ok) allowed.add(i);
+  });
+  state.allowedEdges = allowed;
+}
+
+function edgeVisible(idx){
+  const e = EDGES[idx];
+  if (state.forbidden.has(e.u) || state.forbidden.has(e.v)) return false;
+  if (state.allowedEdges === null) return true;
+  return state.allowedEdges.has(idx);
+}
+
+/* ================================================================
+   ОТРИСОВКА
+   ================================================================ */
+function draw(){
+  ctx.fillStyle = '#0b1220';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  EDGES.forEach((e, i) => drawEdge(i));
+  for (const w of state.worms) drawWorm(w);
+  for (const n of L.vertices) drawVertex(n);
+}
+
+function drawEdge(idx){
+  const e = EDGES[idx];
+  const g = edgeGeom(e);
+
+  const forb = state.forbidden.has(e.u) || state.forbidden.has(e.v);
+  const vis  = edgeVisible(idx);
+  const inTrail = state.trailEdges.indexOf(idx) !== -1;
+
+  let color, lw, dash;
+  if (forb){
+    color = 'rgba(120,130,150,.10)'; lw = 1.2; dash = [];
+  } else if (!vis){
+    color = 'rgba(160,175,200,.4)'; lw = 1.7; dash = [7, 6];
+  } else {
+    color = 'rgba(200,215,235,.60)'; lw = 2.2; dash = [];
+  }
+
+  /* Если ребро в следе текущего пробега — рисуем ярко-жёлтым поверх */
+  if (inTrail && !forb){
+    /* Свечение */
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,220,90,.25)';
+    ctx.lineWidth = lw + 10;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(g.sx, g.sy);
+    ctx.lineTo(g.ex, g.ey);
+    ctx.stroke();
+    ctx.restore();
+
+    color = 'rgba(255,220,90,.95)';
+    lw = 3.4;
+    dash = [];
+  }
+
+  ctx.save();
+  ctx.setLineDash(dash);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.beginPath();
+  ctx.moveTo(g.sx, g.sy);
+  ctx.lineTo(g.ex, g.ey);
+  ctx.stroke();
+  ctx.restore();
+
+  /* Стрелка */
+  const ah = 14, aw = 7;
+  const tipX = g.bx - g.ux * (g.b.r + 2);
+  const tipY = g.by - g.uy * (g.b.r + 2);
+  ctx.beginPath();
+  ctx.moveTo(tipX, tipY);
+  ctx.lineTo(tipX - g.ux*ah - g.uy*aw, tipY - g.uy*ah + g.ux*aw);
+  ctx.lineTo(tipX - g.ux*ah + g.uy*aw, tipY - g.uy*ah - g.ux*aw);
+  ctx.closePath();
+  if (inTrail && !forb){
+    ctx.fillStyle = 'rgba(255,220,90,.95)';
+  } else {
+    ctx.fillStyle = forb ? 'rgba(120,130,150,.15)'
+                  : !vis ? 'rgba(160,175,200,.45)'
+                         : 'rgba(200,215,235,.8)';
+  }
+  ctx.fill();
+}
+
+function drawVertex(n){
+  const v = V[n];
+  const forb = state.forbidden.has(n);
+  const forced = state.forced.has(n);
+  const hover = state.hover === n;
+  const val = state.values[n];
+
+  if (hover && !forb && !state.running){
+    const grd = ctx.createRadialGradient(v.px, v.py, v.r*0.6, v.px, v.py, v.r*2);
+    grd.addColorStop(0, 'rgba(78,205,196,.28)');
+    grd.addColorStop(1, 'rgba(78,205,196,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.arc(v.px, v.py, v.r*2, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  ctx.beginPath();
+  ctx.arc(v.px, v.py, v.r, 0, Math.PI*2);
+  if (forb){
+    ctx.fillStyle = 'rgba(30,35,45,.5)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(120,130,150,.45)';
+    ctx.lineWidth = 2;
+  } else if (forced){
+    ctx.fillStyle = 'rgba(70,35,25,.9)';
+    ctx.fill();
+    ctx.strokeStyle = '#ff8b5b';
+    ctx.lineWidth = 3;
+  } else if (hover){
+    ctx.fillStyle = 'rgba(30,65,80,.95)';
+    ctx.fill();
+    ctx.strokeStyle = '#4ecdc4';
+    ctx.lineWidth = 3;
+  } else {
+    ctx.fillStyle = 'rgba(22,36,58,.95)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(200,215,235,.85)';
+    ctx.lineWidth = 2;
+  }
+  ctx.stroke();
+
+  if (forb){
+    ctx.strokeStyle = 'rgba(255,107,107,.7)';
+    ctx.lineWidth = 3;
+    const r = v.r * 0.85;
+    ctx.beginPath();
+    ctx.moveTo(v.px-r, v.py-r); ctx.lineTo(v.px+r, v.py+r);
+    ctx.moveTo(v.px+r, v.py-r); ctx.lineTo(v.px-r, v.py+r);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = forb ? 'rgba(180,190,210,.4)' : '#fff';
+  ctx.font = 'bold ' + Math.round(v.r * 0.9) + 'px ui-sans-serif, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(n, v.px, v.py);
+
+  if (val !== undefined && !forb){
+    const bx = v.px;
+    const by = v.py + v.r + 24;
+
+    const grd = ctx.createRadialGradient(bx, by, 0, bx, by, 36);
+    grd.addColorStop(0, 'rgba(255,220,90,.85)');
+    grd.addColorStop(0.6, 'rgba(255,200,60,.3)');
+    grd.addColorStop(1, 'rgba(255,180,40,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.arc(bx, by, 36, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(bx, by, 22, 0, Math.PI*2);
+    ctx.fillStyle = '#ffd93d';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(80,50,0,.55)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = '#1a1000';
+    ctx.font = 'bold 22px ui-sans-serif, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(val), bx, by + 1);
+  }
+}
+
+function drawWorm(w){
+  const e = EDGES[w.edgeIdx];
+  const g = edgeGeom(e);
+  const t = w.progress;
+
+  const x = g.ax + (g.bx - g.ax) * t;
+  const y = g.ay + (g.by - g.ay) * t;
+
+  const dx = g.bx - g.ax, dy = g.by - g.ay;
+  const len = Math.hypot(dx, dy) || 1;
+  const trailPix = 70;
+  const tt = Math.max(0, t - trailPix / len);
+  const sx = g.ax + dx * tt;
+  const sy = g.ay + dy * tt;
+
+  const grd = ctx.createLinearGradient(sx, sy, x, y);
+  grd.addColorStop(0, 'rgba(255,220,90,0)');
+  grd.addColorStop(1, 'rgba(255,240,150,.95)');
+  ctx.strokeStyle = grd;
+  ctx.lineWidth = 9;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+
+  const hg = ctx.createRadialGradient(x, y, 0, x, y, 28);
+  hg.addColorStop(0, 'rgba(255,255,220,1)');
+  hg.addColorStop(0.4, 'rgba(255,220,90,.75)');
+  hg.addColorStop(1, 'rgba(255,180,50,0)');
+  ctx.fillStyle = hg;
+  ctx.beginPath();
+  ctx.arc(x, y, 28, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(x, y, 6, 0, Math.PI*2);
+  ctx.fill();
+}
+
+/* ================================================================
+   АНИМАЦИЯ
+   ================================================================ */
+function tick(now){
+  for (let i = state.worms.length - 1; i >= 0; i--){
+    const w = state.worms[i];
+    const rawT = Math.min(1, (now - w.startTime) / w.duration);
+    w.progress = 0.5 - 0.5 * Math.cos(Math.PI * rawT);
+    if (rawT >= 1){
+      if (w.resolve) w.resolve();
+      state.worms.splice(i, 1);
+    }
+  }
+  draw();
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+function animateEdge(edgeIdx, baseMs){
+  const duration = baseMs / state.speed;
+  return new Promise(resolve => {
+    state.worms.push({
+      edgeIdx, progress: 0,
+      startTime: performance.now(),
+      duration, resolve
+    });
+  });
+}
+
+function sleep(ms){ return new Promise(r => setTimeout(r, ms / state.speed)); }
+
+/* ================================================================
+   DP-РЕШЕНИЕ С АНИМАЦИЕЙ
+   ================================================================ */
+function buildFormulaText(){
+  const parts = [];
+  for (const n of TOPO_ORDER[currentLesson]){
+    if (state.values[n] === undefined) continue;
+    if (n === L.start){ parts.push(`<span class="hl">${n}=1</span>`); continue; }
+    const ins = PREDS[n].filter(i => state.values[EDGES[i].u] !== undefined && edgeVisible(i));
+    const terms = ins.map(i => state.values[EDGES[i].u]);
+    parts.push(`${n}=<span class="hl">${terms.join('+')}</span>=<b>${state.values[n]}</b>`);
+  }
+  return parts.join('  ');
+}
+
+function setFormula(html){
+  document.getElementById('formula').innerHTML = html;
+}
+
+async function solveTo(target){
+  if (state.running) return;
+  if (state.forbidden.has(target)) return;
+
+  state.running = true;
+  updateButtons();
+  state.values = {};
+  state.worms.length = 0;
+  state.trailEdges = [];
+  setFormula('…');
+
+  const fwd = new Set();
+  (function dfs(u){
+    if (fwd.has(u) || state.forbidden.has(u)) return;
+    fwd.add(u);
+    for (const ei of ADJ[u]) if (edgeVisible(ei)) dfs(EDGES[ei].v);
+  })(L.start);
+
+  const bwd = new Set();
+  (function dfs2(v){
+    if (bwd.has(v) || state.forbidden.has(v)) return;
+    bwd.add(v);
+    for (const ei of PREDS[v]) if (edgeVisible(ei)) dfs2(EDGES[ei].u);
+  })(target);
+
+  const sub = new Set();
+  for (const n of L.vertices) if (fwd.has(n) && bwd.has(n)) sub.add(n);
+
+  const order = TOPO_ORDER[currentLesson].filter(n => sub.has(n));
+
+  state.values[L.start] = 1;
+  draw();
+  await sleep(180);
+  setFormula(buildFormulaText());
+
+  for (const v of order){
+    if (v === L.start) continue;
+    const ins = PREDS[v].filter(i => sub.has(EDGES[i].u) && edgeVisible(i));
+    if (ins.length === 0) continue;
+
+    await Promise.all(ins.map(i => animateEdge(i, 500)));
+    await sleep(80);
+
+    let sum = 0;
+    for (const i of ins) sum += state.values[EDGES[i].u] || 0;
+    state.values[v] = sum;
+    draw();
+    setFormula(buildFormulaText());
+
+    if (v === target) break;
+    await sleep(140);
+  }
+
+  if (state.values[target] !== undefined){
+    setFormula(buildFormulaText() +
+      ` <span class="fin">→ ${target} = ${state.values[target]}</span>`);
+  }
+
+  state.running = false;
+  updateButtons();
+}
+
+/* ================================================================
+   ПРОБЕЖАТЬ ВСЕ ПУТИ — со следом
+   ================================================================ */
+function allPaths(){
+  const paths = [];
+  const visited = new Set([L.start]);
+  function dfs(node, edgeList){
+    if (node === L.finish){
+      paths.push([...edgeList]);
+      return;
+    }
+    for (const ei of ADJ[node]){
+      const nx = EDGES[ei].v;
+      if (visited.has(nx)) continue;
+      if (state.forbidden.has(nx)) continue;
+      if (!edgeVisible(ei)) continue;
+      visited.add(nx);
+      edgeList.push(ei);
+      dfs(nx, edgeList);
+      edgeList.pop();
+      visited.delete(nx);
+    }
+  }
+  dfs(L.start, []);
+  return paths;
+}
+
+async function runAllPaths(){
+  if (state.running) return;
+  state.running = true;
+  updateButtons();
+
+  state.values = { [L.start]: 1 };
+  state.worms.length = 0;
+  state.trailEdges = [];
+  state.pathsDone = 0;
+  draw();
+
+  const paths = allPaths();
+  state.totalPaths = paths.length;
+
+  setFormula(`Всего путей: <b>${paths.length}</b>. Начинаем пробег…`);
+  await sleep(400);
+
+  for (let k = 0; k < paths.length; k++){
+    const p = paths[k];
+    state.pathsDone = k + 1;
+    state.trailEdges = [];   // очищаем след — начинается новый пробег
+
+    setFormula(
+      `Путь <b>${k+1}</b> из <b>${paths.length}</b> · ` +
+      `${edgeToStr(p)}`
+    );
+
+    /* Пробегаем рёбра одно за другим, след накапливается */
+    for (const ei of p){
+      state.trailEdges.push(ei);   // сразу добавляем ребро в след
+      draw();
+      await sleep(60);
+      await animateEdge(ei, 500);
+    }
+
+    /* Светлячок доехал — держим след */
+    state.values[L.finish] = (state.values[L.finish] || 0) + 1;
+    draw();
+    setFormula(
+      `Путь <b>${k+1}</b> завершён · ${edgeToStr(p)} · ` +
+      `<span class="fin">${L.finish} = ${state.values[L.finish]}</span>`
+    );
+
+    /* След гаснет */
+    await sleep(420);
+    state.trailEdges = [];
+    draw();
+    await sleep(160);
+  }
+
+  setFormula(
+    `Пробежали все <b>${paths.length}</b> путей. ` +
+    `<span class="fin">${L.finish} = ${paths.length}</span>`
+  );
+
+  state.running = false;
+  updateButtons();
+}
+
+function edgeToStr(path){
+  return path.map((ei, i) => {
+    const e = EDGES[ei];
+    return (i === 0 ? e.u + '→' + e.v : '→' + e.v);
+  }).join('');
+}
+
+/* ================================================================
+   МЫШЬ
+   ================================================================ */
+let pointerDown = null;
+
+function hitVertex(mx, my){
+  for (const n of L.vertices){
+    const v = V[n];
+    if (Math.hypot(mx - v.px, my - v.py) <= v.r + 4) return n;
+  }
+  return null;
+}
+
+canvas.addEventListener('pointerdown', e => {
+  if (state.running) return;
+  const r = canvas.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const hit = hitVertex(mx, my);
+  if (!hit) return;
+
+  pointerDown = {
+    name: hit,
+    startX: mx, startY: my,
+    startDataX: V[hit].x, startDataY: V[hit].y,
+    moved: false,
+    isRight: e.button === 2,
+    ctrl: e.ctrlKey || e.metaKey
+  };
+
+  if (!e.ctrlKey && !e.metaKey && e.button === 0){
+    canvas.setPointerCapture(e.pointerId);
+  }
+});
+
+canvas.addEventListener('pointermove', e => {
+  const r = canvas.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+
+  if (pointerDown && !pointerDown.isRight){
+    const dx = mx - pointerDown.startX;
+    const dy = my - pointerDown.startY;
+    if (!pointerDown.moved && Math.hypot(dx, dy) > 5){
+      pointerDown.moved = true;
+      canvas.style.cursor = 'grabbing';
+    }
+    if (pointerDown.moved){
+      const d = screenToData(mx, my);
+      const d0 = screenToData(pointerDown.startX, pointerDown.startY);
+      const v = V[pointerDown.name];
+      v.x = pointerDown.startDataX + (d.x - d0.x);
+      v.y = pointerDown.startDataY + (d.y - d0.y);
+      v.px = v.x * resizeScale + resizeOx;
+      v.py = v.y * resizeScale + resizeOy;
+      draw();
+      return;
+    }
+  }
+
+  const hv = hitVertex(mx, my);
+  if (hv !== state.hover){
+    state.hover = hv;
+    canvas.style.cursor = hv ? 'pointer' : 'default';
+    draw();
+  }
+});
+
+canvas.addEventListener('pointerup', async e => {
+  if (!pointerDown) return;
+  const wasDrag = pointerDown.moved;
+  const wasRight = pointerDown.isRight;
+  const wasCtrl = pointerDown.ctrl;
+  const name = pointerDown.name;
+  pointerDown = null;
+  canvas.style.cursor = 'default';
+
+  if (wasDrag) return;
+  if (state.running) return;
+
+  if (wasRight){
+    if (name === L.start || name === L.finish) return;
+    if (state.forbidden.has(name)) state.forbidden.delete(name);
+    else { state.forbidden.add(name); state.forced.delete(name); }
+    recomputeAllowedEdges();
+    state.values = {};
+    state.trailEdges = [];
+    setFormula('—');
+    draw();
+    return;
+  }
+
+  if (wasCtrl){
+    if (name === L.start || name === L.finish) return;
+    if (state.forced.has(name)) state.forced.delete(name);
+    else { state.forced.add(name); state.forbidden.delete(name); }
+    recomputeAllowedEdges();
+    state.values = {};
+    state.trailEdges = [];
+    setFormula('—');
+    draw();
+    return;
+  }
+
+  if (name === L.start){
+    state.values = { [L.start]: 1 };
+    state.trailEdges = [];
+    setFormula(buildFormulaText());
+    draw();
+    return;
+  }
+
+  await solveTo(name);
+});
+
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+/* ================================================================
+   КНОПКИ
+   ================================================================ */
+function updateButtons(){
+  document.getElementById('solveAll').disabled = state.running;
+  document.getElementById('runAllPaths').disabled = state.running;
+  document.getElementById('reset').disabled = state.running;
+}
+
+document.getElementById('solveAll').addEventListener('click', () => {
+  if (state.running) return;
+  solveTo(L.finish);
+});
+
+document.getElementById('runAllPaths').addEventListener('click', () => {
+  if (state.running) return;
+  runAllPaths();
+});
+
+document.getElementById('reset').addEventListener('click', () => {
+  state.values = {};
+  state.forbidden.clear();
+  state.forced.clear();
+  state.allowedEdges = null;
+  state.worms.length = 0;
+  state.trailEdges = [];
+  state.hover = null;
+  state.pathsDone = 0;
+  state.totalPaths = 0;
+
+  for (const n of L.vertices){
+    V[n].x = V[n].origX;
+    V[n].y = V[n].origY;
+  }
+  resize();
+
+  setFormula('Кликни по вершине — запустить. Тяни — двигать.');
+  draw();
+});
+
+document.querySelectorAll('#lessons button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (state.running) return;
+    document.querySelectorAll('#lessons button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    loadLesson(Number(btn.dataset.l));
+  });
+});
+
+const speedInput = document.getElementById('speed');
+const speedVal   = document.getElementById('speedVal');
+speedInput.addEventListener('input', () => {
+  state.speed = Number(speedInput.value) / 100;
+  speedVal.textContent = state.speed.toFixed(1) + '×';
+});
+
+/* ================================================================
+   СТАРТ
+   ================================================================ */
+loadLesson(1);
+updateButtons();
+</script>
+</body>
+</html>
