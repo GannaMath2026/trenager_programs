@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Палатка — призмовидная / пирамидальная</title>
+<style>
+  :root{ --txt:#e6edf7; --muted:#8fa3bf; --acc:#4ecdc4; }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;overflow:hidden;}
+  body{background:radial-gradient(1200px 800px at 75% 15%, #1c2740 0%, #0b1018 60%, #070a10 100%);
+    color:var(--txt);font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Arial,sans-serif;}
+  #app{position:fixed;inset:0;display:flex;}
+  .menu{width:320px;height:100%;background:rgba(12,17,26,.94);
+    border-right:1px solid rgba(255,255,255,.08);padding:14px 12px;overflow-y:auto;backdrop-filter:blur(10px);flex-shrink:0;}
+  .menu::-webkit-scrollbar{width:6px;}
+  .menu::-webkit-scrollbar-thumb{background:#2a3a52;border-radius:3px;}
+  details{margin-bottom:6px;border:1px solid rgba(255,255,255,.08);
+    border-radius:12px;background:rgba(15,21,32,.55);overflow:hidden;}
+  details[open]{background:rgba(15,21,32,.8);border-color:rgba(255,169,77,.30);}
+  summary{list-style:none;cursor:pointer;padding:11px 14px;font-size:13px;font-weight:700;
+    color:#ffa94d;letter-spacing:.2px;display:flex;justify-content:space-between;
+    align-items:center;user-select:none;transition:.15s;}
+  summary::-webkit-details-marker{display:none;}
+  summary::after{content:'▾';color:var(--muted);transition:.2s;font-size:12px;}
+  details[open] summary::after{transform:rotate(180deg);color:#ffa94d;}
+  .sec-num{display:inline-block;min-width:30px;color:#ffa94d;font-weight:800;margin-right:8px;}
+  .view{position:relative;flex:1;min-width:0;}
+  .view canvas{display:block;cursor:grab;}
+  .view canvas:active{cursor:grabbing;}
+  .single{position:absolute;inset:0;}
+
+  .caption{position:absolute;top:14px;left:50%;transform:translateX(-50%);
+    max-width:min(720px,calc(100% - 30px));background:rgba(18,24,34,.92);backdrop-filter:blur(10px);
+    border:1px solid rgba(255,169,77,.35);border-radius:14px;padding:12px 20px;
+    font-size:14px;line-height:1.5;color:#f3f8ff;font-weight:500;letter-spacing:.15px;
+    box-shadow:0 10px 26px rgba(0,0,0,.55);text-align:center;z-index:10;
+    max-height:60vh;overflow-y:auto;}
+  .caption b{color:#ffa94d;font-weight:700;}
+  .caption .mono{font-family:ui-monospace,Menlo,monospace;color:#b6f3ed;font-weight:700;}
+
+  .hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+    font-size:11.5px;color:#5f6d82;letter-spacing:.3px;pointer-events:none;
+    background:rgba(15,21,32,.6);padding:6px 12px;border-radius:8px;z-index:10;}
+
+  .legend{position:absolute;bottom:14px;left:14px;z-index:10;
+    background:rgba(15,21,32,.78);border:1px solid rgba(255,255,255,.08);
+    border-radius:10px;padding:9px 13px;font-size:11.5px;line-height:1.55;
+    color:#cfd9e8;backdrop-filter:blur(10px);}
+  .legend span{display:inline-block;width:11px;height:11px;border-radius:3px;
+    vertical-align:-2px;margin-right:6px;}
+
+  .vol{
+    position:absolute;top:14px;right:14px;z-index:11;
+    background:rgba(15,21,32,.9);border:1px solid rgba(78,205,196,.35);
+    border-radius:12px;padding:11px 14px;font-size:12.5px;
+    font-family:ui-monospace,Menlo,monospace;line-height:1.65;
+    color:#cfd9e8;backdrop-filter:blur(10px);
+    box-shadow:0 8px 24px rgba(0,0,0,.5);
+    min-width:190px;max-width:230px;
+  }
+  .vol .row{display:flex;justify-content:space-between;gap:10px;}
+  .vol .k{color:#8fa3bf;}
+  .vol .v{color:#e6edf7;font-weight:700;}
+  .vol .ratio{border-top:1px solid rgba(255,255,255,.10);margin-top:6px;padding-top:6px;color:#3ddc97;font-weight:700;}
+
+  .zoom-bar{
+    position:absolute;bottom:14px;right:14px;z-index:11;
+    background:rgba(15,21,32,.88);border:1px solid rgba(78,205,196,.35);
+    border-radius:12px;padding:10px 14px;
+    backdrop-filter:blur(10px);
+    box-shadow:0 8px 24px rgba(0,0,0,.5);
+    display:flex;align-items:center;gap:10px;
+    font-size:11.5px;color:#8fa3bf;letter-spacing:.3px;user-select:none;
+  }
+  .zoom-bar .label{text-transform:uppercase;font-weight:800;}
+  .zoom-bar input[type="range"]{
+    -webkit-appearance:none;appearance:none;
+    width:150px;height:5px;
+    background:linear-gradient(90deg, #4ecdc4, #6ba8ff);
+    border-radius:3px;outline:none;cursor:pointer;
+  }
+  .zoom-bar input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;
+    background:#fff;border:2px solid #4ecdc4;
+    box-shadow:0 0 8px rgba(78,205,196,.8);cursor:pointer;
+  }
+  .zoom-bar input[type="range"]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;
+    background:#fff;border:2px solid #4ecdc4;
+    box-shadow:0 0 8px rgba(78,205,196,.8);cursor:pointer;border:none;
+  }
+  .zoom-bar .val{font-family:ui-monospace,Menlo,monospace;color:#e6edf7;font-weight:700;min-width:44px;text-align:right;}
+  .zoom-bar button{
+    background:rgba(78,205,196,.14);border:1px solid rgba(78,205,196,.5);
+    color:#4ecdc4;font:inherit;font-size:11px;font-weight:800;
+    padding:4px 9px;border-radius:6px;cursor:pointer;letter-spacing:.3px;transition:.15s;
+  }
+  .zoom-bar button:hover{background:rgba(78,205,196,.3);color:#fff;}
+
+  .mode-switch{
+    position:absolute;top:14px;left:14px;z-index:12;
+    background:rgba(15,21,32,.88);border:1px solid rgba(255,169,77,.45);
+    border-radius:12px;padding:8px 12px;
+    backdrop-filter:blur(10px);
+    box-shadow:0 8px 24px rgba(0,0,0,.5);
+    display:flex;align-items:center;gap:8px;
+    font-size:11.5px;color:#8fa3bf;letter-spacing:.3px;user-select:none;
+  }
+  .mode-switch .label{text-transform:uppercase;font-weight:800;}
+  .mode-switch button{
+    background:rgba(255,169,77,.10);
+    border:1px solid rgba(255,169,77,.5);
+    color:#ffa94d;font:inherit;font-size:11.5px;font-weight:800;
+    padding:5px 11px;border-radius:7px;cursor:pointer;
+    letter-spacing:.4px;transition:.15s;
+  }
+  .mode-switch button:hover{color:#fff;background:rgba(255,169,77,.3);}
+  .mode-switch button.on{
+    background:rgba(255,169,77,.32);color:#fff;
+    box-shadow:inset 0 0 0 1px rgba(255,169,77,.7);
+  }
+</style>
+</head>
+<body>
+<div id="app">
+<aside class="menu">
+  <details open>
+    <summary><span><span class="sec-num">ЛХ</span>Палатка — призмовидная / пирамидальная</span></summary>
+    <div style="padding:10px 14px 14px;font-size:12.5px;line-height:1.6;color:#8fa3bf">
+      <div style="margin-bottom:8px"><b style="color:#e6edf7">Управление:</b></div>
+      <div>• <b>ЛКМ по пустому</b> — крутить пирамиду</div>
+      <div>• <b>ЛКМ по вершине</b> — держишь и двигаешь</div>
+      <div>• <b>Ctrl + ЛКМ</b> / <b>ПКМ</b> — панорама</div>
+      <div>• <b>колесо</b> / <b>бегунок</b> — масштаб</div>
+      <div style="margin-top:10px;border-top:1px dashed rgba(255,255,255,.1);padding-top:8px">
+        <b style="color:#a180ff">фиолетовые</b> — каркас S–ABC.<br>
+        <b style="color:#3ddc97">зелёные</b> — рёбра палатки.<br>
+        <b style="color:#b18cff">основание</b> — сиреневое.<br>
+        <b style="color:#a97142">коричневые</b> — грани MTA и NBK.<br>
+        <b style="color:#ff3d7f">R</b> — MN ∩ AB.
+      </div>
+    </div>
+  </details>
+</aside>
+
+<div class="view" id="view">
+  <div class="single" id="single"></div>
+
+  <div class="mode-switch" id="modeSwitch">
+    <span class="label">Режим:</span>
+    <button data-mode="prism" class="on">призмовидная</button>
+    <button data-mode="pyr">пирамидальная</button>
+  </div>
+
+  <div class="caption" id="caption"></div>
+  <div class="vol" id="volPanel"></div>
+
+  <div class="legend">
+    <div><span style="background:#3ddc97"></span>рёбра палатки</div>
+    <div><span style="background:#a180ff"></span>каркас S–ABC</div>
+    <div><span style="background:#b18cff"></span>основание</div>
+    <div><span style="background:#a97142"></span>MTA, NBK</div>
+    <div><span style="background:#ff3d7f"></span>R</div>
+  </div>
+
+  <div class="hint">ЛКМ по пустому — крутить · ЛКМ по вершине — тянуть · Ctrl+ЛКМ / ПКМ — панорама · колесо — зум</div>
+
+  <div class="zoom-bar">
+    <span class="label">Zoom</span>
+    <input type="range" id="zoomSlider" min="0" max="100" value="50">
+    <span class="val" id="zoomVal">1.00×</span>
+    <button id="zoomReset">100%</button>
+  </div>
+</div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+/* ==================== БАЗА ==================== */
+const singleEl  = document.getElementById('single');
+const captionEl = document.getElementById('caption');
+const volPanel  = document.getElementById('volPanel');
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(singleEl.clientWidth, singleEl.clientHeight);
+singleEl.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, singleEl.clientWidth/singleEl.clientHeight, 0.1, 200);
+
+let camDist = 6;
+let camTarget = new THREE.Vector3(0, 0, 0);
+
+scene.add(new THREE.HemisphereLight(0xdce8ff, 0x1a2233, 1.6));
+const keyL = new THREE.DirectionalLight(0xffffff, 2.0); keyL.position.set(6,9,7); scene.add(keyL);
+const rimL = new THREE.DirectionalLight(0x7fa8ff, 1.0); rimL.position.set(-7,-3,-6); scene.add(rimL);
+
+const g = new THREE.Group(); scene.add(g);
+const handlesGroup = new THREE.Group(); scene.add(handlesGroup);
+const V = (x,y,z)=> new THREE.Vector3(x,y,z);
+
+/* ==================== ХЕЛПЕРЫ ==================== */
+function fatLine(a, b, color, r=0.024){
+  const grp = new THREE.Group();
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length(); if (len < 1e-6) return grp;
+  const mid = a.clone().add(b).multiplyScalar(0.5);
+  const geo = new THREE.CylinderGeometry(r, r, len, 12, 1, false);
+  const mat = new THREE.MeshStandardMaterial({color, roughness:.35, metalness:.1,
+    emissive:color, emissiveIntensity:.15});
+  const cyl = new THREE.Mesh(geo, mat);
+  cyl.position.copy(mid);
+  cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+  grp.add(cyl);
+  [a, b].forEach(p=>{
+    const sp = new THREE.Mesh(new THREE.SphereGeometry(r*1.05, 10, 8), mat);
+    sp.position.copy(p); grp.add(sp);
+  });
+  return grp;
+}
+function dashedThickLine(a, b, color, r=0.016, dash=0.11, gap=0.09){
+  const grp = new THREE.Group();
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length(); if (len < 1e-6) return grp;
+  const n = dir.clone().normalize();
+  const total = dash + gap; let t = 0;
+  while (t < len){
+    const s0 = a.clone().add(n.clone().multiplyScalar(t));
+    const s1 = a.clone().add(n.clone().multiplyScalar(Math.min(t+dash, len)));
+    grp.add(fatLine(s0, s1, color, r)); t += total;
+  }
+  return grp;
+}
+function point(p, color=0xff6b6b, r=0.06){
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12),
+                           new THREE.MeshBasicMaterial({color}));
+  m.position.copy(p); return m;
+}
+function label(p, text, color='#e6edf7', size=0.55){
+  const c = document.createElement('canvas'); const ctx = c.getContext('2d');
+  c.width = 512; c.height = 128;
+  ctx.fillStyle='rgba(0,0,0,0)'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle=color; ctx.font='bold 72px ui-sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(text,256,64);
+  const tex = new THREE.CanvasTexture(c);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false}));
+  spr.scale.set(size, size*0.25, 1); spr.position.copy(p); return spr;
+}
+function triangle3D(A,B,C,color,opacity=0.28){
+  const geo=new THREE.BufferGeometry().setFromPoints([A,B,C]);
+  geo.setIndex([0,1,2]); geo.computeVertexNormals();
+  const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity,
+    side:THREE.DoubleSide,depthWrite:false});
+  const mesh=new THREE.Mesh(geo,mat);
+  const wrap=new THREE.Group(); wrap.add(mesh); return wrap;
+}
+function quad3D(A,B,C,D,color,opacity=0.28){
+  const geo=new THREE.BufferGeometry().setFromPoints([A,B,C,D]);
+  geo.setIndex([0,1,2, 0,2,3]); geo.computeVertexNormals();
+  const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity,
+    side:THREE.DoubleSide,depthWrite:false});
+  const mesh=new THREE.Mesh(geo,mat);
+  const wrap=new THREE.Group(); wrap.add(mesh); return wrap;
+}
+function polyhedron(faces,color,opacity=0.18){
+  const grp=new THREE.Group();
+  faces.forEach(face=>{
+    const geo=new THREE.BufferGeometry().setFromPoints(face);
+    const idx=[]; for (let i=1;i<face.length-1;i++) idx.push(0,i,i+1);
+    geo.setIndex(idx); geo.computeVertexNormals();
+    const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity,
+      side:THREE.DoubleSide,depthWrite:false});
+    grp.add(new THREE.Mesh(geo,mat));
+  });
+  return grp;
+}
+function disposeObj(obj){
+  if (obj.geometry&&obj.geometry.dispose) obj.geometry.dispose();
+  if (obj.material){
+    if (Array.isArray(obj.material)) obj.material.forEach(m=>m.dispose());
+    else if (obj.material.dispose) obj.material.dispose();
+  }
+  if (obj.children) for (let i=obj.children.length-1;i>=0;i--) disposeObj(obj.children[i]);
+}
+function clearGroup(grp){
+  for (let i=grp.children.length-1;i>=0;i--){ const c=grp.children[i]; grp.remove(c); disposeObj(c); }
+}
+function makeHandleMesh(pos,colorHex,name,r=0.085){
+  const col=new THREE.Color(colorHex);
+  const rgb=Math.round(col.r*255)+','+Math.round(col.g*255)+','+Math.round(col.b*255);
+  const mesh=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),
+    new THREE.MeshStandardMaterial({color:colorHex,emissive:colorHex,
+      emissiveIntensity:1.4,roughness:0.3,metalness:0.1}));
+  mesh.position.copy(pos); mesh.userData.name=name;
+  const c=document.createElement('canvas'); c.width=128; c.height=128;
+  const ctx=c.getContext('2d');
+  const grd=ctx.createRadialGradient(64,64,2,64,64,60);
+  grd.addColorStop(0,`rgba(${rgb},0.9)`);
+  grd.addColorStop(0.35,`rgba(${rgb},0.35)`);
+  grd.addColorStop(1,`rgba(${rgb},0)`);
+  ctx.fillStyle=grd; ctx.fillRect(0,0,128,128);
+  const tex=new THREE.CanvasTexture(c);
+  const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,
+    depthWrite:false,depthTest:false,blending:THREE.AdditiveBlending}));
+  glow.scale.set(0.75,0.75,1); mesh.add(glow); return mesh;
+}
+
+/* ==================== ГЕОМЕТРИЯ ==================== */
+const S0 = V(0, 2.2, 0);
+const A0 = V(-1.2, 0, -0.9);
+const B0 = V( 1.2, 0, -0.9);
+const C0 = V( 0, 0, 1.1);
+
+const COL_LILAC   = 0xb18cff;
+const COL_BROWN   = 0xa97142;
+const COL_YELLOW  = 0xffd93d;
+const COL_FRAME   = 0xa180ff;
+const COL_EDGE    = 0x3ddc97;
+const COL_GREENT  = 0x8fd6a8;   // бледно-зелёный для «внутренних» граней
+const COL_PINK    = 0xff3d7f;
+const COL_DASH    = 0xc9a8ff;
+
+const CENTRE = new THREE.Vector3()
+  .add(S0).add(A0).add(B0).add(C0).divideScalar(4);
+
+function tetraVolume(P1, P2, P3, P4){
+  const a = new THREE.Vector3().subVectors(P2, P1);
+  const b = new THREE.Vector3().subVectors(P3, P1);
+  const c = new THREE.Vector3().subVectors(P4, P1);
+  return Math.abs(a.dot(b.cross(c))) / 6;
+}
+
+function intersectMNwithAB(M, N, A, B){
+  const e1 = new THREE.Vector3().subVectors(B, A).normalize();
+  const e2raw = new THREE.Vector3().subVectors(S0, A);
+  const e2 = e2raw.clone().sub(e1.clone().multiplyScalar(e2raw.dot(e1))).normalize();
+  const to2 = (P)=>{
+    const v = new THREE.Vector3().subVectors(P, A);
+    return {x: v.dot(e1), y: v.dot(e2)};
+  };
+  const M2 = to2(M), N2 = to2(N);
+  const dM2 = {x: N2.x - M2.x, y: N2.y - M2.y};
+  if (Math.abs(dM2.y) < 1e-5) return null;
+  const s = -M2.y / dM2.y;
+  const xR = M2.x + s * dM2.x;
+  const ABlen = new THREE.Vector3().subVectors(B, A).length();
+  const xParam = xR / ABlen;
+  const P = A.clone().add(new THREE.Vector3().subVectors(B, A).multiplyScalar(xParam));
+  return { P, s };
+}
+function intersectRKwithAC(R, K, A, C){
+  const dRK = new THREE.Vector3().subVectors(K, R);
+  const dAC = new THREE.Vector3().subVectors(C, A);
+  const det = dRK.x * (-dAC.z) - dRK.z * (-dAC.x);
+  if (Math.abs(det) < 1e-6) return null;
+  const rx = A.x - R.x;
+  const rz = A.z - R.z;
+  const s = ( rx * (-dAC.z) - rz * (-dAC.x) ) / det;
+  const P = R.clone().add(dRK.clone().multiplyScalar(s));
+  const tAC = new THREE.Vector3().subVectors(P, A).dot(dAC) / dAC.lengthSq();
+  return { P, t: tAC };
+}
+
+/* ==================== СОСТОЯНИЕ ==================== */
+const state = {
+  tM: 0.55,
+  tN: 0.55,
+  tK: 0.45,
+  zoom: 1,
+  mode: 'prism',
+  rotation: new THREE.Quaternion()
+};
+
+/* ==================== СЦЕНА ==================== */
+function buildScene(){
+  clearGroup(g);
+
+  const shift = (p)=> p.clone().sub(CENTRE);
+  const S = shift(S0), A = shift(A0), B = shift(B0), C = shift(C0);
+
+  /* --- КАРКАС S-ABC --- */
+  g.add(polyhedron([[A,B,C],[S,A,B],[S,B,C],[S,C,A]], COL_FRAME, 0.03));
+  g.add(fatLine(S, A, COL_FRAME, 0.014));
+  g.add(fatLine(S, B, COL_FRAME, 0.014));
+  g.add(fatLine(S, C, COL_FRAME, 0.014));
+  g.add(fatLine(A, B, COL_FRAME, 0.014));
+  g.add(fatLine(B, C, COL_FRAME, 0.014));
+  g.add(fatLine(C, A, COL_FRAME, 0.014));
+
+  [S,A,B,C].forEach(p=>g.add(point(p, 0xffffff, 0.06)));
+  g.add(label(S.clone().add(V(0, 0.22, 0)), 'S', '#a180ff'));
+  g.add(label(A.clone().add(V(-0.20, -0.10, 0.10)), 'A', '#a180ff'));
+  g.add(label(B.clone().add(V( 0.20, -0.10, 0.10)), 'B', '#a180ff'));
+  g.add(label(C.clone().add(V( 0.10,  0.10, 0.16)), 'C', '#a180ff'));
+
+  const M = S.clone().lerp(A, state.tM);
+  const N = S.clone().lerp(B, state.tN);
+
+  if (state.mode === 'prism'){
+    /* ============ ПРИЗМОВИДНЫЙ (не трогаем) ============ */
+    const T = A.clone().lerp(C, state.tM);
+    const K = B.clone().lerp(C, state.tN);
+
+    g.add(quad3D(B, K, T, A, COL_LILAC, 0.42));
+    g.add(triangle3D(M, T, A, COL_BROWN, 0.55));
+    g.add(triangle3D(N, T, A, 0x7fd1ff, 0.28));
+    g.add(triangle3D(N, A, M, 0x7fd1ff, 0.28));
+    g.add(triangle3D(N, T, K, 0x4c8fd6, 0.28));
+    g.add(triangle3D(N, B, A, 0x4c8fd6, 0.28));
+    g.add(triangle3D(N, B, K, 0x4c8fd6, 0.28));
+    g.add(triangle3D(M, N, T, COL_EDGE, 0.45));
+
+    g.add(fatLine(N, B, COL_EDGE, 0.020));
+    g.add(fatLine(N, K, COL_EDGE, 0.020));
+    g.add(fatLine(N, A, COL_EDGE, 0.020));
+    g.add(fatLine(N, T, COL_EDGE, 0.022));
+    g.add(fatLine(N, M, COL_EDGE, 0.028));
+    g.add(fatLine(M, T, COL_EDGE, 0.022));
+    g.add(fatLine(M, A, COL_EDGE, 0.022));
+    g.add(fatLine(B, K, COL_EDGE, 0.022));
+    g.add(fatLine(K, T, COL_EDGE, 0.024));
+    g.add(fatLine(T, A, COL_EDGE, 0.022));
+    g.add(fatLine(A, B, COL_EDGE, 0.022));
+
+    g.add(point(T, COL_LILAC, 0.06));
+    g.add(point(K, COL_LILAC, 0.06));
+    g.add(label(T.clone().add(V(-0.14, -0.10, 0.08)), 'T', '#b18cff', 0.5));
+    g.add(label(K.clone().add(V( 0.14, -0.10, 0.08)), 'K', '#b18cff', 0.5));
+
+    const Vpyr = tetraVolume(S0, A0, B0, C0);
+    const Mt = S0.clone().lerp(A0, state.tM);
+    const Nt = S0.clone().lerp(B0, state.tN);
+    const Tt = A0.clone().lerp(C0, state.tM);
+    const Vtri = tetraVolume(Mt, Nt, Tt, S0);
+    const ratio = Vtri / Vpyr;
+    volPanel.innerHTML = `
+      <div class="row"><span class="k">V всей пирамиды</span><span class="v">${Vpyr.toFixed(4)}</span></div>
+      <div class="row"><span class="k">V треуг. MNT</span><span class="v">${Vtri.toFixed(4)}</span></div>
+      <div class="row ratio"><span>Отношение</span><span>${(ratio*100).toFixed(1)} %</span></div>
+    `;
+    captionEl.innerHTML =
+      `<b>Призмовидная палатка</b> (MN ∥ AB). ` +
+      `<span class="mono">V(MNT) / V(всей) = ${(ratio*100).toFixed(1)} %</span>.`;
+
+  } else {
+    /* ============ ПИРАМИДАЛЬНЫЙ ============ */
+    const K = B.clone().lerp(C, state.tK);
+    const R_res = intersectMNwithAB(M, N, A, B);
+
+    if (!R_res){
+      captionEl.innerHTML = `<b>MN ∥ AB</b> — разведи M и N.`;
+      g.add(fatLine(N, B, COL_EDGE, 0.020));
+      g.add(fatLine(N, M, COL_EDGE, 0.028));
+      g.add(fatLine(M, A, COL_EDGE, 0.022));
+      g.add(fatLine(B, K, COL_EDGE, 0.022));
+      g.add(point(K, COL_LILAC, 0.06));
+      g.add(label(K.clone().add(V( 0.14, -0.10, 0.08)), 'K', '#b18cff', 0.5));
+    } else {
+      const R = R_res.P;
+      const s = R_res.s;
+      const behindM = s < 0;
+      const behindN = s > 1;
+
+      let T = null;
+      const tRes = intersectRKwithAC(R, K, A, C);
+      if (tRes && tRes.t >= -0.02 && tRes.t <= 1.02) T = tRes.P;
+
+      /* --- Пунктир за пределами пирамиды (фиолетовый) --- */
+      const farMN = (M.distanceTo(R) > N.distanceTo(R)) ? M : N;
+      g.add(dashedThickLine(farMN, R, COL_DASH, 0.013, 0.10, 0.07));
+      const farAB = (A.distanceTo(R) > B.distanceTo(R)) ? A : B;
+      g.add(dashedThickLine(farAB, R, COL_DASH, 0.013, 0.10, 0.07));
+
+      // R — маленький шарик
+      g.add(point(R, COL_PINK, 0.0375));
+      g.add(label(R.clone().add(V(0.14, 0.12, 0)), 'R', '#ff3d7f', 0.5));
+
+      /* --- Сплошные зелёные рёбра палатки --- */
+      if (behindM){
+        // R за M: N→{B,K,M}, M→{A,T,R}
+        g.add(fatLine(N, B, COL_EDGE, 0.020));
+        g.add(fatLine(N, K, COL_EDGE, 0.020));
+        g.add(fatLine(N, M, COL_EDGE, 0.028));
+        g.add(fatLine(M, A, COL_EDGE, 0.022));
+        g.add(dashedThickLine(M, R, COL_DASH, 0.013, 0.10, 0.07));
+        if (T) g.add(fatLine(M, T, COL_EDGE, 0.022));
+      } else if (behindN){
+        // R за N: R→{N,K,B}, M→{A,T,N}
+        g.add(dashedThickLine(R, N, COL_DASH, 0.013, 0.10, 0.07));
+        g.add(fatLine(R, K, COL_EDGE, 0.022));
+        g.add(fatLine(R, B, COL_EDGE, 0.022));
+        g.add(fatLine(M, A, COL_EDGE, 0.022));
+        g.add(fatLine(M, N, COL_EDGE, 0.028));
+        if (T) g.add(fatLine(M, T, COL_EDGE, 0.022));
+      } else {
+        g.add(fatLine(N, B, COL_EDGE, 0.020));
+        g.add(fatLine(N, M, COL_EDGE, 0.028));
+        g.add(fatLine(M, A, COL_EDGE, 0.022));
+      }
+      g.add(fatLine(A, B, COL_EDGE, 0.022));
+      g.add(fatLine(B, K, COL_EDGE, 0.022));
+
+      /* --- Заливки граней --- */
+      // Все внутренние грани — бледно-зелёные
+      // RAT, AAM (граница A–A–M — это грань AAM, читаем как A-A-M, но у нас A, A — совпадают,
+      // поэтому трактуем как грань A–M–R? — см. пояснение ниже)
+      // Тут RAT = R–A–T, AAM = A–M (A) — грани между R и вершинами,
+      // RMT = R–M–T.
+
+      // Коричневые грани-акценты
+      g.add(triangle3D(M, T, A, COL_BROWN, 0.55));   // MTA
+      // NBK: N–B–K — вторая коричневая
+      g.add(triangle3D(N, B, K, COL_BROWN, 0.42));
+
+      if (T){
+        // Бледно-зелёные «внутренние» грани
+        g.add(triangle3D(R, A, T, COL_GREENT, 0.22));   // RAT
+        g.add(triangle3D(A, A, M, COL_GREENT, 0.0));    // AAM — вырождено, пропустим заливку
+        // AAM читаем как A–A–M — у нас такой грани нет,
+        // скорее всего это A–M (то есть M–A–R или M–A–T уже есть).
+        // Добавим разумную грань A–M–R, она бледно-зелёная.
+        g.add(triangle3D(A, M, R, COL_GREENT, 0.20));   // AMR
+        g.add(triangle3D(R, M, T, COL_GREENT, 0.22));   // RMT
+
+        // Тонкие зелёные рёбра
+        g.add(fatLine(K, T, COL_EDGE, 0.022));
+        g.add(fatLine(T, A, COL_EDGE, 0.022));
+
+        // Сиреневое основание
+        g.add(triangle3D(A, B, T, COL_LILAC, 0.30));
+        g.add(triangle3D(B, K, T, COL_LILAC, 0.30));
+
+        g.add(point(T, COL_LILAC, 0.06));
+        g.add(label(T.clone().add(V(-0.14, -0.10, 0.08)), 'T', '#b18cff', 0.5));
+
+        if (T) g.add(dashedThickLine(R, K, COL_DASH, 0.012, 0.10, 0.07));
+      }
+
+      // K
+      g.add(point(K, COL_LILAC, 0.06));
+      g.add(label(K.clone().add(V( 0.14, -0.10, 0.08)), 'K', '#b18cff', 0.5));
+    }
+
+    const Vpyr = tetraVolume(S0, A0, B0, C0);
+    const Mt = S0.clone().lerp(A0, state.tM);
+    const Nt = S0.clone().lerp(B0, state.tN);
+    if (R_res){
+      const tRes = intersectRKwithAC(R_res.P.clone().add(CENTRE), B0.clone().lerp(C0, state.tK), A0, C0);
+      const Tt = tRes ? tRes.P : A0.clone();
+      const Vtri = tetraVolume(Mt, Nt, Tt, S0);
+      const ratio = Vtri / Vpyr;
+      volPanel.innerHTML = `
+        <div class="row"><span class="k">V всей пирамиды</span><span class="v">${Vpyr.toFixed(4)}</span></div>
+        <div class="row"><span class="k">V треуг. MNT</span><span class="v">${Vtri.toFixed(4)}</span></div>
+        <div class="row ratio"><span>Отношение</span><span>${(ratio*100).toFixed(1)} %</span></div>
+      `;
+      if (!captionEl.innerHTML.includes('MN ∥'))
+        captionEl.innerHTML =
+          `<b>Пирамидальная палатка</b>. R <b style="color:#ff3d7f">${R_res.s < 0 ? 'за M' : (R_res.s > 1 ? 'за N' : 'на MN')}</b>. ` +
+          `T = RK ∩ AC. ` +
+          `<span class="mono">V(MNT) / V(всей) = ${(ratio*100).toFixed(1)} %</span>.`;
+    }
+  }
+
+  g.add(point(M, COL_YELLOW, 0.075));
+  g.add(point(N, COL_YELLOW, 0.075));
+  g.add(label(M.clone().add(V(-0.16, 0.14, 0.06)), 'M', '#ffd93d', 0.55));
+  g.add(label(N.clone().add(V( 0.16, 0.14, 0.06)), 'N', '#ffd93d', 0.55));
+
+  g.quaternion.copy(state.rotation);
+  updateCamera();
+}
+
+/* ==================== КАМЕРА ==================== */
+function updateCamera(){
+  const dir = new THREE.Vector3(0.55, 0.42, 0.72).normalize();
+  camera.position.copy(camTarget).add(dir.multiplyScalar(camDist / state.zoom));
+  camera.lookAt(camTarget);
+}
+
+/* ==================== ARCBALL / ПАНОРАМА / DRAG ==================== */
+const raycaster = new THREE.Raycaster();
+let rotating = false, panning = false, draggingHandle = null;
+let lastRotatePos = {x:0,y:0}, lastPanPos = {x:0,y:0};
+const dragPlane = new THREE.Plane();
+
+function getPointerNDC(e){
+  const rect = renderer.domElement.getBoundingClientRect();
+  return {
+    x: ((e.clientX - rect.left) / rect.width) * 2 - 1,
+    y: -((e.clientY - rect.top) / rect.height) * 2 + 1
+  };
+}
+function arcballRotation(dx, dy, size){
+  const speed = Math.PI;
+  const ax = (dy / size) * speed;
+  const ay = (dx / size) * speed;
+  const qY = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), ay);
+  const qX = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0), ax);
+  return qY.multiply(qX);
+}
+function onPointerDown(e){
+  if (e.button === 2 || (e.button === 0 && e.ctrlKey)){
+    panning = true;
+    lastPanPos = {x: e.clientX, y: e.clientY};
+    return;
+  }
+  if (e.button === 0){
+    const ndc = getPointerNDC(e);
+    raycaster.setFromCamera(ndc, camera);
+    const hits = raycaster.intersectObjects(handlesGroup.children, true);
+    if (hits.length > 0){
+      let target = hits[0].object;
+      while (target && !target.userData.name && target.parent) target = target.parent;
+      if (target && target.userData.name){
+        draggingHandle = target;
+        const camDir = new THREE.Vector3(); camera.getWorldDirection(camDir);
+        dragPlane.setFromNormalAndCoplanarPoint(camDir, target.position);
+        return;
+      }
+    }
+    rotating = true;
+    lastRotatePos = {x: e.clientX, y: e.clientY};
+  }
+}
+function onPointerMove(e){
+  if (draggingHandle){
+    const ndc = getPointerNDC(e);
+    raycaster.setFromCamera(ndc, camera);
+    const newPos = new THREE.Vector3();
+    if (!raycaster.ray.intersectPlane(dragPlane, newPos)) return;
+    const localPos = g.worldToLocal(newPos.clone());
+    const Sl = S0.clone().sub(CENTRE);
+    const Al = A0.clone().sub(CENTRE);
+    const Bl = B0.clone().sub(CENTRE);
+    const Cl = C0.clone().sub(CENTRE);
+    const name = draggingHandle.userData.name;
+    if (name === 'M'){
+      const dir = new THREE.Vector3().subVectors(Al, Sl);
+      const L2 = dir.lengthSq();
+      let t = new THREE.Vector3().subVectors(localPos, Sl).dot(dir) / L2;
+      t = Math.max(0.15, Math.min(0.82, t));
+      state.tM = t;
+      if (state.mode === 'prism') state.tN = t;
+    } else if (name === 'N'){
+      const dir = new THREE.Vector3().subVectors(Bl, Sl);
+      const L2 = dir.lengthSq();
+      let t = new THREE.Vector3().subVectors(localPos, Sl).dot(dir) / L2;
+      t = Math.max(0.15, Math.min(0.82, t));
+      state.tN = t;
+      if (state.mode === 'prism') state.tM = t;
+    } else if (name === 'K'){
+      const dir = new THREE.Vector3().subVectors(Cl, Bl);
+      const L2 = dir.lengthSq();
+      let t = new THREE.Vector3().subVectors(localPos, Bl).dot(dir) / L2;
+      t = Math.max(0.10, Math.min(0.90, t));
+      state.tK = t;
+    }
+    buildScene();
+    syncHandles();
+    return;
+  }
+  if (rotating){
+    const dx = e.clientX - lastRotatePos.x;
+    const dy = e.clientY - lastRotatePos.y;
+    lastRotatePos = {x: e.clientX, y: e.clientY};
+    const size = renderer.domElement.clientWidth;
+    const dq = arcballRotation(dx, dy, size);
+    state.rotation.premultiply(dq);
+    g.quaternion.copy(state.rotation);
+    syncHandles();
+    return;
+  }
+  if (panning){
+    const dx = e.clientX - lastPanPos.x;
+    const dy = e.clientY - lastPanPos.y;
+    lastPanPos = {x: e.clientX, y: e.clientY};
+    const camRight = new THREE.Vector3();
+    const camUp = new THREE.Vector3();
+    camera.matrixWorld.extractBasis(camRight, camUp, new THREE.Vector3());
+    const scale = camDist / state.zoom * 0.0015;
+    camTarget.add(camRight.clone().multiplyScalar(-dx * scale));
+    camTarget.add(camUp.clone().multiplyScalar(dy * scale));
+    updateCamera();
+    return;
+  }
+}
+function onPointerUp(){
+  rotating = false; panning = false; draggingHandle = null;
+}
+renderer.domElement.addEventListener('pointerdown', onPointerDown);
+window.addEventListener('pointermove', onPointerMove);
+window.addEventListener('pointerup', onPointerUp);
+renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
+
+renderer.domElement.addEventListener('wheel', (e)=>{
+  e.preventDefault();
+  const factor = Math.exp(-e.deltaY * 0.001);
+  state.zoom = Math.max(0.3, Math.min(3.5, state.zoom * factor));
+  syncZoomUI();
+  updateCamera();
+}, {passive:false});
+
+/* ==================== ХЕНДЛЫ ==================== */
+function setupHandles(){
+  clearGroup(handlesGroup);
+  const Sl = S0.clone().sub(CENTRE);
+  const Al = A0.clone().sub(CENTRE);
+  const Bl = B0.clone().sub(CENTRE);
+  const Cl = C0.clone().sub(CENTRE);
+  const Ml = Sl.clone().lerp(Al, state.tM);
+  const Nl = Sl.clone().lerp(Bl, state.tN);
+  handlesGroup.add(makeHandleMesh(g.localToWorld(Ml.clone()), COL_YELLOW, 'M', 0.085));
+  handlesGroup.add(makeHandleMesh(g.localToWorld(Nl.clone()), COL_YELLOW, 'N', 0.085));
+  if (state.mode === 'pyr'){
+    const Kl = Bl.clone().lerp(Cl, state.tK);
+    handlesGroup.add(makeHandleMesh(g.localToWorld(Kl.clone()), COL_LILAC, 'K', 0.085));
+  }
+}
+function syncHandles(){
+  const Sl = S0.clone().sub(CENTRE);
+  const Al = A0.clone().sub(CENTRE);
+  const Bl = B0.clone().sub(CENTRE);
+  const Cl = C0.clone().sub(CENTRE);
+  const Ml = Sl.clone().lerp(Al, state.tM);
+  const Nl = Sl.clone().lerp(Bl, state.tN);
+  const Kl = Bl.clone().lerp(Cl, state.tK);
+  handlesGroup.children.forEach(m => {
+    if (m.userData.name === 'M') m.position.copy(g.localToWorld(Ml.clone()));
+    if (m.userData.name === 'N') m.position.copy(g.localToWorld(Nl.clone()));
+    if (m.userData.name === 'K') m.position.copy(g.localToWorld(Kl.clone()));
+  });
+}
+
+/* ==================== МАСШТАБ ==================== */
+const zoomSlider = document.getElementById('zoomSlider');
+const zoomVal = document.getElementById('zoomVal');
+const zoomReset = document.getElementById('zoomReset');
+function syncZoomUI(){
+  const v = Math.log(state.zoom / 0.35) / Math.log(3.0 / 0.35);
+  zoomSlider.value = Math.round(v * 100);
+  zoomVal.textContent = state.zoom.toFixed(2) + '×';
+}
+zoomSlider.addEventListener('input', ()=>{
+  const v = +zoomSlider.value / 100;
+  state.zoom = 0.35 * Math.pow(3.0 / 0.35, v);
+  zoomVal.textContent = state.zoom.toFixed(2) + '×';
+  updateCamera();
+});
+zoomReset.addEventListener('click', ()=>{
+  state.zoom = 1.0;
+  syncZoomUI();
+  updateCamera();
+});
+
+/* ==================== РЕЖИМ ==================== */
+document.querySelectorAll('#modeSwitch button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#modeSwitch button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    state.mode = b.dataset.mode;
+    if (state.mode === 'prism') state.tN = state.tM;
+    buildScene();
+    setupHandles();
+  });
+});
+
+/* ==================== РЕСАЙЗ / ЦИКЛ ==================== */
+addEventListener('resize', () => {
+  const w = singleEl.clientWidth, h = singleEl.clientHeight;
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+function loop(){
+  requestAnimationFrame(loop);
+  renderer.render(scene, camera);
+}
+
+/* ==================== СТАРТ ==================== */
+buildScene();
+setupHandles();
+syncZoomUI();
+updateCamera();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

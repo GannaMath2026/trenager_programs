@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Визуализатор систем счисления</title>
+<style>
+  :root{
+    --bg1:#1c2740; --bg2:#0b1018; --bg3:#070a10;
+    --txt:#e6edf7; --muted:#8fa3bf;
+    --acc:#4ecdc4; --acc-dim:rgba(78,205,196,.18);
+    --acc-border:rgba(78,205,196,.65);
+    --border:rgba(255,255,255,.08);
+    --panel:rgba(15,21,32,.55);
+    --panel-solid:rgba(12,17,26,.94);
+    --red:#ff6b6b; --green:#3ddc97; --yellow:#ffd93d; --blue:#6ba8ff;
+    --orange:#ffa94d;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;min-height:100%;}
+  body{
+    background: radial-gradient(1200px 800px at 75% 15%, var(--bg1) 0%, var(--bg2) 60%, var(--bg3) 100%);
+    background-attachment: fixed;
+    color:var(--txt);
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+    padding: 22px 16px 60px;
+    min-height: 100vh;
+  }
+  h1{ text-align:center; color:#fff; margin:0 0 4px; font-size:22px; letter-spacing:.3px; font-weight:800;}
+  .subtitle{ text-align:center; color:var(--muted); margin-bottom:20px; font-size:13.5px; }
+
+  .panel{
+    max-width:1000px; margin:0 auto 18px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius:16px; padding:16px 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  }
+  .row{
+    display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+    margin-bottom:12px;
+  }
+  .row:last-child{ margin-bottom:0; }
+  label{ font-weight:700; font-size:13px; color:var(--muted); letter-spacing:.3px; text-transform: uppercase;}
+  input[type="text"]{
+    padding: 9px 12px;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 15px;
+    background: rgba(10,15,24,.75);
+    border: 1px solid rgba(255,255,255,.12);
+    color: var(--txt);
+    border-radius: 8px;
+    width: 200px; outline:none;
+    transition: all .15s;
+    text-align:center;
+    letter-spacing:1px;
+  }
+  input[type="text"]:focus{ border-color: var(--acc-border); box-shadow: 0 0 0 3px var(--acc-dim);}
+  input::placeholder{ color: #546177; }
+
+  .btn{
+    padding: 9px 18px; border-radius: 9px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: all .15s; border: 1px solid transparent;
+    font-family: inherit;
+  }
+  .btn-primary{ background: var(--acc-dim); color: var(--acc); border-color: var(--acc-border); }
+  .btn-primary:hover{ background: rgba(78,205,196,.32); color:#fff; }
+  .btn-secondary{ background: rgba(18,24,34,.85); color:#cfd9e8; border-color: rgba(255,255,255,.10); }
+  .btn-secondary:hover{ color:#fff; border-color: var(--acc-border); }
+  .btn-next{
+    background: rgba(61,220,151,.14); color: var(--green);
+    border: 1px solid rgba(61,220,151,.55);
+    font-size: 14.5px; padding: 10px 22px;
+  }
+  .btn-next:hover:not(:disabled){ background: rgba(61,220,151,.28); color:#fff; }
+  .btn-next:disabled{ opacity:.35; cursor:not-allowed; }
+
+  .tab-btn{
+    padding: 8px 14px;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(18,24,34,.7);
+    color:#cfd9e8; border-radius: 9px;
+    cursor: pointer; font-size: 13px; font-weight: 700;
+    transition: all .15s; font-family: inherit;
+  }
+  .tab-btn:hover{ color:#fff; border-color: var(--acc-border); }
+  .tab-btn.active{ background: var(--acc-dim); color:#fff; border-color: var(--acc-border);
+    box-shadow: 0 0 0 1px var(--acc-border);}
+
+  .base-pills{ display:flex; gap:6px; flex-wrap:wrap; }
+  .base-pill{
+    padding: 6px 14px;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(18,24,34,.7);
+    color:#cfd9e8; border-radius: 20px;
+    cursor: pointer; font-size: 13px; font-weight: 700;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    transition: all .15s;
+  }
+  .base-pill:hover{ color:#fff; border-color: var(--acc-border); }
+  .base-pill.active{ background: var(--acc-dim); color:#fff; border-color: var(--acc-border);
+    box-shadow: 0 0 0 1px var(--acc-border);}
+
+  .progress-track{
+    max-width:1000px; margin: 0 auto 12px;
+    height: 6px; background: rgba(255,255,255,.06); border-radius: 3px; overflow:hidden;
+  }
+  .progress-fill{ height:100%; background: linear-gradient(90deg, var(--acc), #6ba8ff); width:0; transition: width .35s; }
+
+  .stage{
+    max-width:1000px; margin: 0 auto;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 22px 24px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    min-height: 400px;
+    overflow-x: auto;
+  }
+  .stage-head{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    gap:14px; flex-wrap:wrap;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed rgba(255,255,255,.08);
+    margin-bottom: 14px;
+  }
+  .stage-head-left{ flex: 1 1 auto; min-width: 260px;}
+  .stage-title{
+    font-size: 15px; font-weight: 800; color: var(--acc);
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    margin-bottom: 10px;
+    letter-spacing:.2px;
+  }
+  .stage-title .step-pill{
+    background: var(--acc-dim); color: var(--acc);
+    padding: 3px 10px; border-radius: 12px;
+    font-size: 11.5px; font-weight: 800;
+    border: 1px solid rgba(78,205,196,.35);
+    text-transform: uppercase; letter-spacing:.5px;
+  }
+  .stage-head-actions{ display:flex; gap:8px; align-items:center; flex-shrink:0;}
+
+  /* ---------- дорожка остатков + ответ в верхней части ---------- */
+  .top-strip{
+    display:flex; flex-wrap:wrap; gap: 18px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .rem-track{
+    display:flex; gap: 6px; align-items:center; flex-wrap: wrap;
+    padding: 10px 14px;
+    background: rgba(10,15,24,.55);
+    border: 1px dashed rgba(255,255,255,.10);
+    border-radius: 10px;
+    flex: 1 1 auto;
+    min-width: 260px;
+  }
+  .rem-track .track-title{
+    font-size: 11px; color: var(--muted); font-weight: 800;
+    text-transform: uppercase; letter-spacing: .8px;
+    margin-right: 8px;
+  }
+  .rem-slot{
+    min-width: 32px; height: 36px;
+    display:flex; align-items:center; justify-content:center;
+    border: 1px dashed rgba(255,255,255,.12);
+    border-radius: 8px;
+    background: rgba(255,255,255,.03);
+    color: #546177;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 19px; font-weight: 700;
+    transition: all .35s;
+    padding: 0 8px;
+  }
+  .rem-slot.filled{
+    background: rgba(61,220,151,.12);
+    border-color: rgba(61,220,151,.55);
+    border-style: solid;
+    color: var(--green);
+    animation: popIn .4s;
+  }
+  .rem-slot.senior{
+    background: rgba(255,217,61,.14);
+    border-color: rgba(255,217,61,.65);
+    color: var(--yellow);
+  }
+  @keyframes popIn{
+    0%{ transform: scale(.5) rotate(-15deg); opacity: 0; }
+    70%{ transform: scale(1.15) rotate(3deg); opacity: 1; }
+    100%{ transform: scale(1) rotate(0); }
+  }
+
+  .answer-block{
+    padding: 10px 16px;
+    background: linear-gradient(135deg, rgba(78,205,196,.10), rgba(107,168,255,.10));
+    border: 1px solid rgba(78,205,196,.4);
+    border-radius: 10px;
+    display: none; align-items:center; gap: 10px; flex-wrap: wrap;
+  }
+  .answer-block.show{ display: flex; }
+  .answer-block .lbl{ font-size: 12px; color: var(--muted); font-weight: 800;
+    text-transform: uppercase; letter-spacing: .5px;}
+  .answer-block .digits-row{
+    display:flex; gap: 3px;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 22px; font-weight: 700;
+    color: var(--acc);
+  }
+  .answer-block .digits-row .d{
+    opacity: 0; transform: translateX(-15px);
+    transition: all .3s;
+  }
+  .answer-block .digits-row .d.show{ opacity: 1; transform: translateX(0); }
+  .answer-block .sub{ font-size: 13px; color: var(--muted);
+    font-family: ui-monospace, Menlo, Consolas, monospace; }
+
+  /* ============================================================
+     ЛЕСЕНКА ДЕЛЕНИЯ УГОЛКОМ
+     ============================================================ */
+  .ld-ladder{
+    position: relative;
+    font-family: ui-monospace, Menlo, Consolas, "Courier New", monospace;
+    font-size: 18px;
+    line-height: 1.35;
+    margin: 6px 0 4px;
+    min-height: 200px;
+  }
+  .ld-step{
+    position: absolute;
+    display: grid;
+    grid-template-rows: 1.35em 1.35em 0.22em 1.35em;
+    white-space: nowrap;
+  }
+  .ld-step-hidden{ display: none; }
+  .ld-step > div{
+    transition: opacity .35s ease;
+  }
+  .ld-hidden{ opacity: 0; }
+
+  .ld-step .ld-dividend,
+  .ld-step .ld-product,
+  .ld-step .ld-remainder{
+    text-align: right;
+    padding-right: 0.3ch;
+    border-right: 2px solid var(--txt);
+  }
+  .ld-step .ld-subline{
+    border-right: 2px solid var(--txt);
+    border-top: 2px solid var(--txt);
+    padding: 0;
+  }
+  .ld-step .ld-divisor,
+  .ld-step .ld-quotient{
+    text-align: left;
+    padding-left: 0.3ch;
+  }
+  .ld-step .ld-divline{
+    align-self: end;
+    height: 0;
+    border-bottom: 2px solid var(--txt);
+  }
+
+  .ld-dividend{ grid-area: 1 / 1; color: var(--red); font-weight: 700; }
+  .ld-divisor{  grid-area: 1 / 2; color: var(--txt); font-weight: 700; }
+  .ld-product{  grid-area: 2 / 1; color: var(--muted); }
+  .ld-divline{  grid-area: 2 / 2; }
+  .ld-subline{  grid-area: 3 / 1; }
+  .ld-remainder{ grid-area: 4 / 1; color: var(--green); font-weight: 800; }
+  .ld-quotient{  grid-area: 4 / 2; color: var(--red); font-weight: 700; }
+
+  /* ============================================================
+     КОРОБКИ СТЕПЕНЕЙ
+     ============================================================ */
+  .box-status{
+    display:flex; gap:16px; align-items:center; flex-wrap:wrap;
+    padding: 10px 16px;
+    background: rgba(10,15,24,.55);
+    border-radius: 10px;
+    border: 1px dashed rgba(255,255,255,.10);
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+  .box-status .lbl{ color: var(--muted); font-size: 11px; text-transform: uppercase;
+    letter-spacing: .6px; font-weight: 800;}
+  .box-status .val{
+    padding: 4px 12px;
+    background: rgba(255,217,61,.14);
+    border: 1px solid rgba(255,217,61,.55);
+    border-radius: 6px;
+    color: var(--yellow); font-weight: 800; font-size: 17px;
+  }
+  .box-status .val.done{ background: rgba(61,220,151,.22); border-color: rgba(61,220,151,.7); color: var(--green); }
+
+  .powers-grid{
+    display:flex; gap:8px; align-items:flex-start;
+    flex-wrap: wrap; margin-bottom: 18px;
+  }
+  .power-column{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .power-column .header{
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    padding: 8px 12px;
+    background: rgba(78,205,196,.08);
+    border: 1px solid rgba(78,205,196,.35);
+    border-radius: 10px;
+    min-width: 66px; text-align:center;
+    cursor: pointer; transition: all .2s;
+    user-select: none;
+  }
+  .power-column .header:hover{
+    background: rgba(78,205,196,.20);
+    border-color: var(--acc-border);
+    transform: translateY(-2px);
+  }
+  .power-column .header.cant{
+    border-color: rgba(255,107,107,.7);
+    background: rgba(255,107,107,.16);
+    animation: shake .3s;
+  }
+  @keyframes shake{
+    0%,100%{ transform: translateX(0); }
+    25%{ transform: translateX(-4px); }
+    75%{ transform: translateX(4px); }
+  }
+  .power-column .val{
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 19px; font-weight: 800; color: var(--acc);
+  }
+  .power-column .pow{
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 12px; color: var(--muted);
+  }
+  .power-column .stack{
+    display:flex; flex-direction:column; gap:4px; align-items:center;
+    min-height: 6px;
+  }
+  .power-column .taken-chip{
+    width: 52px; height: 26px;
+    display:flex; align-items:center; justify-content:center;
+    background: rgba(255,217,61,.14);
+    border: 1px solid rgba(255,217,61,.55);
+    border-radius: 6px;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 12px; font-weight: 800; color: var(--yellow);
+    animation: popIn .3s;
+  }
+  .power-column .power-count{
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 12px; font-weight: 800;
+    color: var(--yellow);
+    background: rgba(255,217,61,.14);
+    border: 1px solid rgba(255,217,61,.55);
+    border-radius: 6px;
+    padding: 2px 6px;
+    min-width: 30px; text-align:center;
+    opacity: 0; transition: opacity .3s;
+  }
+  .power-column .power-count.show{ opacity: 1; }
+
+  .box-formula{
+    margin-top: 14px; padding: 14px 18px;
+    background: rgba(107,168,255,.08);
+    border-radius: 12px;
+    border: 1px solid rgba(107,168,255,.35);
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 18px; color: var(--blue); font-weight: 700;
+    display: none;
+  }
+  .box-formula.show{ display: block; }
+  .box-formula .f-title{
+    font-size: 11px; color: var(--muted); font-weight: 800;
+    text-transform: uppercase; letter-spacing: .7px;
+    margin-bottom: 8px;
+  }
+  .box-formula .f-result{
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px dashed rgba(107,168,255,.35);
+    font-size: 20px; color: var(--green); font-weight: 800;
+  }
+  .box-formula sup{ font-size: 0.7em; }
+
+  .decomp{
+    padding: 14px 18px;
+    background: rgba(255,217,61,.06);
+    border-radius: 12px;
+    border: 1px solid rgba(255,217,61,.30);
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    margin-bottom: 14px;
+  }
+  .decomp .lbl{
+    font-size: 11px; color: var(--muted); font-weight: 800;
+    text-transform: uppercase; letter-spacing: .7px; margin-bottom: 10px;
+  }
+  .decomp .terms{
+    display:flex; gap:5px; align-items:center;
+    font-size: 17px; color: #fff;
+    flex-wrap: wrap; line-height: 2;
+  }
+  .decomp .term{
+    display:inline-block;
+    padding: 2px 8px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,217,61,.55);
+    border-radius: 6px;
+    color: var(--yellow); font-weight: 800;
+  }
+  .decomp .plus{ color: var(--muted); font-weight: 800; }
+  .decomp .empty{ color: var(--muted); font-size: 13px; font-weight: 400; }
+  .decomp-eq{
+    color: var(--green); font-weight: 800;
+  }
+
+  /* ============================================================
+     ОБРАТНЫЙ ПЕРЕВОД
+     ============================================================ */
+  .bits-row{
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .bit-cell{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    padding: 12px 14px;
+    border: 2px solid rgba(255,255,255,.10);
+    border-radius: 12px;
+    background: rgba(10,15,24,.55);
+    transition: all .3s;
+    min-width: 76px;
+  }
+  .bit-cell.active{
+    border-color: var(--acc-border);
+    background: rgba(78,205,196,.10);
+    box-shadow: 0 0 0 3px var(--acc-dim);
+  }
+  .bit-cell.done{
+    border-color: rgba(61,220,151,.65);
+    background: rgba(61,220,151,.06);
+  }
+  .bit-cell .digit-big{
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 28px; font-weight: 800;
+    color: var(--red);
+    line-height: 1;
+  }
+  .bit-cell .power-below{
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 13px;
+    display:flex; align-items:baseline; gap:2px;
+  }
+  .bit-cell .power-below .base-num{ color: var(--txt); font-weight: 800; }
+  .bit-cell .power-below .pow-num{
+    color: var(--green); font-weight: 800;
+    font-size: 14px; position: relative; top: -6px;
+  }
+  .bit-cell .value-line{
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 12px; color: var(--muted);
+    transition: color .3s;
+  }
+  .bit-cell.active .value-line{ color: var(--acc); font-weight: 800; }
+
+  .formula-line{
+    margin-top: 6px; padding: 16px 20px;
+    background: rgba(10,15,24,.55);
+    border-radius: 12px;
+    border: 1px dashed rgba(255,255,255,.12);
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 18px;
+    display:flex; gap:4px; align-items:center;
+    flex-wrap: wrap; line-height: 2;
+    color: var(--txt);
+  }
+  .formula-line .empty-hint{ color: var(--muted); font-size: 13px; }
+  .formula-line .f-digit{ color: var(--red); font-weight: 800; }
+  .formula-line .f-power{
+    color: var(--green); font-weight: 800;
+    font-size: 13px; position: relative; top: -6px; margin-left: 1px;
+  }
+  .formula-line .f-base{ color: var(--txt); font-weight: 800; }
+  .formula-line .f-op{ color: var(--muted); margin: 0 4px; }
+  .formula-line .f-eq{ color: var(--yellow); font-weight: 800; margin: 0 6px; }
+  .formula-line .f-val{ color: var(--acc); font-weight: 800; }
+
+  .total-line{
+    margin-top: 12px; padding: 14px 20px;
+    background: linear-gradient(135deg, rgba(61,220,151,.12), rgba(78,205,196,.12));
+    border-radius: 12px;
+    border: 1px solid rgba(61,220,151,.5);
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 20px; font-weight: 800;
+    color: var(--green);
+    display: none;
+  }
+  .total-line.show{ display: block; }
+
+  .empty-state{
+    text-align:center; color: var(--muted); padding: 60px 20px;
+    font-size: 14.5px;
+  }
+  .empty-state .big{ font-size: 40px; display:block; margin-bottom: 10px; }
+
+  .controls{
+    max-width:1000px; margin: 14px auto 0;
+    display:flex; gap:10px; justify-content: center; flex-wrap: wrap;
+  }
+</style>
+</head>
+<body>
+
+<h1>Визуализатор систем счисления</h1>
+<p class="subtitle">Перевод пошагово</p>
+
+<div class="panel">
+  <div class="row">
+    <label>Режим:</label>
+    <button class="tab-btn active" id="tabForward">Прямой (число → в систему)</button>
+    <button class="tab-btn" id="tabBackward">Обратный (из системы → число)</button>
+  </div>
+  <div class="row">
+    <label>Основание:</label>
+    <div class="base-pills">
+      <button class="base-pill active" data-base="2">2</button>
+      <button class="base-pill" data-base="3">3</button>
+      <button class="base-pill" data-base="8">8</button>
+      <button class="base-pill" data-base="10">10</button>
+      <button class="base-pill" data-base="16">16</button>
+    </div>
+  </div>
+  <div class="row" id="inputRow">
+    <label id="inputLabel">Число:</label>
+    <input type="text" id="numInput" placeholder="введи число">
+    <button class="btn btn-primary" id="btnStart">Начать</button>
+  </div>
+</div>
+
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="stage" id="stage">
+  <div class="empty-state">
+    <span class="big">🎯</span>
+    Введи число, выбери основание и нажми «Начать».
+  </div>
+</div>
+
+<div class="controls" id="controls"></div>
+
+<script>
+/* ============================================================
+   СОСТОЯНИЕ
+   ============================================================ */
+let mode = 'forward';
+let base = 2;
+let taskState = null;
+const stage = document.getElementById('stage');
+const controls = document.getElementById('controls');
+const progressFill = document.getElementById('progressFill');
+const numInput = document.getElementById('numInput');
+
+/* ============================================================
+   УТИЛИТЫ
+   ============================================================ */
+function digitToChar(d){
+  if (d < 10) return String(d);
+  return String.fromCharCode(55 + d);
+}
+function charToDigit(c){
+  const up = String(c).toUpperCase();
+  if (up >= '0' && up <= '9') return parseInt(up, 10);
+  if (up >= 'A' && up <= 'Z'){
+    const code = up.charCodeAt(0) - 55;
+    if (code < 36) return code;
+  }
+  return NaN;
+}
+
+/* ============================================================
+   ПРЯМОЙ — ДЕЛЕНИЕ УГОЛКОМ (ЛЕСЕНКА)
+   Деление уголком: частное предыдущего шага сразу
+   превращается в делимое следующего — без дубликата.
+   ============================================================ */
+function startForwardDivisions(){
+  const raw = numInput.value.trim();
+  if (!/^\d+$/.test(raw) || parseInt(raw, 10) <= 0){
+    stage.innerHTML = `<div class="empty-state"><span class="big">⚠️</span>Введи целое число &gt; 0</div>`;
+    return;
+  }
+  const num = parseInt(raw, 10);
+  const b = base;
+
+  const steps = [];
+  let n = num;
+  while (n > 0){
+    const q = Math.floor(n / b);
+    const r = n % b;
+    steps.push({ d: n, q, r, p: q * b });
+    n = q;
+  }
+
+  const ROW_H = 1.35;
+  const THIN_H = 0.22;
+  const STEP_Y = 2 * ROW_H + THIN_H;   // 2.92em
+  const PAD_CH = 0.3;
+  const BAR_CH = 0.15;
+
+  // Предвычисление геометрии
+  const layout = [];
+  let xCh = 0;
+  for (let i = 0; i < steps.length; i++){
+    const s = steps[i];
+    const pStr = s.p === 0 ? '0' : '-' + s.p;
+    const w1 = Math.max(String(s.d).length, pStr.length, String(s.r).length);
+    const w2 = Math.max(String(b).length, String(s.q).length);
+    layout.push({
+      x: xCh,
+      y: i * STEP_Y,
+      w1, w2,
+      col1W: w1 + PAD_CH,
+      col2W: w2 + PAD_CH,
+      pStr
+    });
+    // Следующий шаг: его (невидимое) делимое должно правым краем
+    // совпасть с правым краем текущего частного.
+    if (i + 1 < steps.length){
+      const nxt = steps[i + 1];
+      const nxtPStr = nxt.p === 0 ? '0' : '-' + nxt.p;
+      const nxtW1 = Math.max(String(nxt.d).length, nxtPStr.length, String(nxt.r).length);
+      // x_{i+1} = x_i + w1_i + PAD + PAD + len(q_i) - w1_{i+1}  (в ch)
+      xCh = xCh + w1 + PAD_CH + PAD_CH + String(s.q).length - nxtW1;
+    }
+  }
+
+  let ladderHtml = '';
+  steps.forEach((s, i) => {
+    const L = layout[i];
+    const hiddenClass = i > 0 ? ' ld-step-hidden' : '';
+    const dividendHtml = (i === 0)
+      ? `<div class="ld-dividend ld-hidden" id="ldd-${i}">${s.d}</div>`
+      : '';
+    ladderHtml += `
+      <div class="ld-step${hiddenClass}" id="ld-step-${i}"
+           style="left:${L.x.toFixed(4)}ch; top:${L.y.toFixed(4)}em; grid-template-columns: ${L.col1W.toFixed(4)}ch ${L.col2W.toFixed(4)}ch;">
+        ${dividendHtml}
+        <div class="ld-divisor ld-hidden" id="ldb-${i}">${b}</div>
+        <div class="ld-product ld-hidden" id="ldp-${i}">${L.pStr}</div>
+        <div class="ld-divline ld-hidden" id="lddl-${i}"></div>
+        <div class="ld-subline ld-hidden" id="ldsl-${i}"></div>
+        <div class="ld-remainder ld-hidden" id="ldr-${i}">${s.r}</div>
+        <div class="ld-quotient ld-hidden" id="ldq-${i}">${s.q}</div>
+      </div>
+    `;
+  });
+
+  const totalHeightEm = (steps.length - 1) * STEP_Y + 3 * ROW_H + THIN_H + ROW_H + 1.2;
+  const totalWidthCh  = layout.length > 0
+    ? layout[layout.length - 1].x + layout[layout.length - 1].col1W + layout[layout.length - 1].col2W + 2
+    : 20;
+
+  stage.innerHTML = `
+    <div class="stage-head">
+      <div class="stage-head-left">
+        <div class="stage-title">
+          🪜 Деление ${num} уголком на ${b}
+          <span class="step-pill" id="stepPill">шаг 0 из ${steps.length}</span>
+        </div>
+        <div class="top-strip">
+          <div class="rem-track" id="remTrack">
+            <span class="track-title">Разряды (старший → младший):</span>
+          </div>
+          <div class="answer-block" id="answerBlock">
+            <span class="lbl">Ответ:</span>
+            <span class="digits-row" id="answerDigits"></span>
+            <span class="sub">= ${num}₁₀</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage-head-actions">
+        <button class="btn btn-next" id="btnNextDiv" disabled>Далее ▶</button>
+      </div>
+    </div>
+
+    <div class="ld-ladder" id="ldLadder"
+         style="min-height:${totalHeightEm.toFixed(2)}em; min-width:${totalWidthCh.toFixed(2)}ch;">
+      ${ladderHtml}
+    </div>
+  `;
+
+  const remTrack = document.getElementById('remTrack');
+  const slots = [];
+  for (let i = 0; i < steps.length; i++){
+    const slot = document.createElement('div');
+    slot.className = 'rem-slot';
+    slot.id = 'slot-' + i;
+    remTrack.appendChild(slot);
+    slots.push(slot);
+  }
+
+  const digitsRow = document.getElementById('answerDigits');
+  for (let i = 0; i < steps.length; i++){
+    const d = document.createElement('span');
+    d.className = 'd';
+    d.id = 'ansd-' + i;
+    digitsRow.appendChild(d);
+  }
+
+  taskState = { mode: 'divisions', num, b, steps, slots, stepIndex: 0 };
+  const btnNext = document.getElementById('btnNextDiv');
+  btnNext.disabled = false;
+  btnNext.addEventListener('click', advanceDivisions);
+}
+
+function advanceDivisions(){
+  const st = taskState;
+  if (!st || st.mode !== 'divisions') return;
+  if (st.stepIndex >= st.steps.length) return;
+  const i = st.stepIndex;
+  const s = st.steps[i];
+
+  const stepEl = document.getElementById('ld-step-' + i);
+  if (stepEl) stepEl.classList.remove('ld-step-hidden');
+
+  ['ldd-', 'ldb-', 'ldp-', 'lddl-', 'ldsl-', 'ldr-', 'ldq-'].forEach(prefix => {
+    const el = document.getElementById(prefix + i);
+    if (el) el.classList.remove('ld-hidden');
+  });
+
+  const slotIdx = st.steps.length - 1 - i;
+  const slot = st.slots[slotIdx];
+  slot.textContent = digitToChar(s.r);
+  slot.classList.add('filled');
+  if (slotIdx === 0) slot.classList.add('senior');
+
+  st.stepIndex++;
+  document.getElementById('stepPill').textContent =
+    `шаг ${st.stepIndex} из ${st.steps.length}`;
+  progressFill.style.width = (st.stepIndex / st.steps.length * 100) + '%';
+
+  if (st.stepIndex >= st.steps.length){
+    document.getElementById('answerBlock').classList.add('show');
+    let j = 0;
+    (function showAns(){
+      if (j >= st.steps.length){
+        const btnNext = document.getElementById('btnNextDiv');
+        if (btnNext) btnNext.disabled = true;
+        return;
+      }
+      const d = document.getElementById('ansd-' + j);
+      d.textContent = digitToChar(st.steps[st.steps.length - 1 - j].r);
+      d.classList.add('show');
+      j++;
+      setTimeout(showAns, 140);
+    })();
+  }
+}
+
+/* ============================================================
+   ПРЯМОЙ — КОРОБКИ СТЕПЕНЕЙ
+   ============================================================ */
+function startForwardBoxes(){
+  const raw = numInput.value.trim();
+  if (!/^\d+$/.test(raw) || parseInt(raw, 10) <= 0){
+    stage.innerHTML = `<div class="empty-state"><span class="big">⚠️</span>Введи целое число &gt; 0</div>`;
+    return;
+  }
+  const num = parseInt(raw, 10);
+  const b = base;
+
+  const powers = [];
+  let k = 0;
+  while (Math.pow(b, k) <= num){
+    powers.push({ k, val: Math.pow(b, k) });
+    k++;
+  }
+
+  stage.innerHTML = `
+    <div class="stage-head">
+      <div class="stage-head-left">
+        <div class="stage-title">🎁 Разложение числа ${num} на степени ${b}</div>
+      </div>
+    </div>
+
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
+      Кликай по степеням — они складываются в стопку. Когда остаток обнулится, появится итог.
+    </div>
+
+    <div class="box-status">
+      <span class="lbl">Остаток:</span>
+      <span class="val" id="restVal">${num}</span>
+      <span class="lbl">Взято всего:</span>
+      <span class="val" id="inBoxVal">0</span>
+    </div>
+
+    <div class="powers-grid" id="powersGrid"></div>
+
+    <div class="box-formula" id="boxFormula">
+      <div class="f-title">Формула перевода</div>
+      <div id="boxFormulaContent"></div>
+      <div class="f-result" id="boxResultContent"></div>
+    </div>
+
+    <div class="decomp" id="decomp">
+      <div class="lbl">Текущее разложение</div>
+      <div class="terms" id="decompTerms"><span class="empty">пока ничего не взято…</span></div>
+    </div>
+  `;
+
+  const grid = document.getElementById('powersGrid');
+  powers.forEach(p => {
+    const col = document.createElement('div');
+    col.className = 'power-column';
+    col.id = 'col-' + p.k;
+    col.innerHTML = `
+      <div class="header" id="hdr-${p.k}">
+        <div class="val">${p.val}</div>
+        <div class="pow">${b}<sup>${p.k}</sup></div>
+      </div>
+      <div class="stack" id="stack-${p.k}"></div>
+      <div class="power-count" id="count-${p.k}"></div>
+    `;
+    grid.appendChild(col);
+    col.querySelector('.header').addEventListener('click', () => tryTakeBox(p.k));
+  });
+
+  taskState = {
+    mode: 'boxes',
+    num, b, powers,
+    remaining: num,
+    takenSequence: [],
+    takenCount: {},
+    finished: false
+  };
+
+  updateBoxStatus();
+}
+
+function tryTakeBox(k){
+  const st = taskState;
+  if (!st || st.mode !== 'boxes' || st.finished) return;
+
+  const power = st.powers.find(p => p.k === k);
+  if (!power) return;
+
+  const header = document.getElementById('hdr-' + k);
+
+  if (power.val > st.remaining){
+    header.classList.add('cant');
+    setTimeout(() => header.classList.remove('cant'), 400);
+    return;
+  }
+
+  st.remaining -= power.val;
+  st.takenSequence.push(power);
+  st.takenCount[k] = (st.takenCount[k] || 0) + 1;
+
+  const stack = document.getElementById('stack-' + k);
+  const chip = document.createElement('div');
+  chip.className = 'taken-chip';
+  chip.textContent = '+' + power.val;
+  stack.appendChild(chip);
+
+  updateBoxStatus();
+  renderDecomp();
+
+  if (st.remaining === 0){
+    st.finished = true;
+    renderSummary();
+  }
+}
+
+function updateBoxStatus(){
+  const st = taskState;
+  if (!st || st.mode !== 'boxes') return;
+  document.getElementById('restVal').textContent = st.remaining;
+  document.getElementById('inBoxVal').textContent = st.num - st.remaining;
+  const restEl = document.getElementById('restVal');
+  if (st.remaining === 0) restEl.classList.add('done');
+  else restEl.classList.remove('done');
+}
+
+function renderDecomp(){
+  const st = taskState;
+  if (!st || st.mode !== 'boxes') return;
+  const termsEl = document.getElementById('decompTerms');
+  if (st.takenSequence.length === 0){
+    termsEl.innerHTML = `<span class="empty">пока ничего не взято…</span>`;
+    const oldEq = termsEl.parentElement.querySelector('.decomp-eq');
+    if (oldEq) oldEq.remove();
+    return;
+  }
+  termsEl.innerHTML = '';
+  st.takenSequence.forEach((p, i) => {
+    if (i > 0){
+      const plus = document.createElement('span');
+      plus.className = 'plus';
+      plus.textContent = '+';
+      termsEl.appendChild(plus);
+    }
+    const t = document.createElement('span');
+    t.className = 'term';
+    t.textContent = p.val;
+    termsEl.appendChild(t);
+  });
+  const sum = st.takenSequence.reduce((a, c) => a + c.val, 0);
+  const eq = document.createElement('div');
+  eq.style.marginTop = '10px';
+  eq.style.paddingTop = '10px';
+  eq.style.borderTop = '1px dashed rgba(255,217,61,.3)';
+  eq.className = 'decomp-eq';
+  eq.textContent = st.takenSequence.map(p => p.val).join(' + ') + ' = ' + sum;
+  const oldEq = termsEl.parentElement.querySelector('.decomp-eq');
+  if (oldEq) oldEq.remove();
+  termsEl.parentElement.appendChild(eq);
+}
+
+function renderSummary(){
+  const st = taskState;
+  if (!st || st.mode !== 'boxes') return;
+
+  st.powers.forEach(p => {
+    const count = st.takenCount[p.k] || 0;
+    const countEl = document.getElementById('count-' + p.k);
+    if (countEl){
+      countEl.textContent = '×' + count;
+      countEl.classList.add('show');
+    }
+  });
+
+  const formulaContent = document.getElementById('boxFormulaContent');
+  let formulaParts = [];
+  for (let i = st.powers.length - 1; i >= 0; i--){
+    const p = st.powers[i];
+    const count = st.takenCount[p.k] || 0;
+    if (count > 0) formulaParts.push(`${st.b}<sup>${p.k}</sup> * ${count}`);
+  }
+  const formulaStr = formulaParts.length > 0 ? formulaParts.join(' + ') : '0';
+  formulaContent.innerHTML = formulaStr;
+  document.getElementById('boxFormula').classList.add('show');
+
+  const resultContent = document.getElementById('boxResultContent');
+  let resultDigits = [];
+  for (let i = st.powers.length - 1; i >= 0; i--){
+    const p = st.powers[i];
+    const count = st.takenCount[p.k] || 0;
+    resultDigits.push(digitToChar(count));
+  }
+  while (resultDigits.length > 1 && resultDigits[0] === '0') resultDigits.shift();
+  const resultStr = resultDigits.join('');
+  resultContent.innerHTML = `Результат: <span style="font-family:ui-monospace,Consolas,monospace;color:var(--acc)">${resultStr}<sub>${st.b}</sub></span>`;
+}
+
+/* ============================================================
+   ОБРАТНЫЙ ПЕРЕВОД
+   Слева накапливается сумма термов, справа один раз "= итог".
+   ============================================================ */
+function startBackward(){
+  const raw = numInput.value.trim().toUpperCase();
+  if (!raw){
+    stage.innerHTML = `<div class="empty-state"><span class="big">⚠️</span>Введи цифры</div>`;
+    return;
+  }
+  const b = base;
+  const digits = raw.split('').map(charToDigit);
+  if (digits.some(isNaN)){
+    stage.innerHTML = `<div class="empty-state"><span class="big">⚠️</span>Недопустимые символы для основания ${b}</div>`;
+    return;
+  }
+  if (digits.some(d => d >= b)){
+    stage.innerHTML = `<div class="empty-state"><span class="big">⚠️</span>Цифра больше основания ${b}</div>`;
+    return;
+  }
+
+  const L = digits.length;
+  const items = digits.map((d, i) => {
+    const pos = L - 1 - i;
+    return { digit: d, pos, val: d * Math.pow(b, pos) };
+  });
+
+  stage.innerHTML = `
+    <div class="stage-head">
+      <div class="stage-head-left">
+        <div class="stage-title">
+          🔄 Обратный перевод: ${raw}<sub style="color:var(--muted)">${b}</sub> → десятичная
+          <span class="step-pill" id="stepPill">шаг 0 из ${items.length}</span>
+        </div>
+      </div>
+      <div class="stage-head-actions">
+        <button class="btn btn-next" id="btnNextBw">Далее ▶</button>
+      </div>
+    </div>
+
+    <div class="bits-row" id="bitsRow"></div>
+
+    <div class="formula-line" id="formulaLine">
+      <span class="empty-hint">здесь появится сумма…</span>
+    </div>
+
+    <div class="total-line" id="totalLine"></div>
+  `;
+
+  const row = document.getElementById('bitsRow');
+  const cells = [];
+  items.forEach((it, i) => {
+    const el = document.createElement('div');
+    el.className = 'bit-cell';
+    el.id = 'bcell-' + i;
+    el.innerHTML = `
+      <div class="digit-big">${digitToChar(it.digit)}</div>
+      <div class="power-below">
+        <span class="base-num">${b}</span><span class="pow-num">${it.pos}</span>
+      </div>
+      <div class="value-line">= ${it.val}</div>
+    `;
+    row.appendChild(el);
+    cells.push(el);
+  });
+
+  taskState = {
+    mode: 'backward',
+    numStr: raw, b, items, cells,
+    sum: 0,
+    cursor: 0,
+    formulaEl: document.getElementById('formulaLine'),
+    totalEl: document.getElementById('totalLine')
+  };
+
+  if (cells[0]) cells[0].classList.add('active');
+  const btn = document.getElementById('btnNextBw');
+  btn.addEventListener('click', advanceBackward);
+}
+
+function advanceBackward(){
+  const st = taskState;
+  if (!st || st.mode !== 'backward') return;
+  if (st.cursor >= st.items.length) return;
+  const it = st.items[st.cursor];
+  const cell = st.cells[st.cursor];
+  cell.classList.remove('active');
+  cell.classList.add('done');
+  setTimeout(() => { cell.style.transform = 'scale(1.06)'; }, 50);
+  setTimeout(() => { cell.style.transform = ''; }, 250);
+
+  if (st.cursor === 0) st.formulaEl.innerHTML = '';
+  else {
+    const plus = document.createElement('span');
+    plus.className = 'f-op';
+    plus.textContent = ' + ';
+    st.formulaEl.appendChild(plus);
+  }
+
+  // Терм: цифра · основание^степень
+  const digitSpan = document.createElement('span');
+  digitSpan.className = 'f-digit';
+  digitSpan.textContent = digitToChar(it.digit);
+  st.formulaEl.appendChild(digitSpan);
+
+  if (it.digit > 0){
+    const dotSpan = document.createElement('span');
+    dotSpan.className = 'f-base';
+    dotSpan.textContent = '·';
+    st.formulaEl.appendChild(dotSpan);
+
+    const baseSpan = document.createElement('span');
+    baseSpan.className = 'f-base';
+    baseSpan.textContent = String(st.b);
+    st.formulaEl.appendChild(baseSpan);
+
+    const powSpan = document.createElement('span');
+    powSpan.className = 'f-power';
+    powSpan.textContent = it.pos;
+    st.formulaEl.appendChild(powSpan);
+  }
+
+  // Текущая сумма — но только накапливаем в состоянии.
+  st.sum += it.val;
+
+  st.cursor++;
+  document.getElementById('stepPill').textContent = `шаг ${st.cursor} из ${st.items.length}`;
+  progressFill.style.width = (st.cursor / st.items.length * 100) + '%';
+
+  if (st.cursor < st.items.length){
+    st.cells[st.cursor].classList.add('active');
+  } else {
+    // Финал: один раз "= итог" справа
+    const eq = document.createElement('span');
+    eq.className = 'f-eq';
+    eq.textContent = '=';
+    st.formulaEl.appendChild(eq);
+
+    const totalSpan = document.createElement('span');
+    totalSpan.className = 'f-val';
+    totalSpan.textContent = String(st.sum);
+    st.formulaEl.appendChild(totalSpan);
+
+    st.totalEl.classList.add('show');
+    st.totalEl.innerHTML = `${st.numStr}<sub style="color:var(--muted);font-size:.7em">${st.b}</sub> &nbsp;=&nbsp; <b style="color:var(--acc)">${st.sum}</b><sub style="color:var(--muted);font-size:.7em">10</sub>`;
+
+    const btn = document.getElementById('btnNextBw');
+    if (btn) btn.disabled = true;
+  }
+}
+
+/* ============================================================
+   РЕЖИМЫ
+   ============================================================ */
+document.getElementById('tabForward').addEventListener('click', () => {
+  mode = 'forward';
+  document.getElementById('tabForward').classList.add('active');
+  document.getElementById('tabBackward').classList.remove('active');
+  numInput.value = '';
+  numInput.placeholder = 'Число в десятичной';
+  stage.innerHTML = `<div class="empty-state"><span class="big">🎯</span>Введи число и нажми «Начать».</div>`;
+  controls.innerHTML = '';
+});
+document.getElementById('tabBackward').addEventListener('click', () => {
+  mode = 'backward';
+  document.getElementById('tabBackward').classList.add('active');
+  document.getElementById('tabForward').classList.remove('active');
+  numInput.value = '';
+  numInput.placeholder = `Цифры в системе ${base} (можно буквы)`;
+  stage.innerHTML = `<div class="empty-state"><span class="big">🔄</span>Введи цифры и нажми «Начать».</div>`;
+  controls.innerHTML = '';
+});
+
+document.querySelectorAll('.base-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    base = parseInt(pill.dataset.base, 10);
+    document.querySelectorAll('.base-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    if (mode === 'backward') numInput.placeholder = `Цифры в системе ${base} (можно буквы)`;
+  });
+});
+
+document.getElementById('btnStart').addEventListener('click', () => {
+  progressFill.style.width = '0%';
+  if (mode === 'backward') startBackward();
+  else showForwardMethodChoice();
+});
+
+function showForwardMethodChoice(){
+  stage.innerHTML = `
+    <div class="stage-head">
+      <div class="stage-head-left">
+        <div class="stage-title">📐 Выбери способ перевода</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;padding:12px 0">
+      <button class="btn btn-primary" id="mDiv">🪜 Деление уголком (лесенка)</button>
+      <button class="btn btn-secondary" id="mBox">🎁 Коробки степеней</button>
+    </div>
+  `;
+  document.getElementById('mDiv').addEventListener('click', startForwardDivisions);
+  document.getElementById('mBox').addEventListener('click', startForwardBoxes);
+}
+
+numInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btnStart').click();
+});
+</script>
+</body>
+</html>
