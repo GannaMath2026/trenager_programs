@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Python — интерактивный самоучитель</title>
+<style>
+:root{--bg:#09101b;--p:#111a2c;--p2:#0d1524;--line:#283754;--text:#f5f7fb;--muted:#a1acc1;--blue:#7896ff;--green:#39d49a;--red:#ff707b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 10% 0,#1b2744 0,#09101b 40%,#060a12 100%);color:var(--text);font:14px/1.45 Inter,system-ui,Segoe UI,Arial}
+.app{display:grid;grid-template-columns:265px 1fr 450px;min-height:100vh}
+aside{padding:16px 12px;background:#09101a;border-right:1px solid var(--line);height:100vh;position:sticky;top:0;overflow:auto}
+.brand{font-size:18px;font-weight:800}.sub{color:var(--muted);font-size:12px;margin-top:4px}.progress{margin:16px 0}.bar{height:7px;background:#1f2941;border-radius:99px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,#6f8cff,#3bd69c);width:0}
+.nav{display:grid;gap:6px}.nav button{border:1px solid transparent;background:transparent;color:#aeb8cc;border-radius:9px;padding:8px;text-align:left;cursor:pointer}.nav button:hover{background:#142039;color:#fff}.nav button.active{background:#182541;border-color:#33528b;color:#fff}.nav button.done{color:#6de0ae}
+.work{padding:24px 26px;min-height:100vh;overflow:auto}.kicker{color:#6e82a7;font-size:11px;letter-spacing:.12em;text-transform:uppercase}h1{font-size:28px;margin:8px 0}.lead{color:var(--muted)}.card{background:rgba(17,26,44,.92);border:1px solid var(--line);border-radius:14px;padding:15px;margin-top:14px}.explain{border-left:3px solid var(--blue);background:#0e1728;padding:11px 12px;border-radius:8px}.code{background:#060a11;border:1px solid #202c45;border-radius:10px;padding:11px;font:13px/1.55 ui-monospace,Consolas,monospace;white-space:pre-wrap;margin-top:9px}
+.q{font-weight:800;margin-bottom:8px}.opts{display:grid;gap:7px}.opt{cursor:pointer;background:#121d31;color:#edf2fb;border:1px solid #2b3a59;padding:9px;border-radius:9px;text-align:left}.opt:hover{background:#17253e}.opt.selected{outline:2px solid var(--blue)}.opt.correct{border-color:#2a9a72;background:#0f2a22}.opt.wrong{border-color:#a93d4b;background:#2a1218}.fb{min-height:20px;color:var(--muted);margin-top:8px;font-size:13px}.good{color:var(--green)}.bad{color:var(--red)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.primary,.secondary{cursor:pointer;border-radius:9px;padding:10px 13px}.primary{background:var(--blue);color:#071021;border:1px solid var(--blue);font-weight:800}.secondary{background:#152039;color:#edf3ff;border:1px solid #314463}.primary:disabled,.secondary:disabled{opacity:.45;cursor:not-allowed}
+.runner{padding:17px;background:#080e18;border-left:1px solid var(--line);height:100vh;position:sticky;top:0;display:flex;flex-direction:column;gap:8px}.runner h2{margin:0}.status{font-size:12px;color:#8fa0bb}.editor,.stdin{width:100%;background:#050810;color:#eff5ff;border:1px solid #2a3958;border-radius:10px;padding:10px;font:13px/1.5 ui-monospace,Consolas,monospace;outline:none}.editor{min-height:340px;resize:vertical}.stdin{min-height:92px;resize:vertical}.output{flex:1;min-height:150px;background:#050810;border:1px solid #22304b;border-radius:10px;padding:10px;white-space:pre-wrap;overflow:auto;font:13px/1.5 ui-monospace,Consolas,monospace}.sample{background:#0d1627;border:1px solid #253451;border-radius:10px;padding:10px;font-size:12px}.task-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.answer{display:none}.answer.show{display:block}.tag{font-size:11px;color:#9eabc1;border:1px solid #30405f;padding:3px 7px;border-radius:999px}
+@media(max-width:1120px){.app{grid-template-columns:230px 1fr}.runner{position:relative;height:auto;grid-column:1/-1;border-left:0;border-top:1px solid var(--line)}}@media(max-width:760px){.app{display:block}aside{position:relative;height:auto}.runner{position:relative;height:auto}.work{padding:18px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside><div class="brand">Python • самоучитель</div><div class="sub">Не перескакиваем: каждый новый шаг опирается на предыдущий.</div>
+<div class="progress"><div class="bar"><div id="fill" class="fill"></div></div><div id="pt" class="sub">0 / 21</div></div>
+<div class="nav" id="nav"></div></aside>
+<main><section class="work" id="work"></section></main>
+<section class="runner"><h2>Окошко для кода</h2><div id="status" class="status">Готово к выполнению учебного Python.</div>
+<label>Код</label><textarea id="editor" class="editor" spellcheck="false"></textarea>
+<label>Данные для input()</label><textarea id="stdin" class="stdin" spellcheck="false"></textarea><div class="sub">Эти строки получает программа через input().</div><div class="sub">Именно эти строки получает программа через input().</div>
+<div class="actions" style="margin-top:2px"><button id="run" class="primary">▶ Выполнить код</button><button id="clear" class="secondary">Стереть</button></div>
+<div class="sub">Tab — отступ · Shift+Tab — убрать отступ · Enter после : — следующий уровень · Ctrl+Enter — выполнить · образцы вставляются с Tab</div><div id="output" class="output">Результат появится здесь.</div></section>
+</div>
+<script>
+const LESSONS=[{"title": "1. Значение и тип: число или текст", "goal": "Различать int, float, str и bool.", "explain": "В Python 7 — число, \"7\" — текст, 2.5 — дробное число, True/False — логические значения.", "example": "print(7)\nprint(\"7\")\nprint(2.5)\nprint(True)", "stdin": "", "tests": [{"q": "Что выведет первая строка?", "code": "print(7)", "opts": ["7", "\"7\"", "True", "Ошибка"], "ans": "7"}, {"q": "Что записано в переменной x?", "code": "x = \"25\"", "opts": ["число 25", "текст \"25\"", "дробь 25.0", "логическое значение"], "ans": "текст \"25\""}, {"q": "Какое из значений является дробным числом?", "opts": ["8", "\"8\"", "8.5", "False"], "ans": "8.5"}], "practice": {"task": "Выведи число 12 и текст 12 двумя отдельными print.", "code": "# напиши два print", "stdin": "", "expected": "12\n12"}}, {"title": "2. Положить значение: =  и сравнить: ==", "goal": "Понять принципиальную разницу между присваиванием и сравнением.", "explain": "x = 7 означает «положить 7 в x». x == 7 означает «проверить, равно ли значение x семи».", "example": "x = 7\nprint(x == 7)", "stdin": "", "tests": [{"q": "Что делает строка x = 7?", "opts": ["сравнивает x с 7", "кладёт значение 7 в x", "печатает 7", "делит x на 7"], "ans": "кладёт значение 7 в x"}, {"q": "Что проверяет x == 7?", "opts": ["присваивание", "равенство x и 7", "что x больше 7", "что x не равно 7"], "ans": "равенство x и 7"}, {"q": "Что выведет код?", "code": "x = 7\nprint(x == 7)", "opts": ["7", "True", "False", "x"], "ans": "True"}], "practice": {"task": "Положи число 15 в x и выведи True, если x равно 15.", "code": "x = 15\nprint(x == 15)", "stdin": "", "expected": "True"}}, {"title": "3. Арифметика: *, /, //, %, **", "goal": "Знать, чем отличаются умножение, обычное деление, целочисленное деление, остаток и степень.", "explain": "* умножает; / даёт обычное деление; // — целую часть частного; % — остаток; ** — степень.", "example": "print(7 * 3)\nprint(7 / 2)\nprint(7 // 2)\nprint(7 % 2)\nprint(2 ** 3)", "stdin": "", "tests": [{"q": "Что выведет 7 // 2?", "code": "print(7 // 2)", "opts": ["3", "3.5", "4", "2"], "ans": "3"}, {"q": "Что выведет 7 % 2?", "code": "print(7 % 2)", "opts": ["3", "1", "0", "2"], "ans": "1"}, {"q": "Что выведет 2 ** 3?", "code": "print(2 ** 3)", "opts": ["5", "6", "8", "9"], "ans": "8"}], "practice": {"task": "Введи число n и выведи его квадрат.", "code": "n = int(input())\nprint(n ** 2)", "stdin": "6", "expected": "36"}}, {"title": "4. input(): почему введённое значение — текст", "goal": "Увидеть, что input() читает строку.", "explain": "Даже если ребёнок вводит 25, input() возвращает текст \"25\". Это важно перед арифметикой.", "example": "x = input()\nprint(x)", "stdin": "25", "tests": [{"q": "Какой тип у результата input()?", "opts": ["int", "float", "str", "bool"], "ans": "str"}, {"q": "Что выведет код при вводе 25?", "code": "x = input()\nprint(x)", "opts": ["25", "2.5", "True", "Ошибка"], "ans": "25"}, {"q": "Что находится в x после ввода 25?", "opts": ["число 25", "строка \"25\"", "число 2.5", "True"], "ans": "строка \"25\""}], "practice": {"task": "Прочитай текст и выведи его без изменений.", "code": "x = input()\nprint(x)", "stdin": "hello", "expected": "hello"}}, {"title": "5. int(input()): ввод целого числа", "goal": "Преобразовать ввод из текста в int и только после этого считать.", "explain": "int(input()) читается как «получить текст → превратить его в целое число».", "example": "x = int(input())\nprint(x + 2)", "stdin": "7", "tests": [{"q": "Что выведет программа при вводе 7?", "code": "x = int(input())\nprint(x + 2)", "opts": ["72", "9", "7", "Ошибка"], "ans": "9"}, {"q": "Какая строка получает целое число?", "opts": ["x = input()", "x = int(input())", "x = str(input())", "x == int(input())"], "ans": "x = int(input())"}, {"q": "Зачем здесь int?", "opts": ["Чтобы получить текст", "Чтобы получить целое число", "Чтобы округлить", "Чтобы напечатать значение"], "ans": "Чтобы получить целое число"}], "practice": {"task": "Введи целое число и выведи его, увеличенное на 10.", "code": "x = int(input())\nprint(x + 10)", "stdin": "6", "expected": "16"}}, {"title": "6. float(input()) и str()", "goal": "Понимать ещё два полезных преобразования типов.", "explain": "float(input()) читает дробное число. str(x) превращает число в текст — например, для соединения с другим текстом.", "example": "x = float(input())\nprint(x / 2)\nage = 10\nprint(\"Мне \" + str(age))", "stdin": "5", "tests": [{"q": "Что выведет при вводе 5?", "code": "x = float(input())\nprint(x / 2)", "opts": ["2", "2.5", "5", "10"], "ans": "2.5"}, {"q": "Что делает str(25)?", "opts": ["делает из 25 текст", "делает из 25 дробь", "делает из 25 True", "делит 25"], "ans": "делает из 25 текст"}, {"q": "Что выведет этот код?", "code": "age = 10\nprint(\"Мне \" + str(age))", "opts": ["Мне 10", "Мне age", "Ошибка", "10 Мне"], "ans": "Мне 10"}], "practice": {"task": "Выведи текст «Возраст: » и число 12 в одной строке.", "code": "age = 12\nprint(\"Возраст: \" + str(age))", "stdin": "", "expected": "Возраст: 12"}}, {"title": "7. Строка тоже умеет умножаться", "goal": "Не путать умножение чисел и строк.", "explain": "\"ha\" * 3 повторяет текст три раза. Но \"7\" + 2 нельзя: это разные типы.", "example": "print(\"ha\" * 3)\nprint(\"A\" + \"B\")", "stdin": "", "tests": [{"q": "Что выведет \"ha\" * 3?", "code": "print(\"ha\" * 3)", "opts": ["hahaha", "ha3", "Ошибка", "ha ha ha"], "ans": "hahaha"}, {"q": "Что выведет \"A\" + \"B\"?", "code": "print(\"A\" + \"B\")", "opts": ["AB", "A+B", "2", "Ошибка"], "ans": "AB"}, {"q": "Какая запись ошибочна по типам?", "opts": ["\"ha\" * 3", "\"A\" + \"B\"", "\"7\" + 2", "7 * 2"], "ans": "\"7\" + 2"}], "practice": {"task": "Введи строку s и выведи её три раза подряд.", "code": "s = input()\nprint(s * 3)", "stdin": "go", "expected": "gogogo"}}, {"title": "8. print: sep и end", "goal": "Уметь читать print с несколькими параметрами.", "explain": "sep задаёт разделитель между аргументами print. end задаёт окончание вывода вместо обычного переноса строки.", "example": "print(10, 20, 30, sep='-', end='!')", "stdin": "", "tests": [{"q": "Что выведет код?", "code": "print(10, 20, 30, sep='-', end='!')", "opts": ["10-20-30!", "10 20 30!", "10-20-30", "10;20;30!"], "ans": "10-20-30!"}, {"q": "Что меняет sep?", "opts": ["разделитель между аргументами", "конец строки", "тип числа", "условие"], "ans": "разделитель между аргументами"}, {"q": "Что делает end='!'?", "opts": ["ставит ! между числами", "ставит ! в конце вывода", "повторяет print", "делит строку"], "ans": "ставит ! в конце вывода"}], "practice": {"task": "Напечатай 1, 2 и 3 через двоеточие.", "code": "print(1, 2, 3, sep=':')", "stdin": "", "expected": "1:2:3"}}, {"title": "9. Сравнения дают True или False", "goal": "Научиться читать >, <, >=, <=, == и !=.", "explain": "Сравнение не меняет переменную. Оно возвращает логический результат: True или False.", "example": "x = 7\nprint(x > 5)\nprint(x == 7)\nprint(x != 10)", "stdin": "", "tests": [{"q": "Что выведет x > 5 при x = 7?", "code": "x = 7\nprint(x > 5)", "opts": ["True", "False", "7", "5"], "ans": "True"}, {"q": "Как проверить «x не равно 10»?", "opts": ["x = 10", "x == 10", "x != 10", "x > 10"], "ans": "x != 10"}, {"q": "Как проверить «x меньше или равно 20»?", "opts": ["x <= 20", "x =< 20", "x < 20", "x == 20"], "ans": "x <= 20"}], "practice": {"task": "Введи x и выведи True, если x больше 10.", "code": "x = int(input())\nprint(x > 10)", "stdin": "15", "expected": "True"}}, {"title": "10. if / else: выбор действия", "goal": "Запускать разные куски кода в зависимости от условия.", "explain": "После if идёт условие. Если оно False, управление может перейти в else.", "example": "x = int(input())\nif x > 10:\n    print(\"YES\")\nelse:\n    print(\"NO\")", "stdin": "7", "tests": [{"q": "Что выведет при x = 7?", "code": "x = 7\nif x > 10:\n    print(\"YES\")\nelse:\n    print(\"NO\")", "opts": ["YES", "NO", "7", "ничего"], "ans": "NO"}, {"q": "Когда выполняется else?", "opts": ["всегда", "когда if-условие ложно", "только при 0", "после каждого input"], "ans": "когда if-условие ложно"}, {"q": "Что нужно после if для правильного блока?", "opts": ["отступ", "точку с запятой", "скобки", "запятую"], "ans": "отступ"}], "practice": {"task": "Выведи YES, если число чётное, иначе NO.", "code": "x = int(input())\nif x % 2 == 0:\n    print(\"YES\")\nelse:\n    print(\"NO\")", "stdin": "12", "expected": "YES"}}, {"title": "11. and / or и проверки диапазона", "goal": "Собирать понятные условия из нескольких частей.", "explain": "and = верны обе части. or = верна хотя бы одна. Диапазон можно читать как 100 <= num <= 999.", "example": "num = 144\nprint(num % 6 == 0 and num % 10 == 4)\nprint(100 <= num <= 999)", "stdin": "", "tests": [{"q": "Какой результат для 24?", "code": "num = 24\nprint(num % 6 == 0 and num % 10 == 4)", "opts": ["True", "False", "24", "4"], "ans": "True"}, {"q": "Какой код проверяет, что num трёхзначное?", "opts": ["100 <= num <= 999", "num > 100 and num < 9999", "num % 3 == 0", "num // 100 == 0"], "ans": "100 <= num <= 999"}, {"q": "Что означает or?", "opts": ["достаточно хотя бы одного условия", "обязаны быть истинны оба", "условия нет", "это цикл"], "ans": "достаточно хотя бы одного условия"}], "practice": {"task": "Выведи YES, если число кратно 3 или 5.", "code": "x = int(input())\nif x % 3 == 0 or x % 5 == 0:\n    print(\"YES\")", "stdin": "10", "expected": "YES"}}, {"title": "12. for + range(cnt): повторяем ввод", "goal": "Понять цикл с известным количеством повторений.", "explain": "Шаблон задач: cnt = int(input()); for i in range(cnt): ...", "example": "cnt = int(input())\nfor i in range(cnt):\n    num = int(input())\n    print(num)", "stdin": "3\n10\n20\n30", "tests": [{"q": "Сколько раз выполнится тело range(4)?", "code": "for i in range(4):\n    print(i)", "opts": ["3", "4", "5", "0"], "ans": "4"}, {"q": "Какие значения примет i при range(4)?", "opts": ["0, 1, 2, 3", "1, 2, 3, 4", "0, 1, 2, 3, 4", "только 4"], "ans": "0, 1, 2, 3"}, {"q": "Где обычно читают очередное число в задачах с N числами?", "opts": ["внутри for: num = int(input())", "после цикла", "только в if", "в print"], "ans": "внутри for: num = int(input())"}], "practice": {"task": "Прочитай cnt чисел и выведи каждое.", "code": "cnt = int(input())\nfor i in range(cnt):\n    num = int(input())\n    print(num)", "stdin": "2\n7\n9", "expected": "7\n9"}}, {"title": "13. Счётчик: kol += 1", "goal": "Считать, сколько элементов удовлетворяет условию.", "explain": "Счётчик начинается с 0. Для каждого подходящего элемента увеличиваем его на 1.", "example": "kol = 0\nfor num in [16, 26, 24, 7, 40]:\n    if num % 4 == 0:\n        kol += 1\nprint(kol)", "stdin": "", "tests": [{"q": "Какое количество чисел в списке кратно 4?", "code": "kol = 0\nfor num in [16,26,24,7,40]:\n    if num % 4 == 0:\n        kol += 1\nprint(kol)", "opts": ["2", "3", "4", "5"], "ans": "3"}, {"q": "Что хранит kol?", "opts": ["сумму", "количество", "максимум", "текущее число"], "ans": "количество"}, {"q": "Почему здесь += 1, а не += num?", "opts": ["нужно увеличить количество на один", "нужно прибавить число к сумме", "нужно найти максимум", "так работает input"], "ans": "нужно увеличить количество на один"}], "practice": {"task": "Посчитай, сколько из введённых чисел чётные.", "code": "cnt = int(input())\nkol = 0\nfor i in range(cnt):\n    num = int(input())\n    if num % 2 == 0:\n        kol += 1\nprint(kol)", "stdin": "4\n3\n8\n10\n7", "expected": "2"}}, {"title": "14. Сумматор: sm += num", "goal": "Собирать сумму только подходящих элементов.", "explain": "Сумма начинается с 0. Если число подходит, прибавляем именно число: sm += num.", "example": "sm = 0\nfor num in [12, 25, 18, 7, 6]:\n    if num % 6 == 0:\n        sm += num\nprint(sm)", "stdin": "", "tests": [{"q": "Какова сумма чисел, кратных 6?", "code": "sm = 0\nfor num in [12,25,18,7,6]:\n    if num % 6 == 0:\n        sm += num\nprint(sm)", "opts": ["30", "36", "42", "68"], "ans": "36"}, {"q": "Какая строка увеличивает сумму на текущее число?", "opts": ["sm += num", "sm += 1", "kol += 1", "num += sm"], "ans": "sm += num"}, {"q": "Что будет, если использовать kol += 1 вместо sm += num?", "opts": ["будем считать количество, а не сумму", "получим максимум", "получим среднее", "программа остановится"], "ans": "будем считать количество, а не сумму"}], "practice": {"task": "Найди сумму cnt введённых чисел.", "code": "cnt = int(input())\nsm = 0\nfor i in range(cnt):\n    num = int(input())\n    sm += num\nprint(sm)", "stdin": "3\n4\n5\n6", "expected": "15"}}, {"title": "15. Максимум и минимум", "goal": "Хранить лучшее найденное значение.", "explain": "Для максимума проверяем num > max_val. Для минимума — num < min_val. Начальное значение выбираем вне допустимого диапазона.", "example": "max_val = 0\nfor num in [13, 23, 8, 43]:\n    if num > max_val:\n        max_val = num\nprint(max_val)", "stdin": "", "tests": [{"q": "Что выведет поиск максимума?", "code": "max_val = 0\nfor num in [13,23,8,43]:\n    if num > max_val:\n        max_val = num\nprint(max_val)", "opts": ["8", "23", "43", "87"], "ans": "43"}, {"q": "Какое условие нужно для минимума?", "opts": ["num < min_val", "num > min_val", "num == min_val", "num % min_val == 0"], "ans": "num < min_val"}, {"q": "Если числа не больше 30000, какое стартовое значение удобно для минимума?", "opts": ["0", "1", "30001", "30000"], "ans": "30001"}], "practice": {"task": "Найди максимальное из cnt введённых положительных чисел.", "code": "cnt = int(input())\nmax_val = 0\nfor i in range(cnt):\n    num = int(input())\n    if num > max_val:\n        max_val = num\nprint(max_val)", "stdin": "4\n3\n17\n9\n12", "expected": "17"}}, {"title": "16. while True + break: неизвестное количество чисел", "goal": "Останавливать ввод по специальному числу 0.", "explain": "Когда N заранее неизвестно, используем while True. Читаем число; если оно 0 — break. Сам 0 в последовательность не входит.", "example": "sm = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    sm += num\nprint(sm)", "stdin": "10\n20\n0", "tests": [{"q": "Что выведет программа при вводе 10, 20, 0?", "code": "sm = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    sm += num\nprint(sm)", "opts": ["10", "20", "30", "0"], "ans": "30"}, {"q": "Какая команда завершает цикл?", "opts": ["break", "stop", "end", "exit"], "ans": "break"}, {"q": "Почему 0 не прибавляется к сумме?", "opts": ["потому что перед сложением срабатывает break", "потому что 0 игнорирует input", "потому что 0 — строка", "потому что print удаляет 0"], "ans": "потому что перед сложением срабатывает break"}], "practice": {"task": "До нуля найти сумму введённых чисел.", "code": "sm = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    sm += num\nprint(sm)", "stdin": "5\n8\n0", "expected": "13"}}, {"title": "17. elif, флаг и YES/NO", "goal": "Запоминать факт и затем выводить результат.", "explain": "Флаг — переменная True/False. Сначала fl = False. Если событие встретилось, делаем fl = True. Потом проверяем if fl.", "example": "fl = False\nfor x in [3, 0, 7]:\n    if x == 0:\n        fl = True\nif fl:\n    print(\"YES\")\nelse:\n    print(\"NO\")", "stdin": "", "tests": [{"q": "Что выведет код?", "code": "fl = False\nfor x in [3,0,7]:\n    if x == 0:\n        fl = True\nif fl:\n    print(\"YES\")\nelse:\n    print(\"NO\")", "opts": ["YES", "NO", "0", "True"], "ans": "YES"}, {"q": "Что означает fl = True?", "opts": ["событие произошло", "событие не произошло", "сумма равна 1", "цикл завершён"], "ans": "событие произошло"}, {"q": "Зачем нужен elif?", "opts": ["для следующего условия, если предыдущее if не подошло", "для запуска цикла", "для сложения", "для ввода"], "ans": "для следующего условия, если предыдущее if не подошло"}], "practice": {"task": "Выведи YES, если среди трёх чисел есть 0, иначе NO.", "code": "fl = False\nfor i in range(3):\n    x = int(input())\n    if x == 0:\n        fl = True\nif fl:\n    print(\"YES\")\nelse:\n    print(\"NO\")", "stdin": "4\n0\n7", "expected": "YES"}}, {"title": "18. Среднее: сумма / количество", "goal": "Собирать две величины — сумму и количество — и после цикла делить.", "explain": "Среднее = sm / kol. Поэтому нужны и sm, и kol.", "example": "sm = 0\nkol = 0\nfor x in [12, 8, 3]:\n    sm += x\n    kol += 1\navg = sm / kol\nprint(avg)", "stdin": "", "tests": [{"q": "Какое среднее у 12, 8 и 3?", "code": "sm = 0\nkol = 0\nfor x in [12,8,3]:\n    sm += x\n    kol += 1\nprint(sm / kol)", "opts": ["7.0", "7.666666666666667", "8", "23"], "ans": "7.666666666666667"}, {"q": "Как получить среднее из sm и kol?", "opts": ["sm / kol", "sm * kol", "sm + kol", "kol / sm"], "ans": "sm / kol"}, {"q": "Почему kol нельзя заменить на 0 в последней строке?", "opts": ["получится деление на ноль", "потеряется сумма", "print не работает", "0 становится строкой"], "ans": "получится деление на ноль"}], "practice": {"task": "Найди среднее 4 введённых чисел.", "code": "cnt = int(input())\nsm = 0\nfor i in range(cnt):\n    sm += int(input())\nprint(sm / cnt)", "stdin": "4\n2\n4\n6\n8", "expected": "5"}}, {"title": "19. f-строка: формат результата", "goal": "Выводить дробное значение в нужном виде.", "explain": "В образцах задач встречается print(f\"{avg:.1f}\"). Это означает: взять avg и показать один знак после точки.", "example": "avg = 7.6666\nprint(f\"{avg:.1f}\")", "stdin": "", "tests": [{"q": "Что выведет?", "code": "avg = 7.6666\nprint(f\"{avg:.1f}\")", "opts": ["7.6", "7.7", "7.66", "7"], "ans": "7.7"}, {"q": "Что означает :.1f?", "opts": ["один знак после точки", "один пробел", "целое число", "один символ"], "ans": "один знак после точки"}, {"q": "Какая запись соответствует одному знаку после точки?", "opts": ["f\"{avg:.1f}\"", "f\"{avg:1}\"", "f\"{avg.1f}\"", "f\"avg:.1f\""], "ans": "f\"{avg:.1f}\""}], "practice": {"task": "Выведи 12.345 с одним знаком после точки.", "code": "x = 12.345\nprint(f\"{x:.1f}\")", "stdin": "", "expected": "12.3"}}, {"title": "20. for ... else: нашли или не нашли", "goal": "Понять специальный else у цикла.", "explain": "else после for выполняется только тогда, когда цикл закончился без break. Это отличается от else у if.", "example": "for i in range(3):\n    if i == 5:\n        break\nelse:\n    print(\"не нашли\")", "stdin": "", "tests": [{"q": "Что выведет этот код?", "code": "for i in range(3):\n    if i == 5:\n        break\nelse:\n    print(\"не нашли\")", "opts": ["нашли", "не нашли", "ничего", "5"], "ans": "не нашли"}, {"q": "Когда сработает else у for?", "opts": ["если был break", "если цикл завершился без break", "всегда после первой итерации", "только при range(0)"], "ans": "если цикл завершился без break"}, {"q": "Чем этот else отличается от else у if?", "opts": ["он относится к завершению цикла", "он всегда относится к последнему if", "он заменяет break", "никак не отличается"], "ans": "он относится к завершению цикла"}], "practice": {"task": "Проверь, есть ли число 3 среди 0,1,2,3,4.", "code": "for i in range(5):\n    if i == 3:\n        print(\"нашли\")\n        break\nelse:\n    print(\"не нашли\")", "stdin": "", "expected": "нашли"}}, {"title": "21. Последняя цифра в другой системе счисления", "goal": "Связать остаток % с задачами про системы счисления.", "explain": "В задачах ФИПИ последняя цифра записи числа в системе с основанием b определяется как num % b. Для 7-ричной — num % 7.", "example": "num = 71\nr = num % 7\nprint(r)", "stdin": "", "tests": [{"q": "Что выведет для 71?", "code": "num = 71\nprint(num % 7)", "opts": ["0", "1", "5", "71"], "ans": "1"}, {"q": "Как проверить нечётную последнюю цифру в 7-ричной записи?", "opts": ["num % 7 % 2 == 1", "num % 2 == 1", "num % 7 == 1", "num // 7 % 2 == 1"], "ans": "num % 7 % 2 == 1"}, {"q": "Для основания 5 какой остаток определяет последнюю цифру?", "opts": ["num % 5", "num % 10", "num // 5", "num / 5"], "ans": "num % 5"}], "practice": {"task": "Выведи последнюю цифру записи 50 в системе с основанием 7.", "code": "num = 50\nprint(num % 7)", "stdin": "", "expected": "1"}}];
+const TASKS=[["Задание 1. Максимум, кратный 5", "for + max + %", "Максимальное число, кратное 5.", "3\n10\n25\n12", "25", "cnt = int(input())\nsm = 0\nmax_val = 0\nfor i in range(cnt):\n    num = int(input())\n    if num % 5 == 0:\n        if num > max_val:\n            max_val = num\nprint(max_val)"], ["Задание 2. Сумма чисел, кратных 6", "for + sum + %", "Сумма чисел, кратных 6.", "3\n12\n25\n6", "18", "cnt = int(input())\nsm = 0\nfor i in range(cnt):\n    num = int(input())\n    if num % 6 == 0:\n        sm += num\nprint(sm)"], ["Задание 3. Количество чисел, кратных 4", "for + count", "Количество чисел, кратных 4.", "3\n16\n26\n24", "2", "cnt = int(input())\nkol = 0\nfor i in range(cnt):\n    num = int(input())\n    if num % 4 == 0:\n        kol += 1\nprint(kol)"], ["Задание 4. Сумма чисел, оканчивающихся на 4", "for + %10", "Сумма чисел, оканчивающихся на 4.", "3\n14\n25\n24", "38", "cnt = int(input())\nsm = 0\nfor i in range(cnt):\n    num = int(input())\n    if num % 10 == 4:\n        sm += num\nprint(sm)"], ["Задание 5. Количество чисел, оканчивающихся на 3", "for + count + %10", "Количество чисел, оканчивающихся на 3.", "3\n13\n23\n24", "2", "cnt = int(input())\nkol = 0\nfor i in range(cnt):\n    num = int(input())\n    if num % 10 == 3:\n        kol += 1\nprint(kol)"], ["Задание 6. Максимум, оканчивающийся на 3", "for + max + %10", "Максимальное число, оканчивающееся на 3.", "3\n13\n23\n3", "23", "cnt = int(input())\nmax_val = 0\nfor i in range(cnt):\n    num = int(input())\n    if num % 10 == 3:\n        if num > max_val:\n            max_val = num\nprint(max_val)"], ["Задание 7. Сумма: кратно 6 и оканчивается на 4", "while + break + and", "Сумма чисел, кратных 6 и оканчивающихся на 4; ввод до 0.", "14\n24\n144\n22\n12\n0", "168", "sm = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    if num % 6 == 0 and num % 10 == 4:\n        sm += num\nprint(sm)"], ["Задание 8. Минимальное чётное", "for + min + and", "Минимальное чётное число.", "4\n3\n20\n6\n8", "6", "cnt = int(input())\nmin_val = 30001\nfor i in range(cnt):\n    num = int(input())\n    if num % 2 == 0 and num < min_val:\n        min_val = num\nprint(min_val)"], ["Задание 9. Трёхзначные, кратные 4", "while + range check + and", "Количество трёхзначных чисел, кратных 4, ввод до 0.", "120\n9\n365\n4\n0", "1", "kol = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    if 100 <= num <= 999 and num % 4 == 0:\n        kol += 1\nprint(kol)"], ["Задание 10. Скорости: разность и количество до 30", "for + min/max + count", "Разность максимальной и минимальной скоростей и количество скоростей не выше 30.", "4\n74\n69\n63\n96", "33\n0", "cnt = int(input())\nmin_val = 301\nmax_val = 0\nkol = 0\nfor i in range(cnt):\n    speed = int(input())\n    if speed < min_val:\n        min_val = speed\n    if speed > max_val:\n        max_val = speed\n    if speed <= 30:\n        kol += 1\nprint(max_val - min_val)\nprint(kol)"], ["Задание 11. Средняя положительная температура", "sum + count + average", "Средняя температура для дней выше нуля и количество таких дней.", "4\n-5\n12\n-2\n8", "10.0\n2", "cnt = int(input())\nsm = 0\nkol = 0\nfor i in range(cnt):\n    temp = int(input())\n    if temp > 0:\n        sm += temp\n        kol += 1\nprint(sm / kol)\nprint(kol)"], ["Задание 12. Викторина: максимум + YES/NO", "max + flag + if/else", "Максимум правильных ответов; YES, если был участник с 0.", "4\n15\n12\n0\n17", "17\nYES", "cnt = int(input())\nmax_ans = 0\nfl = False\nfor i in range(cnt):\n    ans = int(input())\n    if ans > max_ans:\n        max_ans = ans\n    if ans == 0:\n        fl = True\nprint(max_ans)\nif fl:\n    print(\"YES\")\nelse:\n    print(\"NO\")"], ["Задание 13. Скорости: максимум + был ли меньше 30", "max + flag + if/else", "Максимальная скорость; YES, если хотя бы одна скорость меньше 30.", "4\n74\n69\n63\n66", "74\nNO", "cnt = int(input())\nmax_val = 0\nfl = False\nfor i in range(cnt):\n    speed = int(input())\n    if speed > max_val:\n        max_val = speed\n    if speed < 30:\n        fl = True\nprint(max_val)\nif fl:\n    print(\"YES\")\nelse:\n    print(\"NO\")"], ["Задание 14. Средняя скорость + не менее двух медленных", "f-string + count + if/else", "Средняя скорость с одним знаком; YES, если скоростей не больше 40 хотя бы две.", "4\n74\n69\n63\n96", "75.5\nNO", "cnt = int(input())\nsm = 0\nkol_slow = 0\nfor i in range(cnt):\n    speed = int(input())\n    sm += speed\n    if speed <= 40:\n        kol_slow += 1\navg = sm / cnt\nprint(f\"{avg:.1f}\")\nif kol_slow >= 2:\n    print(\"YES\")\nelse:\n    print(\"NO\")"], ["Задание 15. Среднее кратных 8 или NO", "while + average + f-string", "До 0 найти среднее кратных 8 или вывести NO.", "8\n122\n64\n16\n0", "40.0", "sm = 0\nkol = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    if num % 8 == 0:\n        sm += num\n        kol += 1\nif kol == 0:\n    print(\"NO\")\nelse:\n    print(f\"{sm / kol:.1f}\")"], ["Задание 16. Контрольная: плохие оценки + YES/NO", "count + flag", "Количество результатов меньше 5; YES, если кто-то решил все 10.", "4\n3\n9\n2\n8", "2\nNO", "cnt = int(input())\nkol_bad = 0\nfl = False\nfor i in range(cnt):\n    correct = int(input())\n    if correct < 5:\n        kol_bad += 1\n    if correct == 10:\n        fl = True\nprint(kol_bad)\nif fl:\n    print(\"YES\")\nelse:\n    print(\"NO\")"], ["Задание 17. Среднее двузначных или NO", "while + range + average", "До 0 найти среднее двузначных чисел.", "10\n120\n49\n0", "49.0", "sm = 0\nkol = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    if 10 <= num <= 99:\n        sm += num\n        kol += 1\nif kol == 0:\n    print(\"NO\")\nelse:\n    print(f\"{sm / kol:.1f}\")"], ["Задание 18. Среднее: 7-ричная последняя цифра нечётная", "for + num%7 + f-string", "Среднее элементов с нечётной последней 7-ричной цифрой.", "6\n12\n15\n10\n71\n50\n11", "31.6", "n = int(input())\nsm = 0\nkol = 0\nfor i in range(n):\n    num = int(input())\n    r = num % 7\n    if r % 2 == 1:\n        sm += num\n        kol += 1\nif kol == 0:\n    print(\"NO\")\nelse:\n    print(f\"{sm / kol:.1f}\")"], ["Задание 19. Среднее: 7-ричная последняя цифра 5, до 0", "while + num%7", "Среднее элементов с последней 7-ричной цифрой 5; до 0.", "12\n14\n20\n68\n25\n0", "40", "sm = 0\nkol = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    if num % 7 == 5:\n        sm += num\n        kol += 1\nif kol == 0:\n    print(\"NO\")\nelse:\n    print(sm // kol)"], ["Задание 20. Среднее: 7-ричная последняя цифра 5, N известно", "for + num%7", "Среднее элементов с последней 7-ричной цифрой 5.", "5\n12\n14\n20\n68\n25", "40", "n = int(input())\nsm = 0\nkol = 0\nfor i in range(n):\n    num = int(input())\n    if num % 7 == 5:\n        sm += num\n        kol += 1\nif kol == 0:\n    print(\"NO\")\nelse:\n    print(sm // kol)"], ["Задание 21. Сумма: 7-ричная запись оканчивается на 1", "for + num%7 + sum", "Сумма элементов, чья 7-ричная запись оканчивается на 1.", "5\n15\n13\n11\n8\n23", "23", "n = int(input())\nsm = 0\nfor i in range(n):\n    num = int(input())\n    if num % 7 == 1:\n        sm += num\nprint(sm)"], ["Задание 22. Количество чётных на [a,b]", "arithmetic + if", "Количество чётных чисел на отрезке [a,b].", "10\n20", "6", "a = int(input())\nb = int(input())\nkol = (b - a) // 2 + 1\nif a % 2 == 1:\n    kol -= 1\nprint(kol)"], ["Задание 23. Сумма кратных 4 или 9", "while + or + sum", "Сумма чисел, кратных 4 или 9; до 0.", "-9\n136\n90\n0", "217", "sm = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    if num % 4 == 0 or num % 9 == 0:\n        sm += num\nprint(sm)"], ["Задание 24. Длина + количество нечётных, кратных 3", "two counters + and", "Длина последовательности и количество нечётных чисел, кратных 3.", "4\n6\n15\n180\n0", "4\n1", "kol = 0\ncnt = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    cnt += 1\n    if num % 3 == 0 and num % 2 == 1:\n        kol += 1\nprint(cnt)\nprint(kol)"], ["Задание 25. Сумма + количество чётных, кратных 5", "sum + count + and", "Сумма последовательности и количество чётных чисел, кратных 5.", "4\n60\n15\n0", "75\n1", "sm = 0\nkol = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    sm += num\n    if num % 5 == 0 and num % 2 == 0:\n        kol += 1\nprint(sm)\nprint(kol)"], ["Задание 26. Количество + сумма чётных", "count + sum", "Длина последовательности и сумма чётных чисел.", "4\n60\n15\n64\n0", "3\n124", "cnt = 0\nsm = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    cnt += 1\n    if num % 2 == 0:\n        sm += num\nprint(cnt)\nprint(sm)"], ["Задание 27. Сумма + разность положительных и отрицательных", "while + elif", "Сумма и разность количества положительных и отрицательных.", "150\n-200\n-1\n0", "-51\n-1", "sm = 0\npos = 0\nneg = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    sm += num\n    if num > 0:\n        pos += 1\n    elif num < 0:\n        neg += 1\nprint(sm)\nprint(pos - neg)"], ["Задание 28. Сумма: кратно 7 и оканчивается на 2", "while + and + %10", "Сумма чисел, кратных 7 и оканчивающихся на 2.", "112\n24\n42\n49\n22\n0", "154", "sm = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    if num % 7 == 0 and num % 10 == 2:\n        sm += num\nprint(sm)"], ["Задание 29. Количество однозначных, кратных 3", "while + range + and", "Количество однозначных чисел, кратных 3.", "121\n9\n4\n0", "1", "kol = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    if 1 <= num <= 9 and num % 3 == 0:\n        kol += 1\nprint(kol)"], ["Задание 30. Наименьшее число, кратное 3", "while + min", "Наименьшее число, кратное 3.", "45\n10\n9\n0", "9", "min_val = 30001\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    if num % 3 == 0 and num < min_val:\n        min_val = num\nprint(min_val)"], ["Задание 31. Сумма трёхзначных, кратных 4", "while + range + sum", "Сумма трёхзначных чисел, кратных 4.", "18\n192\n104\n117\n0", "296", "sm = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    if 100 <= num <= 999 and num % 4 == 0:\n        sm += num\nprint(sm)"]];
+const EXTRA=[["FIPI. 7-ричная последняя цифра 1", "for + num%7", "Количество элементов, оканчивающихся цифрой 1 в 7-ричной записи.", "6\n12\n15\n10\n71\n50\n11", "3", "n = int(input())\nkol = 0\nfor i in range(n):\n    num = int(input())\n    if num % 7 == 1:\n        kol += 1\nif kol == 0:\n    print(\"NO\")\nelse:\n    print(kol)"], ["FIPI. Наибольшее: 7-ричная последняя цифра нечётная", "for + max + num%7", "Наибольший элемент, чья 7-ричная запись оканчивается нечётной цифрой.", "6\n12\n15\n10\n71\n50\n11", "71", "n = int(input())\nmax_val = 0\nfor i in range(n):\n    num = int(input())\n    r = num % 7\n    if r % 2 == 1 and num > max_val:\n        max_val = num\nif max_val == 0:\n    print(\"NO\")\nelse:\n    print(max_val)"], ["FIPI. Среднее: 7-ричная последняя цифра нечётная", "for + average + f-string", "Среднее арифметическое элементов с нечётной последней 7-ричной цифрой.", "6\n12\n15\n10\n71\n50\n11", "31.6", "n = int(input())\nsm = 0\nkol = 0\nfor i in range(n):\n    num = int(input())\n    r = num % 7\n    if r % 2 == 1:\n        sm += num\n        kol += 1\nif kol == 0:\n    print(\"NO\")\nelse:\n    print(f\"{sm / kol:.1f}\")"], ["FIPI. Сумма: 7-ричная последняя цифра 3", "while + sum + num%7", "Сумма элементов, чья 7-ричная запись оканчивается цифрой 3; до 0.", "33\n63\n17\n24\n53\n0", "99", "sm = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    if num % 7 == 3:\n        sm += num\nprint(sm)"], ["FIPI. Количество: 7-ричная последняя цифра 2", "while + count + num%7", "Количество элементов, чья 7-ричная запись оканчивается цифрой 2; до 0.", "37\n22\n16\n25\n42\n0", "2", "kol = 0\nwhile True:\n    num = int(input())\n    if num == 0:\n        break\n    if num % 7 == 2:\n        kol += 1\nprint(kol)"], ["FIPI. Наименьшее: 9-ричная последняя цифра 1", "for + min + num%9", "Наименьший элемент, чья 9-ричная запись оканчивается цифрой 1.", "5\n10\n9\n11\n91\n28", "10", "n = int(input())\nmin_val = 30001\nfor i in range(n):\n    num = int(input())\n    if num % 9 == 1 and num < min_val:\n        min_val = num\nprint(min_val)"]];
+
+function err(m){throw new Error(m)}
+function py(v){return v && v.__py ? v.v : v}
+function P(v,t){return {__py:true,v:v,t:t||'int'}}
+function ps(v){
+  if(v && v.__py){
+    if(v.t==='float' && Number.isInteger(v.v)) return v.v.toFixed(1);
+    return String(v.v)
+  }
+  if(typeof v==='boolean') return v?'True':'False'
+  if(v===null) return 'None'
+  return String(v)
+}
+function parseString(s){
+  if((s[0]==='"'&&s[s.length-1]==='"')||(s[0]==="'"&&s[s.length-1]==="'")){
+    return s.slice(1,-1).replace(/\\n/g,'\n').replace(/\\"/g,'"').replace(/\\'/g,"'")
+  }
+  return null
+}
+function splitParts(s,sep=','){
+  let a=[],cur='',d=0,q=null;
+  for(let i=0;i<s.length;i++){
+    let c=s[i];
+    if(q){cur+=c;if(c===q&&s[i-1]!=='\\')q=null;continue}
+    if(c==="'"||c==='"'){q=c;cur+=c;continue}
+    if('([{'.includes(c))d++; if(')]}'.includes(c))d--;
+    if(c===sep&&d===0){a.push(cur.trim());cur='';} else cur+=c
+  }
+  if(cur.trim()||s.endsWith(sep))a.push(cur.trim())
+  return a
+}
+function findOp(s,ops){
+  let d=0,q=null;
+  for(let i=s.length-1;i>=0;i--){
+    let c=s[i];
+    if(q){if(c===q&&s[i-1]!=='\\')q=null;continue}
+    if(c==="'"||c==='"'){q=c;continue}
+    if(')]}'.includes(c))d++; if('([{'.includes(c))d--;
+    if(d===0){
+      for(const op of ops){
+        let st=i-op.length+1;
+        if(st>=0&&s.slice(st,i+1)===op)return {i:st,op}
+      }
+    }
+  }
+  return null
+}
+function evalF(s,env,input){
+  let body=s.slice(2,-1),out='';
+  for(let i=0;i<body.length;){
+    if(body[i]==='{'){
+      let j=i+1,d=1;
+      while(j<body.length&&d){if(body[j]==='{')d++; else if(body[j]==='}')d--; if(d)j++}
+      if(d)err('Незакрытая f-строка')
+      let inside=body.slice(i+1,j), z=inside.split(':'), v=E(z[0],env,input), fmt=z[1]
+      let text=ps(v)
+      if(fmt){let m=fmt.match(/^\.(\d+)f$/);if(m)text=Number(py(v)).toFixed(Number(m[1]))}
+      out+=text;i=j+1
+    }else{out+=body[i];i++}
+  }
+  return out
+}
+function E(s,env,input){
+  s=s.trim()
+  let st=parseString(s); if(st!==null)return st
+  if(/^f(["']).*\1$/.test(s))return evalF(s,env,input)
+  if(/^[-+]?\d+\.\d+$/.test(s))return P(Number(s),'float')
+  if(/^[-+]?\d+$/.test(s))return P(Number(s),'int')
+  if(s==='True')return true
+  if(s==='False')return false
+  if(s==='input()')return input()
+  let names=['or'],found;
+  for(const op of names){found=findOp(s,[op]);if(found){let l=E(s.slice(0,found.i),env,input);return py(l)||py(E(s.slice(found.i+op.length),env,input))}}
+  found=findOp(s,['and']);if(found){let l=E(s.slice(0,found.i),env,input);return Boolean(py(l))&&Boolean(py(E(s.slice(found.i+3),env,input)))}
+  found=findOp(s,['==','!=','<=','>=','<','>']);if(found){
+    let a=E(s.slice(0,found.i),env,input),b=E(s.slice(found.i+found.op.length),env,input),av=py(a),bv=py(b)
+    if(found.op==='==')return av===bv
+    if(found.op==='!=')return av!==bv
+    if(found.op==='<')return av<bv
+    if(found.op==='>')return av>bv
+    if(found.op==='<=')return av<=bv
+    return av>=bv
+  }
+  found=findOp(s,['+','-']);if(found){
+    let op=found.op,a=E(s.slice(0,found.i),env,input),b=E(s.slice(found.i+1),env,input)
+    if(typeof a==='string'||typeof b==='string'){if(op==='+')return ps(a)+ps(b);err('Нельзя выполнить эту операцию со строкой')}
+    return P(py(a)+(op==='+'?py(b):-py(b)),(a.t==='float'||b.t==='float')?'float':'int')
+  }
+  found=findOp(s,['**','*','/','//','%']);if(found){
+    let op=found.op,a=E(s.slice(0,found.i),env,input),b=E(s.slice(found.i+op.length),env,input)
+    if(op==='*'&&(typeof a==='string'||typeof b==='string')){let str=typeof a==='string'?a:b, n=Math.trunc(py(typeof a==='string'?b:a));return str.repeat(Math.max(0,n))}
+    let av=py(a),bv=py(b); if((op==='/'||op==='//'||op==='%')&&bv===0)err('Деление на ноль')
+    if(op==='*')return P(av*bv,'int')
+    if(op==='/')return P(av/bv,'float')
+    if(op==='//')return P(Math.floor(av/bv),'int')
+    if(op==='%')return P(((av%bv)+bv)%bv,'int')
+    return P(Math.pow(av,bv),'int')
+  }
+  if(/^int\(.+\)$/.test(s)){let q=s.slice(4,-1),v=E(q,env,input);return P(parseInt(ps(v),10),'int')}
+  if(/^float\(.+\)$/.test(s)){let q=s.slice(6,-1),v=E(q,env,input);return P(parseFloat(ps(v)),'float')}
+  if(/^str\(.+\)$/.test(s)){let q=s.slice(4,-1),v=E(q,env,input);return ps(v)}
+  if(/^abs\(.+\)$/.test(s)){let q=s.slice(4,-1);return P(Math.abs(py(E(q,env,input))),'int')}
+  if(/^round\(.+\)$/.test(s)){let q=s.slice(6,-1);return P(Math.round(py(E(q,env,input))),'int')}
+  if(/^range\(.+\)$/.test(s)){
+    let a=splitParts(s.slice(6,-1)).map(x=>py(E(x,env,input))),start=0,stop=0,step=1
+    if(a.length===1)stop=a[0]; else {start=a[0];stop=a[1];if(a[2]!==undefined)step=a[2]}
+    if(step===0)err('range с шагом 0')
+    let arr=[];if(step>0)for(let x=start;x<stop;x+=step)arr.push(P(x));else for(let x=start;x>stop;x+=step)arr.push(P(x))
+    return arr
+  }
+  if(s[0]==='['&&s[s.length-1]===']')return splitParts(s.slice(1,-1)).filter(Boolean).map(x=>E(x,env,input))
+  if(Object.prototype.hasOwnProperty.call(env,s))return env[s]
+  err('Неизвестное выражение: '+s)
+}
+function assign(line,env,input){
+  let m=line.match(/^([A-Za-z_]\w*)\s*(=|\+=|-=|\*=|\/=|\/\/=|%=)\s*(.+)$/);if(!m)return false
+  let n=m[1],op=m[2],v=E(m[3],env,input)
+  if(op==='=')env[n]=v
+  else {let a=env[n],av=py(a),bv=py(v);if(op=='+=')env[n]=P(av+bv,(a.t==='float'||v.t==='float')?'float':'int');else if(op==='-=')env[n]=P(av-bv,(a.t==='float'||v.t==='float')?'float':'int');else if(op==='*=')env[n]=P(av*bv,(a.t==='float'||v.t==='float')?'float':'int');else if(op==='/=')env[n]=P(av/bv,'float');else if(op==='//=')env[n]=P(Math.floor(av/bv),'int');else env[n]=P(av%bv,'int')}
+  return true
+}
+function parsePrint(line,env,input,emit){
+  let inside=line.slice(6,-1),parts=splitParts(inside),args=[],sep=' ',end='\n'
+  for(const p of parts){if(!p)continue;let m=p.match(/^(sep|end)\s*=\s*(.+)$/);if(m){let v=E(m[2],env,input);if(m[1]==='sep')sep=ps(v);else end=ps(v)}else args.push(E(p,env,input))}
+  emit(args.map(ps).join(sep)+end)
+}
+function normLines(code){
+  return code.replace(/\r/g,'').split('\n').map((raw,idx)=>{
+    const lead=(raw.match(/^\s*/)||[''])[0];
+    const expanded=lead.replace(/\t/g,'    ');
+    const spaces=expanded.length;
+    // Учебный редактор использует Tab. При ручном вводе 1–4 пробелов
+    // тоже считаем это одним уровнем, чтобы ребёнок не получал
+    // бессмысленную ошибку только из-за количества пробелов.
+    const indent=spaces===0 ? 0 : Math.ceil(spaces/4);
+    return {raw,txt:raw.replace(/#.*$/,'').trimEnd(),indent,no:idx+1};
+  }).filter(x=>x.txt.trim())
+}
+function normalizeIndentation(code){
+  return code.replace(/\r/g,'').split('\n').map(line=>{
+    if(/^\s*$/.test(line)) return '';
+    const lead=(line.match(/^\s*/)||[''])[0].replace(/\t/g,'    ');
+    const spaces=lead.length;
+    const level=spaces===0?0:Math.ceil(spaces/4);
+    return '\t'.repeat(level)+line.trimStart();
+  }).join('\n');
+}
+function runCode(code,inputText){
+  code=normalizeIndentation(code);
+  const L=normLines(code),env={},inp=inputText.replace(/\r/g,'').split('\n'),state={p:0,out:''}
+  const input=()=>{if(state.p>=inp.length)err('Не хватает данных для input()');return inp[state.p++]}
+  function endBlock(i,ind){while(i<L.length&&L[i].indent>ind)i++;return i}
+  function execBlock(a,b,ind){
+    let i=a
+    while(i<b){
+      const x=L[i];if(x.indent<ind)return {i,signal:null};if(x.indent>ind)err('Проверь отступы около строки '+x.no)
+      let s=x.txt.trim()
+      if(s==='break')return {i:i+1,signal:'break'}
+      if(s==='continue')return {i:i+1,signal:'continue'}
+      if(s.startsWith('print(')&&s.endsWith(')')){parsePrint(s,env,input,s=>state.out+=s);i++;continue}
+      if(assign(s,env,input)){i++;continue}
+      let m=s.match(/^if\s+(.+):$/)
+      if(m){
+        let j=i,branches=[]
+        while(j<b&&L[j].indent===ind&&(L[j].txt.trim().match(/^(if|elif)\s+.+:$/))){
+          let mm=L[j].txt.trim().match(/^(if|elif)\s+(.+):$/),bs=j+1,be=endBlock(bs,ind);branches.push({kind:mm[1],cond:mm[2],a:bs,b:be});j=be
+          if(j<b&&L[j].indent===ind&&L[j].txt.trim()==='else:'){let es=j+1,ee=endBlock(es,ind);branches.push({kind:'else',a:es,b:ee});j=ee}
+          break
+        }
+        let sig=null
+        for(const br of branches){if(br.kind==='else'||Boolean(E(br.cond,env,input))){let r=execBlock(br.a,br.b,ind+1);sig=r.signal;break}}
+        if(sig)return {i:j,signal:sig};i=j;continue
+      }
+      m=s.match(/^for\s+([A-Za-z_]\w*)\s+in\s+(.+):$/)
+      if(m){
+        let iterable=E(m[2],env,input),bs=i+1,be=endBlock(bs,ind),j=be,hasElse=false,es=0,ee=0
+        if(j<b&&L[j].indent===ind&&L[j].txt.trim()==='else:'){hasElse=true;es=j+1;ee=endBlock(es,ind);j=ee}
+        let broke=false,sig=null
+        for(const it of iterable){env[m[1]]=it;let r=execBlock(bs,be,ind+1);if(r.signal==='break'){broke=true;break}if(r.signal==='continue')continue;if(r.signal){sig=r.signal;break}}
+        if(sig)return {i:j,signal:sig};if(hasElse&&!broke){let r=execBlock(es,ee,ind+1);if(r.signal)return {i:j,signal:r.signal}}i=j;continue
+      }
+      m=s.match(/^while\s+(.+):$/)
+      if(m){
+        let bs=i+1,be=endBlock(bs,ind),guard=0,broke=false,sig=null
+        while(Boolean(E(m[1],env,input))){if(++guard>10000)err('Слишком много повторений while');let r=execBlock(bs,be,ind+1);if(r.signal==='break'){broke=true;break}if(r.signal==='continue')continue;if(r.signal){sig=r.signal;break}}
+        if(sig)return {i:be,signal:sig};i=be;continue
+      }
+      err('Не поддерживается строка '+x.no+': '+s)
+    }
+    return {i,signal:null}
+  }
+  execBlock(0,L.length,L.length?L[0].indent:0)
+  return state.out||'(нет вывода)'
+}
+
+
+const nav=document.getElementById('nav'),work=document.getElementById('work'),editor=document.getElementById('editor'),stdin=document.getElementById('stdin'),out=document.getElementById('output'),fill=document.getElementById('fill'),pt=document.getElementById('pt');
+let cur=Number(localStorage.getItem('pyTutorCur')||0),done=new Set(JSON.parse(localStorage.getItem('pyTutorDone')||'[]')),bank='tasks',task=-1;
+
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function save(){localStorage.setItem('pyTutorCur',cur);localStorage.setItem('pyTutorDone',JSON.stringify([...done]));renderNav();let p=Math.round(done.size/LESSONS.length*100);fill.style.width=p+'%';pt.textContent=done.size+' / '+LESSONS.length}
+function renderNav(){
+ nav.innerHTML='';
+ LESSONS.forEach((l,i)=>{let b=document.createElement('button');b.textContent=(i+1)+'  '+l.title.replace(/^\d+\. /,'')+(done.has(i)?' ✓':'');b.dataset.lesson=i;b.className=(i===cur?'active ':'')+(done.has(i)?'done':'');nav.appendChild(b)});
+
+}
+function renderLesson(){
+ task=-1;
+ const l=LESSONS[cur];work.innerHTML='<div class="kicker">Шаг '+(cur+1)+' из '+LESSONS.length+'</div><h1>'+esc(l.title)+'</h1><div class="lead">'+esc(l.goal)+'</div><div class="card"><div class="explain">'+esc(l.explain)+'</div><div class="code">'+esc(l.example)+'</div></div><div id="tests"></div><div class="card"><b>Мини-практика</b><div class="sub">'+esc(l.practice.task)+'</div><div class="actions"><button class="secondary" data-loadpractice>Перенести код в окошко</button><button class="primary" data-checkpractice>Проверить</button></div><div id="pfb" class="fb"></div></div><div class="actions"><button class="primary" id="next" disabled>Следующее задание →</button></div><div id="stepfb" class="fb"></div>';
+ const tests=document.getElementById('tests');
+ l.tests.forEach((t,i)=>{
+   let card=document.createElement('div');card.className='card';
+   let q=document.createElement('div');q.className='q';q.textContent=(i+1)+'. '+t.q;card.appendChild(q);
+   if(t.code){let c=document.createElement('div');c.className='code';c.textContent=t.code;card.appendChild(c)}
+   let opts=document.createElement('div');opts.className='opts';card.appendChild(opts);
+   let fb=document.createElement('div');fb.className='fb';fb.id='fb'+i;card.appendChild(fb);
+   t.opts.forEach(o=>{let b=document.createElement('button');b.className='opt';b.textContent=o;b.dataset.ans=(o===t.ans);b.dataset.i=i;opts.appendChild(b)});
+   tests.appendChild(card)
+ });
+ editor.value='';stdin.value=l.practice.stdin;out.textContent='Напиши решение сам. Ввод бери из окошка «Данные для input()». Кнопка «Перенести код в окошко» оставлена для разбора образца.';
+}
+function lessonPassed(){return [...document.querySelectorAll('#tests .fb')].every(x=>x.classList.contains('good'))}
+work.addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.loadpractice!==undefined){let l=LESSONS[cur];editor.value=l.practice.code;stdin.value=l.practice.stdin;out.textContent='Код мини-практики перенесён.';editor.focus();return}
+ if(b.dataset.checkpractice!==undefined){let l=LESSONS[cur],ok=tryRun(l.practice.expected),fb=document.getElementById('pfb');fb.textContent=ok?'Мини-задание выполнено ✓':'Результат не совпал. Сначала посмотри на типы, условие и действие.';fb.className='fb '+(ok?'good':'bad');return}
+ if(b.id==='next'&&!b.disabled){cur=Math.min(LESSONS.length-1,cur+1);save();renderLesson();return}
+ 
+ if(b.dataset.show!==undefined){document.getElementById('ans').classList.add('show');return}
+ if(b.dataset.copy!==undefined){let t=(bank==='tasks'?TASKS:EXTRA)[task];editor.value=normalizeIndentation(t[5]);stdin.value=t[3];out.textContent='Код из материала перенесён в редактор. Отступы автоматически переведены в Tab.';editor.focus();return}
+ if(b.dataset.check!==undefined){let t=(bank==='tasks'?TASKS:EXTRA)[task],ok=tryRun(t[4]),fb=document.getElementById('tfb');fb.textContent=ok?'Пример пройден ✓ Проверь ещё один ввод.':'Вывод не совпал с образцом.';fb.className='fb '+(ok?'good':'bad');return}
+ if(b.dataset.bankmode){bank=b.dataset.bankmode;renderBank();return}
+ if(b.dataset.backbank!==undefined){renderBank();return}
+ if(b.dataset.task!==undefined){task=Number(b.dataset.task);renderTask(task);return}
+});
+work.addEventListener('click',e=>{
+ const b=e.target.closest('.opt');if(!b)return;const card=b.closest('.card'),i=b.dataset.i,fb=document.getElementById('fb'+i);
+ card.querySelectorAll('.opt').forEach(x=>x.classList.remove('selected','correct','wrong'));b.classList.add('selected');
+ if(b.dataset.ans==='true'){b.classList.add('correct');fb.textContent='Верно ✓';fb.className='fb good'}else{b.classList.add('wrong');fb.textContent='Нет. Прочитай вопрос ещё раз и сравни только предложенные варианты.';fb.className='fb bad'}
+ if(lessonPassed()){done.add(cur);save();let n=document.getElementById('next');n.disabled=false;document.getElementById('stepfb').textContent='Шаг засчитан ✓';document.getElementById('stepfb').className='fb good'}
+});
+nav.addEventListener('click',e=>{let b=e.target.closest('button');if(!b)return;if(b.dataset.lesson!==undefined){cur=Number(b.dataset.lesson);save();renderLesson()}if(b.dataset.bank==='open'){bank='tasks';renderBank()}});
+function renderBank(){
+ work.innerHTML='<div class="kicker">Практика</div><h1>Банк задач</h1><div class="lead">31 задача из занятия и отдельный набор вариантов. Сначала решай сам; код образца можно перенести одной кнопкой.</div><div class="actions"><button class="secondary" data-bankmode="tasks">31 задача</button><button class="secondary" data-bankmode="extra">Варианты FIPI</button></div><div id="list"></div>';
+ let list=bank==='tasks'?TASKS:EXTRA,root=document.getElementById('list');
+ list.forEach((t,i)=>{let d=document.createElement('div');d.className='card';d.innerHTML='<div><b>'+esc(t[0])+'</b> <span class="tag">'+esc(t[1])+'</span></div><div class="sub">'+esc(t[2])+'</div><div class="sample"><b>Вход</b><pre>'+esc(t[3])+'</pre><b>Ожидаемый вывод</b><pre>'+esc(t[4])+'</pre></div><button class="secondary" data-task="'+i+'">Открыть</button>';root.appendChild(d)})
+}
+function renderTask(i){
+ task=i;let t=(bank==='tasks'?TASKS:EXTRA)[i];
+ work.innerHTML='<div class="kicker">Задача</div><h1>'+esc(t[0])+'</h1><div class="lead">'+esc(t[2])+'</div><div class="sample"><b>Пример входа</b><pre>'+esc(t[3])+'</pre><b>Ожидаемый вывод</b><pre>'+esc(t[4])+'</pre></div><div class="card"><b>Код из материала</b><div class="sub">Сначала попробуй сам.</div><div class="actions"><button class="secondary" data-show>Показать код</button><button class="primary" data-copy>Скопировать код в окошко</button></div><div id="ans" class="answer"><div class="code">'+esc(normalizeIndentation(t[5]))+'</div></div></div><div class="actions"><button class="secondary" data-backbank>← Банк</button><button class="primary" data-check>Проверить решение</button></div><div id="tfb" class="fb"></div>';
+ editor.value='';stdin.value=t[3];out.textContent='Собери решение сам с помощью input(). Данные для input() уже находятся в окошке справа.'
+}
+function tryRun(expected){
+ try{let r=runCode(editor.value,stdin.value).trim();out.textContent=r;return r===String(expected).trim()}catch(e){out.textContent='Ошибка: '+e.message;return false}
+}
+document.getElementById('run').addEventListener('click',()=>{try{out.textContent=runCode(editor.value,stdin.value)}catch(e){out.textContent='Ошибка: '+e.message}})
+document.getElementById('clear').addEventListener('click',()=>{editor.value='';stdin.value='';out.textContent=''})
+editor.addEventListener('keydown',e=>{
+  if(e.key==='Tab'){
+    e.preventDefault();
+    const start=editor.selectionStart, end=editor.selectionEnd, text=editor.value;
+    const before=text.slice(0,start), selected=text.slice(start,end);
+    if(e.shiftKey){
+      if(start===end){
+        const lineStart=before.lastIndexOf('\n')+1;
+        const line=before.slice(lineStart);
+        if(line.startsWith('\t')){
+          editor.setRangeText('',lineStart,lineStart+1,'end');
+        }else if(/^ {1,4}/.test(line)){
+          const n=Math.min(4,line.match(/^ +/)[0].length);
+          editor.setRangeText('',lineStart,lineStart+n,'end');
+        }
+      }else{
+        const ls=before.lastIndexOf('\n')+1, first=before.slice(0,ls);
+        const block=text.split('\n');
+        let pos=ls;
+        for(let i=0;i<block.length;i++){
+          if(editor.value.slice(pos,pos+1)==='\t') editor.setRangeText('',pos,pos+1,'end');
+          else if(editor.value.slice(pos,pos+4)==='    ') editor.setRangeText('',pos,pos+4,'end');
+          pos=editor.value.indexOf('\n',pos)+1;
+          if(pos===0) break;
+        }
+      }
+    }else{
+      editor.setRangeText('\t',start,end,'end');
+    }
+    return;
+  }
+  if(e.key==='Enter'){
+    // Автоматически продолжаем текущий таб-отступ.
+    e.preventDefault();
+    const start=editor.selectionStart;
+    const lineStart=editor.value.lastIndexOf('\n',start-1)+1;
+    const line=editor.value.slice(lineStart,start);
+    const indent=(line.match(/^\t*/)||[''])[0];
+    const textBefore=line.trimEnd();
+    const extra=textBefore.endsWith(':') ? '\t' : '';
+    editor.setRangeText('\n'+indent+extra,start,editor.selectionEnd,'end');
+    return;
+  }
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){
+    e.preventDefault();
+    try{out.textContent=runCode(editor.value,stdin.value)}catch(x){out.textContent='Ошибка: '+x.message}
+  }
+})
+
+renderNav();renderLesson();save();
+</script>
+</body>
+</html>

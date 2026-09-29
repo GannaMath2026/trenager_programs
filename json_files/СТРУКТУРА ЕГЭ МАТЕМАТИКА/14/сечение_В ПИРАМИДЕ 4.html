@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3D тренажёр — сечение четырёхугольной пирамиды методом следов</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;font-family:Calibri,Arial,sans-serif;background:#10151b;color:#e9eef3}
+#app{height:100%;display:grid;grid-template-columns:330px 1fr}
+aside{padding:18px 16px;background:#151b22;border-right:1px solid #2c3540;overflow:auto}
+h1{font-size:20px;margin:0 0 8px}
+.sub{font-size:13px;color:#aeb8c3;line-height:1.35;margin-bottom:16px}
+.step{border:1px solid #303a46;border-radius:10px;padding:11px;margin:9px 0;background:#19212a}
+.step b{display:block;margin-bottom:6px}
+.hint{font-size:12px;color:#aeb8c3;line-height:1.4}
+.row{display:flex;gap:7px;margin-top:9px}
+button{border:1px solid #45515e;background:#222c36;color:#eef3f7;border-radius:8px;padding:8px 10px;cursor:pointer}
+button:hover{background:#2b3743}
+button:disabled{opacity:.38;cursor:not-allowed}
+button.active{border-color:#ffd84d;background:#3a3420}
+#status{margin-top:12px;padding:10px;border-radius:9px;background:#10161d;border:1px solid #303a46;font-size:13px;line-height:1.35}
+.note{font-size:11px;color:#8e9aa6;margin-top:10px;line-height:1.4}
+#legend{margin-top:14px;font-size:12px;color:#adb8c3}
+.legend{margin:6px 0;display:flex;align-items:center;gap:7px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+#view{position:relative}
+canvas{display:block;width:100%;height:100%}
+#tip{position:absolute;left:15px;bottom:15px;padding:7px 10px;background:rgba(12,17,22,.72);border:1px solid #35404c;border-radius:7px;font-size:12px;color:#bfc8d0}
+</style>
+</head>
+<body>
+<div id="app">
+<aside>
+<h1>Сечение четырёхугольной пирамиды</h1>
+<div class="sub">
+Метод следов. Точки сечения задаются на рёбрах пирамиды. Если на нужной грани нет двух точек, используются внутренние вспомогательные грани: диагональ основания + вершина пирамиды.
+</div>
+
+<div class="step">
+<b>1. Задайте точки сечения</b>
+<div class="hint">Поставьте P₁, P₂ и P₃. Этого достаточно для построения плоскости. P₄ — дополнительная точка, её можно добавить при необходимости.</div>
+<div class="row">
+<button id="p1Btn">P₁</button><button id="p2Btn" disabled>P₂</button>
+</div>
+<div class="row">
+<button id="p3Btn" disabled>P₃</button><button id="p4Btn" disabled>P₄ (доп.)</button>
+</div>
+</div>
+
+<div class="step">
+<b>2. Метод следов</b>
+<div class="hint">
+На каждой боковой грани строится след плоскости сечения. Если двух точек на грани нет, используются внутренние треугольные грани, проходящие через вершину пирамиды и диагональ основания. Их пересечения с уже найденными следами позволяют переносить след на противоположное боковое ребро.
+</div>
+<button id="build" disabled>Построить сечение</button>
+</div>
+
+<button id="move" disabled>Режим движения: ВЫКЛ</button>
+<button id="reset">Начать заново</button>
+
+<div id="status">Шаг 1: поставьте P₁.</div>
+
+<div id="legend">
+<div class="legend"><span class="dot" style="background:#ff4b4b"></span> заданные точки</div>
+<div class="legend"><span class="dot" style="background:#ffd84d"></span> сечение</div>
+<div class="legend"><span class="dot" style="background:#c8cdd2"></span> следы и вспомогательные продолжения</div>
+<div class="legend"><span class="dot" style="background:#71c8ff"></span> внутренние диагональные грани</div>
+</div>
+</aside>
+
+<div id="view">
+<div id="tip">ЛКМ — вращение · колесо — масштаб · в режиме движения тяните точки</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script>
+const view=document.querySelector('#view');
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x10151b);
+
+const camera=new THREE.PerspectiveCamera(42,1,.1,100);
+camera.position.set(5.8,4.2,6.4);
+
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+
+view.appendChild(renderer.domElement);
+
+renderer.domElement.addEventListener('pointerdown',e=>{
+ if(e.button!==0 || S.moving)return;
+ rotating=true;lastX=e.clientX;lastY=e.clientY;
+ renderer.domElement.setPointerCapture(e.pointerId);
+});
+renderer.domElement.addEventListener('pointermove',e=>{
+ if(!rotating)return;
+ const dx=e.clientX-lastX,dy=e.clientY-lastY;
+ lastX=e.clientX;lastY=e.clientY;
+ camAzimuth-=dx*.008;
+ camElevation=THREE.MathUtils.clamp(camElevation+dy*.008,-1.15,1.25);
+ updateCamera();
+});
+renderer.domElement.addEventListener('pointerup',e=>{
+ rotating=false;
+ try{renderer.domElement.releasePointerCapture(e.pointerId)}catch(_){}
+});
+renderer.domElement.addEventListener('pointercancel',()=>rotating=false);
+renderer.domElement.addEventListener('wheel',e=>{
+ e.preventDefault();
+ camDistance=THREE.MathUtils.clamp(camDistance*Math.exp(e.deltaY*.001),4,15);
+ updateCamera();
+},{passive:false});
+
+// Панорамирование холста: средняя или правая кнопка мыши.
+let panning=false,panLastX=0,panLastY=0;
+
+renderer.domElement.addEventListener('pointerdown',e=>{
+ if((e.button===1 || e.button===2) && !S.moving){
+  panning=true;
+  panLastX=e.clientX;
+  panLastY=e.clientY;
+  renderer.domElement.setPointerCapture(e.pointerId);
+  e.preventDefault();
+ }
+});
+renderer.domElement.addEventListener('pointermove',e=>{
+ if(!panning)return;
+ const dx=e.clientX-panLastX;
+ const dy=e.clientY-panLastY;
+ panLastX=e.clientX;
+ panLastY=e.clientY;
+
+ const scale=camDistance*.0022;
+ const right=new THREE.Vector3(1,0,0);
+ const up=new THREE.Vector3(0,1,0);
+
+ // Направления камеры в горизонтальной плоскости.
+ right.applyQuaternion(camera.quaternion).setY(0).normalize();
+ up.set(0,1,0);
+
+ controls.target.addScaledVector(right,-dx*scale);
+ controls.target.addScaledVector(up,dy*scale);
+ updateCamera();
+});
+renderer.domElement.addEventListener('pointerup',e=>{
+ if(panning){
+  panning=false;
+  try{renderer.domElement.releasePointerCapture(e.pointerId)}catch(_){}
+ }
+});
+renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
+
+
+camera.lookAt(0,.35,0);
+
+// Встроенное управление камерой — без внешнего OrbitControls.
+const controls={
+ target:new THREE.Vector3(0,.35,0),
+ enabled:true,
+ update(){}
+};
+
+let camAzimuth=.78;
+let camElevation=.62;
+let camDistance=8.0;
+let rotating=false,lastX=0,lastY=0;
+
+function updateCamera(){
+ const ce=Math.cos(camElevation);
+ camera.position.set(
+  controls.target.x+camDistance*ce*Math.sin(camAzimuth),
+  controls.target.y+camDistance*Math.sin(camElevation),
+  controls.target.z+camDistance*ce*Math.cos(camAzimuth)
+ );
+ camera.lookAt(controls.target);
+}
+updateCamera();
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x33404c,1.35));
+const dl=new THREE.DirectionalLight(0xffffff,1.5);
+dl.position.set(4,7,5);scene.add(dl);
+
+const V={
+ A:new THREE.Vector3(-1.35,-1,-1.35),
+ B:new THREE.Vector3( 1.35,-1,-1.35),
+ C:new THREE.Vector3( 1.35,-1, 1.35),
+ D:new THREE.Vector3(-1.35,-1, 1.35),
+ S:new THREE.Vector3(0,2.05,0)
+};
+
+const edgeDefs=[
+ ['AB','A','B'],['BC','B','C'],['CD','C','D'],['DA','D','A'],
+ ['SA','S','A'],['SB','S','B'],['SC','S','C'],['SD','S','D']
+].map(([name,a,b])=>({name,a,b,p1:V[a].clone(),p2:V[b].clone()}));
+
+const baseDiagDefs=[
+ ['AC','A','C'],['BD','B','D']
+].map(([name,a,b])=>({name,a,b,p1:V[a].clone(),p2:V[b].clone()}));
+
+const faces=[
+ {name:'SAB',verts:['S','A','B'],edges:['SA','AB','SB']},
+ {name:'SBC',verts:['S','B','C'],edges:['SB','BC','SC']},
+ {name:'SCD',verts:['S','C','D'],edges:['SC','CD','SD']},
+ {name:'SDA',verts:['S','D','A'],edges:['SD','DA','SA']},
+ {name:'ABCD',verts:['A','B','C','D'],edges:['AB','BC','CD','DA']}
+];
+
+const edgeMeshes=[],hitMeshes=[];
+edgeDefs.forEach((e,i)=>{
+ const g=new THREE.BufferGeometry().setFromPoints([e.p1,e.p2]);
+ const l=new THREE.Line(g,new THREE.LineBasicMaterial({color:0x778592,transparent:true,opacity:.9,depthTest:false,depthWrite:false}));
+ l.renderOrder=20;scene.add(l);edgeMeshes.push(l);
+
+ const mid=e.p1.clone().add(e.p2).multiplyScalar(.5);
+ const dir=e.p2.clone().sub(e.p1);
+ const hg=new THREE.CylinderGeometry(.12,.12,dir.length(),10);
+ const hm=new THREE.Mesh(hg,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}));
+ hm.position.copy(mid);
+ hm.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize());
+ hm.userData.edge=i;
+ scene.add(hm);hitMeshes.push(hm);
+});
+
+const base=new THREE.Mesh(
+ new THREE.BufferGeometry().setFromPoints([V.A,V.B,V.C,V.D,V.A]),
+ new THREE.LineBasicMaterial({color:0x87939e,transparent:true,opacity:.8})
+);
+scene.add(base);
+const baseFillGeom=new THREE.BufferGeometry();
+baseFillGeom.setAttribute('position',new THREE.Float32BufferAttribute([
+ ...V.A.toArray(),...V.B.toArray(),...V.C.toArray(),
+ ...V.A.toArray(),...V.C.toArray(),...V.D.toArray()
+],3));
+const baseFill=new THREE.Mesh(baseFillGeom,new THREE.MeshBasicMaterial({
+ color:0x344454,transparent:true,opacity:.30,side:THREE.DoubleSide,depthWrite:false
+}));
+baseFill.renderOrder=4;scene.add(baseFill);
+
+
+const faceMats=[];
+faces.forEach(f=>{
+ const geom=new THREE.BufferGeometry();
+ const a=V[f.verts[0]],b=V[f.verts[1]],c=V[f.verts[2]];
+ geom.setAttribute('position',new THREE.Float32BufferAttribute([
+  ...a.toArray(),...b.toArray(),...c.toArray()
+ ],3));
+ geom.computeVertexNormals();
+ const mesh=new THREE.Mesh(geom,new THREE.MeshBasicMaterial({
+  color:0x344454,transparent:true,opacity:.34,side:THREE.DoubleSide,depthWrite:false
+ }));
+ mesh.renderOrder=5;scene.add(mesh);faceMats.push(mesh);
+});
+
+
+// Явная каркасная модель пирамиды
+const pyramidGroup=new THREE.Group();
+pyramidGroup.renderOrder=15;
+scene.add(pyramidGroup);
+
+function addPyramidEdge(a,b,color=0x9aa6b1,width=1.8){
+ const l=lineObj(a,b,color,false,.95,width);
+ l.renderOrder=18;
+ pyramidGroup.add(l);
+}
+
+[
+ ['A','B'],['B','C'],['C','D'],['D','A'],
+ ['S','A'],['S','B'],['S','C'],['S','D']
+].forEach(([a,b])=>addPyramidEdge(V[a],V[b]));
+
+Object.entries(V).forEach(([name,p])=>{
+ const m=pointObj(p,0xdce3e8,.045);
+ m.renderOrder=19;
+ pyramidGroup.add(m);
+
+ const div=document.createElement('div');
+ div.textContent=name;
+ div.style.position='absolute';
+ div.style.color='#ffffff';
+ div.style.fontSize='14px';
+ div.style.fontFamily='Calibri,Arial,sans-serif';
+ div.style.fontWeight='600';
+ div.style.pointerEvents='none';
+ div.style.display='none';
+ view.appendChild(div);
+});
+
+const diagGroup=new THREE.Group();scene.add(diagGroup);
+const specialGroup=new THREE.Group();scene.add(specialGroup);
+const sectionGroup=new THREE.Group();scene.add(sectionGroup);
+const traceGroup=new THREE.Group();scene.add(traceGroup);
+const pointGroup=new THREE.Group();scene.add(pointGroup);
+
+function clearGroup(g){while(g.children.length)g.remove(g.children[g.children.length-1])}
+function lineObj(a,b,color,dash=false,opacity=1,width=1){
+ const g=new THREE.BufferGeometry().setFromPoints([a,b]);
+ const m=dash
+  ?new THREE.LineDashedMaterial({color,transparent:true,opacity,dashSize:.12,gapSize:.09,depthTest:false,depthWrite:false})
+  :new THREE.LineBasicMaterial({color,transparent:true,opacity,depthTest:false,depthWrite:false});
+ const l=new THREE.Line(g,m);l.renderOrder=60;
+ if(dash)l.computeLineDistances();
+ return l;
+}
+function pointObj(p,color,size=.085){
+ const m=new THREE.Mesh(new THREE.SphereGeometry(size,16,10),
+  new THREE.MeshBasicMaterial({color,depthTest:false,depthWrite:false}));
+ m.position.copy(p);m.renderOrder=80;return m;
+}
+function keyPoint(p){return p.toArray().map(x=>x.toFixed(5)).join(',')}
+
+const S={
+ mode:'p1',moving:false,dragging:null,
+ points:{P1:null,P2:null,P3:null,P4:null},
+ edgeInfo:{P1:null,P2:null,P3:null,P4:null}
+};
+const pointColors={P1:0xff4b4b,P2:0xff4b4b,P3:0xff4b4b,P4:0xff4b4b};
+const pointMeshes={};
+
+['P1','P2','P3','P4'].forEach(n=>{
+ const m=pointObj(new THREE.Vector3(),pointColors[n],.105);
+ m.visible=false;m.userData.name=n;pointGroup.add(m);pointMeshes[n]=m;
+});
+
+function pointOnEdge(e,t){return e.p1.clone().lerp(e.p2,t)}
+function ray(evt){
+ const r=renderer.domElement.getBoundingClientRect();
+ const ndc=new THREE.Vector2(
+  (evt.clientX-r.left)/r.width*2-1,
+  -((evt.clientY-r.top)/r.height*2-1)
+ );
+ const rc=new THREE.Raycaster();rc.setFromCamera(ndc,camera);return rc;
+}
+function pickEdge(evt){
+ const hits=ray(evt).intersectObjects(hitMeshes,false);
+ if(!hits.length)return null;
+ const h=hits[0],e=edgeDefs[h.object.userData.edge];
+ const d=e.p2.clone().sub(e.p1);
+ const t=THREE.MathUtils.clamp(h.point.clone().sub(e.p1).dot(d)/d.lengthSq(),0,1);
+ return {edge:h.object.userData.edge,t};
+}
+function setPoint(name,edge,t){
+ const e=edgeDefs[edge];
+ const p=pointOnEdge(e,t);
+ S.points[name]=p;S.edgeInfo[name]={edge,t};
+ pointMeshes[name].position.copy(p);pointMeshes[name].visible=true;
+}
+function place(name,evt){
+ const h=pickEdge(evt);if(!h)return false;
+ setPoint(name,h.edge,h.t);rebuild();return true;
+}
+
+function faceNormal(f){
+ const a=V[f.verts[0]],b=V[f.verts[1]],c=V[f.verts[2]];
+ return new THREE.Vector3().crossVectors(b.clone().sub(a),c.clone().sub(a)).normalize();
+}
+function pointInTriangle(p,a,b,c){
+ const v0=c.clone().sub(a),v1=b.clone().sub(a),v2=p.clone().sub(a);
+ const dot00=v0.dot(v0),dot01=v0.dot(v1),dot02=v0.dot(v2),dot11=v1.dot(v1),dot12=v1.dot(v2);
+ const inv=1/(dot00*dot11-dot01*dot01);
+ const u=(dot11*dot02-dot01*dot12)*inv;
+ const v=(dot00*dot12-dot01*dot02)*inv;
+ return u>=-1e-6&&v>=-1e-6&&u+v<=1+1e-6;
+}
+function linePlaneIntersection(a,b,p,n){
+ const d=b.clone().sub(a),den=n.dot(d);
+ if(Math.abs(den)<1e-9)return null;
+ const t=n.dot(p.clone().sub(a))/den;
+ return {t,p:a.clone().addScaledVector(d,t)};
+}
+function segmentLineIntersection(a,b,c,d){
+ const u=b.clone().sub(a),v=d.clone().sub(c),w=a.clone().sub(c);
+ const n=new THREE.Vector3().crossVectors(u,v);
+ const nn=n.lengthSq();
+ if(nn<1e-10)return null;
+ const t=new THREE.Vector3().crossVectors(w,v).dot(n)/nn;
+ const q=a.clone().addScaledVector(u,t);
+ const dist=Math.abs(q.clone().sub(c).dot(new THREE.Vector3().crossVectors(u,v).normalize()));
+ const s=q.clone().sub(c).dot(v)/v.lengthSq();
+ if(t>=-1e-6&&t<=1+1e-6&&s>=-1e-6&&s<=1+1e-6&&dist<1e-5)return q;
+ return null;
+}
+
+/*
+  Основная идея метода следов:
+  - на боковой грани с двумя точками след = отрезок между ними;
+  - если на грани только одна точка, берём внутреннюю треугольную
+    плоскость S-AC или S-BD;
+  - её пересечение с соседним известным следом даёт внутреннюю точку;
+  - из неё можно продолжить след к противоположному боковому ребру.
+*/
+function getOppositeLateralEdge(edgeName){
+ const opp={SA:'SC',SC:'SA',SB:'SD',SD:'SB'};
+ return opp[edgeName]||null;
+}
+
+function getEdgeByName(name){
+ return edgeDefs.find(e=>e.name===name)||null;
+}
+
+// Ближайшее пересечение двух бесконечных прямых в 3D.
+// Возвращает точку, если линии действительно пересекаются.
+function lineLine3D(a,b,c,d,tol=.0005){
+ const u=b.clone().sub(a);
+ const v=d.clone().sub(c);
+ const w=a.clone().sub(c);
+ const uu=u.dot(u), vv=v.dot(v), uv=u.dot(v);
+ const uw=u.dot(w), vw=v.dot(w);
+ const den=uu*vv-uv*uv;
+ if(Math.abs(den)<1e-10)return null;
+
+ const t=(uv*vw-vv*uw)/den;
+ const q1=a.clone().addScaledVector(u,t);
+ const q2=c.clone().addScaledVector(v,(uv*uw-uu*vw)/den);
+
+ if(q1.distanceTo(q2)>tol)return null;
+ return q1.add(q2).multiplyScalar(.5);
+}
+
+function buildOppositeEdgeConstruction(){
+ clearGroup(specialGroup);
+
+ const i1=S.edgeInfo.P1, i2=S.edgeInfo.P2, i3=S.edgeInfo.P3;
+ if(!i1||!i2||!S.points.P1||!S.points.P2)return;
+
+ const e1=edgeDefs[i1.edge], e2=edgeDefs[i2.edge];
+ const oppositePairs=[['SA','SC'],['SC','SA'],['SB','SD'],['SD','SB']];
+ const isOpposite=oppositePairs.some(([a,b])=>e1.name===a&&e2.name===b);
+ if(!isOpposite)return;
+
+ const P1=S.points.P1, P2=S.points.P2;
+
+ // 1. Отрезок, соединяющий две точки на противоположных боковых рёбрах.
+ const p12=lineObj(P1,P2,0xffd84d,true,1,3.0);
+ p12.renderOrder=121;
+ specialGroup.add(p12);
+
+ // 2. Настоящая высота пирамиды S-O.
+ const O=new THREE.Vector3(
+  (V.A.x+V.B.x+V.C.x+V.D.x)/4,
+  (V.A.y+V.B.y+V.C.y+V.D.y)/4,
+  (V.A.z+V.B.z+V.C.z+V.D.z)/4
+ );
+ const heightLine=lineObj(V.S,O,0xf4f7fa,false,1,5.0);
+ heightLine.renderOrder=122;
+ specialGroup.add(heightLine);
+ specialGroup.add(pointObj(O,0xf4f7fa,.085));
+
+ // 3. T = точное пересечение P1P2 с высотой SO.
+ // Для SA-SC используется плоскость S-A-C, для SB-SD — S-B-D.
+ let A0,B0,C0;
+ if((e1.name==='SA'&&e2.name==='SC')||(e1.name==='SC'&&e2.name==='SA')){
+  A0=V.S; B0=V.A; C0=V.C;
+ }else{
+  A0=V.S; B0=V.B; C0=V.D;
+ }
+ const n=new THREE.Vector3().crossVectors(B0.clone().sub(A0),C0.clone().sub(A0)).normalize();
+ const d12=P2.clone().sub(P1);
+ const den=n.dot(d12);
+ let T=null;
+ if(Math.abs(den)>1e-10){
+  const u=n.dot(A0.clone().sub(P1))/den;
+  if(u>=-1e-6&&u<=1+1e-6) T=P1.clone().addScaledVector(d12,u);
+ }
+ // Проверяем, что полученная точка действительно лежит на высоте.
+ if(T){
+  const h=O.clone().sub(V.S), hh=h.lengthSq();
+  const q=V.S.clone().addScaledVector(h,T.clone().sub(V.S).dot(h)/hh);
+  if(T.distanceTo(q)>0.035)T=null; else T=q;
+ }
+ if(!T)return;
+
+ // 4. Явно ставим точку T.
+ specialGroup.add(pointObj(T,0xffd84d,.20));
+
+ // 5. D-T-E: через третью точку D проводим прямую через T
+ // и получаем E на противоположном боковом ребре.
+ if(i3&&S.points.P3){
+  const D=S.points.P3;
+  const v=T.clone().sub(D);
+  if(v.length()>1e-8){
+   v.normalize();
+
+   // Надёжное пересечение прямой D-T с отрезком противоположного ребра.
+   function intersectLineSegment(lineA,lineDir,segA,segB){
+    const u=lineDir.clone();
+    const w=segB.clone().sub(segA);
+    const r=lineA.clone().sub(segA);
+    const uu=u.dot(u), ww=w.dot(w), uw=u.dot(w);
+    const ur=u.dot(r), wr=w.dot(r);
+    const den=uu*ww-uw*uw;
+    if(Math.abs(den)<1e-10)return null;
+    const t=(uw*wr-ww*ur)/den;
+    const s=(uu*wr-uw*ur)/den;
+    if(s<-1e-5||s>1.00001||t<=1e-5)return null;
+    const q1=lineA.clone().addScaledVector(u,t);
+    const q2=segA.clone().addScaledVector(w,s);
+    if(q1.distanceTo(q2)>.04)return null;
+    return {q:q1.add(q2).multiplyScalar(.5),t,s};
+   }
+
+   let E=null;
+   const opposite=getOppositeLateralEdge(i3.edge);
+   if(opposite){
+    const oe=getEdgeByName(opposite);
+    if(oe){
+     const hit=intersectLineSegment(D,v,oe.p1,oe.p2);
+     if(hit)E=hit.q;
+    }
+   }
+
+   // Если противоположное ребро не определилось, ищем выход линии D-T
+   // на границе боковой поверхности пирамиды.
+   if(!E){
+    const facesToCheck=[
+     ['SAB',['S','A','B']],['SBC',['S','B','C']],
+     ['SCD',['S','C','D']],['SDA',['S','D','A']]
+    ];
+    const hits=[];
+    facesToCheck.forEach(([name,vs])=>{
+     const a=V[vs[0]],b=V[vs[1]],c=V[vs[2]];
+     const fn=new THREE.Vector3().crossVectors(b.clone().sub(a),c.clone().sub(a));
+     const den2=fn.dot(v);
+     if(Math.abs(den2)<1e-10)return;
+     const t=fn.dot(a.clone().sub(D))/den2;
+     if(t<=T.clone().sub(D).dot(v)+.03)return;
+     const q=D.clone().addScaledVector(v,t);
+     if(pointInTriangle(q,a,b,c))hits.push({t,q});
+    });
+    hits.sort((a,b)=>a.t-b.t);
+    if(hits.length)E=hits[0].q;
+   }
+
+   if(E){
+    const DTE=lineObj(D,E,0xffd84d,false,1,4.5);
+    DTE.renderOrder=126;
+    specialGroup.add(DTE);
+    specialGroup.add(pointObj(E,0xffd84d,.18));
+   }else{
+    const DT=lineObj(D,T,0xffd84d,false,1,4.5);
+    DT.renderOrder=126;
+    specialGroup.add(DT);
+   }
+  }
+ }
+
+ // 6. P1-T-P2 рисуем поверх всех вспомогательных линий.
+ const p1t=lineObj(P1,T,0xffd84d,false,1,3.2);
+ const tp2=lineObj(T,P2,0xffd84d,false,1,3.2);
+ p1t.renderOrder=127; tp2.renderOrder=127;
+ specialGroup.add(p1t); specialGroup.add(tp2);
+}
+
+function buildTraces(){
+ clearGroup(traceGroup);
+ clearGroup(diagGroup);
+ clearGroup(sectionGroup);
+
+ const known=Object.entries(S.points).filter(([,p])=>p);
+ if(known.length<3)return;
+
+ // Внутренние вспомогательные грани: вершина S + диагонали основания.
+ const aux=[
+  {name:'SAC',tri:['S','A','C'],diag:[V.A,V.C]},
+  {name:'SBD',tri:['S','B','D'],diag:[V.B,V.D]}
+ ];
+ aux.forEach((x,idx)=>{
+  const col=idx===0?0x71c8ff:0x9e8cff;
+  diagGroup.add(lineObj(x.diag[0],x.diag[1],col,true,.34,1));
+  diagGroup.add(lineObj(V.S,x.diag[0],col,true,.28,1));
+  diagGroup.add(lineObj(V.S,x.diag[1],col,true,.28,1));
+ });
+
+ // ------------------------------------------------------------
+ // 1. Сначала получаем ПОЛНОЕ сечение плоскости с пирамидой.
+ // ------------------------------------------------------------
+ const pts=known.map(x=>x[1]);
+ let n=null,p0=null;
+
+ outer:
+ for(let i=0;i<pts.length;i++)
+  for(let j=i+1;j<pts.length;j++)
+   for(let k=j+1;k<pts.length;k++){
+    const nn=new THREE.Vector3().crossVectors(
+     pts[j].clone().sub(pts[i]),
+     pts[k].clone().sub(pts[i])
+    );
+    if(nn.lengthSq()>1e-9){
+     n=nn.normalize();
+     p0=pts[i];
+     break outer;
+    }
+   }
+
+ if(!n)return;
+
+ const hits=[];
+ edgeDefs.forEach(e=>{
+  const h=linePlaneIntersection(e.p1,e.p2,p0,n);
+  if(h&&h.t>=-1e-7&&h.t<=1+1e-7){
+   if(!hits.some(q=>q.distanceTo(h.p)<1e-6))hits.push(h.p);
+  }
+ });
+ if(hits.length<3)return;
+
+ const center=hits.reduce((acc,p)=>acc.add(p.clone()),new THREE.Vector3())
+  .multiplyScalar(1/hits.length);
+
+ let u=hits[0].clone().sub(center);
+ if(u.lengthSq()<1e-9)u.set(1,0,0);
+ u.normalize();
+ const v=new THREE.Vector3().crossVectors(n,u).normalize();
+
+ hits.sort((a,b)=>{
+  const aa=Math.atan2(a.clone().sub(center).dot(v),a.clone().sub(center).dot(u));
+  const bb=Math.atan2(b.clone().sub(center).dot(v),b.clone().sub(center).dot(u));
+  return aa-bb;
+ });
+
+ // Полная жёлтая заливка.
+ const fillVerts=[];
+ for(let i=1;i<hits.length-1;i++){
+  fillVerts.push(
+   ...hits[0].toArray(),
+   ...hits[i].toArray(),
+   ...hits[i+1].toArray()
+  );
+ }
+ const fillGeom=new THREE.BufferGeometry();
+ fillGeom.setAttribute('position',new THREE.Float32BufferAttribute(fillVerts,3));
+ fillGeom.computeVertexNormals();
+
+ const fill=new THREE.Mesh(fillGeom,new THREE.MeshBasicMaterial({
+  color:0xffd84d,transparent:true,opacity:.30,
+  side:THREE.DoubleSide,depthTest:false,depthWrite:false
+ }));
+ fill.renderOrder=42;
+ sectionGroup.add(fill);
+
+ const closed=hits.concat([hits[0]]);
+ for(let i=0;i<closed.length-1;i++)
+  sectionGroup.add(lineObj(closed[i],closed[i+1],0xffd84d,false,1,3));
+ hits.forEach(q=>sectionGroup.add(pointObj(q,0xffd84d,.055)));
+
+ // ------------------------------------------------------------
+ // 2. Для КАЖДОЙ стороны готового сечения ищем её грань.
+ // ------------------------------------------------------------
+ function pointOnFace(p,f){
+  const a=V[f.verts[0]],b=V[f.verts[1]],c=V[f.verts[2]];
+  const fn=new THREE.Vector3().crossVectors(
+   b.clone().sub(a),c.clone().sub(a)
+  ).normalize();
+  return Math.abs(fn.dot(p.clone().sub(a)))<1e-5;
+ }
+
+ function faceForSectionSide(a,b){
+  return faces.find(f=>pointOnFace(a,f)&&pointOnFace(b,f))||null;
+ }
+
+ // Пересечение двух бесконечных прямых, лежащих в одной плоскости.
+ function lineWithEdgeExtended(a,b,e0,e1){
+  const d=b.clone().sub(a);
+  const ed=e1.clone().sub(e0);
+  const nn=new THREE.Vector3().crossVectors(d,ed);
+  if(nn.lengthSq()<1e-10)return null;
+
+  const ax=Math.abs(nn.x),ay=Math.abs(nn.y),az=Math.abs(nn.z);
+  let i1='x',i2='y';
+  if(ax>=ay&&ax>=az){i1='y';i2='z'}
+  else if(ay>=ax&&ay>=az){i1='x';i2='z'}
+
+  const dx=d[i1],dy=d[i2];
+  const ex=ed[i1],ey=ed[i2];
+  const wx=e0[i1]-a[i1],wy=e0[i2]-a[i2];
+  const den=dx*ey-dy*ex;
+  if(Math.abs(den)<1e-10)return null;
+
+  const t=(wx*ey-wy*ex)/den;
+  const q=a.clone().addScaledVector(d,t);
+  return {p:q,t};
+ }
+
+ // ------------------------------------------------------------
+ // 3. ГЛАВНОЕ: 5 сторон (или сколько реально получилось)
+ //    обрабатываются независимо.
+ // ------------------------------------------------------------
+ for(let i=0;i<hits.length;i++){
+  const a=hits[i],b=hits[(i+1)%hits.length];
+  const face=faceForSectionSide(a,b);
+  if(!face)continue;
+
+  const fv=face.verts.map(name=>V[name]);
+  const fedges=[];
+  for(let j=0;j<fv.length;j++)
+   fedges.push([fv[j],fv[(j+1)%fv.length]]);
+
+  const candidates=[];
+  fedges.forEach(edge=>{
+   const h=lineWithEdgeExtended(a,b,edge[0],edge[1]);
+   if(!h)return;
+
+   // Пересечение внутри отрезка сечения — это не продолжение.
+   if(h.t>=-1e-6&&h.t<=1+1e-6)return;
+
+   candidates.push({edge,p:h.p,t:h.t});
+  });
+
+  // Ближайший внешний след с каждой стороны.
+  const left=candidates
+   .filter(x=>x.t<0)
+   .sort((x,y)=>x.t-y.t)
+   .slice(0,1)[0];
+
+  const right=candidates
+   .filter(x=>x.t>1)
+   .sort((x,y)=>x.t-y.t)
+   .slice(0,1)[0];
+
+  [left,right].forEach(hit=>{
+   if(!hit)return;
+
+   // Продолжаем ЛИНИЮ СЕЧЕНИЯ от соответствующей точки
+   // ровно до точки пересечения с продолжением ребра.
+   const from=hit.t<0?a:b;
+   traceGroup.add(lineObj(from,hit.p,0xc8cdd2,true,.58,1.1));
+   traceGroup.add(pointObj(hit.p,0xc8cdd2,.035));
+
+   // И само ребро грани продолжаем от ближайшей его вершины
+   // до той же точки пересечения.
+   const e0=hit.edge[0],e1=hit.edge[1];
+   const boundary=e0.distanceTo(hit.p)<e1.distanceTo(hit.p)?e0:e1;
+   traceGroup.add(lineObj(boundary,hit.p,0xc8cdd2,true,.50,1.05));
+  });
+ }
+}
+
+function rebuild(){
+ Object.keys(pointMeshes).forEach(n=>{
+  pointMeshes[n].visible=!!S.points[n];
+ });
+ buildOppositeEdgeConstruction();
+ buildTraces();
+
+ const count=Object.values(S.points).filter(Boolean).length;
+ document.querySelector('#build').disabled=count<2;
+
+ if(count<2)status.textContent='Поставьте минимум две точки на рёбрах.';
+ else status.textContent='Метод следов построен. Внутренние диагональные грани используются для переноса следа.';
+}
+
+// ---------------- ДВИЖЕНИЕ ----------------
+function startDrag(evt){
+ const meshes=Object.values(pointMeshes).filter(m=>m.visible);
+ const h=ray(evt).intersectObjects(meshes,false);
+ if(!h.length)return false;
+ S.dragging=h[0].object.userData.name;
+ controls.enabled=false;
+ return true;
+}
+function dragPoint(name,evt){
+ const r=ray(evt);
+ let best=null;
+
+ edgeDefs.forEach((e,i)=>{
+  const onRay=new THREE.Vector3(),onSeg=new THREE.Vector3();
+  const distSq=r.ray.distanceSqToSegment(e.p1,e.p2,onRay,onSeg);
+  if(!best||distSq<best.distSq){
+   const d=e.p2.clone().sub(e.p1);
+   const t=THREE.MathUtils.clamp(
+    onSeg.clone().sub(e.p1).dot(d)/d.lengthSq(),0,1
+   );
+   best={i,t,distSq};
+  }
+ });
+
+ if(best&&best.distSq<.16){
+  setPoint(name,best.i,best.t);
+  rebuild();
+ }
+}
+
+renderer.domElement.addEventListener('pointerdown',evt=>{
+ if(evt.button!==0)return;
+
+ if(S.moving&&startDrag(evt))return;
+
+ if(S.mode==='p1'&&place('P1',evt)){S.mode='p2';p2Btn.disabled=false;return}
+ if(S.mode==='p2'&&place('P2',evt)){S.mode='p3';p3Btn.disabled=false;return}
+ if(S.mode==='p3'&&place('P3',evt)){
+  // Трёх точек уже достаточно для определения плоскости.
+  // Четвёртая точка теперь НЕ обязательна.
+  S.mode='idle';
+  p4Btn.disabled=false;
+  move.disabled=false;
+  build.disabled=false;
+  rebuild();
+  return;
+ }
+ if(S.mode==='p4'&&place('P4',evt)){
+  S.mode='idle';
+  rebuild();
+  return;
+ }
+});
+
+renderer.domElement.addEventListener('pointermove',evt=>{
+ if(S.dragging)dragPoint(S.dragging,evt);
+});
+window.addEventListener('pointerup',()=>{
+ S.dragging=null;
+ controls.enabled=true;
+});
+
+const p1Btn=document.querySelector('#p1Btn');
+const p2Btn=document.querySelector('#p2Btn');
+const p3Btn=document.querySelector('#p3Btn');
+const p4Btn=document.querySelector('#p4Btn');
+const build=document.querySelector('#build');
+const move=document.querySelector('#move');
+const reset=document.querySelector('#reset');
+const status=document.querySelector('#status');
+
+p1Btn.onclick=()=>{S.mode='p1';status.textContent='Выберите ребро для P₁.'};
+p2Btn.onclick=()=>{S.mode='p2';status.textContent='Выберите ребро для P₂.'};
+p3Btn.onclick=()=>{S.mode='p3';status.textContent='Выберите ребро для P₃.'};
+p4Btn.onclick=()=>{S.mode='p4';status.textContent='Выберите ребро для дополнительной точки P₄.'};
+build.onclick=()=>{buildTraces();status.textContent='Сечение построено методом следов.'};
+move.onclick=()=>{
+ S.moving=!S.moving;
+ move.classList.toggle('active',S.moving);
+ move.textContent='Режим движения: '+(S.moving?'ВКЛ':'ВЫКЛ');
+};
+
+reset.onclick=()=>{
+ camAzimuth=.78;camElevation=.62;camDistance=8.0;updateCamera();
+
+ // Возвращаем исходную четырёхугольную пирамиду.
+ V.A.set(-1.35,-1,-1.35);
+ V.B.set( 1.35,-1,-1.35);
+ V.C.set( 1.35,-1, 1.35);
+ V.D.set(-1.35,-1, 1.35);
+ V.S.set(0,2.05,0);
+
+ S.mode='p1';S.moving=false;S.dragging=null;
+ Object.keys(S.points).forEach(n=>{S.points[n]=null;S.edgeInfo[n]=null;pointMeshes[n].visible=false});
+ clearGroup(sectionGroup);clearGroup(traceGroup);clearGroup(diagGroup);clearGroup(specialGroup);
+ p2Btn.disabled=true;p3Btn.disabled=true;p4Btn.disabled=true;build.disabled=true;move.disabled=true;
+ move.classList.remove('active');move.textContent='Режим движения: ВЫКЛ';
+ status.textContent='Шаг 1: поставьте P₁.';
+};
+
+function resize(){
+ const w=view.clientWidth,h=view.clientHeight;
+ camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);
+}
+window.addEventListener('resize',resize);resize();
+
+function animate(){
+ requestAnimationFrame(animate);
+ controls.update();
+ renderer.render(scene,camera);
+}
+animate();
+</script>
+</body>
+</html>
