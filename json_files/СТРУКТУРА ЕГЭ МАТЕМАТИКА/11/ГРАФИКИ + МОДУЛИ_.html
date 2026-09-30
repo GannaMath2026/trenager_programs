@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Интерактивно: коэффициенты функций по графику</title>
+
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  chtml: { scale: 1.05 }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+<style>
+  :root{
+    --bg:#0f1520; --panel:#182233; --panel2:#1e2a3d;
+    --line:#2a3a52; --txt:#e6edf7; --muted:#8fa3bf;
+    --accent:#4ecdc4; --accent2:#ffd93d; --danger:#ff6b6b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{
+    background:radial-gradient(1200px 800px at 80% 0%, #1c2740 0%, #0b1018 60%, #070a10 100%);
+    color:var(--txt);
+    font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+    height:100vh;overflow:hidden;
+  }
+  .app{display:grid;grid-template-columns:290px 1fr;height:100vh;}
+
+  .side{
+    background:linear-gradient(180deg,rgba(24,34,51,.96),rgba(15,21,32,.96));
+    border-right:1px solid var(--line);
+    padding:14px 12px;overflow-y:auto;
+  }
+  .side h1{margin:2px 0 12px;font-size:14px;color:#dfe8f5;font-weight:600;}
+  .side h1 span{color:var(--accent);}
+  .group{margin-bottom:12px;}
+  .group-title{
+    font-size:10.5px;text-transform:uppercase;letter-spacing:.9px;
+    color:var(--muted);margin:0 0 5px 4px;font-weight:700;
+  }
+  .fn-btn{
+    display:flex;align-items:center;gap:8px;width:100%;
+    background:transparent;border:1px solid transparent;color:#cfd9e8;
+    text-align:left;padding:6px 9px;border-radius:9px;cursor:pointer;
+    font-size:12.5px;font-family:inherit;transition:.15s;line-height:1.2;
+  }
+  .fn-btn:hover{background:rgba(78,205,196,.08);}
+  .fn-btn.active{
+    background:rgba(78,205,196,.16);
+    border-color:rgba(78,205,196,.45);
+    color:#fff;font-weight:600;
+  }
+  .fn-btn .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--accent);flex:0 0 auto;
+    box-shadow:0 0 8px rgba(78,205,196,.7);
+  }
+
+  .main{position:relative;display:grid;grid-template-rows:1fr auto;}
+  canvas{display:block;width:100%;height:100%;}
+
+  .hud{
+    position:absolute;top:14px;right:14px;
+    background:rgba(15,21,32,.9);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 18px;
+    backdrop-filter:blur(8px);
+    min-width:290px;max-width:360px;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+  }
+  .hud .name{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+  .hud .eq{font-size:18px;margin-top:6px;color:#cfd9e8;font-family:"Cambria Math",Georgia,serif;}
+  .hud .realeq{
+    font-size:20px;margin-top:10px;padding:10px 12px;border-radius:10px;
+    background:linear-gradient(135deg,rgba(78,205,196,.18),rgba(255,217,61,.12));
+    border:1px solid rgba(78,205,196,.55);
+    color:#fff;font-family:"Cambria Math",Georgia,serif;
+    box-shadow:0 0 20px rgba(78,205,196,.15) inset;
+  }
+  .hud .realeq-label{
+    font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;
+    margin-bottom:4px;font-weight:700;
+  }
+
+  .toolbar{
+    border-top:1px solid var(--line);
+    background:rgba(15,21,32,.9);
+    padding:10px 16px;
+    display:flex;gap:14px;flex-wrap:wrap;align-items:center;
+    font-size:12.5px;color:#c3cede;
+  }
+  .toolbar label{display:flex;align-items:center;gap:6px;cursor:pointer;}
+  .toolbar input[type="checkbox"]{accent-color:var(--accent);}
+  .toolbar button{
+    background:var(--panel2);border:1px solid var(--line);color:#dfe8f5;
+    border-radius:9px;padding:6px 12px;cursor:pointer;font:inherit;font-size:12.5px;
+    transition:.15s;
+  }
+  .toolbar button:hover{border-color:var(--accent);color:#fff;}
+  .hint{color:var(--muted);font-size:11.5px;margin-left:auto;}
+
+  .sliders{
+    position:absolute;bottom:64px;left:14px;
+    background:rgba(15,21,32,.86);
+    border:1px solid var(--line);border-radius:14px;
+    padding:12px 14px;backdrop-filter:blur(8px);
+    width:320px;box-shadow:0 10px 30px rgba(0,0,0,.5);
+    max-height:60vh;overflow-y:auto;
+  }
+  .sliders h3{
+    margin:0 0 8px;font-size:11px;text-transform:uppercase;
+    letter-spacing:1px;color:var(--muted);
+  }
+  .sl{margin:10px 0;}
+  .sl .lab{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#c3cede;margin-bottom:3px;gap:6px;}
+  .sl .lab b{color:#fff;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;}
+  .sl .lab input.num{
+    width:70px;background:#0b1018;border:1px solid var(--line);color:#fff;
+    border-radius:6px;padding:2px 5px;font-size:11.5px;font-family:ui-monospace,monospace;
+    text-align:right;
+  }
+  .sl .lab input.num:focus{outline:none;border-color:var(--accent);}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;
+    background:linear-gradient(90deg,#4ecdc4,#ffd93d);outline:none;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:#fff;border:2px solid #2a3546;box-shadow:0 2px 8px rgba(0,0,0,.5);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #2a3546;
+  }
+
+  /* Блок модуля внутри каждой функции */
+  .modblock{
+    margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);
+  }
+  .modblock .group-title{margin-bottom:6px;}
+  .mod-btn{
+    display:flex;align-items:center;gap:6px;width:100%;
+    background:transparent;border:1px solid transparent;color:#cfd9e8;
+    text-align:left;padding:5px 8px;border-radius:8px;cursor:pointer;
+    font-size:12px;font-family:inherit;transition:.15s;line-height:1.2;
+  }
+  .mod-btn:hover{background:rgba(255,217,61,.08);}
+  .mod-btn.active{
+    background:rgba(255,217,61,.16);
+    border-color:rgba(255,217,61,.5);
+    color:#fff;font-weight:600;
+  }
+  .mod-btn .mdot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--accent2);flex:0 0 auto;
+    box-shadow:0 0 6px rgba(255,217,61,.7);
+  }
+
+  /* Контейнер для подблока модуля, который вставляется под активной функцией */
+  .mod-host{
+    margin:6px 0 8px 6px;
+    padding:6px 8px;
+    border-left:2px solid rgba(255,217,61,.4);
+    background:rgba(255,217,61,.04);
+    border-radius:0 8px 8px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="side">
+    <h1>Интерактивно: <span>по графику</span></h1>
+
+    <div class="group">
+      <div class="group-title">Прямая</div>
+      <button class="fn-btn active" data-fn="linear"><span class="dot"></span>y = kx + b</button>
+    </div>
+
+    <div class="group">
+      <div class="group-title">Парабола</div>
+      <button class="fn-btn" data-fn="parabola"><span class="dot"></span>y = ax² + bx + c</button>
+    </div>
+
+    <div class="group">
+      <div class="group-title">Гипербола</div>
+      <button class="fn-btn" data-fn="hyperbola_full"><span class="dot"></span>y = k/(x+a) + b</button>
+    </div>
+
+    <div class="group">
+      <div class="group-title">Экспонента</div>
+      <button class="fn-btn" data-fn="exp_full"><span class="dot"></span>y = a^(x+c) + b</button>
+    </div>
+
+    <div class="group">
+      <div class="group-title">Логарифм</div>
+      <button class="fn-btn" data-fn="log_full"><span class="dot"></span>y = log_a(x+c) + b</button>
+    </div>
+
+    <div class="group">
+      <div class="group-title">Корень</div>
+      <button class="fn-btn" data-fn="sqrt_full"><span class="dot"></span>y = b + k√(x-a)</button>
+    </div>
+
+    <div class="group">
+      <div class="group-title">Тригонометрия</div>
+      <button class="fn-btn" data-fn="sin"><span class="dot"></span>y = A·sin x + B</button>
+      <button class="fn-btn" data-fn="cos"><span class="dot"></span>y = A·cos x + B</button>
+      <button class="fn-btn" data-fn="tan"><span class="dot"></span>y = A·tg x + B</button>
+      <button class="fn-btn" data-fn="cot"><span class="dot"></span>y = A·ctg x + B</button>
+    </div>
+
+    <div class="group">
+      <div class="group-title">Пересечения</div>
+      <button class="fn-btn" data-fn="int_line_line"><span class="dot"></span>Прямая × Прямая</button>
+      <button class="fn-btn" data-fn="int_line_par"><span class="dot"></span>Прямая × Парабола</button>
+      <button class="fn-btn" data-fn="int_line_hyp"><span class="dot"></span>Прямая × Гипербола</button>
+      <button class="fn-btn" data-fn="int_par_par_same"><span class="dot"></span>Парабола × Парабола (одна сторона)</button>
+      <button class="fn-btn" data-fn="int_par_par_opp"><span class="dot"></span>Парабола × Парабола (разные ветви)</button>
+    </div>
+  </aside>
+
+  <section class="main">
+    <div style="position:relative;overflow:hidden;">
+      <canvas id="cv"></canvas>
+
+      <div class="hud">
+        <div class="name" id="fnName">Линейная</div>
+        <div class="eq" id="eqText">\(y = kx + b\)</div>
+        <div class="realeq">
+          <div class="realeq-label">Уравнение графика</div>
+          <div id="realEqText">\(y = x + 1\)</div>
+        </div>
+      </div>
+
+      <div class="sliders" id="sliders"></div>
+    </div>
+
+    <div class="toolbar">
+      <label><input type="checkbox" id="showGrid" checked> Сетка</label>
+      <label><input type="checkbox" id="showAsym" checked> Асимптоты</label>
+      <label><input type="checkbox" id="showDeltas" checked> Δx, Δy</label>
+      <label><input type="checkbox" id="showPoints" checked> Опорные точки</label>
+      <label><input type="checkbox" id="showShifts" checked> Стрелки сдвига</label>
+      <label title="Бледный серый пунктир — как выглядел бы график без модуля"><input type="checkbox" id="showGhost" checked> Исходный график (фон)</label>
+      <button id="reset">Сброс</button>
+      <span class="hint">Тяните точки и асимптоты мышью. Колёсико — зум. ПКМ — панорама.</span>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ================================================================
+   ГЕОМЕТРИЯ И ОБЩЕЕ
+================================================================ */
+const cv  = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+
+function resize(){
+  const r = cv.getBoundingClientRect();
+  DPR = Math.min(devicePixelRatio || 1, 2);
+  W = r.width; H = r.height;
+  cv.width = W * DPR; cv.height = H * DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+addEventListener('resize', resize);
+
+let view = { scale: 45, cx: 0, cy: 0 };
+function w2p(x,y){ return [ W/2 + (x - view.cx)*view.scale, H/2 - (y - view.cy)*view.scale ]; }
+function p2w(px,py){ return [ (px - W/2)/view.scale + view.cx, -(py - H/2)/view.scale + view.cy ]; }
+
+function fmt(v){
+  if (Math.abs(v) < 1e-9) return '0';
+  return v.toFixed(2).replace(/\.?0+$/,'');
+}
+function fmtCoef(v){
+  const r = Math.round(v*100)/100;
+  if (Math.abs(r - Math.round(r)) < 1e-6) return Math.round(r).toString();
+  return r.toString();
+}
+
+/* ================================================================
+   МОДУЛЬ — 4 РЕЖИМА ДЛЯ КАЖДОЙ ФУНКЦИИ
+   Режимы:
+     'none'       — y = f(x)
+     'whole'      — y = |f(x)|
+     'arg'        — y = f(|x|)
+     'yMod'       — |y| = f(x)
+     'bothSides'  — |y| = |f(x)|
+================================================================ */
+let currentMod = 'none';
+
+// Точка входа: преобразует (x, y) с учётом текущего режима модуля
+function applyMod(x, y){
+  let X = x;
+  if (currentMod === 'arg' || currentMod === 'bothSides'){
+    X = Math.abs(x);
+  }
+  let Y = y;
+  if (currentMod === 'whole' || currentMod === 'bothSides'){
+    Y = Math.abs(y);
+  }
+  return { x: X, y: Y };
+}
+
+/* ================================================================
+   МОДЕЛИ
+================================================================ */
+let current = null;
+let state = {
+  ui: { showGrid:true, showAsym:true, showDeltas:true, showPoints:true, showShifts:true, showGhost:true },
+  points: [], asyms: [], drag: null, dragView: false, lastMouse: null
+};
+
+/* --- Прямая y = kx + b --- */
+function linear(){
+  return {
+    name: 'Линейная',
+    latex: () => 'y = kx + b',
+    realLatex: (p) => {
+      const k = p.k, b = p.b;
+      let s = 'y = ';
+      if (Math.abs(k) === 1) s += (k === 1 ? '' : '-') + 'x';
+      else s += fmtCoef(k) + 'x';
+      if (b > 0) s += ' + ' + fmtCoef(b);
+      else if (b < 0) s += ' - ' + fmtCoef(-b);
+      return s;
+    },
+    params: { k:{min:-5,max:5,step:0.1,value:1}, b:{min:-6,max:6,step:0.1,value:1} },
+    dragPoints: [
+      { id:'A', kind:'onCurve', x:-2 },
+      { id:'B', kind:'onCurve', x: 2 }
+    ],
+    f: (x,p)=> p.k*x + p.b,
+    draw(ctx, view, p, ui){
+      drawWithMod(ctx, view, p, ui, (x)=>p.k*x+p.b, '#4ecdc4');
+      if (ui.showDeltas && ui.points.length >= 2){
+        const A = ui.points[0], B = ui.points[1];
+        if (A && B){
+          dashedWorld(ctx, view, A.x, A.y, B.x, A.y, '#8fa3bf');
+          dashedWorld(ctx, view, B.x, A.y, B.x, B.y, '#8fa3bf');
+          textWorld(ctx, view, (A.x+B.x)/2, A.y, 'Δx', '#8fa3bf', 11);
+          textWorld(ctx, view, B.x, (A.y+B.y)/2, 'Δy', '#8fa3bf', 11);
+        }
+      }
+    },
+    special: (p)=> [{ x:0, y:p.b, label:'(0;'+fmtCoef(p.b)+')', color:'#ff6b6b' }],
+    shifts: (p)=> (Math.abs(p.b) > 0.01 ? [{ axis:'y', value:p.b, label:'b = '+fmtCoef(p.b) }] : [])
+  };
+}
+
+/* --- Парабола y = ax² + bx + c --- */
+function parabola(){
+  return {
+    name: 'Парабола',
+    latex: () => 'y = ax^2 + bx + c',
+    realLatex: (p)=>{
+      const a=p.a, b=p.b, c=p.c;
+      let s = 'y = ';
+      if (Math.abs(a)===1) s += (a===1?'':'-') + 'x^2';
+      else s += fmtCoef(a) + 'x^2';
+      if (b > 0) s += ' + ' + (Math.abs(b)===1?'':fmtCoef(b)) + 'x';
+      else if (b < 0) s += ' - ' + (Math.abs(b)===1?'':fmtCoef(-b)) + 'x';
+      if (c > 0) s += ' + ' + fmtCoef(c);
+      else if (c < 0) s += ' - ' + fmtCoef(-c);
+      return s;
+    },
+    params: { a:{min:-3,max:3,step:0.1,value:0.6}, b:{min:-6,max:6,step:0.1,value:0}, c:{min:-6,max:6,step:0.1,value:-2} },
+    dragPoints: [
+      { id:'c', kind:'param', param:'c' },
+      { id:'V', kind:'vertex' }
+    ],
+    f: (x,p)=> p.a*x*x + p.b*x + p.c,
+    draw(ctx, view, p, ui){
+      drawWithMod(ctx, view, p, ui, (x)=>p.a*x*x+p.b*x+p.c, '#4ade80');
+      if (p.a !== 0){
+        const xv = -p.b/(2*p.a);
+        dashedWorld(ctx, view, xv, -12, xv, 12, '#4ecdc4', [5,4]);
+        textWorld(ctx, view, xv+0.15, 10, 'x_в='+fmtCoef(xv), '#4ecdc4', 11);
+      }
+    },
+    special: (p)=>{
+      const out = [{ x:0, y:p.c, label:'(0;'+fmtCoef(p.c)+')', color:'#ff6b6b' }];
+      if (p.a !== 0){
+        const xv = -p.b/(2*p.a);
+        out.push({ x:xv, y:p.a*xv*xv+p.b*xv+p.c, label:'вершина', color:'#ffd93d' });
+      }
+      return out;
+    },
+    shifts: (p)=>{
+      const out = [];
+      if (p.a !== 0){
+        const xv = -p.b/(2*p.a);
+        if (Math.abs(xv) > 0.01) out.push({ axis:'x', value:xv, label:'x_в = '+fmtCoef(xv) });
+        const yv = p.a*xv*xv + p.b*xv + p.c;
+        if (Math.abs(yv) > 0.01) out.push({ axis:'y', value:yv, label:'y_в = '+fmtCoef(yv) });
+      }
+      return out;
+    }
+  };
+}
+
+/* --- Гипербола: y = k/(x+a) + b --- */
+function hyperbolaFull(){
+  return {
+    name: 'Гипербола (два сдвига)',
+    latex: () => 'y = \\dfrac{k}{x+a} + b',
+    realLatex: (p)=>{
+      const k = p.k, a = p.a, b = p.b;
+      let num = fmtCoef(k);
+      let den = 'x' + (a>0?' + '+fmtCoef(a):a<0?' - '+fmtCoef(-a):'');
+      let s = 'y = \\dfrac{' + num + '}{' + den + '}';
+      if (b > 0) s += ' + ' + fmtCoef(b);
+      else if (b < 0) s += ' - ' + fmtCoef(-b);
+      return s;
+    },
+    params: { k:{min:-8,max:8,step:0.1,value:2}, a:{min:-6,max:6,step:0.1,value:0}, b:{min:-6,max:6,step:0.1,value:0} },
+    dragPoints: [{ id:'P', kind:'hyperbolaCurve' }],
+    dragAsyms: [
+      { kind:'v', value: (p)=> -p.a, param:'a' },
+      { kind:'h', value: (p)=> p.b,  param:'b' }
+    ],
+    f: (x,p)=> p.k/(x + p.a) + p.b,
+    draw(ctx, view, p, ui){ drawWithMod(ctx, view, p, ui, (x)=>p.k/(x+p.a)+p.b, '#ff6b6b'); },
+    special: () => [],
+    shifts: (p)=>{
+      const out = [];
+      if (Math.abs(p.a) > 0.01) out.push({ axis:'x', value:-p.a, label:'-a = '+fmtCoef(-p.a) });
+      if (Math.abs(p.b) > 0.01) out.push({ axis:'y', value:p.b, label:'b = '+fmtCoef(p.b) });
+      return out;
+    }
+  };
+}
+
+/* --- Экспонента: y = a^(x+c) + b --- */
+function expFull(){
+  return {
+    name: 'Экспонента (два сдвига)',
+    latex: () => 'y = a^{x+c} + b',
+    realLatex: (p)=>{
+      const a = p.a, c = p.c, b = p.b;
+      let expo = 'x' + (c>0?' + '+fmtCoef(c):c<0?' - '+fmtCoef(-c):'');
+      let s = 'y = ' + fmtCoef(a) + '^{' + expo + '}';
+      if (b > 0) s += ' + ' + fmtCoef(b);
+      else if (b < 0) s += ' - ' + fmtCoef(-b);
+      return s;
+    },
+    params: { a:{min:0.1,max:4,step:0.05,value:2}, c:{min:-6,max:6,step:0.1,value:0}, b:{min:-6,max:6,step:0.1,value:0} },
+    dragPoints: [{ id:'P', kind:'expCurveFull' }],
+    dragAsyms: [ { kind:'h', value: (p)=> p.b, param:'b' } ],
+    f: (x,p)=> Math.pow(p.a, x + p.c) + p.b,
+    draw(ctx, view, p, ui){ drawWithMod(ctx, view, p, ui, (x)=>Math.pow(p.a,x+p.c)+p.b, '#ffd93d'); },
+    special: (p)=> [{ x:-p.c, y:1+p.b, label:'(-c; 1+b)', color:'#ff6b6b' }],
+    shifts: (p)=>{
+      const out = [];
+      if (Math.abs(p.c) > 0.01) out.push({ axis:'x', value:-p.c, label:'-c = '+fmtCoef(-p.c) });
+      if (Math.abs(p.b) > 0.01) out.push({ axis:'y', value:p.b, label:'b = '+fmtCoef(p.b) });
+      return out;
+    }
+  };
+}
+
+/* --- Логарифм: y = log_a(x+c) + b --- */
+function logFull(){
+  return {
+    name: 'Логарифм (два сдвига)',
+    latex: () => 'y = \\log_a(x+c) + b',
+    realLatex: (p)=>{
+      const a = p.a, c = p.c, b = p.b;
+      let inner = 'x' + (c>0?' + '+fmtCoef(c):c<0?' - '+fmtCoef(-c):'');
+      let s = 'y = \\log_{' + fmtCoef(a) + '}(' + inner + ')';
+      if (b > 0) s += ' + ' + fmtCoef(b);
+      else if (b < 0) s += ' - ' + fmtCoef(-b);
+      return s;
+    },
+    params: { a:{min:0.2,max:4,step:0.05,value:2}, c:{min:-6,max:6,step:0.1,value:0}, b:{min:-6,max:6,step:0.1,value:0} },
+    dragPoints: [{ id:'P', kind:'logCurveFull' }],
+    dragAsyms: [ { kind:'v', value: (p)=> -p.c, param:'c' } ],
+    f: (x,p)=>{ const X = x+p.c; return X<=0 ? NaN : Math.log(X)/Math.log(p.a) + p.b; },
+    draw(ctx, view, p, ui){ drawWithMod(ctx, view, p, ui, (x)=>{const X=x+p.c; return X<=0?NaN:Math.log(X)/Math.log(p.a)+p.b;}, '#a78bfa'); },
+    special: (p)=> [{ x:1-p.c, y:p.b, label:'(1-c; b)', color:'#ff6b6b' }],
+    shifts: (p)=>{
+      const out = [];
+      if (Math.abs(p.c) > 0.01) out.push({ axis:'x', value:-p.c, label:'-c = '+fmtCoef(-p.c) });
+      if (Math.abs(p.b) > 0.01) out.push({ axis:'y', value:p.b, label:'b = '+fmtCoef(p.b) });
+      return out;
+    }
+  };
+}
+
+/* --- Корень: y = b + k√(x-a) --- */
+function sqrtFull(){
+  return {
+    name: 'Корень (сдвиг)',
+    latex: () => 'y = b + k\\sqrt{x-a}',
+    realLatex: (p)=>{
+      const a = p.a, b = p.b, k = p.k;
+      let inner = 'x' + (a>0?' - '+fmtCoef(a):a<0?' + '+fmtCoef(-a):'');
+      let s = 'y = ' + (b>0?fmtCoef(b)+' + ':b<0?'-'+fmtCoef(-b)+' + ':'');
+      s += fmtCoef(k) + '\\sqrt{' + inner + '}';
+      return s;
+    },
+    params: { k:{min:-5,max:5,step:0.1,value:1.5}, b:{min:-6,max:6,step:0.1,value:1}, a:{min:-6,max:6,step:0.1,value:0} },
+    dragPoints: [
+      { id:'b', kind:'param', param:'b' },
+      { id:'P', kind:'sqrtCurveFull' }
+    ],
+    dragAsyms: [ { kind:'v', value: (p)=> p.a, param:'a' } ],
+    f: (x,p)=> x < p.a ? NaN : p.b + p.k*Math.sqrt(x - p.a),
+    draw(ctx, view, p, ui){
+      const a = p.a;
+      dashedWorld(ctx, view, a, -12, a, 12, '#dc2626', [4,3]);
+      shadeRegion(ctx, view, -Infinity, a);
+      drawWithMod(ctx, view, p, ui, (x)=> x < p.a ? NaN : p.b + p.k*Math.sqrt(x - p.a), '#f472b6');
+    },
+    special: (p)=> [{ x:p.a, y:p.b, label:'('+fmtCoef(p.a)+'; '+fmtCoef(p.b)+')', color:'#ff6b6b' }],
+    shifts: (p)=>{
+      const out = [];
+      if (Math.abs(p.a) > 0.01) out.push({ axis:'x', value:p.a, label:'a = '+fmtCoef(p.a) });
+      if (Math.abs(p.b) > 0.01) out.push({ axis:'y', value:p.b, label:'b = '+fmtCoef(p.b) });
+      return out;
+    }
+  };
+}
+
+/* затенение запрещённой области */
+function shadeRegion(ctx, view, xFrom, xTo){
+  const [pxFrom] = w2p(xFrom, 0);
+  const [pxTo]   = w2p(xTo, 0);
+  let x0 = Math.max(0, Math.min(pxFrom, pxTo));
+  let x1 = Math.min(W, Math.max(pxFrom, pxTo));
+  if (x1 <= x0) return;
+  ctx.save();
+  ctx.fillStyle = 'rgba(220,38,38,.09)';
+  for (let i = x0-40; i < x1; i += 14){
+    ctx.beginPath();
+    ctx.moveTo(i, H); ctx.lineTo(i+40, 0);
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = 'rgba(220,38,38,.09)';
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* --- Тригонометрия --- */
+function trig(kind){
+  const isSin = kind === 'sin';
+  const isCos = kind === 'cos';
+  const isTan = kind === 'tan';
+  const isCot = kind === 'cot';
+
+  const latex = isSin ? 'y = A\\sin x + B'
+             : isCos ? 'y = A\\cos x + B'
+             : isTan ? 'y = A\\,\\mathrm{tg}\\,x + B'
+             :        'y = A\\,\\mathrm{ctg}\\,x + B';
+  const name = isSin ? 'Синус' : isCos ? 'Косинус' : isTan ? 'Тангенс' : 'Котангенс';
+
+  const params = { A:{min:-3,max:3,step:0.1,value:1}, B:{min:-4,max:4,step:0.1,value:0} };
+
+  return {
+    name, latex: () => latex,
+    realLatex: (p)=>{
+      const A = p.A, B = p.B;
+      const fn = isSin?'\\sin x':isCos?'\\cos x':isTan?'\\mathrm{tg}\\,x':'\\mathrm{ctg}\\,x';
+      let s = 'y = ';
+      if (Math.abs(A) === 1) s += (A === 1 ? '' : '-') + fn;
+      else s += fmtCoef(A) + fn;
+      if (B > 0) s += ' + ' + fmtCoef(B);
+      else if (B < 0) s += ' - ' + fmtCoef(-B);
+      return s;
+    },
+    params,
+    dragPoints: [ { id:'B', kind:'param', param:'B' } ],
+    f: (x,p)=>{
+      if (isSin) return p.A*Math.sin(x) + p.B;
+      if (isCos) return p.A*Math.cos(x) + p.B;
+      if (isTan) return p.A*Math.tan(x) + p.B;
+      return p.A*(1/Math.tan(x)) + p.B;
+    },
+    draw(ctx, view, p, ui){
+      const f = this.f;
+      drawWithMod(ctx, view, p, ui, (x)=>f(x,p), '#4ecdc4');
+      if (isTan){
+        for (let k=-3;k<=3;k++){
+          const x = Math.PI/2 + k*Math.PI;
+          dashedWorld(ctx, view, x, -12, x, 12, '#ff6b6b', [4,3]);
+        }
+      }
+      if (isCot){
+        for (let k=-3;k<=3;k++){
+          const x = k*Math.PI;
+          dashedWorld(ctx, view, x, -12, x, 12, '#ff6b6b', [4,3]);
+        }
+      }
+    },
+    special: (p)=>{
+      if (isSin){
+        return [
+          { x: Math.PI/2, y:p.A+p.B, label:'max', color:'#ffd93d' },
+          { x: -Math.PI/2, y:-p.A+p.B, label:'min', color:'#ffd93d' }
+        ];
+      }
+      if (isCos){
+        return [
+          { x: 0, y:p.A+p.B, label:'max', color:'#ffd93d' },
+          { x: Math.PI, y:-p.A+p.B, label:'min', color:'#ffd93d' }
+        ];
+      }
+      return [];
+    },
+    shifts: (p)=>{
+      const out = [];
+      if (Math.abs(p.B) > 0.01) out.push({ axis:'y', value:p.B, label:'B = '+fmtCoef(p.B) });
+      return out;
+    }
+  };
+}
+
+/* --- Пересечения --- */
+function intersections(kind){
+  const cfgs = {
+    int_line_line: {
+      name:'Прямая × Прямая', latex:'y=k_1x+b_1 \\;\\cap\\; y=k_2x+b_2',
+      realLatex:(p)=>
+        'y = ' + fmtCoef(p.k1) + 'x ' + (p.b1>=0?'+ '+fmtCoef(p.b1):'- '+fmtCoef(-p.b1)) +
+        '  \\;\\cap\\;  y = ' + fmtCoef(p.k2) + 'x ' + (p.b2>=0?'+ '+fmtCoef(p.b2):'- '+fmtCoef(-p.b2)),
+      params: {
+        k1:{min:-5,max:5,step:0.5,value: 2},
+        b1:{min:-6,max:6,step:0.5,value:-1},
+        k2:{min:-5,max:5,step:0.5,value:-1},
+        b2:{min:-6,max:6,step:0.5,value: 5}
+      },
+      curves: [
+        { f:(x,p)=> p.k1*x + p.b1, color:'#4ecdc4' },
+        { f:(x,p)=> p.k2*x + p.b2, color:'#ff6b6b' }
+      ]
+    },
+    int_line_par: {
+      name:'Прямая × Парабола', latex:'y=kx+b \\;\\cap\\; y=ax^2+c',
+      realLatex:(p)=>
+        'y = ' + fmtCoef(p.k) + 'x ' + (p.b>=0?'+ '+fmtCoef(p.b):'- '+fmtCoef(-p.b)) +
+        '  \\;\\cap\\;  y = ' + fmtCoef(p.a) + 'x^2 ' + (p.c>=0?'+ '+fmtCoef(p.c):'- '+fmtCoef(-p.c)),
+      params: {
+        k:{min:-4,max:4,step:0.5,value: 1},
+        b:{min:-6,max:6,step:0.5,value: 1},
+        a:{min:-2,max:2,step:0.5,value: 1},
+        c:{min:-6,max:6,step:0.5,value:-1}
+      },
+      curves: [
+        { f:(x,p)=> p.k*x + p.b,   color:'#4ecdc4' },
+        { f:(x,p)=> p.a*x*x + p.c, color:'#4ade80' }
+      ]
+    },
+    int_line_hyp: {
+      name:'Прямая × Гипербола', latex:'y=kx+b \\;\\cap\\; y=\\dfrac{K}{x}',
+      realLatex:(p)=>
+        'y = ' + fmtCoef(p.k) + 'x ' + (p.b>=0?'+ '+fmtCoef(p.b):'- '+fmtCoef(-p.b)) +
+        '  \\;\\cap\\;  y = \\dfrac{' + fmtCoef(p.K) + '}{x}',
+      params: {
+        k:{min:-4,max:4,step:0.5,value: 1},
+        b:{min:-6,max:6,step:0.5,value:-2},
+        K:{min:-6,max:6,step:0.5,value: 3}
+      },
+      curves: [
+        { f:(x,p)=> p.k*x + p.b,       color:'#4ecdc4' },
+        { f:(x,p)=> x===0?NaN:p.K/x,   color:'#ff6b6b' }
+      ]
+    },
+    int_par_par_same: {
+      name:'Парабола × Парабола (одна сторона)',
+      latex:'y=a_1x^2+c_1 \\;\\cap\\; y=a_2x^2+c_2',
+      realLatex:(p)=>
+        'y = ' + fmtCoef(p.a1) + 'x^2 ' + (p.c1>=0?'+ '+fmtCoef(p.c1):'- '+fmtCoef(-p.c1)) +
+        '  \\;\\cap\\;  y = ' + fmtCoef(p.a2) + 'x^2 ' + (p.c2>=0?'+ '+fmtCoef(p.c2):'- '+fmtCoef(-p.c2)),
+      params: {
+        a1:{min:-2,max:2,step:0.5,value: 0.5},
+        c1:{min:-6,max:6,step:0.5,value:-2},
+        a2:{min:-2,max:2,step:0.5,value:-1.5},
+        c2:{min:-6,max:6,step:0.5,value: 6}
+      },
+      curves: [
+        { f:(x,p)=> p.a1*x*x + p.c1, color:'#4ade80' },
+        { f:(x,p)=> p.a2*x*x + p.c2, color:'#a78bfa' }
+      ]
+    },
+    int_par_par_opp: {
+      name:'Парабола × Парабола (разные ветви)',
+      latex:'y=a_1x^2+c_1 \\;\\cap\\; y=a_2x^2+c_2',
+      realLatex:(p)=>
+        'y = ' + fmtCoef(p.a1) + 'x^2 ' + (p.c1>=0?'+ '+fmtCoef(p.c1):'- '+fmtCoef(-p.c1)) +
+        '  \\;\\cap\\;  y = ' + fmtCoef(p.a2) + 'x^2 ' + (p.c2>=0?'+ '+fmtCoef(p.c2):'- '+fmtCoef(-p.c2)),
+      params: {
+        a1:{min:-2,max:2,step:0.5,value: 1},
+        c1:{min:-6,max:6,step:0.5,value:-4},
+        a2:{min:-2,max:2,step:0.5,value:-1},
+        c2:{min:-6,max:6,step:0.5,value: 4}
+      },
+      curves: [
+        { f:(x,p)=> p.a1*x*x + p.c1, color:'#4ade80' },
+        { f:(x,p)=> p.a2*x*x + p.c2, color:'#a78bfa' }
+      ]
+    }
+  };
+  const c = cfgs[kind];
+  return {
+    name: c.name,
+    latex: ()=> c.latex,
+    realLatex: c.realLatex,
+    params: c.params,
+    dragPoints: [],
+    curves: c.curves,
+    f: c.curves[0].f,
+    draw(ctx, view, p, ui){
+      this.curves.forEach(cur=>{
+        drawWithMod(ctx, view, p, ui, (x)=>cur.f(x,p), cur.color);
+      });
+      const roots = findIntersections(this.curves[0].f, this.curves[1].f, p);
+      roots.forEach(r=>{
+        let rr = { x:r.x, y:r.y };
+        if (currentMod === 'arg' || currentMod === 'bothSides') rr.x = Math.abs(rr.x);
+        if (currentMod === 'whole' || currentMod === 'bothSides') rr.y = Math.abs(rr.y);
+        drawDot(rr.x, rr.y, '#ffffff', 7);
+        ctx.fillStyle = '#0b1018';
+        const [px,py] = w2p(rr.x,rr.y);
+        ctx.beginPath(); ctx.arc(px,py,3.5,0,Math.PI*2); ctx.fill();
+        textWorld(ctx, view, rr.x, rr.y, '('+fmtCoef(rr.x)+'; '+fmtCoef(rr.y)+')', '#ffd93d', 11);
+      });
+    },
+    special: ()=> [],
+    shifts: ()=> []
+  };
+}
+function findIntersections(f, g, P){
+  const roots = [];
+  const step = 0.02;
+  let prevX = -12, prevD = f(prevX,P) - g(prevX,P);
+  if (!isFinite(prevD)) prevD = NaN;
+  for (let x = -12+step; x <= 12; x += step){
+    let d = f(x,P) - g(x,P);
+    if (!isFinite(d)){ prevX = x; prevD = NaN; continue; }
+    if (isFinite(prevD) && prevD*d < 0){
+      let lo = prevX, hi = x, flo = prevD;
+      for (let k=0;k<60;k++){
+        const mid = (lo+hi)/2;
+        const fm = f(mid,P) - g(mid,P);
+        if (flo*fm <= 0) hi = mid; else { lo = mid; flo = fm; }
+      }
+      const rx = (lo+hi)/2;
+      roots.push({ x:rx, y:f(rx,P) });
+    }
+    prevX = x; prevD = d;
+  }
+  return roots;
+}
+
+/* ================================================================
+   БЛЕДНЫЙ «ПРИЗРАК» — исходный график функции без модуля
+================================================================ */
+function drawGhost(ctx, view, f){
+  const N = 600, XMIN = -12, XMAX = 12;
+  let prev = null;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(180, 190, 205, 0.38)';
+  ctx.lineWidth = 1.6;
+  ctx.setLineDash([4, 5]);
+  ctx.lineCap = 'round';
+  for (let i=0;i<=N;i++){
+    const x = XMIN + (XMAX-XMIN)*i/N;
+    let y;
+    try { y = f(x); } catch(e){ y = NaN; }
+    if (!isFinite(y) || Math.abs(y) > 15){ prev = null; continue; }
+    if (prev){
+      const [px1,py1] = w2p(prev[0], prev[1]);
+      const [px2,py2] = w2p(x, y);
+      ctx.beginPath(); ctx.moveTo(px1,py1); ctx.lineTo(px2,py2); ctx.stroke();
+    }
+    prev = [x, y];
+  }
+  ctx.restore();
+}
+
+/* ================================================================
+   РИСОВАНИЕ С УЧЁТОМ МОДУЛЯ — 4 РЕЖИМА
+   'none'      : y = f(x)
+   'whole'     : y = |f(x)|
+   'arg'       : y = f(|x|)
+   'yMod'      : |y| = f(x)   → рисуем y = f(x) и y = -f(x) там, где f(x) >= 0
+   'bothSides' : |y| = |f(x)| → рисуем ±|f(x)| (совпадает с |f(|x|)|)
+================================================================ */
+function drawWithMod(ctx, view, p, ui, f, color){
+  const useArg   = (currentMod === 'arg');
+  const useWhole = (currentMod === 'whole');
+  const useYMod  = (currentMod === 'yMod');
+  const useBoth  = (currentMod === 'bothSides');
+
+  // === БЛЕДНЫЙ СЕРЫЙ ПУНКТИР: исходный график без модуля ===
+  if (ui.showGhost && currentMod !== 'none'){
+    drawGhost(ctx, view, f);
+  }
+
+  const N = 600;
+  const XMIN = -12, XMAX = 12;
+
+  // Функция, с учётом модуля аргумента и/или функции
+  function evalY(x){
+    let X = x;
+    if (useArg || useBoth) X = Math.abs(x);
+    let y = f(X);
+    if (!isFinite(y)) return NaN;
+    if (useWhole || useBoth) y = Math.abs(y);
+    return y;
+  }
+
+  // Обычная одна ветвь
+  function strokeOneBranch(){
+    let prev = null;
+    for (let i=0;i<=N;i++){
+      const x = XMIN + (XMAX-XMIN)*i/N;
+      let y = evalY(x);
+      if (!isFinite(y) || Math.abs(y) > 15){ prev = null; continue; }
+      if (prev) strokeWorld(ctx, view, prev[0], prev[1], x, y, color, 2.4);
+      prev = [x, y];
+    }
+  }
+
+  // Две симметричные ветви относительно OX
+  function strokeTwoBranches(){
+    let prev = null;
+    for (let i=0;i<=N;i++){
+      const x = XMIN + (XMAX-XMIN)*i/N;
+      let y = evalY(x);
+      if (!isFinite(y) || Math.abs(y) > 15){ prev = null; continue; }
+      if (prev) strokeWorld(ctx, view, prev[0], prev[1], x, y, color, 2.4);
+      prev = [x, y];
+    }
+    prev = null;
+    for (let i=0;i<=N;i++){
+      const x = XMIN + (XMAX-XMIN)*i/N;
+      let y = evalY(x);
+      if (!isFinite(y) || Math.abs(y) > 15){ prev = null; continue; }
+      y = -y;
+      if (prev) strokeWorld(ctx, view, prev[0], prev[1], x, y, color, 2.4);
+      prev = [x, y];
+    }
+  }
+
+  if (useYMod){
+    const origEval = evalY;
+    evalY = function(x){
+      let y = f(x);
+      if (!isFinite(y)) return NaN;
+      if (y < 0) return NaN;
+      return y;
+    };
+    strokeTwoBranches();
+    evalY = origEval;
+    return;
+  }
+
+  if (useBoth){
+    strokeTwoBranches();
+    return;
+  }
+
+  strokeOneBranch();
+}
+
+/* ================================================================
+   РИСОВАНИЕ
+================================================================ */
+function strokeWorld(ctx, view, x1,y1, x2,y2, color, w=2){
+  const [px1,py1] = w2p(x1,y1);
+  const [px2,py2] = w2p(x2,y2);
+  ctx.strokeStyle = color; ctx.lineWidth = w;
+  ctx.beginPath(); ctx.moveTo(px1,py1); ctx.lineTo(px2,py2); ctx.stroke();
+}
+function dashedWorld(ctx, view, x1,y1,x2,y2, color, pattern=[4,4], w=1.6){
+  const [px1,py1] = w2p(x1,y1);
+  const [px2,py2] = w2p(x2,y2);
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = w; ctx.setLineDash(pattern);
+  ctx.beginPath(); ctx.moveTo(px1,py1); ctx.lineTo(px2,py2); ctx.stroke();
+  ctx.restore();
+}
+function textWorld(ctx, view, x, y, text, color, size=12){
+  const [px,py] = w2p(x,y);
+  ctx.fillStyle = color; ctx.font = size+'px ui-sans-serif';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, px+4, py-8);
+}
+function drawDot(x,y,color='#fff',r=6){
+  const [px,py] = w2p(x,y);
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#0b1018'; ctx.lineWidth = 2; ctx.stroke();
+}
+
+/* ================================================================
+   СТРЕЛКИ СДВИГА
+================================================================ */
+function drawShiftArrow(ctx, view, axis, value, label, color){
+  if (Math.abs(value) < 0.01) return;
+  const sign = Math.sign(value);
+  const abs = Math.abs(value);
+
+  const [x0, y0] = w2p(0,0);
+  let x1, y1;
+  if (axis === 'x'){
+    [x1, y1] = w2p(value, 0);
+  } else {
+    [x1, y1] = w2p(0, value);
+  }
+
+  const dx = x1 - x0, dy = y1 - y0;
+  if (Math.hypot(dx, dy) < 20) return;
+
+  const offX = axis === 'y' ? 14 : 0;
+  const offY = axis === 'x' ? 14 : 0;
+  const sx = x0 + offX, sy = y0 + offY;
+  const ex = x1 + offX, ey = y1 + offY;
+
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 2;
+
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(ex, ey);
+  ctx.stroke();
+
+  const ang = Math.atan2(ey - sy, ex - sx);
+  const head = 10;
+  ctx.beginPath();
+  ctx.moveTo(ex, ey);
+  ctx.lineTo(ex - head*Math.cos(ang - Math.PI/7), ey - head*Math.sin(ang - Math.PI/7));
+  ctx.lineTo(ex - head*Math.cos(ang + Math.PI/7), ey - head*Math.sin(ang + Math.PI/7));
+  ctx.closePath();
+  ctx.fill();
+
+  const mx = (sx + ex)/2;
+  const my = (sy + ey)/2;
+  const text = (sign > 0 ? '+' : '-') + fmtCoef(abs) + (label ? '  ('+label+')' : '');
+  ctx.font = '11px ui-sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillStyle = color;
+  const tw = ctx.measureText(text).width;
+  ctx.fillStyle = 'rgba(11,16,24,.85)';
+  ctx.fillRect(mx - tw/2 - 4, my - 18, tw + 8, 15);
+  ctx.fillStyle = color;
+  ctx.fillText(text, mx, my - 4);
+
+  ctx.restore();
+}
+
+/* ================================================================
+   СБОРКА МОДЕЛИ
+================================================================ */
+function buildModel(kind){
+  let m;
+  if (kind === 'linear')            m = linear();
+  else if (kind === 'parabola')     m = parabola();
+  else if (kind === 'hyperbola_full') m = hyperbolaFull();
+  else if (kind === 'exp_full')     m = expFull();
+  else if (kind === 'log_full')     m = logFull();
+  else if (kind === 'sqrt_full')    m = sqrtFull();
+  else if (kind === 'sin' || kind === 'cos' || kind === 'tan' || kind === 'cot') m = trig(kind);
+  else                              m = intersections(kind);
+
+  m.kind = kind;
+
+  m.p = {};
+  for (const k in m.params) m.p[k] = m.params[k].value;
+
+  state.points = [];
+  state.asyms  = [];
+
+  (m.dragPoints || []).forEach(dp=>{
+    let x=0, y=0;
+    if (dp.kind === 'param'){ x = 0; y = m.p[dp.param] || 0; }
+    else if (dp.kind === 'vertex'){
+      if (m.p.a){
+        x = -m.p.b/(2*m.p.a);
+        y = m.p.a*x*x + m.p.b*x + m.p.c;
+      }
+    }
+    else if (dp.kind === 'onCurve'){ x = dp.x; y = m.f(x, m.p); }
+    else if (dp.kind === 'hyperbolaCurve'){ x = 2; y = m.f(x, m.p); }
+    else if (dp.kind === 'expCurveFull'){ x = 1; y = m.f(x, m.p); }
+    else if (dp.kind === 'logCurveFull'){ x = 4; y = m.f(x, m.p); }
+    else if (dp.kind === 'sqrtCurveFull'){ x = m.p.a + 4; y = m.f(m.p.a + 4, m.p); }
+    if (!isFinite(y)) y = 0;
+    state.points.push({ model:m, ref:dp, x, y });
+  });
+
+  (m.dragAsyms || []).forEach(da=>{
+    state.asyms.push({ model:m, ref:da, value: da.value(m.p) });
+  });
+
+  current = m;
+}
+
+/* ================================================================
+   ПОДБЛОК МОДУЛЯ У КАЖДОЙ ФУНКЦИИ
+================================================================ */
+let modHost = null;
+
+function ensureModHost(fnBtn){
+  if (!modHost){
+    modHost = document.createElement('div');
+    modHost.className = 'mod-host';
+    modHost.innerHTML = `
+      <div class="group-title" style="margin-bottom:6px;">Модуль</div>
+      <button class="mod-btn active" data-mod="none"><span class="mdot"></span>Без модуля: y = f(x)</button>
+      <button class="mod-btn" data-mod="whole"><span class="mdot"></span>Модуль от всей функции: y = |f(x)|</button>
+      <button class="mod-btn" data-mod="arg"><span class="mdot"></span>Модуль от аргумента: y = f(|x|)</button>
+      <button class="mod-btn" data-mod="yMod"><span class="mdot"></span>Модуль от буквы y: |y| = f(x)</button>
+      <button class="mod-btn" data-mod="bothSides"><span class="mdot"></span>Модуль от левой и правой части: |y| = |f(x)|</button>
+    `;
+    modHost.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.mod-btn');
+      if (!btn) return;
+      modHost.querySelectorAll('.mod-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      currentMod = btn.dataset.mod;
+      updateHud();
+    });
+  }
+  fnBtn.insertAdjacentElement('afterend', modHost);
+
+  modHost.querySelectorAll('.mod-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.mod === currentMod);
+  });
+}
+
+/* ================================================================
+   UI
+================================================================ */
+function rebuildSliders(){
+  const box = document.getElementById('sliders');
+  box.innerHTML = '<h3>Коэффициенты</h3>';
+  const m = current;
+  const keys = Object.keys(m.params);
+  if (keys.length === 0){
+    box.innerHTML += '<div style="color:#8fa3bf;font-size:12px;">Здесь параметры не меняются.</div>';
+    return;
+  }
+  for (const key of keys){
+    const cfg = m.params[key];
+    const wrap = document.createElement('div'); wrap.className='sl';
+    wrap.innerHTML = `
+      <div class="lab">
+        <span>${key}</span>
+        <input type="number" class="num" step="${cfg.step}" value="${fmt(m.p[key])}" data-key="${key}">
+      </div>
+      <input type="range" min="${cfg.min}" max="${cfg.max}" step="${cfg.step}" value="${m.p[key]}" data-key="${key}">
+    `;
+    box.appendChild(wrap);
+    const range = wrap.querySelector('input[type=range]');
+    const num   = wrap.querySelector('input.num');
+    range.addEventListener('input', e=>{
+      m.p[key] = parseFloat(e.target.value);
+      num.value = fmt(m.p[key]);
+      syncFromParams();
+      updateHud();
+    });
+    num.addEventListener('change', e=>{
+      let v = parseFloat(e.target.value);
+      if (!isFinite(v)) v = cfg.value;
+      v = Math.max(cfg.min, Math.min(cfg.max, v));
+      m.p[key] = v;
+      num.value = fmt(v);
+      range.value = v;
+      syncFromParams();
+      updateHud();
+    });
+  }
+}
+
+function syncFromParams(){
+  const m = current;
+  state.asyms.forEach(a=>{
+    if (a.ref.value) a.value = a.ref.value(m.p);
+  });
+  state.points.forEach(pt=>{
+    const ref = pt.ref;
+    if (ref.kind === 'param'){
+      pt.y = m.p[ref.param];
+      pt.x = 0;
+    }
+    if (ref.kind === 'vertex' && m.p.a){
+      const xv = -m.p.b/(2*m.p.a);
+      pt.x = xv; pt.y = m.p.a*xv*xv + m.p.b*xv + m.p.c;
+    }
+    if (ref.kind === 'onCurve') pt.y = m.f(pt.x, m.p);
+    if (ref.kind === 'hyperbolaCurve' ||
+        ref.kind === 'expCurveFull' || ref.kind === 'logCurveFull' ||
+        ref.kind === 'sqrtCurveFull'){
+      const y = m.f(pt.x, m.p);
+      if (isFinite(y)) pt.y = y;
+    }
+  });
+}
+
+function updateHud(){
+  const m = current;
+  document.getElementById('fnName').textContent = m.name + modSuffix();
+  document.getElementById('eqText').innerHTML = '\\(' + m.latex() + '\\)';
+  document.getElementById('realEqText').innerHTML = '\\(' + modLatex(m.realLatex(m.p)) + '\\)';
+  if (window.MathJax && MathJax.typesetPromise){
+    MathJax.typesetPromise([
+      document.getElementById('eqText'),
+      document.getElementById('realEqText')
+    ]).catch(()=>{});
+  }
+}
+
+function modSuffix(){
+  if (currentMod === 'whole')     return ' · |f|';
+  if (currentMod === 'arg')       return ' · f(|x|)';
+  if (currentMod === 'yMod')      return ' · |y| = f';
+  if (currentMod === 'bothSides') return ' · |y| = |f|';
+  return '';
+}
+
+function modLatex(s){
+  const idx = s.indexOf('=');
+  if (idx < 0) return s;
+  let left  = s.slice(0, idx).trim();
+  let right = s.slice(idx+1).trim();
+
+  const wrapAbs = (str) => '\\left|' + str + '\\right|';
+
+  if (currentMod === 'whole'){
+    return left + ' = ' + wrapAbs(right);
+  }
+  if (currentMod === 'arg'){
+    const r = right.replace(/x/g, '|x|');
+    return left + ' = ' + r;
+  }
+  if (currentMod === 'yMod'){
+    return wrapAbs(left) + ' = ' + right;
+  }
+  if (currentMod === 'bothSides'){
+    const r = right.replace(/x/g, '|x|');
+    return wrapAbs(left) + ' = ' + wrapAbs(r);
+  }
+  return s;
+}
+
+/* ================================================================
+   КАДР
+================================================================ */
+function drawFrame(){
+  ctx.clearRect(0,0,W,H);
+  const g = ctx.createRadialGradient(W*0.8, H*0.1, 50, W*0.8, H*0.1, Math.max(W,H));
+  g.addColorStop(0,'#131c2c'); g.addColorStop(1,'#080c13');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+  const m = current;
+  if (!m) return;
+
+  // Сетка
+  if (state.ui.showGrid){
+    ctx.strokeStyle = '#1c2840'; ctx.lineWidth = 1;
+    const [xmin, ymax] = p2w(0, 0);
+    const [xmax, ymin] = p2w(W, H);
+    for (let x = Math.floor(xmin); x <= Math.ceil(xmax); x++){
+      const [px] = w2p(x, 0);
+      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
+    }
+    for (let y = Math.floor(ymin); y <= Math.ceil(ymax); y++){
+      const [, py] = w2p(0, y);
+      ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
+    }
+  }
+
+  // Оси
+  ctx.strokeStyle = '#3d4f6b'; ctx.lineWidth = 1.4;
+  const [ox, oy] = w2p(0,0);
+  ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(W, oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, H); ctx.stroke();
+  ctx.fillStyle = '#3d4f6b';
+  ctx.beginPath(); ctx.moveTo(W-10, oy-5); ctx.lineTo(W-2, oy); ctx.lineTo(W-10, oy+5); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(ox-5, 10); ctx.lineTo(ox, 2); ctx.lineTo(ox+5, 10); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#5d7391'; ctx.font = '11px ui-sans-serif';
+  ctx.fillText('x', W-16, oy-8); ctx.fillText('y', ox+8, 14);
+
+  // Подписи осей
+  const [xmin2, ymax2] = p2w(0, 0);
+  const [xmax2, ymin2] = p2w(W, H);
+  const isTrig = m.kind === 'sin' || m.kind === 'cos' || m.kind === 'tan' || m.kind === 'cot';
+  ctx.fillStyle = '#8fa3bf'; ctx.font = '10px ui-sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for (let x = Math.floor(xmin2); x <= Math.ceil(xmax2); x++){
+    if (x === 0) continue;
+    const [px] = w2p(x, 0);
+    if (px < 25 || px > W-25) continue;
+    ctx.beginPath(); ctx.moveTo(px, oy-3); ctx.lineTo(px, oy+3); ctx.strokeStyle='#3d4f6b'; ctx.stroke();
+    let label = String(x);
+    if (isTrig){
+      if (x === 3) label = 'π';
+      else if (x === -3) label = '-π';
+      else if (x === 6) label = '2π';
+      else if (x === -6) label = '-2π';
+      else continue;
+    }
+    ctx.fillStyle = '#8fa3bf';
+    ctx.fillText(label, px, oy+5);
+  }
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for (let y = Math.floor(ymin2); y <= Math.ceil(ymax2); y++){
+    if (y === 0) continue;
+    const [, py] = w2p(0, y);
+    if (py < 25 || py > H-25) continue;
+    ctx.beginPath(); ctx.moveTo(ox-3, py); ctx.lineTo(ox+3, py); ctx.strokeStyle='#3d4f6b'; ctx.stroke();
+    ctx.fillStyle = '#8fa3bf';
+    ctx.fillText(String(y), ox-6, py);
+  }
+  ctx.textAlign='right'; ctx.textBaseline='top';
+  ctx.fillStyle = '#8fa3bf';
+  if (ox > 12 && oy < H-5) ctx.fillText('0', ox-4, oy+4);
+
+  // Функция
+  m.draw(ctx, view, m.p, {points: state.points, showDeltas: state.ui.showDeltas, showGhost: state.ui.showGhost});
+
+  // Асимптоты
+  if (state.ui.showAsym){
+    state.asyms.forEach(a=>{
+      if (a.ref.param === 'zero') return;
+      const color = '#ff6b6b';
+      if (a.ref.kind === 'v') dashedWorld(ctx, view, a.value, -12, a.value, 12, color, [5,4], 1.8);
+      else                    dashedWorld(ctx, view, -12, a.value, 12, a.value, color, [5,4], 1.8);
+    });
+  }
+
+  // Стрелки сдвига
+  if (state.ui.showShifts && m.shifts){
+    let list = [];
+    try { list = m.shifts(m.p) || []; } catch(e){}
+    list.forEach(sh=>{
+      drawShiftArrow(ctx, view, sh.axis, sh.value, sh.label, '#ffd93d');
+    });
+  }
+
+  // Особые точки
+  if (state.ui.showPoints && m.special){
+    let list = [];
+    try { list = m.special(m.p, {points: state.points}) || []; } catch(e){}
+    list.forEach(s=>{
+      if (s.hidden) return;
+      let sx = s.x, sy = s.y;
+      if (currentMod === 'arg' || currentMod === 'bothSides') sx = Math.abs(sx);
+      if (currentMod === 'whole' || currentMod === 'bothSides') sy = Math.abs(sy);
+      drawDot(sx, sy, s.color || '#ff6b6b', 5);
+      if (s.label) textWorld(ctx, view, sx, sy, s.label, s.color || '#ff6b6b', 11);
+    });
+  }
+
+  // Опорные точки
+  if (state.ui.showPoints){
+    state.points.forEach(pt=>{
+      let px0 = pt.x, py0 = pt.y;
+      if (currentMod === 'arg' || currentMod === 'bothSides') px0 = Math.abs(px0);
+      if (currentMod === 'whole' || currentMod === 'bothSides') py0 = Math.abs(py0);
+      const [px,py] = w2p(px0, py0);
+      ctx.fillStyle = '#4ecdc4';
+      ctx.beginPath(); ctx.arc(px,py,7,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#0b1018'; ctx.lineWidth=2; ctx.stroke();
+      ctx.fillStyle = '#0b1018';
+      ctx.beginPath(); ctx.arc(px,py,2.5,0,Math.PI*2); ctx.fill();
+    });
+  }
+}
+
+/* ================================================================
+   ЦИКЛ
+================================================================ */
+function loop(){ requestAnimationFrame(loop); drawFrame(); }
+
+/* ================================================================
+   МЫШЬ
+================================================================ */
+function hitTest(mx,my){
+  for (let i=0;i<state.points.length;i++){
+    const pt = state.points[i];
+    let px0 = pt.x, py0 = pt.y;
+    if (currentMod === 'arg' || currentMod === 'bothSides') px0 = Math.abs(px0);
+    if (currentMod === 'whole' || currentMod === 'bothSides') py0 = Math.abs(py0);
+    const [px,py] = w2p(px0, py0);
+    if ((px-mx)**2 + (py-my)**2 < 14*14) return {type:'point', idx:i};
+  }
+  for (let i=0;i<state.asyms.length;i++){
+    const a = state.asyms[i];
+    if (a.ref.param === 'zero') continue;
+    if (a.ref.kind === 'v'){
+      const [px] = w2p(a.value, 0);
+      if (Math.abs(px - mx) < 10) return {type:'asym', idx:i};
+    } else {
+      const [, py] = w2p(0, a.value);
+      if (Math.abs(py - my) < 10) return {type:'asym', idx:i};
+    }
+  }
+  return null;
+}
+
+cv.addEventListener('mousedown', e=>{
+  const r = cv.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  if (e.button === 2 || e.shiftKey){
+    state.dragView = true; state.lastMouse = {x:mx,y:my};
+    cv.style.cursor = 'grabbing';
+    return;
+  }
+  const hit = hitTest(mx,my);
+  if (hit) state.drag = hit;
+  else { state.dragView = true; state.lastMouse = {x:mx,y:my}; cv.style.cursor = 'grabbing'; }
+});
+
+addEventListener('mousemove', e=>{
+  const r = cv.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+
+  if (state.dragView && state.lastMouse){
+    view.cx -= (mx - state.lastMouse.x)/view.scale;
+    view.cy += (my - state.lastMouse.y)/view.scale;
+    state.lastMouse = {x:mx,y:my};
+    return;
+  }
+  if (!state.drag || !current) return;
+  const [wx, wy] = p2w(mx, my);
+
+  if (state.drag.type === 'point'){
+    const pt = state.points[state.drag.idx];
+    const ref = pt.ref;
+    const m = current;
+    const P = m.p;
+
+    if (ref.kind === 'onCurve'){
+      pt.x = wx; pt.y = wy;
+      const A = state.points.find(p=>p.ref.id==='A');
+      const B = state.points.find(p=>p.ref.id==='B');
+      if (A && B && Math.abs(A.x - B.x) > 0.01){
+        P.k = (B.y - A.y) / (B.x - A.x);
+        P.b = A.y - P.k*A.x;
+      }
+    }
+    else if (ref.kind === 'param'){
+      P[ref.param] = wy;
+      pt.x = 0; pt.y = wy;
+    }
+    else if (ref.kind === 'vertex'){
+      if (P.a === 0) P.a = 0.5;
+      P.b = -2*P.a*wx;
+      pt.x = wx; pt.y = wy;
+    }
+    else if (ref.kind === 'hyperbolaCurve'){
+      const a = ('a' in P) ? P.a : 0;
+      if (Math.abs(wx + a) > 0.1){
+        const b = P.b || 0;
+        P.k = (wy - b) * (wx + a);
+        pt.x = wx; pt.y = wy;
+      }
+    }
+    else if (ref.kind === 'expCurveFull'){
+      const c = ('c' in P) ? P.c : 0;
+      const b = ('b' in P) ? P.b : 0;
+      const Y = wy - b;
+      if (Y > 0.01 && wx + c > 0.01){
+        P.a = Math.pow(Y, 1/(wx+c));
+        pt.x = wx; pt.y = wy;
+      }
+    }
+    else if (ref.kind === 'logCurveFull'){
+      const c = ('c' in P) ? P.c : 0;
+      const b = ('b' in P) ? P.b : 0;
+      const X = wx + c;
+      const Y = wy - b;
+      if (X > 0.01 && Math.abs(Y) > 0.01){
+        P.a = Math.pow(X, 1/Y);
+        pt.x = wx; pt.y = wy;
+      }
+    }
+    else if (ref.kind === 'sqrtCurveFull'){
+      const a = P.a;
+      if (wx > a + 0.01){
+        P.k = (wy - P.b) / Math.sqrt(wx - a);
+        pt.x = wx; pt.y = wy;
+      }
+    }
+  }
+  else if (state.drag.type === 'asym'){
+    const a = state.asyms[state.drag.idx];
+    const m = current;
+    if (a.ref.kind === 'v'){
+      a.value = wx;
+      if (a.ref.param === 'c') m.p.c = -wx;
+      if (a.ref.param === 'a') m.p.a = wx;
+    } else {
+      a.value = wy;
+      if (a.ref.param === 'b') m.p.b = wy;
+    }
+  }
+
+  syncSliders();
+  updateHud();
+});
+
+addEventListener('mouseup', ()=>{ state.drag = null; state.dragView = false; cv.style.cursor='default'; });
+addEventListener('mouseleave', ()=>{ state.drag = null; state.dragView = false; cv.style.cursor='default'; });
+
+function syncSliders(){
+  const m = current;
+  for (const k in m.params){
+    const el = document.querySelector(`input[type=range][data-key="${k}"]`);
+    const num = document.querySelector(`input.num[data-key="${k}"]`);
+    if (el) el.value = m.p[k];
+    if (num) num.value = fmt(m.p[k]);
+  }
+}
+
+cv.addEventListener('contextmenu', e=>e.preventDefault());
+
+cv.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const r = cv.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const [wx, wy] = p2w(mx, my);
+  const factor = e.deltaY < 0 ? 1.12 : 1/1.12;
+  view.scale = Math.max(10, Math.min(200, view.scale*factor));
+  const [nx, ny] = p2w(mx, my);
+  view.cx += wx - nx;
+  view.cy += wy - ny;
+}, {passive:false});
+
+/* ================================================================
+   UI — ПЕРЕКЛЮЧЕНИЕ ФУНКЦИЙ + ПОДБЛОК МОДУЛЯ
+================================================================ */
+document.querySelectorAll('.fn-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.fn-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    buildModel(btn.dataset.fn);
+    rebuildSliders();
+    ensureModHost(btn);
+    updateHud();
+  });
+});
+
+['showGrid','showAsym','showDeltas','showPoints','showShifts','showGhost'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', e=>{
+    state.ui[id] = e.target.checked;
+  });
+});
+
+document.getElementById('reset').addEventListener('click', ()=>{
+  view = { scale: 45, cx: 0, cy: 0 };
+  const kind = current.kind;
+  buildModel(kind);
+  rebuildSliders();
+  updateHud();
+});
+
+/* старт */
+resize();
+buildModel('linear');
+rebuildSliders();
+ensureModHost(document.querySelector('.fn-btn.active'));
+updateHud();
+loop();
+</script>
+
+</body>
+</html>
