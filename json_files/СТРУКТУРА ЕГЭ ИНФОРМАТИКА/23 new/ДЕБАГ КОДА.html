@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Визуализатор: пошаговое выполнение рекурсии</title>
+<style>
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{font-family:Calibri,Arial,sans-serif;background:#e9eef3;color:#17212b;overflow:hidden}
+header{height:68px;background:#14212b;color:#fff;display:flex;align-items:center;gap:10px;padding:0 14px}h1{font-size:19px;margin:0 12px 0 0;white-space:nowrap}.controls{display:flex;gap:7px;align-items:center}.controls select,.controls button{font:600 13px Calibri,Arial;border-radius:8px;border:0;padding:9px 11px}.controls select{background:#fff}.controls button{background:#1684ff;color:#fff;cursor:pointer}.controls button.gray{background:#66737f}.controls button:disabled{opacity:.4;cursor:default}
+main{height:calc(100vh - 68px);display:grid;grid-template-columns:21% 20% 59%;gap:1px;background:#cbd5de}.panel{background:#fff;min-width:0;overflow:hidden}.title{height:42px;background:#f5f7f9;border-bottom:1px solid #d8e0e7;display:flex;align-items:center;padding:0 12px;font-size:12px;font-weight:800;letter-spacing:.2px}
+.codeWrap{height:calc(100% - 42px);display:flex;flex-direction:column}.code{flex:1;overflow:auto;background:#10171d;color:#e5edf3;padding:10px 0;font:12px/1.7 Consolas,monospace}.line{display:grid;grid-template-columns:46px 1fr;min-height:28px;padding:0 8px;border-left:5px solid transparent}.line.active{background:#3b3020;border-left-color:#ff9e0b}.line.active .ln{color:#ffd06c;font-weight:800}.line.active .mark{display:inline-block}.ln{color:#657683;text-align:right;padding-right:10px;user-select:none}.mark{display:none;width:8px;height:8px;border-radius:50%;background:#ff9e0b;margin-right:7px;vertical-align:1px}.kw{color:#ffd166}.str{color:#a7e49e}.num{color:#efa4ff}
+.footer{padding:9px 10px;border-top:1px solid #d8e0e7;background:#fff}.progress{height:7px;background:#e7ecf0;border-radius:5px;overflow:hidden}.progress i{display:block;height:100%;width:0;background:#1684ff}.status{display:flex;justify-content:space-between;gap:10px;margin-top:7px;font-size:12px}.status strong{color:#0c66ae}.msg{margin-top:7px;padding:8px 9px;background:#fff8dc;border:1px solid #e6d596;border-radius:8px;font-size:11px;line-height:1.3}.hint{margin-top:6px;color:#687681;font-size:11px}
+.scroll{height:100%;overflow:auto;padding:7px}.card{border:1px solid #d8e0e7;border-radius:9px;margin-bottom:7px;overflow:hidden;background:#fff}.cardTitle{padding:8px 10px;background:#f5f7f9;font-size:11px;font-weight:800}.grid{display:grid;grid-template-columns:72px 1fr;gap:4px 6px;padding:7px 8px;font:11px Consolas,monospace}.grid b{color:#125d9d;word-break:break-word;white-space:pre-wrap}.muted{padding:9px 10px;color:#7b8791;font-size:12px}.frame{margin:5px 6px;padding:6px;border:1px solid #d3dce3;border-radius:8px;background:#fafbfd}.frame.current{border:2px solid #1684ff;background:#eef7ff}.frame .head{display:flex;gap:5px;align-items:center;font:700 12px Consolas,monospace}.pill{font:700 10px Calibri;border-radius:999px;padding:3px 6px;background:#e9edf0;color:#5d6973}.pill.blue{background:#e9f4ff;color:#17639f}.pill.orange{background:#fff0dc;color:#8e5a08}.subbox{margin-top:7px;padding:7px;border:1px solid #d9e2e9;border-radius:7px;background:#f7f9fb;font:12px Consolas,monospace;white-space:pre-wrap}.tree{padding:8px;overflow:auto;height:100%}.tree svg{width:100%;min-width:430px;height:auto;min-height:430px}.te{stroke:#b8c3cb;stroke-width:2.2;fill:none}.te.active{stroke:#ff9e0b;stroke-width:4.5}.te.returned{stroke:#35a568;stroke-width:3.5}.tn{fill:#fff;stroke:#7f8c96;stroke-width:1.5}.tn.active{fill:#fff1cf;stroke:#ff9e0b;stroke-width:3}.tn.returned{fill:#eaf8ef;stroke:#36a96a;stroke-width:2.5}.tn.cache{fill:#f1ecff;stroke:#7b5bc0;stroke-width:2}.tt{font:800 12px Consolas;text-anchor:middle;fill:#1b2730}.ts{font:10px Calibri;text-anchor:middle;fill:#43515b}.callLabel{font:10px Calibri;text-anchor:middle;fill:#8e5a08;font-weight:700}.retLabel{font:10px Calibri;text-anchor:middle;fill:#267b4e;font-weight:700}.treeReason{position:sticky;bottom:8px;margin:8px 4px 0;padding:10px 12px;background:#fff8dc;border:2px solid #e6bd42;border-radius:10px;font-size:11px;line-height:1.3}.treeReason b{color:#6a4a00}
+.graph{height:calc(100% - 42px);position:relative;background:#fbfcfd}.graph svg{width:100%;height:100%}.ge{stroke:#b6c0c7;stroke-width:2.5;fill:none}.ge.active{stroke:#ff9e0b;stroke-width:5}.ge.done{stroke:#1684ff;stroke-width:3.5}.ge.bad{stroke:#ef5350;stroke-width:3.5;stroke-dasharray:7 6}.gn{fill:#fff;stroke:#6c7a85;stroke-width:2}.gn.cur{fill:#fff1cf;stroke:#ff9e0b;stroke-width:4}.gn.goal{fill:#eaf8ef;stroke:#35a568;stroke-width:3}.gt{font:700 15px Arial;text-anchor:middle;dominant-baseline:middle}.gw{font:12px Consolas;text-anchor:middle;fill:#596771;paint-order:stroke;stroke:#fbfcfd;stroke-width:5px}.badge{position:absolute;left:10px;top:10px;background:#14212b;color:#fff;border-radius:8px;padding:6px 8px;font-size:11px}.note{position:absolute;left:10px;right:10px;bottom:10px;background:#fff;border:1px solid #d8e0e7;border-radius:8px;padding:8px;font-size:11px;line-height:1.35}.legend{position:absolute;top:10px;right:10px;background:#fff;border:1px solid #d8e0e7;border-radius:8px;padding:7px;font-size:10px;line-height:1.6}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}.orange{background:#ff9e0b}.blue{background:#1684ff}.gray{background:#adb7bf}.red{background:#ef5350}
+.visualSplit{height:calc(100% - 42px);display:grid;grid-template-columns:1fr 1fr;background:#cbd5de;gap:1px}.visualPane{background:#fbfcfd;min-width:0;display:flex;flex-direction:column}.visualPaneTitle{height:38px;flex:0 0 38px;background:#f5f7f9;border-bottom:1px solid #d8e0e7;padding:0 10px;display:flex;align-items:center;font-size:11px;font-weight:900;letter-spacing:.2px}.visualPaneBody{flex:1;min-height:0;position:relative;overflow:auto}.graphPaneBody{overflow:hidden}.visualBadge{position:absolute;left:9px;top:9px;z-index:2;background:#14212b;color:#fff;border-radius:8px;padding:6px 8px;font-size:10px;font-weight:700}.visualSplit .legend{top:9px;right:9px;font-size:9px;padding:6px}.visualSplit .note{left:8px;right:8px;bottom:8px}.treeSummary{padding:8px 10px;background:#fff;border-bottom:1px solid #d8e0e7;font-size:11px;line-height:1.35}.treeSummary strong{color:#17639f}.childrenPlate{margin:8px 10px;padding:11px 12px;border-radius:10px;background:#fff3a6;border:2px solid #f0b400;box-shadow:0 2px 0 rgba(160,110,0,.12)}.childrenPlate .cpTitle{font-size:12px;font-weight:900;color:#6a4a00;letter-spacing:.2px;margin-bottom:7px}.childrenPlate .cpNode{font:800 16px Consolas,monospace;color:#111;background:#fff;border-radius:7px;padding:7px 9px;margin:4px 0}.childrenPlate .cpReason{font-size:11px;color:#6a4a00;line-height:1.35;margin-top:7px}.warn{margin:8px 10px;padding:8px;border-radius:8px;background:#fff2f1;border:1px solid #ecc7c2;color:#8d211b;font-size:11px;line-height:1.35}
+@media(max-width:1050px){body{overflow:auto}main{height:auto;display:block}.panel{min-height:560px}.graph{height:650px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Пошаговый визуализатор рекурсии</h1>
+<div class="controls">
+<select id="mode"><option value="edges">Прототип 1 — число рёбер</option><option value="weight">Прототип 2 — длина пути</option><option value="paths">Прототип 3 — число путей</option></select>
+<button id="reset">↻ Сначала</button><button id="prev" class="gray">← Назад</button><button id="next">Далее →</button>
+</div>
+</header>
+<main>
+<section class="panel">
+<div class="title">КОД — текущая выполняемая строка</div>
+<div class="codeWrap"><div id="code" class="code"></div>
+<div class="footer"><div class="progress"><i id="progress"></i></div><div class="status"><span id="stepNo">Шаг 0</span><strong id="lineInfo">СТАРТ</strong></div><div id="message" class="msg"></div><div class="hint">Каждое нажатие = проход через одну инструкцию. Значения справа меняются только ПОСЛЕ прохода через её строку.</div></div></div>
+</section>
+<section class="panel">
+<div class="title">ВСЕ ПЕРЕМЕННЫЕ • DETI • СТЕК • ДЕРЕВО ВЫЗОВОВ</div>
+<div id="side" class="scroll"></div>
+</section>
+<section class="panel">
+<div class="title">ДВЕ СВЯЗАННЫЕ ДИАГРАММЫ</div>
+<div class="visualSplit">
+  <div class="visualPane">
+    <div class="visualPaneTitle">ГРАФ — РЕАЛЬНЫЕ РЁБРА</div>
+    <div class="visualPaneBody graphPaneBody">
+      <div id="badge" class="visualBadge"></div>
+      <div class="legend"><div><span class="dot orange"></span>текущий переход</div><div><span class="dot blue"></span>обработано</div><div><span class="dot gray"></span>ещё не обработано</div><div><span class="dot red"></span>нет вершины</div></div>
+      <svg id="graphSvg" viewBox="0 0 430 720"></svg>
+      <div id="graphNote" class="note"></div>
+    </div>
+  </div>
+  <div class="visualPane">
+    <div class="visualPaneTitle">ДЕРЕВО РЕКУРСИВНЫХ ВЫЗОВОВ</div>
+    <div id="treePaneBody" class="visualPaneBody tree"></div>
+  </div>
+</div>
+</section>
+</main>
+<script>
+(function(){
+'use strict';
+
+var rows=[[6,7,7],[6,1,1],[1,7,5.5],[7,100,2],[1,100,12],[1,4,2.5],[4,100,8],[100,12,1]];
+var G={6:[[7,7],[1,1]],1:[[7,5.5],[100,12],[4,2.5]],7:[[100,2]],4:[[100,8]],100:[[12,1]]};
+var pos={6:[90,105],7:[275,165],1:[90,290],100:[450,290],4:[275,435],12:[450,575]};
+var base=[
+'from functools import*','',
+'f=open("23.txt")','',
+'s=[c.split() for c in f.readlines()]',
+'s=[(int(c[0]), int(c[1]), float(c[2])) for c in s]','',
+'g={}','',
+'for a,b,v in s:',
+'    if a not in g: g[a]=[]',
+'    g[a].append((b,v))','',
+'@lru_cache(10000)',
+'def f(a):',
+'    if a==100: return 0',
+'    if a not in g: return -10**10',
+'    deti=g[a]',
+'    rez=[f(c[0]) + 1 for c in deti ]',
+'    return max(rez)','',
+'print(f(1))'
+];
+var code={edges:base,weight:base.slice(),paths:base.slice()};
+code.weight[18]='    rez=[f(c[0]) + c[1] for c in deti ]';
+code.paths[18]='    rez=[f(c[0]) for c in deti ]';
+code.paths[19]='    return sum(rez)';
+var target={edges:100,weight:12,paths:100};
+var INF=-10000000000;
+var mode='edges',events=[],step=0;
+
+function cp(x){return JSON.parse(JSON.stringify(x));}
+function empty(){return{globals:{f:'функция f(a)',s:undefined,g:undefined,file:'—'},loop:{a:undefined,b:undefined,v:undefined},frames:[],cache:{},tree:[],currentNode:null,activeEdge:null,doneEdges:[],generator:null,lastReturn:null,childrenPlate:null};}
+function put(st,line,msg,kind){events.push({line:line,msg:msg,kind:kind||'normal',state:cp(st)});}
+function ek(a,b){return a+'>'+b;}
+function tuples(a){var z=[],i;if(!a)return'[]';for(i=0;i<a.length;i++)z.push('('+a[i][0]+', '+a[i][1]+')');return'['+z.join(', ')+']';}
+function dictText(d){var z=[],k;if(!d)return'{}';for(k in d)if(Object.prototype.hasOwnProperty.call(d,k))z.push(k+': '+tuples(d[k]));return z.length?z.join('\n'):'{}';}
+function text(v){return v===undefined?'—':typeof v==='string'?v:JSON.stringify(v);}
+function addCallTree(st,node){st.tree.push(node);}
+
+/* Build one deterministic debugger history. Only snapshots at or after a real action are visible. */
+function build(){
+  var st=empty(), seq=0, cache=st.cache;
+  events=[];
+  events.push({line:0,msg:'СТАРТ. Ничего не выполнено. Первое «Далее» выполняет первую строку.',kind:'start',state:cp(st)});
+
+  put(st,1,'Выполнено: from functools import*.','global');
+  st.globals.file='открытый файл'; put(st,3,'Выполнено open(...). Переменная f теперь указывает на открытый файл.','global');
+  st.globals.s=[]; put(st,5,'Выполнено чтение f.readlines() и split(). s создана.','global');
+  st.globals.s=[]; for(var q=0;q<rows.length;q++)st.globals.s.push([String(rows[q][0]),String(rows[q][1]),String(rows[q][2])]); put(st,5,'После выполнения строки 5 справа показана текущая s.','global');
+  for(var q2=0;q2<rows.length;q2++)st.globals.s[q2]=[rows[q2][0],rows[q2][1],rows[q2][2]]; put(st,6,'Выполнено преобразование s в список кортежей (int,int,float).','global');
+  st.globals.g={}; put(st,8,'После выполнения строки 8: g = {}. Словарь создан и пока пуст.','dict');
+  for(var r=0;r<rows.length;r++){
+    var a=rows[r][0],b=rows[r][1],v=rows[r][2];
+    // Именно выполнение строки for создаёт a,b,v для текущей итерации.
+    st.loop={a:a,b:b,v:v};
+    put(st,10,'Выполнена строка for. Теперь впервые доступны a='+a+', b='+b+', v='+v+'. g пока не изменён этой итерацией.','loop');
+
+    var absent=!Object.prototype.hasOwnProperty.call(st.globals.g,a);
+    if(absent){
+      // СНАЧАЛА появляется только пустой список родителя. Ребёнка здесь ещё нет.
+      st.globals.g[a]=[];
+      put(st,11,'Выполнена строка if: родителя '+a+' ещё нет в g → создан только пустой список g['+a+'] = []. Ребёнок пока НЕ добавлен.','loop');
+    }
+    else {
+      put(st,11,'Выполнена строка if: родитель '+a+' уже есть в g → список оставлен без изменений.','loop');
+    }
+
+    // Только следующим нажатием выполняется append и появляется конкретный ребёнок.
+    st.globals.g[a].push([b,v]);
+    st.activeEdge=ek(a,b);
+    put(st,12,'Выполнена строка append: теперь в g['+a+'] добавлен ребёнок '+b+' с весом '+v+'. Текущее g['+a+'] = '+tuples(st.globals.g[a])+'.','loop');
+    st.activeEdge=null;
+  }
+  st.loop={a:undefined,b:undefined,v:undefined}; put(st,10,'Цикл for завершён. Словарь g построен.','dict');
+  put(st,14,'Выполнена строка @lru_cache(10000).','global');
+  put(st,15,'Выполнена строка def f(a): функция создана. ТЕЛО НЕ ВЫПОЛНЯЕТСЯ.','global');
+  put(st,22,'Выполнена строка print(f(1)). Сначала вычисляется аргумент f(1), поэтому только сейчас создаётся вызов функции.','call');
+
+  function call(a,parentId,parentVertex){
+    var id='n'+(++seq),node={id:id,a:a,parent:parentId,status:'active',value:undefined,cache:false,_edgeWeight:undefined,_edgeExpr:''};
+    addCallTree(st,node);
+    st.frames.push({id:id,a:a,status:'active',deti:undefined,c:undefined,rez:undefined,index:undefined,value:undefined});
+    st.currentNode=a;
+    if(parentVertex!==undefined)st.activeEdge=ek(parentVertex,a);
+    put(st,16,'Создан кадр f('+a+'). В локальной области появилась a='+a+'.','call');
+    if(a===100){
+      st.frames[st.frames.length-1].value=0;st.frames[st.frames.length-1].status='returned';node.status='returned';node.value=0;cache[a]=0;
+      put(st,16,'Проверено if a==100: ИСТИНА. Выполнено return 0.','return');
+      st.frames.pop();st.lastReturn={from:a,value:0,to:parentId};st.currentNode=st.frames.length?st.frames[st.frames.length-1].a:null;st.activeEdge=null;return 0;
+    }
+    put(st,16,'Проверено if a==100: ЛОЖЬ для a='+a+'.','condition');
+    var exists=Object.prototype.hasOwnProperty.call(st.globals.g,a);
+    put(st,17,'Проверено if a not in g: '+(exists?'ЛОЖЬ':'ИСТИНА')+' для a='+a+'.','condition');
+    if(!exists){
+      var ff=st.frames[st.frames.length-1];ff.value=INF;ff.status='returned';node.status='returned';node.value=INF;cache[a]=INF;
+      put(st,17,'Тупик: ключа '+a+' нет в g. Выполнено return '+INF+'.','return');
+      st.frames.pop();st.lastReturn={from:a,value:INF,to:parentId};st.currentNode=st.frames.length?st.frames[st.frames.length-1].a:null;st.activeEdge=null;return INF;
+    }
+    var fr=st.frames[st.frames.length-1];fr.deti=cp(st.globals.g[a]);fr.rez=[];fr.index=null;st.generator=null;
+    st.childrenPlate={parent:a,children:cp(fr.deti),shown:true};
+    put(st,18,'Выполнена deti = g[a]. Список детей вершины '+a+' теперь впервые показан справа.','assign');
+    put(st,19,'Начинаем выполнять генератор. Он работает с элементами списка deti по одному.','generator');
+    for(var j=0;j<fr.deti.length;j++){
+      var c=fr.deti[j];
+      fr.c=cp(c);
+      fr.index=j;
+      st.generator={owner:a,index:j,current:c};
+      st.activeEdge=ek(a,c[0]);
+      var req=c[0];
+      put(st,19,'Генератор выбрал c='+JSON.stringify(c)+'. Это реальный ребёнок: '+a+' → '+req+'.','generator');
+      put(st,19,'Выполняется вызов f(c[0]) = f('+req+'). Поэтому переходим именно в f('+req+').','call');
+      var val;
+      if(Object.prototype.hasOwnProperty.call(cache,req)){
+        val=cache[req];
+        var cn={id:'n'+(++seq),a:req,parent:id,status:'cache',value:val,cache:true,_edgeWeight:c[1],_edgeExpr:(mode==='edges'?val+' + 1 = '+(val+1):'')};
+        addCallTree(st,cn);
+        put(st,19,'f('+req+') найден в lru_cache. Нового выполнения тела функции нет. Получено '+val+'.','cache');
+      }else{
+        val=call(req,id,a);
+        if(st.tree.length){ var newest=st.tree[st.tree.length-1]; newest._edgeWeight=c[1]; newest._edgeExpr=(mode==='edges'?val+' + 1 = '+(val+1):mode==='weight'?val+' + '+c[1]+' = '+(val+c[1]):''); }
+      }
+      var pushed=mode==='weight'?val+c[1]:mode==='edges'?val+1:val;
+      fr.rez.push(pushed);
+      st.doneEdges.push(ek(a,c[0]));
+      st.currentNode=a;
+      st.activeEdge=null;
+      st.lastReturn={from:req,value:val,to:id};
+      if(mode==='weight')put(st,19,'Возврат f('+req+') = '+val+'. Добавили в rez: '+val+' + '+c[1]+' = '+pushed+'. Теперь rez = '+JSON.stringify(fr.rez)+'.','accumulate');
+      else if(mode==='edges')put(st,19,'Возврат f('+req+') = '+val+'. Для числа рёбер прибавляем 1 за ребро '+a+' → '+req+': '+val+' + 1 = '+pushed+'. Теперь rez = '+JSON.stringify(fr.rez)+'.','accumulate');
+      else put(st,19,'Возврат f('+req+') = '+val+'. Добавили значение в rez. Теперь rez = '+JSON.stringify(fr.rez)+'.','accumulate');
+      if(j<fr.deti.length-1)put(st,19,'Генератор продолжает работу. Следующий ребёнок из deti: '+fr.deti[j+1][0]+'.','generator');
+    }
+    var result=mode==='paths'?fr.rez.reduce(function(x,y){return x+y},0):(fr.rez.length?Math.max.apply(null,fr.rez):INF);
+    fr.value=result;fr.status='returned';node.status='returned';node.value=result;cache[a]=result;
+    put(st,20,'Выполнен return '+(mode==='paths'?'sum(rez)':'max(rez)')+' = '+result+'. Значение возвращается родителю.','return');
+    st.frames.pop();st.lastReturn={from:a,value:result,to:parentId};st.currentNode=st.frames.length?st.frames[st.frames.length-1].a:null;st.activeEdge=null;return result;
+  }
+
+  var answer=call(1,null,undefined);
+  put(st,22,'f(1) вернула '+answer+'. Теперь print действительно выводит '+answer+'.','finish');
+  return events;
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function syntax(s){var x=esc(s);x=x.replace(/\b(from|import|for|in|if|return|def)\b/g,'<span class="kw">$1</span>');x=x.replace(/(r?&quot;[^]*?&quot;)/g,'<span class="str">$1</span>');return x;}
+function renderCode(){var e=events[step],src=code[mode],html='';for(var i=0;i<src.length;i++){var n=i+1,act=e&&e.line===n;html+='<div class="line '+(act?'active':'')+'"><span class="ln">'+n+'</span><span>'+(act?'<span class="mark"></span>':'')+syntax(src[i])+'</span></div>';}document.getElementById('code').innerHTML=html;var a=document.querySelector('.line.active');if(a)a.scrollIntoView({block:'center'});}
+function renderSide(){var e=events[step],s=e.state,h='';
+ h+='<div class="card"><div class="cardTitle">ГЛОБАЛЬНАЯ ОБЛАСТЬ</div><div class="grid"><span>f</span><b>'+esc(text(s.globals.f))+'</b><span>s</span><b>'+esc(text(s.globals.s))+'</b><span>g</span><b>'+esc(dictText(s.globals.g))+'</b><span>файл f</span><b>'+esc(text(s.globals.file))+'</b></div>';
+ if(s.loop.a!==undefined)h+='<div class="grid"><span>for: a</span><b>'+s.loop.a+'</b><span>for: b</span><b>'+s.loop.b+'</b><span>for: v</span><b>'+s.loop.v+'</b></div>';h+='</div>';
+ if(s.childrenPlate&&s.childrenPlate.shown){
+   h+='<div class="childrenPlate"><div class="cpTitle">ДЕТИ ВЕРШИНЫ '+s.childrenPlate.parent+'</div>';
+   if(!s.childrenPlate.children.length) h+='<div class="cpNode">детей нет — это тупик</div>';
+   else for(var ci=0;ci<s.childrenPlate.children.length;ci++){var ch=s.childrenPlate.children[ci];h+='<div class="cpNode">'+s.childrenPlate.parent+' → '+ch[0]+' &nbsp;&nbsp; вес '+ch[1]+'</div>';}
+   if(s.generator){var gc=s.generator.current;h+='<div class="cpReason"><b>ПОЧЕМУ ПЕРЕШЛИ?</b><br>Генератор сейчас обрабатывает <b>c=('+gc[0]+', '+gc[1]+')</b>.<br>По строке <code>f(c[0])</code> вызывается <b>f('+gc[0]+')</b>. Именно ребро <b>'+s.childrenPlate.parent+' → '+gc[0]+'</b> подсвечено на графе.</div>';}
+   h+='</div>';
+ }
+ h+='<div class="card"><div class="cardTitle">ЛОКАЛЬНЫЕ ПЕРЕМЕННЫЕ ФУНКЦИЙ</div>';
+ if(!s.frames.length)h+='<div class="muted">Пусто. f(a) ещё не вызвана. Мы находимся в основной программе.</div>';
+ else for(var i=0;i<s.frames.length;i++){var f=s.frames[i];h+='<div class="frame '+(i===s.frames.length-1?'current':'')+'"><div class="head">f('+f.a+') <span class="pill '+(i===s.frames.length-1?'blue':'orange')+'">'+(i===s.frames.length-1?'текущий':'родитель ждёт')+'</span></div><div class="grid"><span>a</span><b>'+f.a+'</b><span>deti</span><b>'+esc(f.deti===undefined?'—':tuples(f.deti))+'</b><span>c</span><b>'+esc(f.c===undefined?'—':JSON.stringify(f.c))+'</b><span>rez</span><b>'+esc(f.rez===undefined?'—':JSON.stringify(f.rez))+'</b><span>index</span><b>'+esc(f.index===undefined?'—':f.index)+'</b><span>return</span><b>'+esc(f.value===undefined?'—':f.value)+'</b></div></div>';}h+='</div>';
+ h+='<div class="card"><div class="cardTitle">ГЕНЕРАТОР ТЕКУЩЕГО ВЫЗОВА</div>';
+ if(s.generator)h+='<div class="grid"><span>owner</span><b>f('+s.generator.owner+')</b><span>index</span><b>'+s.generator.index+'</b><span>c</span><b>'+esc(JSON.stringify(s.generator.current))+'</b><span>вызов</span><b>f('+s.generator.current[0]+')</b></div><div class="subbox">deti = '+esc(tuples(s.childrenPlate?s.childrenPlate.children:[]))+'</div>';
+ else h+='<div class="muted">Генератор ещё не запущен.</div>';h+='</div>';
+ h+='<div class="card"><div class="cardTitle">СТЕК ВЫЗОВОВ</div>';
+ if(!s.frames.length)h+='<div class="muted">Пуст</div>';else for(var j=0;j<s.frames.length;j++)h+='<div class="frame '+(j===s.frames.length-1?'current':'')+'"><div class="head">f('+s.frames[j].a+')</div><div class="muted">'+(j===s.frames.length-1?'сейчас выполняется':'ожидает возврата от ребёнка')+'</div></div>';h+='</div>';
+ h+='<div class="card"><div class="cardTitle">Lru_cache</div><div class="subbox">'+(Object.keys(s.cache).length?esc(JSON.stringify(s.cache,null,2)):'кэш пуст')+'</div></div>';
+ 
+ document.getElementById('side').innerHTML=h;
+}
+function treeSvg(nodes){
+  if(!nodes.length) return '<div class="muted">Дерево пусто. До print(f(1)) функция ещё не вызывалась.</div>';
+  var children={}, depths={}, xy={}, i;
+  for(i=0;i<nodes.length;i++){var p=nodes[i].parent||'root';if(!children[p])children[p]=[];children[p].push(nodes[i]);}
+  function walk(n,d){n._d=d;if(!depths[d])depths[d]=[];depths[d].push(n);var cc=children[n.id]||[];for(var z=0;z<cc.length;z++)walk(cc[z],d+1);}
+  walk(nodes[0],0);
+  var keys=Object.keys(depths),max=0;for(i=0;i<keys.length;i++)if(+keys[i]>max)max=+keys[i];
+  var widest=1;for(i=0;i<keys.length;i++)widest=Math.max(widest,depths[keys[i]].length);
+  var W=Math.max(560, 190*widest), H=Math.max(240,(max+1)*145+35);
+  for(i=0;i<keys.length;i++){var d=+keys[i],arr=depths[d];for(var j=0;j<arr.length;j++)xy[arr[j].id]=[65+(j+1)*(W-130)/(arr.length+1),55+d*145];}
+  var last=nodes[nodes.length-1].id, o='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMin meet">';
+  for(i=0;i<nodes.length;i++){
+    var n=nodes[i];
+    if(n.parent&&xy[n.parent]&&xy[n.id]){
+      var P=xy[n.parent],C=xy[n.id],active=n.id===last,ret=n.status==='returned'&&!active;
+      var cls=active?'active ':ret?'returned ':'';
+      o+='<line class="te '+cls+'" x1="'+P[0]+'" y1="'+(P[1]+22)+'" x2="'+C[0]+'" y2="'+(C[1]-22)+'"/>';
+      var mx=(P[0]+C[0])/2;
+      var callY=P[1]+54;
+      var retY=C[1]-48;
+      o+='<rect x="'+(mx-62)+'" y="'+(callY-12)+'" width="124" height="20" rx="7" fill="#ffffff" stroke="#d7dfe5"/>';
+      o+='<text class="callLabel" x="'+mx+'" y="'+(callY+2)+'">вызов f('+n.a+')</text>';
+      if(n.status==='returned'||n.cache){
+        var add=(mode==='edges'?1:mode==='weight'?Number(n._edgeWeight||0):0);
+        var expr=mode==='paths'?('получит '+n.value):('получит '+n.value+' + '+add+' = '+(Number(n.value)+add));
+        o+='<rect x="'+(mx-78)+'" y="'+(retY-12)+'" width="156" height="22" rx="7" fill="#eefaf2" stroke="#b8e0c7"/>';
+        o+='<text class="retLabel" x="'+mx+'" y="'+(retY+3)+'">'+expr+'</text>';
+      }
+    }
+  }
+  for(i=0;i<nodes.length;i++){
+    var nn=nodes[i],c=xy[nn.id],cl='tn '+(nn.id===last?'active ':nn.cache?'cache ':nn.status==='returned'?'returned ':'');
+    o+='<rect class="'+cl+'" x="'+(c[0]-50)+'" y="'+(c[1]-22)+'" width="100" height="44" rx="10"/>';
+    o+='<text class="tt" x="'+c[0]+'" y="'+(c[1]+4)+'">f('+nn.a+')</text>';
+    if(nn.status==='returned') o+='<text class="ts" x="'+c[0]+'" y="'+(c[1]+38)+'">→ '+nn.value+'</text>';
+    else if(nn.cache) o+='<text class="ts" x="'+c[0]+'" y="'+(c[1]+38)+'">cache → '+nn.value+'</text>';
+    else if(nn.id===last) o+='<text class="ts" x="'+c[0]+'" y="'+(c[1]+38)+'">выполняется</text>';
+  }
+  return o+'</svg>';
+}
+function treeReasonHtml(state){var t=state.tree||[];if(!t.length)return '<div class="treeReason"><b>ПОЧЕМУ НЕТ ДЕРЕВА?</b><br>Функция ещё не вызвана. Сначала выполняется основная программа до <code>print(f(1))</code>.</div>';var n=t[t.length-1],p=n.parent?bySafe(t,n.parent):null,msg='';if(!p){msg='<b>print(f(1))</b> создаёт корневой вызов <b>f(1)</b>.';}else{msg='<b>f('+p.a+')</b> вызвала <b>f('+n.a+')</b>, потому что это очередной ребёнок вершины '+p.a+'.';if(n.status==='returned'||n.cache){if(mode==='edges')msg+='<br><b>Что получает родитель:</b> f('+n.a+') вернула <b>'+n.value+'</b> → для ребра добавляем <b>1</b> → <b>'+n.value+' + 1 = '+(Number(n.value)+1)+'</b>.';else if(mode==='weight')msg+='<br><b>Что получает родитель:</b> f('+n.a+') вернула <b>'+n.value+'</b> → прибавляем вес ребра → <b>'+n.value+' + '+n._edgeWeight+' = '+(Number(n.value)+Number(n._edgeWeight))+'</b>.';else msg+='<br><b>Что получает родитель:</b> f('+n.a+') вернула <b>'+n.value+'</b> — это значение попадает в <b>rez</b>.';}}return '<div class="treeReason">'+msg+'</div>';}
+function bySafe(nodes,id){for(var i=0;i<nodes.length;i++)if(nodes[i].id===id)return nodes[i];return null;}
+function renderTreePane(){var s=events[step].state;document.getElementById('treePaneBody').innerHTML='<div class="treeSummary"><strong>Стрелка = вызов.</strong> Подпись «вернул» = результат дочерней функции, возвращённый родителю. Активный узел = текущий вызов.</div>'+treeSvg(s.tree)+treeReasonHtml(s);}
+function draw(){var s=events[step].state,o='<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0L0,6L9,3Z" fill="#adb7bf"/></marker><marker id="aa" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0L0,6L9,3Z" fill="#ff9e0b"/></marker><marker id="ab" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0L0,6L9,3Z" fill="#1684ff"/></marker></defs>';
+ var scaleX=.66,offX=8;function Pof(n){return [pos[n][0]*scaleX+offX,pos[n][1]];} for(var A in G){for(var ii=0;ii<G[A].length;ii++){var B=G[A][ii][0],w=G[A][ii][1],a=+A,pp=Pof(a),qq=Pof(B),dx=qq[0]-pp[0],dy=qq[1]-pp[1],L=Math.sqrt(dx*dx+dy*dy),ux=dx/L,uy=dy/L,sx=pp[0]+ux*29,sy=pp[1]+uy*29,ex=qq[0]-ux*31,ey=qq[1]-uy*31,k=ek(a,B),active=s.activeEdge===k,done=s.doneEdges.indexOf(k)>=0;o+='<line class="ge '+(active?'active':done?'done':'')+'" x1="'+sx+'" y1="'+sy+'" x2="'+ex+'" y2="'+ey+'" marker-end="url(#'+(active?'aa':done?'ab':'a')+')"/><text class="gw" x="'+((sx+ex)/2+6)+'" y="'+((sy+ey)/2-5)+'">'+w+'</text>';}}
+ for(var N in pos){var PP=Pof(N),x=PP[0],y=PP[1],cl='gn '+(+N===s.currentNode?'cur ':'')+(+N===target[mode]?'goal':'');o+='<circle class="'+cl+'" cx="'+x+'" cy="'+y+'" r="27"/><text class="gt" x="'+x+'" y="'+y+'">'+N+'</text>';}
+ document.getElementById('graphSvg').innerHTML=o;document.getElementById('badge').textContent='Шаг '+step+' / '+(events.length-1);document.getElementById('graphNote').textContent=events[step].msg;}
+function render(){renderCode();renderSide();draw();renderTreePane();var e=events[step];document.getElementById('stepNo').textContent='Шаг '+step+' из '+(events.length-1);document.getElementById('lineInfo').textContent=e.line===0?'СТАРТ':'ВЫПОЛНЕНА СТРОКА '+e.line;document.getElementById('message').textContent=e.msg;document.getElementById('progress').style.width=(step/Math.max(1,events.length-1)*100)+'%';document.getElementById('prev').disabled=step===0;document.getElementById('next').disabled=step>=events.length-1;}
+function rebuild(){build();step=0;render();}
+document.getElementById('next').onclick=function(){if(step<events.length-1){step++;render();}};
+document.getElementById('prev').onclick=function(){if(step>0){step--;render();}};
+document.getElementById('reset').onclick=function(){step=0;render();};
+document.getElementById('mode').onchange=function(){mode=this.value;rebuild();};
+rebuild();
+})();
+</script>
+</body>
+</html>

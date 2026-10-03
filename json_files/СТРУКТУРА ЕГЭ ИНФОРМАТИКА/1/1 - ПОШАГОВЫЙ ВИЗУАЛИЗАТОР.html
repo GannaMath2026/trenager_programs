@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Визуализатор-отладчик перебора перестановок</title>
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+    margin: 0;
+    background: #0f172a;
+    color: #e2e8f0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .pane {
+    padding: 16px;
+    overflow-y: auto;
+    border-right: 1px solid #1e293b;
+  }
+  .pane:last-child { border-right: none; }
+
+  h2 {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    color: #38bdf8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ============================================================
+     КОД
+     ============================================================ */
+  .code-wrap {
+    background: #1e293b;
+    border-radius: 8px;
+    padding: 12px 0;
+    font-size: 13px;
+    line-height: 1.9;
+    overflow-x: auto;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  }
+
+  .code-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 5px 14px;
+    border-left: 3px solid transparent;
+    transition: background 0.2s;
+  }
+
+  .code-row.empty {
+    min-height: 14px;
+    padding: 0;
+  }
+
+  .code-row.active {
+    background: #334155;
+    border-left-color: #38bdf8;
+  }
+
+  .code-row .code-text {
+    white-space: pre;
+    flex-shrink: 0;
+    color: #e2e8f0;
+  }
+
+  .code-row .note {
+    display: none;
+    margin-left: 28px;
+    padding: 6px 14px;
+    background: #0c4a6e;
+    border-left: 3px solid #fbbf24;
+    border-radius: 4px;
+    color: #fde68a;
+    font-size: 12px;
+    font-style: italic;
+    white-space: normal;
+    max-width: 360px;
+    line-height: 1.5;
+  }
+
+  .code-row.active .note { display: block; }
+
+  .code-row .note::before {
+    content: '💡 ';
+    font-style: normal;
+  }
+
+  .kw  { color: #c084fc; }
+  .fn  { color: #38bdf8; }
+  .str { color: #86efac; }
+
+  /* ============================================================
+     ВЫВОД ПРОГРАММЫ
+     ============================================================ */
+  .output-block {
+    margin-top: 12px;
+    background: #0c0a09;
+    border: 1px solid #292524;
+    border-radius: 8px;
+    padding: 10px;
+  }
+  .output-block .out-title {
+    color: #94a3b8;
+    font-size: 11px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .output-block .out-content {
+    color: #4ade80;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    min-height: 18px;
+    font-family: monospace;
+    white-space: pre-line;
+  }
+
+  /* ============================================================
+     ПЕРЕМЕННЫЕ
+     ============================================================ */
+  .vars {
+    background: #0c4a6e;
+    border: 2px solid #38bdf8;
+    padding: 14px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+  }
+  .vars .row { margin: 8px 0; line-height: 1.5; }
+  .vars .key { color: #bae6fd; font-weight: 600; font-size: 13px; }
+  .vars .val {
+    color: #fbbf24;
+    font-weight: bold;
+    font-size: 17px;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+    word-break: break-all;
+  }
+  .vars .val.flash { color: #4ade80; text-shadow: 0 0 12px #4ade80; }
+
+  /* ZIP-СТРОКА */
+  .zip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .zip-pair {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s;
+  }
+  .zip-pair .zip-digit  { color: #f87171; }
+  .zip-pair .zip-arrow  { color: #64748b; font-size: 12px; }
+  .zip-pair .zip-letter { color: #4ade80; }
+  .zip-pair.current {
+    background: #7c2d12;
+    border-color: #fbbf24;
+    transform: scale(1.1);
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
+  }
+  .zip-pair.done { opacity: 0.4; }
+
+  /* ============================================================
+     БЛОК ЗАМЕНЫ
+     ============================================================ */
+  .zamena-block {
+    background: #7c2d12;
+    border: 3px solid #fbbf24;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+    text-align: center;
+    box-shadow: 0 0 24px rgba(251, 191, 36, 0.3);
+  }
+  .zamena-block .z-label {
+    color: #fde68a;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .zamena-block .z-value {
+    color: #fbbf24;
+    font-size: 32px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    font-family: monospace;
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+  }
+  .zamena-block .z-value .z-num { color: #f87171; }
+  .zamena-block .z-value .z-arr { color: #94a3b8; font-size: 24px; }
+  .zamena-block .z-value .z-let { color: #4ade80; }
+
+  /* ============================================================
+     P2
+     ============================================================ */
+  .p2-block {
+    background: #1e293b;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+  .p2-block .p2-label { color: #94a3b8; font-size: 11px; margin-bottom: 4px; }
+  .p2-block .p2-val {
+    color: #86efac;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    word-break: break-all;
+  }
+
+  /* ============================================================
+     ПОЛОСКА P1
+     ============================================================ */
+  .strip-title { color: #94a3b8; font-size: 12px; margin-bottom: 6px; }
+  .strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 6px 0 14px 0;
+    padding: 10px;
+    background: #1e293b;
+    border-radius: 8px;
+    min-height: 48px;
+  }
+  .piece {
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    background: #334155;
+    color: #cbd5e1;
+  }
+  .piece.ok    { background: #064e3b; color: #4ade80; border-color: #4ade80; }
+  .piece.fail  { background: #450a0a; color: #f87171; border-color: #f87171; }
+  .piece.current {
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+    border-color: #38bdf8;
+  }
+  .piece.flash-red { animation: flashRed 0.5s ease-in-out 2; }
+  @keyframes flashRed {
+    0%, 100% { background: #334155; color: #cbd5e1; }
+    50% { background: #7f1d1d; color: #f87171; box-shadow: 0 0 24px #ef4444; }
+  }
+  .piece.flash-green { animation: flashGreen 0.5s ease-in-out 2; }
+  @keyframes flashGreen {
+    0%, 100% { background: #334155; color: #cbd5e1; }
+    50% { background: #064e3b; color: #4ade80; box-shadow: 0 0 24px #22c55e; }
+  }
+
+  /* ============================================================
+     КНОПКИ
+     ============================================================ */
+  .controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  button {
+    background: #334155;
+    color: #e2e8f0;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  button:hover { background: #475569; }
+  button.primary { background: #0369a1; border-color: #0284c7; }
+  button.primary:hover { background: #0284c7; }
+  button.success { background: #15803d; border-color: #22c55e; }
+  button.success:hover { background: #22c55e; }
+
+  .legend { font-size: 11px; color: #94a3b8; margin-bottom: 8px; }
+  .legend span { margin-right: 10px; }
+  .dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .dot.ok   { background: #4ade80; }
+  .dot.fail { background: #f87171; }
+  .dot.cur  { background: #38bdf8; }
+
+  /* ============================================================
+     МОДАЛЬНОЕ ОКНО С ГРАФОМ
+     ============================================================ */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+  }
+  .modal-overlay.show { display: flex; }
+
+  .modal-content {
+    background: #0f172a;
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    width: 95vw;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 12px 16px;
+    background: #1e293b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+  }
+  .modal-header h3 { margin: 0; color: #38bdf8; font-size: 16px; }
+  .modal-header .tools { display: flex; gap: 8px; align-items: center; }
+  .modal-header button { font-size: 12px; padding: 6px 10px; }
+
+  .modal-body {
+    flex: 1;
+    position: relative;
+    background: #0a0f1e;
+    overflow: hidden;
+  }
+  #graphCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+  }
+  .tool-btn.active {
+    background: #0369a1 !important;
+    border-color: #38bdf8 !important;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     ЛЕВАЯ ПАНЕЛЬ: КОД + ВЫВОД
+     ============================================================ -->
+<div class="pane">
+  <h2>📜 Код</h2>
+
+  <div class="code-wrap" id="codeBlock">
+
+    <div class="code-row" data-line="1">
+      <span class="code-text"><span class="kw">from</span> itertools <span class="kw">import</span> *</span>
+      <span class="note">Импортируем все функции из itertools — нужна permutations для перебора перестановок.</span>
+    </div>
+
+    <div class="code-row empty"></div>
+
+    <div class="code-row" data-line="2">
+      <span class="code-text"><span class="fn">print</span>(<span class="str">'*1234567'</span>)</span>
+      <span class="note">Печатаем заголовок — просто для красоты вывода.</span>
+    </div>
+
+    <div class="code-row empty"></div>
+
+    <div class="code-row" data-line="3">
+      <span class="code-text"><span class="kw">for</span> per <span class="kw">in</span> <span class="fn">permutations</span>(<span class="str">'ABCDEFG'</span>):</span>
+      <span class="note">Перебираем все 5040 перестановок букв A–G. Каждая перестановка — это гипотеза о соответствии цифр буквам.</span>
+    </div>
+
+    <div class="code-row" data-line="4">
+      <span class="code-text">    p1 = <span class="str">'13 14 16 24 25 36 45 57 67'</span></span>
+      <span class="note">Цифровая строка рёбер — то, что дано в таблице (связи между пунктами 1–7).</span>
+    </div>
+
+    <div class="code-row" data-line="5">
+      <span class="code-text">    p2 = <span class="str">'AB AC BC CE AF DG DE DF EG'</span></span>
+      <span class="note">Буквенная строка рёбер — целевой граф (по картинке).</span>
+    </div>
+
+    <div class="code-row empty"></div>
+
+    <div class="code-row" data-line="6">
+      <span class="code-text">    <span class="kw">for</span> a, b <span class="kw">in</span> <span class="fn">zip</span>(<span class="str">'1234567'</span>, per):</span>
+      <span class="note">Идём по парам: цифра (a) и буква (b) из текущей перестановки.</span>
+    </div>
+
+    <div class="code-row" data-line="7">
+      <span class="code-text">        p1 = p1.<span class="fn">replace</span>(a, b)</span>
+      <span class="note">Заменяем все вхождения цифры a на букву b в строке p1. Так мы «переводим» цифровой граф в буквенный.</span>
+    </div>
+
+    <div class="code-row empty"></div>
+
+    <div class="code-row" data-line="8">
+      <span class="code-text">    <span class="kw">if</span> <span class="fn">all</span>(c <span class="kw">in</span> p2 <span class="kw">or</span> c[::-1] <span class="kw">in</span> p2 <span class="kw">for</span> c <span class="kw">in</span> p1.<span class="fn">split</span>()):</span>
+      <span class="note">Проверяем каждое ребро: есть ли оно в p2 (или в обратном виде). all() вернёт True, только если ВСЕ рёбра совпали.</span>
+    </div>
+
+    <div class="code-row" data-line="9">
+      <span class="code-text">        <span class="fn">print</span>(*per)</span>
+      <span class="note">Если все рёбра совпали — печатаем перестановку. Это ответ!</span>
+    </div>
+
+  </div>
+
+  <div class="output-block">
+    <div class="out-title">📤 Вывод программы</div>
+    <div class="out-content" id="outputContent"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     ПРАВАЯ ПАНЕЛЬ: ПЕРЕМЕННЫЕ + ПОЛОСКА
+     ============================================================ -->
+<div class="pane">
+
+  <div class="controls">
+    <button id="btnPrev">◀ Назад</button>
+    <button id="btnNextLine" class="primary">Далее (строка) ▶▶</button>
+    <button id="btnNextIter" class="primary" style="background:#7c3aed;border-color:#8b5cf6;">Далее (итерация) ▶</button>
+    <button id="btnReset">⟲ Сброс</button>
+    <button id="btnSuccess" class="success">🏆 К успешной перестановке</button>
+    <button id="btnGraph" class="primary" style="background:#0369a1;border-color:#0284c7;">📊 Показать граф</button>
+  </div>
+
+  <h2>🔍 Переменные</h2>
+
+  <div class="vars" id="varsBlock">
+    <div class="row"><span class="key">per =</span> <span class="val" id="varPer">—</span></div>
+    <div class="row"><span class="key">p1 (цифры) =</span> <span class="val" id="varP1digits">—</span></div>
+    <div class="row"><span class="key">p1 (буквы) =</span> <span class="val" id="varP1">—</span></div>
+    <div class="row">
+      <span class="key">zip('1234567', per) =</span>
+      <div class="zip-row" id="varZip">—</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="dot ok"></span>ребро найдено</span>
+    <span><span class="dot fail"></span>ребро НЕ найдено</span>
+    <span><span class="dot cur"></span>текущее ребро</span>
+  </div>
+
+  <div class="zamena-block">
+    <div class="z-label">🔁 ЗАМЕНА</div>
+    <div class="z-value" id="zamenaValue">—</div>
+  </div>
+
+  <div class="strip-title">✂️ Полоска p1 (рёбра)</div>
+  <div class="strip" id="strip">
+    <div style="color:#64748b;">Нажмите «Далее», чтобы начать отладку</div>
+  </div>
+
+  <div class="p2-block">
+    <div class="p2-label">🎯 p2 (целевой граф):</div>
+    <div class="p2-val" id="p2Display">AB AC BC CE AF DG DE DF EG</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     МОДАЛЬНОЕ ОКНО С ГРАФОМ
+     ============================================================ -->
+<div class="modal-overlay" id="graphModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>📊 Граф: пары «цифра → буква»</h3>
+      <div class="tools">
+        <button id="toolMove" class="tool-btn active">🖐 Двигать</button>
+        <button id="toolDraw" class="tool-btn">✏️ Рисовать</button>
+        <button id="toolClear" class="tool-btn">🗑 Очистить рисунок</button>
+        <button id="closeModal" class="primary">✕ Закрыть</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <canvas id="graphCanvas"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ДАННЫЕ
+// ============================================================
+
+const P1_DIGITS = '13 14 16 24 25 36 45 57 67';
+const P2 = 'AB AC BC CE AF DG DE DF EG';
+const LETTERS = 'ABCDEFG';
+
+// ============================================================
+// ПОИСК ПРАВИЛЬНОЙ ПЕРЕСТАНОВКИ
+// ============================================================
+
+function permutations(arr) {
+  if (arr.length <= 1) return [arr];
+  const result = [];
+  for (let i = 0; i < arr.length; i++) {
+    const rest = arr.slice(0, i).concat(arr.slice(i + 1));
+    for (const p of permutations(rest)) result.push([arr[i], ...p]);
+  }
+  return result;
+}
+
+function p1_after(per, count) {
+  let p1 = P1_DIGITS;
+  const perArr = per.split('');
+  const digits = '1234567'.split('');
+  for (let i = 0; i < count; i++) {
+    p1 = p1.split(digits[i]).join(perArr[i]);
+  }
+  return p1;
+}
+
+function checkPer(per) {
+  const finalP1 = p1_after(per, 7);
+  return finalP1.split(' ').every(c => {
+    const rev = c.split('').reverse().join('');
+    return P2.includes(c) || P2.includes(rev);
+  });
+}
+
+const ALL_PERMS = permutations(LETTERS.split('')).map(a => a.join(''));
+const CORRECT_PERM = ALL_PERMS.find(checkPer) || null;
+
+// ============================================================
+// СПИСОК ИТЕРАЦИЙ: 2 плохих + 1 правильная
+// ============================================================
+
+const ITERATIONS = [];
+const bads = ALL_PERMS.filter(p => !checkPer(p)).slice(0, 2);
+bads.forEach(p => ITERATIONS.push({ per: p, label: 'плохая' }));
+if (CORRECT_PERM) ITERATIONS.push({ per: CORRECT_PERM, label: 'правильная' });
+
+const SUCCESS_INDEX = ITERATIONS.findIndex(it => checkPer(it.per));
+
+// ============================================================
+// ПОСТРОЕНИЕ ШАГОВ
+// ============================================================
+
+let steps = [];
+let currentStep = 0;
+let successIterationStart = 0;
+
+function buildSteps() {
+  steps = [];
+
+  steps.push({
+    line: 1, per: '—', p1digits: '—', p1: '—', ab: '—',
+    pieces: [], pieceStatus: [], currentPiece: -1,
+    flashIndices: null, flashColor: null, output: ''
+  });
+
+  steps.push({
+    line: 2, per: '—', p1digits: '—', p1: '—', ab: '—',
+    pieces: [], pieceStatus: [], currentPiece: -1,
+    flashIndices: null, flashColor: null, output: '*1234567'
+  });
+
+  let outputLines = ['*1234567'];
+  let stopFlag = false;
+
+  ITERATIONS.forEach((iter, iterIndex) => {
+    if (stopFlag) return;
+
+    const per = iter.per;
+    const perArr = per.split('');
+    const digits = '1234567'.split('');
+
+    const iterStartIndex = steps.length;
+    if (iterIndex === SUCCESS_INDEX) successIterationStart = iterStartIndex;
+
+    // Строка 3
+    steps.push({
+      line: 3, per: per, p1digits: '—', p1: '—', ab: '—',
+      pieces: [], pieceStatus: [], currentPiece: -1,
+      flashIndices: null, flashColor: null, output: outputLines.join('\n')
+    });
+
+    // Строка 4 — p1 присваивается, значение появится на следующем шаге
+    steps.push({
+      line: 4, per: per, p1digits: '—', p1: '—', ab: '—',
+      pieces: [], pieceStatus: [], currentPiece: -1,
+      flashIndices: null, flashColor: null, output: outputLines.join('\n')
+    });
+
+    // Строка 5 — p2 присваивается, p1 уже виден
+    steps.push({
+      line: 5, per: per, p1digits: P1_DIGITS, p1: '—', ab: '—',
+      pieces: [], pieceStatus: [], currentPiece: -1,
+      flashIndices: null, flashColor: null, output: outputLines.join('\n')
+    });
+
+    // Замены
+    for (let i = 0; i < digits.length; i++) {
+      const a = digits[i];
+      const b = perArr[i];
+
+      const p1Before = (i === 0) ? P1_DIGITS : p1_after(per, i);
+      const p1After  = p1Before.split(a).join(b);
+
+      const piecesBefore = p1Before.split(' ');
+      const flashIndices = [];
+      piecesBefore.forEach((piece, idx) => {
+        if (piece.includes(a)) flashIndices.push(idx);
+      });
+
+      // Строка 6 — начало цикла замен
+      steps.push({
+        line: 6, per: per, p1digits: P1_DIGITS, p1: p1Before, ab: `${a} → ${b}`,
+        pieces: piecesBefore, pieceStatus: [], currentPiece: -1,
+        flashIndices: null, flashColor: null, output: outputLines.join('\n')
+      });
+
+      // Строка 7 — замена выполнена + двойное мигание
+      steps.push({
+        line: 7, per: per, p1digits: P1_DIGITS,
+        p1: p1After, ab: `${a} → ${b}`,
+        pieces: p1After.split(' '), pieceStatus: [], currentPiece: -1,
+        flashIndices: flashIndices,
+        flashColor: 'both',
+        p1BeforeFlash: p1Before,
+        output: outputLines.join('\n')
+      });
+    }
+
+    // Строка 8 — проверка
+    const finalP1 = p1_after(per, digits.length);
+    const pieces = finalP1.split(' ');
+    const statuses = new Array(pieces.length).fill(null);
+    let allOk = true;
+
+    for (let i = 0; i < pieces.length; i++) {
+      const c = pieces[i];
+      const rev = c.split('').reverse().join('');
+      const inP2 = P2.includes(c) || P2.includes(rev);
+      statuses[i] = inP2 ? 'ok' : 'fail';
+
+      steps.push({
+        line: 8, per: per, p1digits: P1_DIGITS, p1: finalP1, ab: '—',
+        pieces: pieces, pieceStatus: [...statuses], currentPiece: i,
+        flashIndices: null, flashColor: null, output: outputLines.join('\n')
+      });
+
+      if (!inP2) { allOk = false; break; }
+    }
+
+    // Строка 9 — только при успехе
+    if (allOk) {
+      outputLines.push(per);
+      steps.push({
+        line: 9, per: per, p1digits: P1_DIGITS, p1: finalP1, ab: '—',
+        pieces: pieces, pieceStatus: [...statuses], currentPiece: -1,
+        flashIndices: null, flashColor: null, output: outputLines.join('\n')
+      });
+      stopFlag = true;
+    }
+  });
+}
+
+// ============================================================
+// ОТРИСОВКА
+// ============================================================
+
+let lastP1 = null;
+
+function render() {
+  const step = steps[currentStep];
+
+  // Подсветка активной строки
+  document.querySelectorAll('.code-row').forEach(el => {
+    el.classList.toggle('active', Number(el.dataset.line) === step.line);
+  });
+
+  // Переменные
+  const varP1 = document.getElementById('varP1');
+  if (lastP1 !== null && step.p1 !== lastP1 && step.p1 !== '—') {
+    varP1.classList.add('flash');
+    setTimeout(() => varP1.classList.remove('flash'), 800);
+  }
+  lastP1 = step.p1;
+
+  document.getElementById('varPer').textContent = step.per;
+  document.getElementById('varP1digits').textContent = step.p1digits;
+  varP1.textContent = step.p1;
+  document.getElementById('outputContent').textContent = step.output || '';
+
+  // ZIP-строка — показываем ТОЛЬКО начиная со строки 6
+  const zipEl = document.getElementById('varZip');
+  if (step.per && step.per !== '—' && step.line >= 6) {
+    const digits = '1234567'.split('');
+    const perArr = step.per.split('');
+    let currentIdx = -1;
+    if (step.ab && step.ab !== '—') {
+      const [a] = step.ab.split(' → ');
+      currentIdx = digits.indexOf(a);
+    }
+    zipEl.innerHTML = digits.map((d, i) => {
+      let cls = 'zip-pair';
+      if (i === currentIdx) cls += ' current';
+      else if (currentIdx !== -1 && i < currentIdx) cls += ' done';
+      return `<span class="${cls}">
+        <span class="zip-digit">${d}</span>
+        <span class="zip-arrow">→</span>
+        <span class="zip-letter">${perArr[i]}</span>
+      </span>`;
+    }).join('');
+  } else {
+    zipEl.textContent = '—';
+  }
+
+  // Блок ЗАМЕНА
+  const zBlock = document.getElementById('zamenaValue');
+  if (step.ab && step.ab !== '—') {
+    const [a, b] = step.ab.split(' → ');
+    zBlock.innerHTML = `<span class="z-num">${a}</span> <span class="z-arr">→</span> <span class="z-let">${b}</span>`;
+  } else {
+    zBlock.textContent = '—';
+  }
+
+  // Полоска p1
+  const strip = document.getElementById('strip');
+  if (step.pieces.length === 0) {
+    strip.innerHTML = '<div style="color:#64748b;">Нажмите «Далее», чтобы начать отладку</div>';
+  } else {
+    if (step.flashColor === 'both') {
+      // Сначала красное
+      const piecesRed = step.p1BeforeFlash.split(' ');
+      strip.innerHTML = piecesRed.map((piece, i) => {
+        let cls = 'piece';
+        if (step.flashIndices && step.flashIndices.includes(i)) cls += ' flash-red';
+        return `<div class="${cls}">${piece}</div>`;
+      }).join('');
+
+      // Через 1 секунду — зелёное
+      setTimeout(() => {
+        const piecesGreen = step.p1.split(' ');
+        strip.innerHTML = piecesGreen.map((piece, i) => {
+          let cls = 'piece';
+          if (step.flashIndices && step.flashIndices.includes(i)) cls += ' flash-green';
+          return `<div class="${cls}">${piece}</div>`;
+        }).join('');
+      }, 1000);
+    } else {
+      strip.innerHTML = step.pieces.map((piece, i) => {
+        let cls = 'piece';
+        if (step.pieceStatus[i] === 'ok') cls += ' ok';
+        else if (step.pieceStatus[i] === 'fail') cls += ' fail';
+        if (i === step.currentPiece) cls += ' current';
+        if (step.flashIndices && step.flashIndices.includes(i) && step.flashColor) {
+          cls += step.flashColor === 'red' ? ' flash-red' : ' flash-green';
+        }
+        return `<div class="${cls}">${piece}</div>`;
+      }).join('');
+    }
+  }
+}
+
+// ============================================================
+// УПРАВЛЕНИЕ
+// ============================================================
+
+// --- Назад ---
+document.getElementById('btnPrev').addEventListener('click', () => {
+  if (currentStep > 0) {
+    currentStep--;
+    lastP1 = null;
+    render();
+  }
+});
+
+// --- Сброс ---
+document.getElementById('btnReset').addEventListener('click', () => {
+  currentStep = 0;
+  lastP1 = null;
+  render();
+});
+
+// --- К успешной перестановке ---
+document.getElementById('btnSuccess').addEventListener('click', () => {
+  const idx = steps.findIndex(s => s.line === 3 && s.per === CORRECT_PERM);
+  currentStep = (idx !== -1) ? idx : successIterationStart;
+  lastP1 = null;
+  render();
+});
+
+// --- Далее (итерация) ---
+document.getElementById('btnNextIter').addEventListener('click', () => {
+  if (currentStep < steps.length - 1) {
+    currentStep++;
+    render();
+  }
+});
+
+// --- Далее (строка) ---
+document.getElementById('btnNextLine').addEventListener('click', () => {
+  if (currentStep >= steps.length - 1) return;
+
+  const currentLine = steps[currentStep].line;
+  const currentPer = steps[currentStep].per;
+
+  let nextIdx = currentStep + 1;
+
+  if (currentLine === 3) {
+    // Пропускаем всю итерацию per — все шаги с тем же per
+    while (
+      nextIdx < steps.length &&
+      steps[nextIdx].per === currentPer
+    ) {
+      nextIdx++;
+    }
+  } else if (currentLine === 6) {
+    // Пропускаем все замены — все шаги line=6 и line=7 для текущего per
+    while (
+      nextIdx < steps.length &&
+      (steps[nextIdx].line === 6 || steps[nextIdx].line === 7) &&
+      steps[nextIdx].per === currentPer
+    ) {
+      nextIdx++;
+    }
+  } else {
+    // Обычная строка — переходим на шаг с другим line
+    while (
+      nextIdx < steps.length &&
+      steps[nextIdx].line === currentLine
+    ) {
+      nextIdx++;
+    }
+  }
+
+  currentStep = Math.min(nextIdx, steps.length - 1);
+  lastP1 = null;
+  render();
+});
+
+// ============================================================
+// МОДАЛЬНОЕ ОКНО С ГРАФОМ
+// ============================================================
+
+const modal = document.getElementById('graphModal');
+const canvas = document.getElementById('graphCanvas');
+const ctx = canvas.getContext('2d');
+
+let nodes = [];
+let edges = [];
+let drawingMode = 'move';
+let strokes = [];
+let currentStroke = null;
+let isDrawing = false;
+let draggedNode = null;
+
+function openModal() {
+  modal.classList.add('show');
+  resizeCanvas();
+  initGraph();
+  renderGraph();
+}
+
+function resizeCanvas() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+}
+
+function initGraph() {
+  if (nodes.length > 0) return;
+
+  const per = CORRECT_PERM || ITERATIONS[0].per;
+  const perArr = per.split('');
+  const digits = '1234567'.split('');
+
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const radius = Math.min(canvas.width, canvas.height) * 0.35;
+
+  nodes = digits.map((d, i) => {
+    const angle = (2 * Math.PI * i) / digits.length - Math.PI / 2;
+    return {
+      x: cx + radius * Math.cos(angle),
+      y: cy + radius * Math.sin(angle),
+      digit: d,
+      letter: perArr[i]
+    };
+  });
+
+  const p2Edges = P2.split(' ').map(e => [e[0], e[1]]);
+  edges = [];
+  p2Edges.forEach(([a, b]) => {
+    const i1 = nodes.findIndex(n => n.letter === a);
+    const i2 = nodes.findIndex(n => n.letter === b);
+    if (i1 !== -1 && i2 !== -1) edges.push({ from: i1, to: i2 });
+  });
+}
+
+function renderGraph() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Рёбра
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 2;
+  edges.forEach(({ from, to }) => {
+    const n1 = nodes[from], n2 = nodes[to];
+    if (!n1 || !n2) return;
+    ctx.beginPath();
+    ctx.moveTo(n1.x, n1.y);
+    ctx.lineTo(n2.x, n2.y);
+    ctx.stroke();
+  });
+
+  // Кривые карандашом
+  ctx.strokeStyle = '#fbbf24';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  strokes.forEach(stroke => {
+    if (stroke.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(stroke[0].x, stroke[0].y);
+    for (let i = 1; i < stroke.length; i++) {
+      ctx.lineTo(stroke[i].x, stroke[i].y);
+    }
+    ctx.stroke();
+  });
+
+  if (currentStroke && currentStroke.length > 1) {
+    ctx.beginPath();
+    ctx.moveTo(currentStroke[0].x, currentStroke[0].y);
+    for (let i = 1; i < currentStroke.length; i++) {
+      ctx.lineTo(currentStroke[i].x, currentStroke[i].y);
+    }
+    ctx.stroke();
+  }
+
+  // Вершины
+  nodes.forEach((n) => {
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, 24, 0, 2 * Math.PI);
+    ctx.fillStyle = '#1e293b';
+    ctx.fill();
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.fillStyle = '#f87171';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(n.digit, n.x - 6, n.y);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 12px monospace';
+    ctx.fillText('→', n.x + 2, n.y);
+
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 14px monospace';
+    ctx.fillText(n.letter, n.x + 11, n.y);
+  });
+}
+
+// ==== МЫШЬ ====
+canvas.addEventListener('mousedown', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  if (drawingMode === 'move') {
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      if (Math.hypot(n.x - mx, n.y - my) < 28) {
+        draggedNode = i;
+        return;
+      }
+    }
+  } else {
+    isDrawing = true;
+    currentStroke = [{ x: mx, y: my }];
+  }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  if (draggedNode !== null) {
+    nodes[draggedNode].x = mx;
+    nodes[draggedNode].y = my;
+    renderGraph();
+  } else if (isDrawing && currentStroke) {
+    currentStroke.push({ x: mx, y: my });
+    renderGraph();
+  }
+});
+
+canvas.addEventListener('mouseup', () => {
+  if (draggedNode !== null) draggedNode = null;
+  if (isDrawing && currentStroke) {
+    if (currentStroke.length > 1) strokes.push(currentStroke);
+    currentStroke = null;
+    isDrawing = false;
+    renderGraph();
+  }
+});
+
+canvas.addEventListener('mouseleave', () => {
+  draggedNode = null;
+  if (isDrawing && currentStroke) {
+    if (currentStroke.length > 1) strokes.push(currentStroke);
+    currentStroke = null;
+    isDrawing = false;
+    renderGraph();
+  }
+});
+
+// ==== КНОПКИ ИНСТРУМЕНТОВ ====
+document.getElementById('toolMove').addEventListener('click', () => {
+  drawingMode = 'move';
+  document.getElementById('toolMove').classList.add('active');
+  document.getElementById('toolDraw').classList.remove('active');
+  canvas.style.cursor = 'move';
+});
+
+document.getElementById('toolDraw').addEventListener('click', () => {
+  drawingMode = 'draw';
+  document.getElementById('toolDraw').classList.add('active');
+  document.getElementById('toolMove').classList.remove('active');
+  canvas.style.cursor = 'crosshair';
+});
+
+document.getElementById('toolClear').addEventListener('click', () => {
+  strokes = [];
+  renderGraph();
+});
+
+document.getElementById('closeModal').addEventListener('click', () => {
+  modal.classList.remove('show');
+});
+
+document.getElementById('btnGraph').addEventListener('click', openModal);
+
+window.addEventListener('resize', () => {
+  if (modal.classList.contains('show')) {
+    resizeCanvas();
+    renderGraph();
+  }
+});
+
+// ============================================================
+// СТАРТ
+// ============================================================
+
+buildSteps();
+render();
+</script>
+</body>
+</html>
