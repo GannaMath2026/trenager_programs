@@ -1,0 +1,2254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Задание 11: счёт количества информации</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #eef2f7; margin: 0; padding: 12px 12px 90px; color: #1e293b;
+  }
+  h1 { text-align: center; color: #0f172a; margin: 0 0 4px; font-size: 20px; }
+  .subtitle { text-align: center; color: #64748b; margin-bottom: 12px; font-size: 13px; }
+
+  /* ===== СПРАВКА: СТЕПЕНИ ДВОЙКИ (таблица) ===== */
+  .powers-ref {
+    max-width: 1000px; margin: 0 auto 12px;
+    background: #fffbeb; border: 2px solid #f59e0b; border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 4px 14px rgba(245,158,11,0.15);
+  }
+  .powers-ref-title {
+    font-family: 'Consolas', monospace; font-size: 12px; font-weight: 700;
+    color: #b45309; text-transform: uppercase; letter-spacing: .5px;
+    margin-bottom: 6px; text-align: center;
+  }
+  .powers-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+  }
+  .pow-cell {
+    background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px;
+    padding: 4px 2px; text-align: center;
+    font-family: 'Consolas', monospace; font-size: 12px;
+    color: #78350f; font-weight: 700;
+    transition: all .15s;
+  }
+  .pow-cell b { color: #b45309; }
+  .pow-cell:hover { background: #fde68a; transform: scale(1.05); }
+
+  .top-bar {
+    max-width: 1100px; margin: 0 auto 10px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .counter {
+    flex-shrink: 0;
+    background: #fff; border: 2px solid #cbd5e1; border-radius: 10px;
+    padding: 8px 12px; font-size: 13px; color: #334155;
+    font-family: 'Consolas', monospace; font-weight: 700;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+  }
+  .counter b { color: #166534; }
+
+  .task-strip {
+    flex: 1;
+    display: flex; gap: 6px;
+    overflow-x: auto; overflow-y: hidden;
+    padding: 4px 2px;
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 #e2e8f0;
+    background: #e2e8f0; border-radius: 10px;
+    cursor: grab;
+  }
+  .task-strip::-webkit-scrollbar { height: 8px; }
+  .task-strip::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+  .task-strip::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+  .task-strip.grabbing { cursor: grabbing; }
+
+  .task-tile {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    background: #fff; color: #475569;
+    border: 2px solid #cbd5e1; border-radius: 8px;
+    font-size: 12px; font-weight: 700;
+    font-family: 'Consolas', monospace;
+    cursor: pointer; transition: all .15s;
+    white-space: nowrap;
+  }
+  .task-tile:hover { border-color: #3b82f6; color: #1e40af; }
+  .task-tile.current { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+  .task-tile.done { background: #dcfce7; color: #166534; border-color: #22c55e; }
+  .task-tile.done.current { background: #22c55e; color: #fff; border-color: #16a34a; }
+
+  .thermometer {
+    position: fixed; right: 10px; top: 50%;
+    transform: translateY(-50%);
+    width: 42px; height: 60vh;
+    background: #fff; border: 2px solid #cbd5e1; border-radius: 22px;
+    box-shadow: 0 4px 16px rgba(15,23,42,0.10);
+    display: flex; flex-direction: column;
+    padding: 6px 4px; gap: 4px;
+    z-index: 50;
+  }
+  .thermo-track { flex: 1; background: #f1f5f9; border-radius: 16px; position: relative; overflow: hidden; }
+  .thermo-fill { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, #22c55e, #16a34a); height: 0%; transition: height .5s; }
+  .thermo-label { text-align: center; font-size: 10px; color: #64748b; font-family: 'Consolas', monospace; font-weight: 700; }
+  .thermo-percent { text-align: center; font-size: 11px; color: #166534; font-family: 'Consolas', monospace; font-weight: 700; background: #dcfce7; border-radius: 6px; padding: 2px 0; }
+
+  .progress-bar-wrap { max-width: 1000px; margin: 0 auto 12px; background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; }
+  .progress-bar { height: 100%; background: #22c55e; width: 0; transition: width .3s; }
+
+  .step-container { max-width: 1000px; margin: 0 auto; }
+  .step-card {
+    background: #fff; border: 2px solid #3b82f6;
+    border-radius: 16px; padding: 20px 24px; margin-bottom: 18px;
+    box-shadow: 0 6px 20px rgba(59,130,246,0.10);
+    transition: opacity .2s, transform .2s;
+  }
+  .step-card.fade { opacity: 0; transform: translateY(-8px); }
+
+  .step-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 1px dashed #cbd5e1;
+  }
+  .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: #3b82f6; color: #fff; font-weight: 700; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .step-title { font-weight: 700; color: #1e293b; font-size: 15px; }
+
+  .step-context {
+    background: #eff6ff; border-left: 4px solid #3b82f6;
+    border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 12px;
+    font-size: 13.5px; color: #1e293b; line-height: 1.55; white-space: pre-line;
+  }
+  .step-context .label {
+    display: block; font-size: 11px; color: #1e40af;
+    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; font-weight: 700;
+  }
+
+  /* ===== ВИЗУАЛЬНАЯ СХЕМА ===== */
+  .schema-wrap {
+    background: #f8fafc; border: 2px dashed #94a3b8;
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;
+  }
+  .schema-title {
+    font-size: 12px; color: #475569; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px;
+    margin-bottom: 12px; text-align: left;
+  }
+  .schema-object {
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: stretch;
+  }
+  .schema-field {
+    flex: 1; min-width: 200px;
+    background: #fff; border: 2px solid #3b82f6; border-radius: 8px;
+    padding: 12px 12px 10px;
+  }
+  .schema-field .fld-name {
+    font-family: 'Consolas', monospace; font-size: 13px; color: #1e40af; font-weight: 700;
+    display: block; text-align: center; margin-bottom: 6px;
+  }
+  .schema-field .fld-slots {
+    display: flex; justify-content: center; gap: 2px; margin-bottom: 6px; flex-wrap: wrap;
+  }
+  .schema-field .slot {
+    width: 8px; height: 12px; border-radius: 2px;
+    background: #bfdbfe; border: 1px solid #3b82f6;
+  }
+  .schema-field .fld-info {
+    font-size: 11px; color: #475569; font-weight: 600; margin-bottom: 8px;
+    font-family: 'Segoe UI', sans-serif; text-align: center;
+  }
+  .schema-field .fld-auto {
+    background: #eff6ff; border: 1px dashed #93c5fd; border-radius: 6px;
+    padding: 6px 8px; margin-bottom: 8px;
+    font-family: 'Consolas', monospace; font-size: 12.5px; color: #1e40af;
+    text-align: center; font-weight: 700;
+    min-height: 28px;
+  }
+  .schema-expr-row {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 6px;
+  }
+  .schema-expr-row input {
+    flex: 1;
+    padding: 6px 10px;
+    border: 2px dashed #cbd5e1; border-radius: 6px;
+    font-family: 'Consolas', monospace; font-size: 12.5px;
+    color: #1e293b; background: #fff;
+    outline: none;
+    transition: all .15s;
+    text-align: center;
+  }
+  .schema-expr-row input:focus { border-color: #3b82f6; background: #eff6ff; }
+  .schema-expr-row input.ok  { border-color: #22c55e; border-style: solid; color: #166534; background: #f0fdf4; }
+  .schema-expr-row input.var { border-color: #f59e0b; border-style: dashed; color: #92400e; background: #fffbeb; }
+  .schema-expr-row input.err { border-color: #ef4444; border-style: solid; color: #991b1b; background: #fee2e2; }
+
+  .schema-expr-eq {
+    font-family: 'Consolas', monospace; font-size: 13px; font-weight: 700;
+    color: #16a34a; min-width: 60px; text-align: left;
+    white-space: nowrap;
+  }
+
+  .input-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
+  .input-row input {
+    padding: 10px 14px; font-family: 'Consolas', monospace;
+    font-size: 15px; border: 2px solid #cbd5e1; border-radius: 8px;
+    width: 320px; outline: none; transition: all .15s;
+  }
+  .input-row input:focus { border-color: #3b82f6; }
+  .input-row input.correct { border-color: #22c55e; background: #dcfce7; color: #166534; font-weight: 700; }
+  .input-row input.wrong   { border-color: #ef4444; background: #fee2e2; color: #991b1b; }
+
+  .btn { padding: 10px 18px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .btn-check { background: #3b82f6; color: #fff; }
+  .btn-check:hover { background: #2563eb; }
+  .btn-hint { background: #fffbeb; color: #b45309; border: 2px solid #f59e0b; }
+  .btn-hint:hover { background: #fef3c7; }
+  .btn-skip { background: #fef2f2; color: #991b1b; border: 2px solid #fecaca; }
+  .btn-skip:hover { background: #fee2e2; border-color: #ef4444; }
+  .btn-mode { background: #f1f5f9; color: #334155; border: 2px solid #cbd5e1; }
+  .btn-mode:hover { background: #e2e8f0; }
+  .btn-mode.active { background: #1e40af; color: #fff; border-color: #1e40af; }
+
+  .formula-help {
+    font-size: 12.5px; color: #64748b; font-family: 'Consolas', monospace;
+    margin-top: 6px; margin-bottom: 10px; padding: 6px 10px; background: #f1f5f9;
+    border-left: 3px solid #94a3b8; border-radius: 0 6px 6px 0; line-height: 1.5;
+  }
+  .formula-help b { color: #1e40af; }
+
+  .hint-box, .explain-box {
+    display: none; margin-top: 12px; padding: 12px 16px; border-radius: 10px;
+    font-size: 13.5px; line-height: 1.6; white-space: pre-line;
+  }
+  .hint-box { background: #fffbeb; border: 1px solid #fcd34d; color: #78350f; }
+  .hint-box.show { display: block; }
+  .hint-box .lbl { font-weight: 700; color: #b45309; display: block; margin-bottom: 4px; }
+
+  .explain-box { background: #ecfdf5; border: 1px solid #86efac; color: #14532d; }
+  .explain-box.show { display: block; }
+  .explain-box .lbl { font-weight: 700; color: #166534; display: block; margin-bottom: 4px; }
+
+  .status-msg { font-size: 13px; font-weight: 700; font-family: 'Consolas', monospace; margin-left: 4px; }
+  .status-msg.ok  { color: #166534; }
+  .status-msg.err { color: #991b1b; }
+
+  .summary {
+    max-width: 1000px; margin: 0 auto 20px;
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: #fff; border-radius: 16px; padding: 20px 26px;
+    display: none;
+  }
+  .summary.show { display: block; }
+  .summary h2 { margin: 0 0 10px; font-size: 17px; }
+  .summary p { margin: 6px 0; font-size: 14.5px; line-height: 1.65; }
+  .summary b { color: #fff; }
+  .summary .next-hint { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.3); font-size: 13.5px; opacity: 0.95; }
+
+  .bottom-bar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: #fff; border-top: 2px solid #e2e8f0;
+    box-shadow: 0 -4px 20px rgba(15,23,42,0.10);
+    padding: 8px 12px; z-index: 100;
+  }
+  .bottom-inner { max-width: 1000px; margin: 0 auto; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .nav-btn {
+    padding: 9px 16px; border: 2px solid #cbd5e1;
+    background: #fff; color: #334155;
+    border-radius: 10px; cursor: pointer;
+    font-size: 13px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all .15s;
+  }
+  .nav-btn:hover { border-color: #3b82f6; color: #1e40af; background: #eff6ff; }
+  .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .nav-btn.primary { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+  .nav-btn.primary:hover { background: #2563eb; }
+  .nav-btn.primary:disabled { background: #93c5fd; border-color: #93c5fd; }
+  .nav-btn.reset { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+  .nav-btn.reset:hover { background: #fee2e2; border-color: #ef4444; }
+
+  /* ============ КОД-РЕЖИМ ============ */
+  .mode-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+  .code-block {
+    background: #0f172a; color: #e2e8f0;
+    border-radius: 12px; padding: 18px 22px;
+    font-family: 'Consolas', 'Menlo', monospace;
+    font-size: 14.5px; line-height: 2.2;
+    white-space: pre-wrap; overflow-x: auto;
+    margin-bottom: 14px;
+  }
+  .code-block .kw  { color: #f472b6; }
+  .code-block .fn  { color: #60a5fa; }
+  .code-block .cm  { color: #64748b; }
+
+  .code-box {
+    display: inline-block;
+    background: #1e293b;
+    border: 2px dashed #f59e0b;
+    border-radius: 6px;
+    padding: 3px 10px;
+    min-width: 80px;
+    font-family: 'Consolas', monospace;
+    font-size: 14px;
+    color: #fbbf24;
+    font-weight: 700;
+    outline: none;
+    text-align: center;
+    vertical-align: middle;
+    margin: 0 2px;
+    transition: all .15s;
+  }
+  .code-box:focus { border-color: #3b82f6; background: #334155; }
+
+  .code-box-wide {
+    display: inline-block;
+    background: #1e293b;
+    border: 2px dashed #f59e0b;
+    border-radius: 8px;
+    padding: 5px 12px;
+    width: 100%;
+    max-width: 640px;
+    font-family: 'Consolas', monospace;
+    font-size: 14px;
+    color: #fbbf24;
+    font-weight: 700;
+    outline: none;
+    margin: 0 2px;
+    transition: all .15s;
+  }
+  .code-box-wide:focus { border-color: #3b82f6; background: #334155; }
+
+  .if-line { display: flex; align-items: center; gap: 4px; }
+
+  .break-toggle {
+    display: inline-block;
+    width: 22px; height: 22px; line-height: 22px;
+    text-align: center;
+    border-radius: 4px;
+    background: #334155;
+    color: #94a3b8;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-right: 6px;
+    user-select: none;
+    transition: all .15s;
+  }
+  .break-toggle:hover { background: #475569; color: #fbbf24; }
+  .break-toggle.on { background: #166534; color: #bbf7d0; }
+  .break-toggle.off { background: #7f1d1d; color: #fecaca; }
+
+  .break-line { display: inline-block; }
+  .break-line.commented .kw { color: #475569; opacity: 0.6; }
+
+  .code-result {
+    display: none;
+    background: #f0fdf4; border: 2px solid #22c55e;
+    border-radius: 10px; padding: 14px 18px; margin: 12px 0;
+    font-family: 'Consolas', monospace; font-size: 14.5px;
+    color: #14532d; line-height: 1.6;
+  }
+  .code-result.show { display: block; }
+  .code-result .lbl { font-weight: 700; color: #166534; display: block; margin-bottom: 6px; font-size: 14px; }
+  .code-result .out { background: #fff; border-radius: 6px; padding: 8px 12px; color: #0f172a; word-break: break-all; }
+
+  .final-confirm {
+    display: none; margin-top: 14px;
+    padding: 16px 22px; border-radius: 12px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff; font-size: 16px; font-weight: 700;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(34,197,94,0.35);
+  }
+  .final-confirm.show { display: block; }
+</style>
+</head>
+<body>
+
+<h1>Задание 11: счёт количества информации</h1>
+<p class="subtitle">37 задач · вручную или через код · при верном ответе авто-переход</p>
+
+<!-- ===== СПРАВКА: СТЕПЕНИ ДВОЙКИ (таблица) ===== -->
+<div class="powers-ref">
+  <div class="powers-ref-title">Степени двойки</div>
+  <div class="powers-grid">
+    <div class="pow-cell">2⁰ = <b>1</b></div>
+    <div class="pow-cell">2¹ = <b>2</b></div>
+    <div class="pow-cell">2² = <b>4</b></div>
+    <div class="pow-cell">2³ = <b>8</b></div>
+    <div class="pow-cell">2⁴ = <b>16</b></div>
+    <div class="pow-cell">2⁵ = <b>32</b></div>
+    <div class="pow-cell">2⁶ = <b>64</b></div>
+    <div class="pow-cell">2⁷ = <b>128</b></div>
+    <div class="pow-cell">2⁸ = <b>256</b></div>
+    <div class="pow-cell">2⁹ = <b>512</b></div>
+    <div class="pow-cell">2¹⁰ = <b>1024</b></div>
+    <div class="pow-cell">2¹¹ = <b>2048</b></div>
+    <div class="pow-cell">2¹² = <b>4096</b></div>
+    <div class="pow-cell">2¹³ = <b>8192</b></div>
+    <div class="pow-cell">2¹⁴ = <b>16384</b></div>
+    <div class="pow-cell">2¹⁵ = <b>32768</b></div>
+  </div>
+</div>
+
+<div class="top-bar">
+  <div class="counter" id="counter">Решено <b>0</b> из 37 · <b>0%</b></div>
+  <div class="task-strip" id="taskStrip"></div>
+</div>
+
+<div class="progress-bar-wrap"><div class="progress-bar" id="progress"></div></div>
+
+<div class="step-container" id="stepContainer"></div>
+
+<div class="summary" id="summary">
+  <h2>✅ Задача решена!</h2>
+  <p id="summaryText"></p>
+  <div class="next-hint" id="nextHint"></div>
+</div>
+
+<div class="thermometer">
+  <div class="thermo-label">100</div>
+  <div class="thermo-track"><div class="thermo-fill" id="thermoFill"></div></div>
+  <div class="thermo-label">0</div>
+  <div class="thermo-percent" id="thermoPercent">0%</div>
+</div>
+
+<div class="bottom-bar">
+  <div class="bottom-inner">
+    <button class="nav-btn" id="btnPrev">◀ Пред</button>
+    <button class="nav-btn primary" id="btnNext">След ▶</button>
+    <button class="nav-btn" id="btnTop">↑ Наверх</button>
+    <button class="nav-btn reset" id="btnReset">↺ Начать снова</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ХРАНИЛИЩЕ ЗНАЧЕНИЙ СХЕМЫ
+   ============================================================ */
+const schemaValues = {};
+
+/* ============================================================
+   ВЫЧИСЛИТЕЛЬ
+   ============================================================ */
+function translateToJS(f) {
+  return f.replace(/\^/g, '**')
+    .replace(/\bceil\b/g, 'Math.ceil')
+    .replace(/\bfloor\b/g, 'Math.floor')
+    .replace(/\blog2\b/g, 'Math.log2')
+    .replace(/\blog10\b/g, 'Math.log10')
+    .replace(/\blog\b/g, 'Math.log')
+    .replace(/\babs\b/g, 'Math.abs');
+}
+function evaluateAnswer(raw) {
+  let s = String(raw).trim();
+  if (!s) return null;
+  s = s.replace(/\s*(бит|байт|байтов|символ(ов|а)?|вариант(ов|а)?|штук|пользовател(ей|я)|Кбайт|Мбайт|Гбайт|кб|мб|гб)\s*$/i, '').trim();
+  if (/^-?\d+(\.\d+)?$/.test(s)) return parseFloat(s);
+  let e = translateToJS(s);
+  const cl = e.replace(/Math\.(ceil|floor|log2|log10|log|abs)/g, '');
+  if (!/^[0-9+\-*/().\s]+$/.test(cl)) return null;
+  try { const r = Function('"use strict"; return (' + e + ')')(); return (typeof r === 'number' && isFinite(r)) ? r : null; }
+  catch (err) { return null; }
+}
+function evaluateExpression(raw) {
+  const s = String(raw).trim();
+  if (!s) return { empty: true };
+  const withoutFuncs = s.replace(/\b(ceil|floor|log2|log10|log|abs)\b/gi, '');
+  if (/[a-zA-Zа-яА-Я_]/.test(withoutFuncs)) {
+    return { variable: true };
+  }
+  const js = translateToJS(s);
+  const cl = js.replace(/Math\.(ceil|floor|log2|log10|log|abs)/g, '');
+  if (!/^[0-9+\-*/().\s]+$/.test(cl)) return { error: true };
+  try {
+    const r = Function('"use strict"; return (' + js + ')')();
+    if (typeof r === 'number' && isFinite(r)) return { value: r };
+    return { error: true };
+  } catch (e) { return { error: true }; }
+}
+
+/* ============================================================
+   ТРАНСЛЯТОР PYTHON-ПОДОБНОГО КОДА
+   ============================================================ */
+function translatePythonToJS(f) {
+  return f.replace(/\^/g, '**')
+    .replace(/\bceil\b/g, 'Math.ceil')
+    .replace(/\bfloor\b/g, 'Math.floor')
+    .replace(/\blog2\b/g, 'Math.log2')
+    .replace(/\blog10\b/g, 'Math.log10')
+    .replace(/\blog\b/g, 'Math.log')
+    .replace(/\babs\b/g, 'Math.abs');
+}
+function translatePythonOps(s) {
+  return s.replace(/\band\b/g, '&&')
+    .replace(/\bor\b/g, '||')
+    .replace(/\bnot\b/g, '!')
+    .replace(/\bTrue\b/g, 'true')
+    .replace(/\bFalse\b/g, 'false');
+}
+function isSafeFormula(s) {
+  const cleaned = s.replace(/Math\.(ceil|floor|log2|log10|log|abs)/g, '')
+    .replace(/\b(and|or|not|True|False)\b/g, '');
+  return /^[0-9+\-*/().\s<>=!x]*$/.test(cleaned);
+}
+
+/* ============================================================
+   ЗАДАЧИ
+   ============================================================ */
+const TASKS = [
+/* 1. 2047 */
+{ id:'2047', short:'2047',
+  context:`В базе данных хранятся записи о датах. Каждая запись содержит 3 поля:
+• год (1 до 2100),
+• номер месяца (1 до 12),
+• номер дня в месяце (1 до 31).
+
+Каждое поле записывается отдельно с минимально возможным числом бит.
+
+Определите минимальное количество бит для кодирования одной записи.`,
+  schema: {
+    title: 'Структура одной записи',
+    fields: [
+      { name: 'Год',   slots: 4, info: '1…2100', chars: 1, power: 2100 },
+      { name: 'Месяц', slots: 3, info: '1…12',   chars: 1, power: 12   },
+      { name: 'День',  slots: 3, info: '1…31',   chars: 1, power: 31   }
+    ]
+  },
+  steps:[
+    { label:'Год (бит)', question:'Сколько бит нужно, чтобы закодировать все возможные годы?', answer:12,
+      explanation:'2¹¹=2048 — мало. 2¹²=4096 — хватит. Ответ: 12 бит.', hint:'Год от 1 до 2100 — это 2100 вариантов.' },
+    { label:'Месяц (бит)', question:'Сколько бит нужно для кодирования месяца?', answer:4,
+      explanation:'2³=8 — мало, 2⁴=16 — хватит. Ответ: 4 бита.', hint:'Месяц от 1 до 12 — 12 вариантов.' },
+    { label:'День (бит)', question:'Сколько бит нужно для кодирования дня?', answer:5,
+      explanation:'2⁴=16 — мало, 2⁵=32 — хватит. Ответ: 5 бит.', hint:'День от 1 до 31 — 31 вариант.' },
+    { label:'Всего (бит)', question:'Сколько ВСЕГО бит нужно для одной записи?', answer:21,
+      explanation:'12+4+5 = 21 бит.', hint:'Поля кодируются отдельно. Сложи три значения.' }
+  ],
+  code: { finalAnswer: 21, finalExplain:'12+4+5 = 21' }},
+
+/* 2. 5703 */
+{ id:'5703', short:'5703',
+  context:`Раз в год наблюдения за солнечной активностью пишутся в базу данных минимальным целым числом байт.
+
+Каждая запись:
+• результат измерений из 5 заглавных латинских букв,
+• год измерения (2000 до 2099).
+
+Каждый символ кодируется минимально возможным числом бит. Символы, не изменяющиеся в записи года, сохранять не нужно.
+
+Сколько байтов требуется для хранения всех измерений?`,
+  schema: {
+    title: 'Структура записи',
+    fields: [
+      { name: 'Буквы', slots: 5, info: '5 заглавных латинских букв', chars: 5, power: 26 },
+      { name: 'Год',   slots: 4, info: '2000…2099, храним 2 цифры',  chars: 2, power: 10 }
+    ]
+  },
+  steps:[
+    { label:'Буква (бит)', question:'Сколько бит нужно для одной заглавной латинской буквы?', answer:5,
+      explanation:'2⁴=16 — мало, 2⁵=32 — хватит. Ответ: 5 бит.', hint:'26 заглавных букв.' },
+    { label:'Цифра года (бит)', question:'Сколько бит нужно для одной десятичной цифры?', answer:4,
+      explanation:'2³=8 — мало, 2⁴=16 — хватит. Ответ: 4 бита.', hint:'10 цифр.' },
+    { label:'Символов года', question:'Сколько символов года нужно сохранять?', answer:2,
+      explanation:'Первые "20" не меняются. Меняются только 2 последние цифры.', hint:'2000...2099 — что всегда одинаковое?' },
+    { label:'Запись (бит)', question:'Сколько всего бит занимает одна запись?', answer:33,
+      explanation:'5·5 + 2·4 = 25+8 = 33 бита.', hint:'5 букв по 5 бит + 2 цифры по 4 бита.' },
+    { label:'Запись (байт)', question:'Сколько байт занимает одна запись (округление вверх)?', answer:5,
+      explanation:'33/8 = 4.125 → 5 байт.', hint:'Деление на 8 с округлением вверх.' },
+    { label:'Записей', question:'Сколько всего записей в базе?', answer:100,
+      explanation:'С 2000 по 2099 включительно — 100 лет.', hint:'2099−2000+1 = ?' },
+    { label:'Всего (байт)', question:'Сколько всего байт для хранения всех измерений?', answer:500,
+      explanation:'100 · 5 = 500 байт.', hint:'Умножь число записей на объём одной.' }
+  ],
+  code: { finalAnswer: 500, finalExplain:'100 · 5 = 500' }},
+
+/* 3. 2046 */
+{ id:'2046', short:'2046',
+  context:`В школе 800 учащихся. Коды записаны минимальным количеством бит.
+
+Каков информационный объём в байтах сообщения о кодах 320 учащихся?`,
+  schema: {
+    title: 'Структура кода учащегося',
+    fields: [
+      { name: 'Код', slots: 1, info: '1 из 800 вариантов', chars: 1, power: 800 }
+    ]
+  },
+  steps:[
+    { label:'Код (бит)', question:'Сколько бит на один код учащегося?', answer:10,
+      explanation:'2⁹=512 — мало, 2¹⁰=1024 — хватит. Ответ: 10 бит.', hint:'800 учащихся.' },
+    { label:'Сообщение (бит)', question:'Сколько всего бит в сообщении о 320 учащихся?', answer:3200,
+      explanation:'320 · 10 = 3200 бит.', hint:'Умножай.' },
+    { label:'Сообщение (байт)', question:'Каков объём сообщения в байтах?', answer:400,
+      explanation:'3200/8 = 400 байт.', hint:'Деление на 8.' }
+  ],
+  code: { finalAnswer: 400, finalExplain:'320·10/8 = 400' }},
+
+/* 4. 2052 */
+{ id:'2052', short:'2052',
+  context:`На пропуске: личный код, код подразделения и доп. информация.
+• Личный код — 14 символов: 26 букв или 10 цифр. Кодируется посимвольно, минимальным целым числом байт.
+• Код подразделения — 8 символов: первые 5 — буквы A–F, последние 3 — цифры. Тоже посимвольно, минимальным целым числом байт.
+
+Всего на пропуске 30 байт. Сколько байт выделено для доп. сведений?`,
+  schema: {
+    title: 'Структура пропуска',
+    fields: [
+      { name: 'Личный код',     slots: 14, info: '26 букв или 10 цифр',    chars: 14, power: 36 },
+      { name: 'Подразделение',  slots: 8,  info: '5 букв A–F + 3 цифры',   chars: 8,  power: '?' },
+      { name: 'Доп. сведения',  slots: 1,  info: '?',                       chars: 1,  power: '?' }
+    ]
+  },
+  steps:[
+    { label:'Символов в ЛК', question:'Сколько вариантов символа на одной позиции личного кода?', answer:36,
+      explanation:'26+10 = 36.', hint:'Сложи буквы и цифры.' },
+    { label:'Символ ЛК (бит)', question:'Сколько бит на один символ личного кода?', answer:6,
+      explanation:'2⁵=32 — мало, 2⁶=64 — хватит.', hint:'N = 36.' },
+    { label:'ЛК (бит)', question:'Сколько всего бит в личном коде?', answer:84,
+      explanation:'14·6 = 84 бита.', hint:'14 символов по 6 бит.' },
+    { label:'ЛК (байт)', question:'Сколько байт в личном коде (вверх)?', answer:11,
+      explanation:'84/8 = 10.5 → 11 байт.', hint:'Деление с округлением вверх.' },
+    { label:'Буква КП (бит)', question:'Сколько бит на одну букву кода подразделения (A–F)?', answer:3,
+      explanation:'2²=4 — мало, 2³=8 — хватит.', hint:'6 букв.' },
+    { label:'Цифра КП (бит)', question:'Сколько бит на одну цифру кода подразделения?', answer:4,
+      explanation:'2³=8 — мало, 2⁴=16 — хватит.', hint:'10 цифр.' },
+    { label:'КП (бит)', question:'Сколько всего бит в коде подразделения?', answer:27,
+      explanation:'5·3 + 3·4 = 15+12 = 27 бит.', hint:'5 букв по 3 + 3 цифры по 4.' },
+    { label:'КП (байт)', question:'Сколько байт в коде подразделения (вверх)?', answer:4,
+      explanation:'27/8 = 3.375 → 4 байта.', hint:'Деление с округлением вверх.' },
+    { label:'Доп. сведения', question:'Сколько байт осталось на доп. сведения?', answer:15,
+      explanation:'30 − 11 − 4 = 15 байт.', hint:'Вычти из 30 оба кода.' }
+  ],
+  code: { finalAnswer: 15, finalExplain:'30 − 11 − 4 = 15' }},
+
+/* 5. 3338 */
+{ id:'3338', short:'3338',
+  context:`Электронный пропуск: личный код из двух частей.
+• Первая часть — 10 символов, каждая из 26 заглавных латинских букв.
+• Вторая часть — 8 символов, каждая из 10 цифр.
+Символы в пределах одной части кодируются одинаково минимальным числом бит. Для кода в целом — минимально возможное целое число байт.
+Для 60 пользователей потребовалось 1980 байт.
+
+Сколько байт выделено для доп. информации об одном пользователе?`,
+  schema: {
+    title: 'Структура электронного пропуска',
+    fields: [
+      { name: 'Часть 1', slots: 10, info: '26 заглавных букв', chars: 10, power: 26 },
+      { name: 'Часть 2', slots: 8,  info: '10 цифр',            chars: 8,  power: 10 },
+      { name: 'Доп',     slots: 1,  info: '?',                   chars: 1,  power: '?' }
+    ]
+  },
+  steps:[
+    { label:'Буква (бит)', question:'Сколько бит на одну заглавную букву?', answer:5,
+      explanation:'2⁴=16 — мало, 2⁵=32 — хватит.', hint:'26 букв.' },
+    { label:'Цифра (бит)', question:'Сколько бит на одну цифру?', answer:4,
+      explanation:'2³=8 — мало, 2⁴=16 — хватит.', hint:'10 цифр.' },
+    { label:'Код (бит)', question:'Сколько всего бит в коде?', answer:82,
+      explanation:'10·5 + 8·4 = 50+32 = 82 бита.', hint:'10 букв + 8 цифр.' },
+    { label:'Код (байт)', question:'Сколько байт занимает код (вверх)?', answer:11,
+      explanation:'82/8 = 10.25 → 11 байт.', hint:'Деление с округлением вверх.' },
+    { label:'На одного', question:'Сколько всего байт приходится на одного пользователя?', answer:33,
+      explanation:'1980/60 = 33 байта.', hint:'Всего / количество.' },
+    { label:'Доп', question:'Сколько байт выделено для доп. информации?', answer:22,
+      explanation:'33 − 11 = 22 байта.', hint:'Вычти код из общего.' }
+  ],
+  code: { finalAnswer: 22, finalExplain:'33 − 11 = 22' }},
+
+/* 6. 4774 */
+{ id:'4774', short:'4774',
+  context:`Идентификатор из двух частей:
+• 10 заглавных латинских букв (посимвольно, минимум бит).
+• Целое число от 00001 до 99999 (минимум бит).
+Для полного ID — минимально возможное целое число байт.
+Доп. сведения занимают 13 байт.
+
+Сколько максимум пользователей в 1800 байт?`,
+  schema: {
+    title: 'Структура ID пользователя',
+    fields: [
+      { name: 'Буквы', slots: 10, info: '26 заглавных букв', chars: 10, power: 26 },
+      { name: 'Число', slots: 5,  info: '00001…99999',        chars: 5,  power: 100000 },
+      { name: 'Доп',   slots: 1,  info: '13 байт',            chars: 1,  power: '?' }
+    ]
+  },
+  steps:[
+    { label:'Буква (бит)', question:'Сколько бит на одну заглавную букву?', answer:5,
+      explanation:'2⁴=16 — мало, 2⁵=32 — хватит.', hint:'26 букв.' },
+    { label:'Число (бит)', question:'Сколько бит на число от 1 до 99999?', answer:17,
+      explanation:'2¹⁶=65536 — мало, 2¹⁷=131072 — хватит.', hint:'99999 вариантов.' },
+    { label:'ID (бит)', question:'Сколько всего бит в ID?', answer:67,
+      explanation:'10·5 + 17 = 50+17 = 67 бит.', hint:'10 букв + число.' },
+    { label:'ID (байт)', question:'Сколько байт занимает ID (вверх)?', answer:9,
+      explanation:'67/8 = 8.375 → 9 байт.', hint:'Деление с округлением вверх.' },
+    { label:'На одного', question:'Сколько байт на одного пользователя?', answer:22,
+      explanation:'9 + 13 = 22 байта.', hint:'ID + доп.' },
+    { label:'Пользователей', question:'Сколько максимум пользователей поместится в 1800 байт?', answer:81,
+      explanation:'1800/22 = 81.8 → 81 (округление вниз).', hint:'Деление с округлением вниз.' }
+  ],
+  code: { finalAnswer: 81, finalExplain:'1800/22 = 81.8 → 81' }},
+
+/* 7. 6823 */
+{ id:'6823', short:'6823',
+  context:`Идентификатор из цифр, больших и малых букв латинского алфавита (62 символа). Посимвольное кодирование, минимальное число бит, минимальное целое число байт.
+Доп. сведения — 32 байта (фиксировано).
+Для 314 пользователей потребовалось 12874 байта.
+
+Найдите максимальную длину идентификатора.`,
+  schema: {
+    title: 'Структура идентификатора',
+    fields: [
+      { name: 'ID',  slots: 12, info: 'цифры + буквы (62 символа)', chars: '?', power: 62 },
+      { name: 'Доп', slots: 1,  info: '32 байта',                    chars: 1,  power: '?' }
+    ]
+  },
+  steps:[
+    { label:'Символ (бит)', question:'Сколько бит на один символ идентификатора?', answer:6,
+      explanation:'26+26+10 = 62. 2⁵=32 — мало, 2⁶=64 — хватит. Ответ: 6 бит.', hint:'Цифры + большие + малые буквы.' },
+    { label:'На одного', question:'Сколько байт приходится на одного пользователя?', answer:41,
+      explanation:'12874/314 = 41 байт.', hint:'Всего / количество.' },
+    { label:'ID (байт)', question:'Сколько байт выделено на идентификатор?', answer:9,
+      explanation:'41 − 32 = 9 байт.', hint:'Вычти доп. сведения.' },
+    { label:'ID (бит)', question:'Сколько бит выделено на идентификатор?', answer:72,
+      explanation:'9 · 8 = 72 бита.', hint:'Переведи байты в биты.' },
+    { label:'Длина ID', question:'Какова максимальная длина идентификатора (символов)?', answer:12,
+      explanation:'72/6 = 12 символов.', hint:'Всего бит / бит на символ.' }
+  ],
+  code: { finalAnswer: 12, finalExplain:'72/6 = 12' }},
+
+/* 8. 6595 */
+{ id:'6595', short:'6595',
+  context:`Пароль из 48 символов, алфавит 8 символов (Т, А, Щ, И, М, Е, Г, Э). Посимвольное кодирование, минимальное число бит, минимальное целое число байт.
+Доп. сведения — целое число байт.
+Для 250 пользователей — 5750 байт.
+
+Сколько байт выделено на доп. сведения?`,
+  schema: {
+    title: 'Структура пользователя',
+    fields: [
+      { name: 'Пароль', slots: 48, info: 'алфавит 8 символов', chars: 48, power: 8 },
+      { name: 'Доп',    slots: 1,  info: '?',                   chars: 1,  power: '?' }
+    ]
+  },
+  steps:[
+    { label:'Символ (бит)', question:'Сколько бит на один символ пароля?', answer:3,
+      explanation:'2²=4 — мало, 2³=8 — хватит.', hint:'8-символьный алфавит.' },
+    { label:'Пароль (бит)', question:'Сколько бит в пароле?', answer:144,
+      explanation:'48·3 = 144 бита.', hint:'48 символов по 3 бита.' },
+    { label:'Пароль (байт)', question:'Сколько байт в пароле (вверх)?', answer:18,
+      explanation:'144/8 = 18 байт.', hint:'Деление на 8.' },
+    { label:'На одного', question:'Сколько байт на одного пользователя?', answer:23,
+      explanation:'5750/250 = 23 байта.', hint:'Всего / количество.' },
+    { label:'Доп', question:'Сколько байт выделено на доп. сведения?', answer:5,
+      explanation:'23 − 18 = 5 байт.', hint:'Вычти пароль из общего.' }
+  ],
+  code: { finalAnswer: 5, finalExplain:'23 − 18 = 5' }},
+
+/* 9. 7418 */
+{ id:'7418', short:'7418',
+  context:`ID из 10 символов + пароль из 25 символов. Один и тот же алфавит для обоих, посимвольное кодирование с минимальным числом бит.
+Доп. сведения — 48 байт на пользователя.
+Для 1536 пользователей — 120 Кбайт.
+
+Какое максимальное количество символов в алфавите?`,
+  schema: {
+    title: 'Структура пользователя',
+    fields: [
+      { name: 'ID',     slots: 10, info: 'общий алфавит', chars: 10, power: '?' },
+      { name: 'Пароль', slots: 25, info: 'общий алфавит', chars: 25, power: '?' },
+      { name: 'Доп',    slots: 1,  info: '48 байт',        chars: 1,  power: '?' }
+    ]
+  },
+  steps:[
+    { label:'Всего байт', question:'Сколько всего байт отведено (120 Кбайт = ?)?', answer:122880,
+      explanation:'120 · 1024 = 122880 байт.', hint:'Умножь на 1024.' },
+    { label:'На одного', question:'Сколько байт на одного пользователя?', answer:80,
+      explanation:'122880/1536 = 80 байт.', hint:'Всего / количество.' },
+    { label:'ID+пароль (байт)', question:'Сколько байт на ID + пароль?', answer:32,
+      explanation:'80 − 48 = 32 байта.', hint:'Вычти доп. сведения.' },
+    { label:'ID+пароль (бит)', question:'Сколько бит на ID + пароль?', answer:256,
+      explanation:'32 · 8 = 256 бит.', hint:'Байты в биты.' },
+    { label:'Бит на символ', question:'Сколько максимум бит на один символ?', answer:7,
+      explanation:'Всего 35 символов. 35k ≤ 256 → k ≤ 7.31 → 7 бит.', hint:'35 = 10+25 символов.' },
+    { label:'Мощность', question:'Какова максимальная мощность алфавита?', answer:128,
+      explanation:'2⁷ = 128.', hint:'Возведи 2 в степень.' }
+  ],
+  code: { finalAnswer: 128, finalExplain:'2⁷ = 128' }},
+
+/* 10. 6315 */
+{ id:'6315', short:'6315',
+  context:`Объект описан:
+• ID из 11 заглавных латинских букв (посимвольно, минимум бит, минимальное целое число байт).
+• Состав из 30 деталей. 5000 различных деталей (каждая — минимум бит, для 30 деталей — минимальное целое число байт).
+Доп. сведения — целое число байт.
+Для 16384 объектов — 3 Мбайта.
+
+Сколько байт максимум на доп. сведения?`,
+  schema: {
+    title: 'Структура объекта',
+    fields: [
+      { name: 'ID',     slots: 11, info: '26 заглавных букв',           chars: 11, power: 26   },
+      { name: 'Состав', slots: 30, info: '30 деталей по 5000 вариантов', chars: 30, power: 5000 },
+      { name: 'Доп',    slots: 1,  info: '?',                            chars: 1,  power: '?'  }
+    ]
+  },
+  steps:[
+    { label:'ID (бит)', question:'Сколько бит в ID?', answer:55,
+      explanation:'11·5 = 55 бит.', hint:'26 букв → 5 бит на букву.' },
+    { label:'ID (байт)', question:'Сколько байт в ID (вверх)?', answer:7,
+      explanation:'55/8 = 6.875 → 7 байт.', hint:'Деление с округлением вверх.' },
+    { label:'Деталь (бит)', question:'Сколько бит на код одной детали?', answer:13,
+      explanation:'2¹²=4096 — мало, 2¹³=8192 — хватит.', hint:'5000 деталей.' },
+    { label:'Состав (бит)', question:'Сколько бит на состав из 30 деталей?', answer:390,
+      explanation:'30·13 = 390 бит.', hint:'30 деталей.' },
+    { label:'Состав (байт)', question:'Сколько байт на состав (вверх)?', answer:49,
+      explanation:'390/8 = 48.75 → 49 байт.', hint:'Деление с округлением вверх.' },
+    { label:'На объект', question:'Сколько всего байт на один объект?', answer:192,
+      explanation:'3·1024·1024/16384 = 192 байта.', hint:'Переведи Мбайты в байты и раздели.' },
+    { label:'Доп', question:'Сколько байт на доп. информацию?', answer:136,
+      explanation:'192 − 7 − 49 = 136 байт.', hint:'Вычти ID и состав.' }
+  ],
+  code: { finalAnswer: 136, finalExplain:'192 − 7 − 49 = 136' }},
+
+/* 11. 19155 */
+{ id:'19155', short:'19155',
+  context:`Серийный номер из 157 символов. Одинаковое минимальное число байт на номер. Посимвольное кодирование, минимум бит на символ.
+233700 номеров занимают от 30 до 31 Мбайт.
+
+Сколько возможных мощностей алфавита?`,
+  schema: {
+    title: 'Структура серийного номера',
+    fields: [
+      { name: 'Номер', slots: 157, info: 'мощность алфавита ?', chars: 157, power: '?' }
+    ]
+  },
+  steps:[
+    { label:'30 МБ в байт', question:'Сколько байт в 30 Мбайтах?', answer:31457280,
+      explanation:'30 · 1024 · 1024 = 31457280 байт.', hint:'МБ → байты.' },
+    { label:'31 МБ в байт', question:'Сколько байт в 31 МБ?', answer:32505856,
+      explanation:'31 · 1024 · 1024 = 32505856 байт.', hint:'МБ → байты.' },
+    { label:'Мин. байт на номер', question:'Минимальное число байт на номер?', answer:135,
+      explanation:'31457280/233700 = 134.6 → округление вверх до целого байта. Минимум = 135.', hint:'Всего / количество.' },
+    { label:'Макс. байт на номер', question:'Максимальное число байт на номер?', answer:139,
+      explanation:'32505856/233700 = 139.1 → максимум = 139.', hint:'Всего / количество.' },
+    { label:'Мощностей', question:'Сколько мощностей алфавита подходит?', answer:64,
+      explanation:'Перебор: k ∈ [7..7], все m подходят → 64.', hint:'Решение даёт 64 варианта m.' }
+  ],
+  code: { finalAnswer: 64, finalExplain:'64 варианта' }},
+
+/* 12. 18614 */
+{ id:'18614', short:'18614',
+  context:`Код из 24 символов: буква (заглавная/строчная) или цифра или спецсимвол. Кодируется минимальным числом бит, минимальным целым числом байт.
+5100 кодов выделено ≤ 170 Кбайт.
+
+Какое наибольшее количество спецсимволов в наборе?`,
+  schema: {
+    title: 'Структура кода',
+    fields: [
+      { name: 'Код', slots: 24, info: '62 базовых + спецсимволы', chars: 24, power: '?' }
+    ]
+  },
+  steps:[
+    { label:'База', question:'Сколько символов без спецнабора (буквы + цифры)?', answer:62,
+      explanation:'26+26+10 = 62.', hint:'Заглавные + строчные + цифры.' },
+    { label:'Всего КБ', question:'Сколько байт в 170 Кбайт?', answer:174080,
+      explanation:'170·1024 = 174080 байт.', hint:'КБ → байты.' },
+    { label:'Байт на код', question:'Максимум байт на один код?', answer:34,
+      explanation:'174080/5100 = 34.13 → 34 байта.', hint:'Всего / количество.' },
+    { label:'Бит на код', question:'Сколько бит приходится на один код?', answer:272,
+      explanation:'34·8 = 272 бита.', hint:'Байты в биты.' },
+    { label:'Бит на символ', question:'Сколько максимум бит на один символ?', answer:11,
+      explanation:'24k ≤ 272 → k ≤ 11.33 → 11 бит.', hint:'24 символа.' },
+    { label:'Спецсимволов', question:'Сколько максимум спецсимволов?', answer:1986,
+      explanation:'2¹¹ = 2048. 2048 − 62 = 1986.', hint:'2^k − 62.' }
+  ],
+  code: { finalAnswer: 1986, finalExplain:'2048 − 62 = 1986' }},
+
+/* 13. 4323 */
+{ id:'4323', short:'4323',
+  context:`ID из 163 символов, минимальное целое число байт на ID, посимвольно, минимум бит.
+32768 ID занимают 3264 Кбайт.
+
+Определите минимальное количество различных символов в алфавите.`,
+  schema: {
+    title: 'Структура ID',
+    fields: [
+      { name: 'ID', slots: 163, info: 'мощность алфавита ?', chars: 163, power: '?' }
+    ]
+  },
+  steps:[
+    { label:'Байт всего', question:'Сколько байт в 3264 КБ?', answer:3342336,
+      explanation:'3264·1024 = 3342336.', hint:'КБ → байты.' },
+    { label:'Байт на ID', question:'Сколько байт на один ID?', answer:102,
+      explanation:'3342336/32768 = 102 байта.', hint:'Всего / количество.' },
+    { label:'Бит на ID', question:'Сколько бит на ID?', answer:816,
+      explanation:'102·8 = 816 бит.', hint:'Байты в биты.' },
+    { label:'Бит на символ', question:'Сколько бит на один символ?', answer:5,
+      explanation:'816/163 = 5.006 → 5 бит.', hint:'163 символа.' },
+    { label:'Мощность', question:'Сколько различных символов в алфавите?', answer:17,
+      explanation:'Строго: 163k = 816 → k=5. Ответ задачи: 17.', hint:'Задача-перебор.' }
+  ],
+  code: { finalAnswer: 17, finalExplain:'k=5, m=17' }},
+
+/* 14. 17552 */
+{ id:'17552', short:'17552',
+  context:`Серийный номер из 261 символа. Одинаковое минимальное целое число байт на номер. Посимвольно, минимум бит на символ.
+252500 номеров занимают более 31 Мбайт.
+
+Определите минимально возможную мощность алфавита.`,
+  schema: {
+    title: 'Структура серийного номера',
+    fields: [
+      { name: 'Номер', slots: 261, info: 'мощность алфавита ?', chars: 261, power: '?' }
+    ]
+  },
+  steps:[
+    { label:'Всего байт', question:'Сколько байт в 31 МБ?', answer:32505856,
+      explanation:'31·1024·1024 = 32505856.', hint:'МБ → байты.' },
+    { label:'Байт на номер', question:'Минимум байт на один номер (>31 МБ)?', answer:129,
+      explanation:'32505856/252500 = 128.7 → минимум 129 байт.', hint:'Всего / количество.' },
+    { label:'Бит на номер', question:'Бит на номер?', answer:1032,
+      explanation:'129·8 = 1032 бита.', hint:'Байты в биты.' },
+    { label:'Бит на символ', question:'Минимум бит на символ?', answer:4,
+      explanation:'1032/261 = 3.95 → 4 бита.', hint:'261 символ.' },
+    { label:'Мощность', question:'Минимальная мощность алфавита?', answer:9,
+      explanation:'2³=8 — мало, значит 9..16. Минимум — 9.', hint:'Задача-перебор.' }
+  ],
+  code: { finalAnswer: 9, finalExplain:'минимум 9' }},
+
+/* 15. 7552 */
+{ id:'7552', short:'7552',
+  context:`Серийный номер содержит цифры и символы из 2030-символьного спец. алфавита. Одинаковое минимальное число байт на номер, посимвольно, минимум бит.
+318 номеров занимают более 67 Кбайт.
+
+Определите минимальную длину серийного номера.`,
+  schema: {
+    title: 'Структура серийного номера',
+    fields: [
+      { name: 'Номер', slots: 157, info: '10 цифр + 2030 спецсимволов', chars: '?', power: 2040 }
+    ]
+  },
+  steps:[
+    { label:'Алфавит', question:'Сколько всего символов?', answer:2040,
+      explanation:'2030 + 10 цифр = 2040.', hint:'Спец. + цифры.' },
+    { label:'Бит на символ', question:'Сколько бит на один символ?', answer:11,
+      explanation:'2¹⁰=1024 — мало, 2¹¹=2048 — хватит.', hint:'N = 2040.' },
+    { label:'Байт всего', question:'Сколько байт в 67 КБ?', answer:68608,
+      explanation:'67·1024 = 68608 байт.', hint:'КБ → байты.' },
+    { label:'Байт на номер', question:'Минимум байт на один номер (>67 КБ)?', answer:216,
+      explanation:'68608/318 = 215.7 → 216 байт.', hint:'Всего / количество.' },
+    { label:'Бит на номер', question:'Сколько бит на номер?', answer:1728,
+      explanation:'216·8 = 1728 бит.', hint:'Байты в биты.' },
+    { label:'Длина', question:'Минимальная длина номера?', answer:157,
+      explanation:'1728/11 = 157.09 → 157 символов.', hint:'Всего бит / бит на символ.' }
+  ],
+  code: { finalAnswer: 157, finalExplain:'1728/11 = 157.09 → 157' }},
+
+/* 16. 2119 */
+{ id:'2119', short:'2119',
+  context:`ID фиксированной длины из алфавита: цифры, строчные и заглавные буквы (62 символа).
+Каждый символ кодируется минимум бит. Все биты пишутся подряд и округляются до целого байта.
+
+Сколько максимум различных ID можно создать, если 1000 ID занимают 4 Кбайт?`,
+  schema: {
+    title: 'Структура ID',
+    fields: [
+      { name: 'ID', slots: 5, info: '62 символа, длина ?', chars: '?', power: 62 }
+    ]
+  },
+  steps:[
+    { label:'Всего байт', question:'Сколько байт в 4 КБ?', answer:4096,
+      explanation:'4·1024 = 4096 байт.', hint:'КБ → байты.' },
+    { label:'Байт на ID', question:'Сколько байт на один ID?', answer:4,
+      explanation:'4096/1000 = 4.096 → 4 байта.', hint:'Округление вниз.' },
+    { label:'Бит на ID', question:'Сколько бит на ID?', answer:32,
+      explanation:'4·8 = 32 бита.', hint:'Байты в биты.' },
+    { label:'Длина', question:'Максимальная длина ID?', answer:5,
+      explanation:'6 бит на символ. 32/6 = 5.33 → 5.', hint:'62 символа → 6 бит.' },
+    { label:'Всего ID', question:'Сколько всего различных ID?', answer:916132832,
+      explanation:'62⁵ = 916132832.', hint:'Возведи мощность алфавита в длину.' }
+  ],
+  code: { finalAnswer: 916132832, finalExplain:'62⁵ = 916132832' }},
+
+/* 17. 263 */
+{ id:'263', short:'263',
+  context:`В базе данных: Фамилия (16 символов, русские буквы: 1 прописная + строчные), Имя (12 символов), Отчество (16 символов), Год рождения (1992–2003).
+Буквы е и ё совпадают (32 буквы).
+Каждое поле записывается минимальным числом бит.
+
+Сколько минимум байт нужно для кодирования одной записи?`,
+  schema: {
+    title: 'Структура записи',
+    fields: [
+      { name: 'Фамилия',  slots: 16, info: '32 русские буквы', chars: 16, power: 32 },
+      { name: 'Имя',      slots: 12, info: '32 русские буквы', chars: 12, power: 32 },
+      { name: 'Отчество', slots: 16, info: '32 русские буквы', chars: 16, power: 32 },
+      { name: 'Год',      slots: 4,  info: '1992…2003',        chars: 1,  power: 12 }
+    ]
+  },
+  steps:[
+    { label:'Буква (бит)', question:'Сколько бит на одну русскую букву?', answer:5,
+      explanation:'2⁵=32 — хватит (32 буквы).', hint:'32 буквы (с ё=е).' },
+    { label:'Фамилия (бит)', question:'Сколько бит на фамилию?', answer:80,
+      explanation:'16·5 = 80 бит.', hint:'16 символов.' },
+    { label:'Имя (бит)', question:'Сколько бит на имя?', answer:60,
+      explanation:'12·5 = 60 бит.', hint:'12 символов.' },
+    { label:'Отчество (бит)', question:'Сколько бит на отчество?', answer:80,
+      explanation:'16·5 = 80 бит.', hint:'16 символов.' },
+    { label:'Год (бит)', question:'Сколько бит на год рождения (1992–2003)?', answer:4,
+      explanation:'2³=8 — мало, 2⁴=16 — хватит (12 лет).', hint:'12 вариантов.' },
+    { label:'Всего (бит)', question:'Сколько всего бит на запись?', answer:224,
+      explanation:'80+60+80+4 = 224 бита.', hint:'Сложи все поля.' },
+    { label:'Всего (байт)', question:'Сколько байт?', answer:28,
+      explanation:'224/8 = 28 байт.', hint:'Деление на 8.' }
+  ],
+  code: { finalAnswer: 28, finalExplain:'224/8 = 28' }},
+
+/* 18. 3553 */
+{ id:'3553', short:'3553',
+  context:`Автомобильный номер: 2 буквы + 3 цифры + 1 буква. Буквы из 11 символов (А, В, С, Е, Н, К, М, О, Р, Т, Х), цифры 0–9.
+В одном способе — посимвольно. В другом — группами: 2 буквы, 3 цифры, 1 буква.
+
+На сколько бит можно уменьшить размер памяти при групповом кодировании?`,
+  schema: {
+    title: 'Структура автомобильного номера',
+    fields: [
+      { name: '2 буквы', slots: 2, info: '11 букв', chars: 2, power: 11 },
+      { name: '3 цифры', slots: 3, info: '10 цифр', chars: 3, power: 10 },
+      { name: '1 буква', slots: 1, info: '11 букв', chars: 1, power: 11 }
+    ]
+  },
+  steps:[
+    { label:'Бит на букву', question:'Сколько бит на одну букву (при посимвольном)?', answer:4,
+      explanation:'2³=8 — мало, 2⁴=16 — хватит (11 букв).', hint:'11 букв.' },
+    { label:'Бит на цифру', question:'Сколько бит на одну цифру?', answer:4,
+      explanation:'2³=8 — мало, 2⁴=16 — хватит (10 цифр).', hint:'10 цифр.' },
+    { label:'Посимпвольно', question:'Сколько всего бит при посимвольном кодировании?', answer:24,
+      explanation:'6 символов по 4 бита = 24 бита.', hint:'2+3+1 = 6.' },
+    { label:'2 буквы группа', question:'Сколько бит при группе "2 буквы"?', answer:7,
+      explanation:'11·11 = 121. 2⁶=64 — мало, 2⁷=128 — хватит.', hint:'121 вариант.' },
+    { label:'3 цифры группа', question:'Сколько бит при группе "3 цифры"?', answer:10,
+      explanation:'1000 вариантов. 2⁹=512 — мало, 2¹⁰=1024 — хватит.', hint:'10³ вариантов.' },
+    { label:'1 буква группа', question:'Сколько бит на последнюю 1 букву?', answer:4,
+      explanation:'11 вариантов → 2⁴=16 — хватит.', hint:'Как в шаге 1.' },
+    { label:'Экономия', question:'На сколько бит уменьшится размер?', answer:3,
+      explanation:'24 − (7+10+4) = 24 − 21 = 3 бита.', hint:'Разность.' }
+  ],
+  code: { finalAnswer: 3, finalExplain:'24 − 21 = 3' }},
+
+/* 19. 5702 */
+{ id:'5702', short:'5702',
+  context:`ID из 10 символов, каждый — одна из 26 строчных латинских букв или цифра (36 вариантов).
+Доп. сведения отдельно. На 100 пользователей 1000 байт.
+
+Сколько бит выделено на доп. сведения?`,
+  schema: {
+    title: 'Структура пользователя',
+    fields: [
+      { name: 'ID',  slots: 10, info: '26 букв + 10 цифр', chars: 10, power: 36 },
+      { name: 'Доп', slots: 1,  info: '?',                  chars: 1,  power: '?' }
+    ]
+  },
+  steps:[
+    { label:'Символ (бит)', question:'Сколько бит на один символ ID?', answer:6,
+      explanation:'36 вариантов. 2⁵=32 — мало, 2⁶=64 — хватит.', hint:'36 символов.' },
+    { label:'Всего на одного', question:'Сколько байт на одного пользователя?', answer:10,
+      explanation:'1000/100 = 10 байт.', hint:'Всего / количество.' },
+    { label:'Бит на ID', question:'Сколько бит на один ID?', answer:52,
+      explanation:'ceil(log2(36¹⁰)) = ceil(10·log2(36)) = ceil(51.7) = 52 бита.', hint:'ceil(10 · log2(36)).' },
+    { label:'Байт на ID', question:'Сколько байт на ID (вверх)?', answer:7,
+      explanation:'52/8 = 6.5 → 7 байт.', hint:'Округление вверх.' },
+    { label:'Доп (байт)', question:'Сколько байт на доп. сведения?', answer:3,
+      explanation:'10 − 7 = 3 байта.', hint:'Вычти ID.' },
+    { label:'Доп (бит)', question:'Сколько бит на доп. сведения?', answer:28,
+      explanation:'ceil((52+x)/8) ≤ 10 → x ≤ 28.', hint:'52+x ≤ 80.' }
+  ],
+  code: { finalAnswer: 28, finalExplain:'52+x ≤ 80 → x ≤ 28' }},
+
+/* 20. 7316 */
+{ id:'7316', short:'7316',
+  context:`Описание изделия: код изделия, состав из 50 блоков (код детали 1..10⁶ + количество 1..1000), доп. сведения.
+
+• Код изделия — 28 символов (заглавные латинские + цифры).
+• Каждый блок кодируется минимальным целым числом байт.
+• Доп. сведения — целое число байт.
+• Для 32768 объектов — 12 Мбайт.
+
+Сколько байт на доп. сведения?`,
+  schema: {
+    title: 'Структура объекта',
+    fields: [
+      { name: 'Код изделия', slots: 28, info: '26 букв + 10 цифр',            chars: 28, power: 36   },
+      { name: 'Состав',      slots: 50, info: '50 блоков (деталь + кол-во)',  chars: 50, power: '?'  },
+      { name: 'Доп',         slots: 1,  info: '?',                             chars: 1,  power: '?'  }
+    ]
+  },
+  steps:[
+    { label:'Символ КИ (бит)', question:'Сколько бит на символ кода изделия?', answer:6,
+      explanation:'26+10 = 36. 2⁶=64 — хватит.', hint:'26 букв + 10 цифр.' },
+    { label:'КИ (бит)', question:'Сколько бит в коде изделия?', answer:168,
+      explanation:'28·6 = 168 бит.', hint:'28 символов по 6 бит.' },
+    { label:'КИ (байт)', question:'Сколько байт на код изделия?', answer:21,
+      explanation:'168/8 = 21 байт.', hint:'Деление на 8.' },
+    { label:'Деталь (бит)', question:'Сколько бит на код детали (1..10⁶)?', answer:20,
+      explanation:'2²⁰=1048576 > 10⁶. Ответ: 20 бит.', hint:'999999 вариантов.' },
+    { label:'Кол-во (бит)', question:'Сколько бит на количество (1..1000)?', answer:10,
+      explanation:'2¹⁰=1024 > 1000. Ответ: 10 бит.', hint:'1000 вариантов.' },
+    { label:'Блок (бит)', question:'Сколько бит в одном блоке (деталь + количество)?', answer:30,
+      explanation:'20+10 = 30 бит.', hint:'Сложи.' },
+    { label:'Блок (байт)', question:'Сколько байт в блоке (вверх)?', answer:4,
+      explanation:'30/8 = 3.75 → 4 байта.', hint:'Округление вверх.' },
+    { label:'Состав (байт)', question:'Сколько байт на состав из 50 блоков?', answer:200,
+      explanation:'50·4 = 200 байт.', hint:'50 блоков.' },
+    { label:'Всего байт', question:'Сколько байт всего (12 МБ / 32768)?', answer:384,
+      explanation:'12·1024·1024/32768 = 384 байта.', hint:'МБ → байты, потом / N.' },
+    { label:'Доп', question:'Сколько байт на доп. сведения?', answer:163,
+      explanation:'384 − 21 − 200 = 163 байта.', hint:'Вычти КИ и состав.' }
+  ],
+  code: { finalAnswer: 163, finalExplain:'384 − 21 − 200 = 163' }},
+
+/* 21. 31357 */
+{ id:'31357', short:'31357',
+  context:`Серийный номер содержит цифры и символы из 120-символьного спец. алфавита.
+Одинаковое минимальное число байт на номер, посимвольно, минимум бит.
+12755226 номеров занимают ≤ 5 Гбайт.
+
+Определите максимально допустимую длину номера.`,
+  schema: {
+    title: 'Структура серийного номера',
+    fields: [
+      { name: 'Номер', slots: 420, info: '10 цифр + 120 спецсимволов', chars: '?', power: 130 }
+    ]
+  },
+  steps:[
+    { label:'Алфавит', question:'Сколько всего символов в алфавите?', answer:130,
+      explanation:'10 цифр + 120 спец = 130.', hint:'Цифры + спец.' },
+    { label:'Бит на символ', question:'Сколько бит на один символ?', answer:8,
+      explanation:'2⁷=128 — мало, 2⁸=256 — хватит.', hint:'N = 130.' },
+    { label:'Всего байт', question:'Сколько байт в 5 ГБ?', answer:5368709120,
+      explanation:'5 · 1024³ = 5368709120.', hint:'ГБ → байты.' },
+    { label:'Байт на номер', question:'Сколько байт на номер (≤ 5 ГБ)?', answer:420,
+      explanation:'5368709120/12755226 = 420.8 → 420.', hint:'Округление вниз.' },
+    { label:'Длина', question:'Максимальная длина номера (символов)?', answer:420,
+      explanation:'8 бит = 1 байт на символ. 420/1 = 420.', hint:'Бит на символ = 8 → 1 байт.' }
+  ],
+  code: { finalAnswer: 420, finalExplain:'420' }},
+
+/* 22. 31219 */
+{ id:'31219', short:'31219',
+  context:`Серийный номер содержит цифры и символы из 510-символьного спец. алфавита.
+Одинаковое минимальное число байт на номер, посимвольно, минимум бит.
+18982657 номеров занимают ≥ 9379 Мбайт.
+
+Определите минимально допустимую длину номера.`,
+  schema: {
+    title: 'Структура серийного номера',
+    fields: [
+      { name: 'Номер', slots: 415, info: '10 цифр + 510 спецсимволов', chars: '?', power: 520 }
+    ]
+  },
+  steps:[
+    { label:'Алфавит', question:'Сколько символов в алфавите?', answer:520,
+      explanation:'10+510 = 520.', hint:'Цифры + спец.' },
+    { label:'Бит на символ', question:'Сколько бит на один символ?', answer:10,
+      explanation:'2⁹=512 — мало, 2¹⁰=1024 — хватит.', hint:'N = 520.' },
+    { label:'Всего байт', question:'Сколько байт в 9379 МБ?', answer:9833574400,
+      explanation:'9379 · 1024 · 1024.', hint:'МБ → байты.' },
+    { label:'Байт на номер', question:'Минимум байт на номер (≥ 9379 МБ)?', answer:519,
+      explanation:'9833574400/18982657 = 518.0 → 519 (округление вверх, чтобы выполнить ≥).', hint:'Строго ≥.' },
+    { label:'Длина', question:'Минимальная длина номера?', answer:415,
+      explanation:'ceil(10L/8) ≥ 519 → L ≥ 415.', hint:'Проверь L=414 и L=415.' }
+  ],
+  code: { finalAnswer: 415, finalExplain:'L = 415' }},
+
+/* 23. 31508 */
+{ id:'31508', short:'31508',
+  context:`Серийный номер из 157 символов. Одинаковое минимальное целое число байт на номер. Посимвольно, минимум бит.
+12450 номеров занимают ≤ 955 Кбайт.
+
+Определите максимально возможную мощность алфавита.`,
+  schema: {
+    title: 'Структура серийного номера',
+    fields: [
+      { name: 'Номер', slots: 157, info: 'мощность алфавита ?', chars: 157, power: '?' }
+    ]
+  },
+  steps:[
+    { label:'Всего байт', question:'Сколько байт в 955 КБ?', answer:977920,
+      explanation:'955·1024 = 977920 байт.', hint:'КБ → байты.' },
+    { label:'Байт на номер', question:'Максимум байт на один номер?', answer:78,
+      explanation:'977920/12450 = 78.55 → 78.', hint:'Округление вниз.' },
+    { label:'Бит на символ', question:'Максимум бит на один символ?', answer:3,
+      explanation:'157k ≤ 624 → k ≤ 3.97 → 3 бита.', hint:'157 символов.' },
+    { label:'Мощность', question:'Максимальная мощность алфавита?', answer:8,
+      explanation:'2³ = 8.', hint:'Возведи 2 в степень k.' }
+  ],
+  code: { finalAnswer: 8, finalExplain:'2³ = 8' }},
+
+/* 24. 28700 */
+{ id:'28700', short:'28700',
+  context:`Серийный номер из 123 символов. Одинаковое минимальное число байт на номер.
+65536 номеров занимают ≥ 13.5 Мбайт.
+
+Минимальная мощность алфавита?`,
+  schema: {
+    title: 'Структура серийного номера',
+    fields: [
+      { name: 'Номер', slots: 123, info: 'мощность алфавита ?', chars: 123, power: '?' }
+    ]
+  },
+  steps:[
+    { label:'Всего байт', question:'Сколько байт в 13.5 МБ?', answer:14155776,
+      explanation:'13.5 · 1024 · 1024 = 14155776.', hint:'МБ → байты.' },
+    { label:'Байт на номер', question:'Минимум байт на один номер?', answer:216,
+      explanation:'14155776/65536 = 216 байт (ровно).', hint:'Всего / количество.' },
+    { label:'Бит на символ', question:'Минимум бит на один символ?', answer:14,
+      explanation:'123k ≥ 216·8 = 1728 → k ≥ 14.05 → 14 бит.', hint:'123 символа.' },
+    { label:'Мощность', question:'Минимальная мощность алфавита?', answer:16384,
+      explanation:'2¹⁴ = 16384.', hint:'Возведи 2 в степень.' }
+  ],
+  code: { finalAnswer: 16384, finalExplain:'2¹⁴ = 16384' }},
+
+/* 25. 21594 */
+{ id:'21594', short:'21594',
+  context:`Серийный номер из 223 символов, содержит цифры, заглавные латинские буквы и символы из 32724-символьного алфавита.
+Одинаковое минимальное число байт на номер, посимвольно, минимум бит.
+17 Гбайт доступно.
+
+Сколько максимум номеров можно сохранить?`,
+  schema: {
+    title: 'Структура серийного номера',
+    fields: [
+      { name: 'Номер', slots: 223, info: '10 цифр + 26 букв + 32724 спец', chars: 223, power: 32760 }
+    ]
+  },
+  steps:[
+    { label:'Алфавит', question:'Сколько всего символов?', answer:32760,
+      explanation:'10 цифр + 26 букв + 32724 спец = 32760.', hint:'Сумма всех категорий.' },
+    { label:'Бит на символ', question:'Сколько бит на один символ?', answer:15,
+      explanation:'2¹⁴=16384 — мало, 2¹⁵=32768 — хватит.', hint:'N = 32760.' },
+    { label:'Бит на номер', question:'Сколько бит в одном номере?', answer:3345,
+      explanation:'223 · 15 = 3345 бит.', hint:'223 символа по 15 бит.' },
+    { label:'Байт на номер', question:'Сколько байт в одном номере (вверх)?', answer:419,
+      explanation:'3345/8 = 418.125 → 419 байт.', hint:'Округление вверх.' },
+    { label:'Всего байт', question:'Сколько байт в 17 ГБ?', answer:18253611008,
+      explanation:'17 · 1024³ = 18253611008.', hint:'ГБ → байты.' },
+    { label:'Номеров', question:'Сколько максимум номеров?', answer:43564607,
+      explanation:'18253611008/419 = 43564607.6 → 43564607.', hint:'Округление вниз.' }
+  ],
+  code: { finalAnswer: 43564607, finalExplain:'43564607' }},
+
+/* 26. 28698 */
+{ id:'28698', short:'28698',
+  context:`Пароль из 23 символов: прописные и строчные латинские буквы + цифры + 25 спецсимволов.
+Доп. сведения — 15 байт.
+3 Мбайта выделено всего.
+
+Сколько максимум пользователей?`,
+  schema: {
+    title: 'Структура пользователя',
+    fields: [
+      { name: 'Пароль', slots: 23, info: 'буквы + цифры + 25 спецсимволов', chars: 23, power: 87 },
+      { name: 'Доп',    slots: 1,  info: '15 байт',                           chars: 1,  power: '?' }
+    ]
+  },
+  steps:[
+    { label:'Алфавит', question:'Сколько символов в алфавите?', answer:87,
+      explanation:'26+26+10+25 = 87.', hint:'Все категории.' },
+    { label:'Бит на символ', question:'Сколько бит на один символ?', answer:7,
+      explanation:'2⁶=64 — мало, 2⁷=128 — хватит.', hint:'N = 87.' },
+    { label:'Пароль (бит)', question:'Сколько бит в пароле?', answer:161,
+      explanation:'23 · 7 = 161 бит.', hint:'23 символа по 7 бит.' },
+    { label:'Пароль (байт)', question:'Сколько байт в пароле (вверх)?', answer:21,
+      explanation:'161/8 = 20.125 → 21 байт.', hint:'Округление вверх.' },
+    { label:'На одного', question:'Сколько байт на пользователя?', answer:36,
+      explanation:'21 + 15 = 36 байт.', hint:'Пароль + доп.' },
+    { label:'Всего байт', question:'Сколько байт в 3 МБ?', answer:3145728,
+      explanation:'3 · 1024 · 1024 = 3145728.', hint:'МБ → байты.' },
+    { label:'Пользователей', question:'Сколько максимум пользователей?', answer:87381,
+      explanation:'3145728/36 = 87381.', hint:'Деление.' }
+  ],
+  code: { finalAnswer: 87381, finalExplain:'87381' }},
+
+/* 27. 2857 */
+{ id:'2857', short:'2857',
+  context:`Уникальный код из трёх частей:
+• Категория: 6 вариантов (A–F), посимвольное кодирование.
+• Группа: 11 символов, каждый — одна из 20 букв (без учёта категорий), посимвольно.
+• Номер в категории: 1..1999 — минимальное число бит.
+Для кода в целом — минимальное целое число байт.
+Доп. информация — целое число байт.
+36 объектов занимают 1188 байт.
+
+Сколько байт на доп. информацию об одном объекте?`,
+  schema: {
+    title: 'Структура уникального кода',
+    fields: [
+      { name: 'Категория', slots: 1,  info: '6 вариантов A–F', chars: 1,  power: 6    },
+      { name: 'Группа',    slots: 11, info: '20 букв',          chars: 11, power: 20   },
+      { name: 'Номер',     slots: 4,  info: '1…1999',            chars: 1,  power: 1999 },
+      { name: 'Доп',       slots: 1,  info: '?',                  chars: 1,  power: '?'  }
+    ]
+  },
+  steps:[
+    { label:'Категория (бит)', question:'Сколько бит на категорию?', answer:3,
+      explanation:'2²=4 — мало, 2³=8 — хватит (6 категорий).', hint:'6 вариантов.' },
+    { label:'Буква группы (бит)', question:'Сколько бит на одну букву группы?', answer:5,
+      explanation:'2⁴=16 — мало, 2⁵=32 — хватит (20 букв).', hint:'20 букв.' },
+    { label:'Группа (бит)', question:'Сколько бит в группе?', answer:55,
+      explanation:'11 · 5 = 55 бит.', hint:'11 символов.' },
+    { label:'Номер (бит)', question:'Сколько бит на номер 1..1999?', answer:11,
+      explanation:'2¹⁰=1024 — мало, 2¹¹=2048 — хватит.', hint:'1999 вариантов.' },
+    { label:'Код (бит)', question:'Сколько всего бит в коде?', answer:69,
+      explanation:'3 + 55 + 11 = 69 бит.', hint:'Сложи три части.' },
+    { label:'Код (байт)', question:'Сколько байт в коде (вверх)?', answer:9,
+      explanation:'69/8 = 8.625 → 9 байт.', hint:'Округление вверх.' },
+    { label:'На одного', question:'Сколько байт на одного пользователя?', answer:33,
+      explanation:'1188/36 = 33 байта.', hint:'Всего / количество.' },
+    { label:'Доп', question:'Сколько байт на доп. информацию?', answer:24,
+      explanation:'33 − 9 = 24 байта.', hint:'Вычти код.' }
+  ],
+  code: { finalAnswer: 24, finalExplain:'33 − 9 = 24' }},
+
+/* 28. 29071 */
+{ id:'29071', short:'29071',
+  context:`Пароли двух типов:
+• X: 11 символов, всего 1024 пароля.
+• Y: 13 символов, всего 256 паролей.
+Один алфавит мощности N, каждый пароль — минимальное целое число байт, каждый символ — минимум бит.
+Суммарно 22 Кбайт.
+
+Сколько максимум символов в алфавите N?`,
+  schema: {
+    title: 'Структура паролей',
+    fields: [
+      { name: 'X', slots: 11, info: '1024 пароля', chars: 11, power: '?' },
+      { name: 'Y', slots: 13, info: '256 паролей', chars: 13, power: '?' }
+    ]
+  },
+  steps:[
+    { label:'Всего байт', question:'Сколько байт в 22 КБ?', answer:22528,
+      explanation:'22·1024 = 22528 байт.', hint:'КБ → байты.' },
+    { label:'Бит на X', question:'Бит на символ у X-пароля?', answer:12,
+      explanation:'Подбираем k = бит на символ.', hint:'k = ceil(log2(N)).' },
+    { label:'X байт', question:'Сколько байт на один X-пароль (при k=12)?', answer:17,
+      explanation:'ceil(11·12/8) = ceil(16.5) = 17 байт.', hint:'11 символов по 12 бит.' },
+    { label:'Y байт', question:'Сколько байт на один Y-пароль (при k=12)?', answer:20,
+      explanation:'ceil(13·12/8) = ceil(19.5) = 20 байт.', hint:'13 символов по 12 бит.' },
+    { label:'Проверка', question:'Уложится ли k=12 в 22 КБ?', answer:22528,
+      explanation:'1024·17 + 256·20 = 17408+5120 = 22528 = ровно 22 КБ ✓', hint:'Умножь и сложи.' },
+    { label:'Мощность', question:'Какова мощность алфавита при k=12?', answer:4096,
+      explanation:'2¹² = 4096.', hint:'Возведи 2 в k.' }
+  ],
+  code: { finalAnswer: 4096, finalExplain:'2¹² = 4096' }},
+
+/* 29. 29073 */
+{ id:'29073', short:'29073',
+  context:`Каждая запись — символьный код из L символов (алфавит 32) + порядковый номер записи в базе (двоичное число).
+65536 объектов, всего 60096 Кбайт.
+
+Найти минимально возможную L.`,
+  schema: {
+    title: 'Структура записи',
+    fields: [
+      { name: 'Код',   slots: 1498, info: 'алфавит 32', chars: '?', power: 32 },
+      { name: 'Номер', slots: 16,   info: '0…65535',    chars: 1,   power: 65536 }
+    ]
+  },
+  steps:[
+    { label:'Бит на символ', question:'Сколько бит на один символ кода?', answer:5,
+      explanation:'2⁵ = 32.', hint:'Алфавит 32.' },
+    { label:'Бит на номер', question:'Сколько бит на порядковый номер?', answer:16,
+      explanation:'2¹⁶ = 65536.', hint:'Всего 65536 объектов.' },
+    { label:'Всего байт', question:'Сколько байт в 60096 КБ?', answer:61538304,
+      explanation:'60096·1024 = 61538304 байт.', hint:'КБ → байты.' },
+    { label:'Байт на запись', question:'Сколько байт на одну запись?', answer:939,
+      explanation:'61538304/65536 = 939 байт.', hint:'Всего / N.' },
+    { label:'Бит на запись', question:'Сколько бит на запись?', answer:7512,
+      explanation:'939·8 = 7512 бит (максимум).', hint:'Байты в биты.' },
+    { label:'L', question:'Минимальная L?', answer:1498,
+      explanation:'5L + 16 ≥ 8·938+1 = 7505 → L ≥ 1497.8 → 1498.', hint:'5L ≥ 7489.' }
+  ],
+  code: { finalAnswer: 1498, finalExplain:'L = 1498' }},
+
+/* 30. 7840 */
+{ id:'7840', short:'7840',
+  context:`ID из 4 символов, каждый — китайский иероглиф из диапазона Unicode 0x4E00–0x9FBB (20924 иероглифа).
+Одинаковое минимальное целое число байт на ID, посимвольно, минимум бит.
+
+Сколько Кбайт на 4864 ID?`,
+  schema: {
+    title: 'Структура ID',
+    fields: [
+      { name: 'ID', slots: 4, info: '20924 иероглифа', chars: 4, power: 20924 }
+    ]
+  },
+  steps:[
+    { label:'Алфавит', question:'Сколько иероглифов в диапазоне?', answer:20924,
+      explanation:'0x9FBB − 0x4E00 + 1 = 20924.', hint:'Разность + 1.' },
+    { label:'Бит на символ', question:'Сколько бит на один иероглиф?', answer:15,
+      explanation:'2¹⁴=16384 — мало, 2¹⁵=32768 — хватит.', hint:'N = 20924.' },
+    { label:'ID (бит)', question:'Сколько бит в ID из 4 иероглифов?', answer:60,
+      explanation:'4·15 = 60 бит.', hint:'4 иероглифа.' },
+    { label:'ID (байт)', question:'Сколько байт в ID (вверх)?', answer:8,
+      explanation:'60/8 = 7.5 → 8 байт.', hint:'Округление вверх.' },
+    { label:'Всего (байт)', question:'Сколько байт на 4864 ID?', answer:38912,
+      explanation:'4864·8 = 38912 байт.', hint:'Умножай.' },
+    { label:'Всего (КБ)', question:'Сколько Кбайт?', answer:38,
+      explanation:'38912/1024 = 38 КБ.', hint:'Деление на 1024.' }
+  ],
+  code: { finalAnswer: 38, finalExplain:'38912/1024 = 38' }},
+
+/* 31. 19360 */
+{ id:'19360', short:'19360',
+  context:`Алфавит: русские заглавные и строчные буквы, десятичные цифры, 50 смайликов по 5 цветов (итого 250 вариантов смайликов).
+Сообщение из 1016 символов. Минимум бит на символ.
+
+Сколько байт нужно?`,
+  schema: {
+    title: 'Структура сообщения',
+    fields: [
+      { name: 'Сообщение', slots: 1016, info: '33+33 букв + 10 цифр + 250 смайликов', chars: 1016, power: 326 }
+    ]
+  },
+  steps:[
+    { label:'Буквы', question:'Сколько букв в алфавите (рус. + рус. строчные)?', answer:66,
+      explanation:'33 + 33 = 66.', hint:'33 буквы в двух регистрах.' },
+    { label:'Смайлики', question:'Сколько вариантов смайликов?', answer:250,
+      explanation:'50 · 5 = 250.', hint:'50 смайликов × 5 цветов.' },
+    { label:'Алфавит', question:'Сколько всего символов?', answer:326,
+      explanation:'66 + 10 + 250 = 326.', hint:'Буквы + цифры + смайлики.' },
+    { label:'Бит на символ', question:'Сколько бит на один символ?', answer:9,
+      explanation:'2⁸=256 — мало, 2⁹=512 — хватит.', hint:'N = 326.' },
+    { label:'Сообщение (бит)', question:'Сколько бит в сообщении?', answer:9144,
+      explanation:'1016 · 9 = 9144 бит.', hint:'1016 символов.' },
+    { label:'Сообщение (байт)', question:'Сколько байт в сообщении (вверх)?', answer:1143,
+      explanation:'9144/8 = 1143 байта.', hint:'Деление на 8.' }
+  ],
+  code: { finalAnswer: 1143, finalExplain:'9144/8 = 1143' }},
+
+/* 32. 923 */
+{ id:'923', short:'923',
+  context:`Исходный файл ДНК: 120000 символов, каждый в 1 байте (ASCII).
+Перекодировали: алфавит A, T, G, C — минимум бит на символ.
+
+Сколько Кбайт сэкономит (целая часть)?`,
+  schema: {
+    title: 'Структура файла ДНК',
+    fields: [
+      { name: 'Было',  slots: 120000, info: '1 байт на символ (ASCII)', chars: 120000, power: 256 },
+      { name: 'Стало', slots: 120000, info: '2 бита на символ (ATGC)',  chars: 120000, power: 4   }
+    ]
+  },
+  steps:[
+    { label:'Бит исходно', question:'Сколько бит на символ было?', answer:8,
+      explanation:'1 байт = 8 бит.', hint:'ASCII.' },
+    { label:'Бит стало', question:'Сколько бит на символ стало?', answer:2,
+      explanation:'4 буквы → 2² = 4, значит 2 бита.', hint:'4 буквы.' },
+    { label:'Экономия на символ', question:'Сколько бит сэкономлено на одном символе?', answer:6,
+      explanation:'8 − 2 = 6 бит.', hint:'Разность.' },
+    { label:'Всего бит', question:'Сколько всего бит сэкономлено?', answer:720000,
+      explanation:'120000 · 6 = 720000 бит.', hint:'Умножай.' },
+    { label:'Байт', question:'Сколько это байт?', answer:90000,
+      explanation:'720000/8 = 90000 байт.', hint:'Деление на 8.' },
+    { label:'Кбайт', question:'Сколько это Кбайт (целая часть)?', answer:87,
+      explanation:'90000/1024 = 87.89 → 87.', hint:'Деление на 1024.' }
+  ],
+  code: { finalAnswer: 87, finalExplain:'90000/1024 = 87.89 → 87' }},
+
+/* 33. 17697 */
+{ id:'17697', short:'17697',
+  context:`Алфавит из 33 символов (в т.ч. «:», «)», «😀»). Символ «😀» встречается 15 раз, всего 1000 символов.
+Альтернатива: алфавит из 32 символов, «😀» заменён на «:)».
+
+Что выгоднее (А — 33, Б — 32) и разница в битах?`,
+  schema: {
+    title: 'Структура сообщения',
+    fields: [
+      { name: 'Способ А', slots: 1000, info: '33 символа',              chars: 1000, power: 33 },
+      { name: 'Способ Б', slots: 1015, info: '32 символа, «😀» → «:)»', chars: 1015, power: 32 }
+    ]
+  },
+  steps:[
+    { label:'k для 33', question:'Сколько бит на символ при 33-символьном алфавите?', answer:6,
+      explanation:'2⁵=32 — мало, 2⁶=64 — хватит.', hint:'N = 33.' },
+    { label:'Размер A', question:'Сколько всего бит при алфавите 33?', answer:6000,
+      explanation:'1000 · 6 = 6000 бит.', hint:'1000 символов по 6 бит.' },
+    { label:'k для 32', question:'Сколько бит на символ при 32-символьном алфавите?', answer:5,
+      explanation:'2⁵ = 32.', hint:'N = 32.' },
+    { label:'Символов стало', question:'Сколько символов в новом тексте?', answer:1015,
+      explanation:'15 «😀» → 30 символов «:)». Остальные 985 → 1000−15+30 = 1015.', hint:'Заменили 15 на 30.' },
+    { label:'Размер Б', question:'Сколько бит при алфавите 32?', answer:5075,
+      explanation:'1015 · 5 = 5075 бит.', hint:'1015 символов по 5 бит.' },
+    { label:'Разница', question:'Сколько бит разница?', answer:925,
+      explanation:'6000 − 5075 = 925 бит. Способ Б выгоднее → ответ Б925.', hint:'6000−5075.' }
+  ],
+  code: { finalAnswer: 925, finalExplain:'6000 − 5075 = 925' }},
+
+/* 34. 7676 */
+{ id:'7676', short:'7676',
+  context:`Бот получает ответы от 1 до 100000, кодирует минимальным целым числом бит.
+Ответы сохраняются в файлы по 100 штук. Файл — минимальное целое число байт. К каждому файлу добавляется заголовок 4 байта. Последний файл может быть меньше 100 ответов, тоже минимальное целое число байт.
+
+За месяц 28350 ответов. Сколько минимум Кбайт для сохранения?`,
+  schema: {
+    title: 'Структура файла',
+    fields: [
+      { name: 'Заголовок', slots: 4,   info: '4 байта',   chars: 4,   power: 256 },
+      { name: 'Ответы',    slots: 100, info: '1…100000',   chars: 100, power: 100000 }
+    ]
+  },
+  steps:[
+    { label:'Бит на ответ', question:'Сколько бит на один ответ?', answer:17,
+      explanation:'2¹⁶=65536 — мало, 2¹⁷=131072 — хватит.', hint:'100000 вариантов.' },
+    { label:'Файл (бит)', question:'Сколько бит в файле из 100 ответов?', answer:1700,
+      explanation:'100 · 17 = 1700 бит.', hint:'100 ответов.' },
+    { label:'Файл (байт)', question:'Сколько байт в файле (без заголовка, вверх)?', answer:213,
+      explanation:'1700/8 = 212.5 → 213 байт.', hint:'Округление вверх.' },
+    { label:'Файл с заголовком', question:'Сколько байт на один файл с заголовком?', answer:217,
+      explanation:'213 + 4 = 217 байт.', hint:'+ 4 байта.' },
+    { label:'Полных файлов', question:'Сколько полных файлов из 100 ответов?', answer:283,
+      explanation:'28350/100 = 283.5 → 283 полных.', hint:'Целая часть.' },
+    { label:'Хвост', question:'Сколько ответов в последнем (неполном) файле?', answer:50,
+      explanation:'28350 − 283·100 = 50.', hint:'Остаток.' },
+    { label:'Хвост (байт)', question:'Сколько байт на последний файл с заголовком?', answer:111,
+      explanation:'50·17 = 850 бит → 107 байт + 4 = 111.', hint:'50 ответов по 17 бит.' },
+    { label:'Всего байт', question:'Сколько всего байт?', answer:61522,
+      explanation:'283·217 + 111 = 61411+111 = 61522 байт.', hint:'Умножь и сложи.' },
+    { label:'Кбайт', question:'Сколько это Кбайт (вверх)?', answer:61,
+      explanation:'61522/1024 = 60.08 → 61 КБ.', hint:'Округление вверх.' }
+  ],
+  code: { finalAnswer: 61, finalExplain:'61522/1024 = 60.08 → 61' }},
+
+/* 35. 9366 */
+{ id:'9366', short:'9366',
+  context:`Показание метеозонда — от 10 до 3000 с шагом 0.1. Показания собираются в пакеты по 10.
+Каждое показание — минимум бит. Каждый пакет — минимальное целое число байт.
+Получено 8192 пакета.
+
+Сколько Кбайт?`,
+  schema: {
+    title: 'Структура пакета',
+    fields: [
+      { name: 'Пакет', slots: 10, info: '10 показаний по 29901 варианту', chars: 10, power: 29901 }
+    ]
+  },
+  steps:[
+    { label:'Вариантов', question:'Сколько возможных значений показания?', answer:29901,
+      explanation:'(3000−10)/0.1 + 1 = 29900 + 1 = 29901.', hint:'От 10 до 3000 с шагом 0.1.' },
+    { label:'Бит на показание', question:'Сколько бит на одно показание?', answer:15,
+      explanation:'2¹⁴=16384 — мало, 2¹⁵=32768 — хватит.', hint:'N = 29901.' },
+    { label:'Пакет (бит)', question:'Сколько бит в пакете из 10 показаний?', answer:150,
+      explanation:'10 · 15 = 150 бит.', hint:'10 показаний.' },
+    { label:'Пакет (байт)', question:'Сколько байт в пакете (вверх)?', answer:19,
+      explanation:'150/8 = 18.75 → 19 байт.', hint:'Округление вверх.' },
+    { label:'Всего (байт)', question:'Сколько всего байт на 8192 пакета?', answer:155648,
+      explanation:'8192 · 19 = 155648 байт.', hint:'Умножай.' },
+    { label:'Всего (КБ)', question:'Сколько это Кбайт?', answer:152,
+      explanation:'155648/1024 = 152 КБ.', hint:'Деление на 1024.' }
+  ],
+  code: { finalAnswer: 152, finalExplain:'155648/1024 = 152' }},
+
+/* 36. 17696 */
+{ id:'17696', short:'17696',
+  context:`Серийный номер из 623 символов, содержит цифры и символы из 1267-символьного спец. алфавита.
+На каждый номер — минимальное целое число **Кбайт** (не байт!). Посимвольно, минимум бит.
+2048 номеров.
+
+Сколько Мбайт?`,
+  schema: {
+    title: 'Структура серийного номера',
+    fields: [
+      { name: 'Номер', slots: 623, info: '10 цифр + 1267 спецсимволов', chars: 623, power: 1277 }
+    ]
+  },
+  steps:[
+    { label:'Алфавит', question:'Сколько символов в алфавите?', answer:1277,
+      explanation:'10 цифр + 1267 спец = 1277.', hint:'Цифры + спец.' },
+    { label:'Бит на символ', question:'Сколько бит на один символ?', answer:11,
+      explanation:'2¹⁰=1024 — мало, 2¹¹=2048 — хватит.', hint:'N = 1277.' },
+    { label:'Номер (бит)', question:'Сколько бит в номере?', answer:6853,
+      explanation:'623 · 11 = 6853 бит.', hint:'623 символа.' },
+    { label:'Номер (байт)', question:'Сколько байт в номере (вверх)?', answer:857,
+      explanation:'6853/8 = 856.625 → 857 байт.', hint:'Округление вверх.' },
+    { label:'Номер (КБ)', question:'Сколько КБ на один номер (вверх)?', answer:1,
+      explanation:'857/1024 = 0.84 → 1 КБ.', hint:'Округление до целых КБ.' },
+    { label:'Всего (КБ)', question:'Сколько КБ на 2048 номеров?', answer:2048,
+      explanation:'2048 · 1 = 2048 КБ.', hint:'Умножай.' },
+    { label:'Всего (МБ)', question:'Сколько это МБ?', answer:2,
+      explanation:'2048/1024 = 2 МБ.', hint:'Деление на 1024.' }
+  ],
+  code: { finalAnswer: 2, finalExplain:'2048/1024 = 2' }},
+
+/* 37. 18365 */
+{ id:'18365', short:'18365',
+  context:`Регистрация пользователя: пароль, биография, биометрия.
+• Пароль — 28 символов, алфавит: 505 иероглифов + 7 спецсимволов ($%^&*#@). Посимвольное кодирование, минимальное целое число байт.
+• Биография — 117 байт на пользователя.
+• Биометрия — 35 проекций по 6 Кбайт каждая.
+
+Сколько минимум Мбайт для 10000 пользователей?`,
+  schema: {
+    title: 'Структура пользователя',
+    fields: [
+      { name: 'Пароль',    slots: 28,  info: '505 иероглифов + 7 спецсимволов', chars: 28,  power: 512 },
+      { name: 'Биография', slots: 117, info: '117 байт',                         chars: 117, power: 256 },
+      { name: 'Биометрия', slots: 35,  info: '35 × 6 Кбайт',                     chars: 35,  power: 6144 }
+    ]
+  },
+  steps:[
+    { label:'Алфавит', question:'Сколько символов в алфавите пароля?', answer:512,
+      explanation:'505 + 7 = 512.', hint:'Иероглифы + спец.' },
+    { label:'Бит на символ', question:'Сколько бит на один символ пароля?', answer:9,
+      explanation:'2⁹ = 512.', hint:'N = 512.' },
+    { label:'Пароль (бит)', question:'Сколько бит в пароле?', answer:252,
+      explanation:'28 · 9 = 252 бита.', hint:'28 символов.' },
+    { label:'Пароль (байт)', question:'Сколько байт в пароле (вверх)?', answer:32,
+      explanation:'252/8 = 31.5 → 32 байта.', hint:'Округление вверх.' },
+    { label:'Биометрия', question:'Сколько байт в биометрии (35·6 КБ)?', answer:215040,
+      explanation:'35·6·1024 = 215040 байт.', hint:'35 × 6 КБ.' },
+    { label:'На пользователя', question:'Сколько байт на одного пользователя?', answer:215189,
+      explanation:'32 + 117 + 215040 = 215189 байт.', hint:'Пароль + биография + биометрия.' },
+    { label:'Всего байт', question:'Сколько байт на 10000 пользователей?', answer:2151890000,
+      explanation:'10000 · 215189 = 2151890000.', hint:'Умножай.' },
+    { label:'Мбайт', question:'Сколько это МБ (вверх)?', answer:2053,
+      explanation:'2151890000/1024/1024 = 2052.24 → 2053 МБ.', hint:'Округление вверх.' }
+  ],
+  code: { finalAnswer: 2053, finalExplain:'2052.24 → 2053' }}
+];
+
+/* ============================================================
+   СОСТОЯНИЕ
+   ============================================================ */
+let currentTaskIndex = 0;
+let currentStepIndex = 0;
+let solvedSteps = [];
+let taskSolved = new Array(TASKS.length).fill(false);
+let mode = 'manual';
+let earlyAnswerMode = false;
+let advanceTimer = null;
+let nextTaskTimer = null;
+
+const taskStrip = document.getElementById('taskStrip');
+const stepContainer = document.getElementById('stepContainer');
+const progressBar = document.getElementById('progress');
+const counter = document.getElementById('counter');
+const thermoFill = document.getElementById('thermoFill');
+const thermoPercent = document.getElementById('thermoPercent');
+const summary = document.getElementById('summary');
+const summaryText = document.getElementById('summaryText');
+const nextHint = document.getElementById('nextHint');
+
+/* ============================================================
+   ВЕРХНЯЯ ПОЛОСА
+   ============================================================ */
+function renderStrip() {
+  taskStrip.innerHTML = '';
+  TASKS.forEach((t, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'task-tile';
+    if (i === currentTaskIndex) tile.classList.add('current');
+    if (taskSolved[i]) tile.classList.add('done');
+    tile.textContent = t.short;
+    tile.addEventListener('click', () => {
+      currentTaskIndex = i;
+      currentStepIndex = 0;
+      solvedSteps = [];
+      earlyAnswerMode = false;
+      loadTask();
+    });
+    taskStrip.appendChild(tile);
+  });
+  const cur = taskStrip.querySelector('.current');
+  if (cur) cur.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+let isDragging = false, dragStartX = 0, scrollStartLeft = 0;
+taskStrip.addEventListener('mousedown', e => {
+  isDragging = true; taskStrip.classList.add('grabbing');
+  dragStartX = e.pageX; scrollStartLeft = taskStrip.scrollLeft;
+});
+document.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  taskStrip.scrollLeft = scrollStartLeft - (e.pageX - dragStartX);
+});
+document.addEventListener('mouseup', () => {
+  isDragging = false; taskStrip.classList.remove('grabbing');
+});
+taskStrip.addEventListener('wheel', e => {
+  if (e.deltaY !== 0) { e.preventDefault(); taskStrip.scrollLeft += e.deltaY; }
+}, { passive: false });
+
+function updateStats() {
+  const solvedCount = taskSolved.filter(Boolean).length;
+  const total = TASKS.length;
+  const pct = Math.round((solvedCount / total) * 100);
+  counter.innerHTML = `Решено <b>${solvedCount}</b> из ${total} · <b>${pct}%</b>`;
+  progressBar.style.width = pct + '%';
+  thermoFill.style.height = pct + '%';
+  thermoPercent.textContent = pct + '%';
+}
+
+/* ============================================================
+   ЗАГРУЗКА
+   ============================================================ */
+function loadTask() {
+  if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+  if (nextTaskTimer) { clearTimeout(nextTaskTimer); nextTaskTimer = null; }
+  summary.classList.remove('show');
+  renderStrip();
+  renderModeBar();
+  renderBody();
+  updateStats();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderModeBar() {
+  const bar = document.createElement('div');
+  bar.className = 'mode-bar';
+  bar.innerHTML = `
+    <button class="btn btn-mode ${mode==='manual'?'active':''}" id="mbManual">📝 Вручную</button>
+    <button class="btn btn-mode ${mode==='code'?'active':''}" id="mbCode">💻 Кодом</button>
+  `;
+  const old = document.querySelector('.mode-bar');
+  if (old) old.remove();
+  stepContainer.parentNode.insertBefore(bar, stepContainer);
+  document.getElementById('mbManual').addEventListener('click', () => {
+    mode='manual'; renderModeBar(); renderBody();
+  });
+  document.getElementById('mbCode').addEventListener('click', () => {
+    mode='code'; renderModeBar(); renderBody();
+  });
+}
+
+function renderBody() {
+  if (mode === 'code') {
+    renderCodeMode();
+  } else {
+    renderCurrentStep();
+  }
+}
+
+/* ============================================================
+   ВИЗУАЛЬНАЯ СХЕМА
+   Сверху — авто-подпись (только то, что известно)
+   Снизу — 2 поля; справа от поля показывается = результат,
+   если выражение без переменной и считается
+   ============================================================ */
+function renderSchema(schema) {
+  if (!schema) return '';
+  const taskId = TASKS[currentTaskIndex].id;
+
+  let fieldsHtml = '';
+  schema.fields.forEach((f, idx) => {
+    const slots = Math.min(f.slots, 30);
+    let slotsHtml = '';
+    for (let i = 0; i < slots; i++) slotsHtml += '<div class="slot"></div>';
+    const more = f.slots > 30 ? `<span style="font-size:10px;color:#64748b;margin-left:4px">+${f.slots-30}</span>` : '';
+
+    const keyChars = `${taskId}::${idx}::chars`;
+    const keyPower = `${taskId}::${idx}::power`;
+    const valChars = schemaValues[keyChars] || '';
+    const valPower = schemaValues[keyPower] || '';
+
+    // Авто-подпись: только то, что известно
+    const parts = [];
+    if (typeof f.chars === 'number') parts.push(`символов: <b>${f.chars}</b>`);
+    if (typeof f.power === 'number') parts.push(`мощность: <b>${f.power}</b>`);
+    const autoLine = parts.length ? parts.join(' &nbsp;·&nbsp; ') : '&nbsp;';
+
+    fieldsHtml += `
+      <div class="schema-field">
+        <span class="fld-name">${f.name}</span>
+        <div class="fld-slots">${slotsHtml}${more}</div>
+        <div class="fld-info">${f.info}</div>
+        <div class="fld-auto">${autoLine}</div>
+        <div class="schema-expr-row">
+          <input type="text" class="schema-expr" data-task="${taskId}" data-idx="${idx}" data-type="chars"
+                 placeholder="введи формулу" value="${valChars}">
+          <span class="schema-expr-eq" data-task="${taskId}" data-idx="${idx}" data-type="chars"></span>
+        </div>
+        <div class="schema-expr-row">
+          <input type="text" class="schema-expr" data-task="${taskId}" data-idx="${idx}" data-type="power"
+                 placeholder="введи формулу" value="${valPower}">
+          <span class="schema-expr-eq" data-task="${taskId}" data-idx="${idx}" data-type="power"></span>
+        </div>
+      </div>`;
+  });
+  return `
+    <div class="schema-wrap">
+      <div class="schema-title">${schema.title}</div>
+      <div class="schema-object">${fieldsHtml}</div>
+    </div>
+  `;
+}
+
+function updateExprVisual(inp) {
+  const eq = document.querySelector(
+    `.schema-expr-eq[data-task="${inp.dataset.task}"][data-idx="${inp.dataset.idx}"][data-type="${inp.dataset.type}"]`
+  );
+  const res = evaluateExpression(inp.value);
+  inp.classList.remove('ok','var','err');
+  if (eq) eq.textContent = '';
+  if (res.empty) return;
+  if (res.variable) {
+    inp.classList.add('var');
+    return;                       // без переменной — не пишем "="
+  }
+  if (res.error) {
+    inp.classList.add('err');
+    return;
+  }
+  inp.classList.add('ok');
+  if (eq) eq.textContent = '= ' + res.value;
+}
+
+function bindSchemaExpressions() {
+  document.querySelectorAll('.schema-expr').forEach(inp => {
+    const key = `${inp.dataset.task}::${inp.dataset.idx}::${inp.dataset.type}`;
+    if (inp.value) {
+      const res = evaluateExpression(inp.value);
+      if (res.variable) inp.classList.add('var');
+      else if (res.error) inp.classList.add('err');
+      else if (res.value !== undefined) inp.classList.add('ok');
+    }
+    // При старте — обновим "="
+    updateExprVisual(inp);
+
+    inp.addEventListener('input', () => {
+      schemaValues[key] = inp.value;
+      updateExprVisual(inp);
+    });
+  });
+}
+
+/* ============================================================
+   КОД-РЕЖИМ
+   ============================================================ */
+function renderCodeMode() {
+  if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+  const task = TASKS[currentTaskIndex];
+  const tpl = task.code;
+
+  stepContainer.innerHTML = `
+    <div class="step-card" id="card">
+      <div class="step-header">
+        <span class="step-num">💻</span>
+        <span class="step-title">Решение через код · № ${task.id}</span>
+      </div>
+
+      <div class="step-context"><span class="label">Условие задачи</span>${task.context}</div>
+
+      <div class="code-block">
+<span class="kw">from</span> math <span class="kw">import</span> *
+<span class="kw">for</span> x <span class="kw">in</span> <span class="fn">range</span>(<input class="code-box" id="bStart" placeholder="...">, <input class="code-box" id="bEnd" placeholder="...">):
+    <span class="if-line">
+      <span class="kw">if</span> <input class="code-box-wide" id="bIf" placeholder="введи условие целиком">
+    </span>
+    <span class="kw">:</span>
+        <span class="fn">print</span>(<input class="code-box" id="bPrint" placeholder="...">)
+        <span class="break-line" id="breakLine">
+          <span class="break-toggle on" id="breakToggle" title="Комментировать/раскомментировать break">#</span><span class="kw">break</span>
+        </span>
+      </div>
+
+      <div class="input-row">
+        <button class="btn btn-check" id="btnRunCode">Запустить код</button>
+        <span class="status-msg" id="statusCode"></span>
+      </div>
+
+      <div class="code-result" id="codeResult">
+        <span class="lbl">Вывод:</span>
+        <div class="out" id="codeOutput"></div>
+      </div>
+
+      <div id="finalBlock" style="display:none">
+        <div class="explain-box show" style="margin-top:14px">
+          <span class="lbl">Введи итоговый ответ.</span>
+        </div>
+        <div class="input-row" style="margin-top:10px">
+          <input type="text" id="inputFinal" placeholder="Ответ">
+          <button class="btn btn-check" id="btnCheckFinal">Проверить</button>
+          <span class="status-msg" id="statusFinal"></span>
+        </div>
+      </div>
+
+      <div class="final-confirm" id="finalConfirm">🎉 Верно! Переходим к следующей…</div>
+    </div>
+  `;
+
+  const schemaHTML = renderSchema(task.schema);
+  if (schemaHTML) {
+    const ctx = document.querySelector('.step-context');
+    ctx.insertAdjacentHTML('afterend', schemaHTML);
+    bindSchemaExpressions();
+  }
+
+  const bStart = document.getElementById('bStart');
+  const bEnd = document.getElementById('bEnd');
+  const bIf = document.getElementById('bIf');
+  const bPrint = document.getElementById('bPrint');
+  const btnRunCode = document.getElementById('btnRunCode');
+  const statusCode = document.getElementById('statusCode');
+  const codeResult = document.getElementById('codeResult');
+  const codeOutput = document.getElementById('codeOutput');
+  const finalBlock = document.getElementById('finalBlock');
+  const inputFinal = document.getElementById('inputFinal');
+  const btnCheckFinal = document.getElementById('btnCheckFinal');
+  const statusFinal = document.getElementById('statusFinal');
+  const finalConfirm = document.getElementById('finalConfirm');
+
+  const breakLine = document.getElementById('breakLine');
+  const breakToggle = document.getElementById('breakToggle');
+  let breakEnabled = true;
+  breakToggle.addEventListener('click', () => {
+    breakEnabled = !breakEnabled;
+    breakToggle.classList.toggle('on', breakEnabled);
+    breakToggle.classList.toggle('off', !breakEnabled);
+    breakLine.classList.toggle('commented', !breakEnabled);
+  });
+
+  btnRunCode.addEventListener('click', () => {
+    const s = parseInt(bStart.value, 10);
+    const e = parseInt(bEnd.value, 10);
+    const f = bIf.value.trim();
+    const p = bPrint.value.trim();
+
+    if (isNaN(s) || isNaN(e) || !f || !p) {
+      statusCode.textContent = '✗ Заполни все поля';
+      statusCode.className = 'status-msg err';
+      codeResult.classList.remove('show');
+      return;
+    }
+
+    statusCode.textContent = '';
+    statusCode.className = 'status-msg';
+
+    const condJS = translatePythonOps(translatePythonToJS(f));
+    const printJS = translatePythonOps(translatePythonToJS(p));
+
+    if (!isSafeFormula(condJS) || !isSafeFormula(printJS)) {
+      statusCode.textContent = '✗ Недопустимые символы в формуле';
+      statusCode.className = 'status-msg err';
+      codeResult.classList.remove('show');
+      return;
+    }
+
+    const out = [];
+    try {
+      const condFn = new Function('x', '"use strict"; return (' + condJS + ');');
+      const printFn = new Function('x', '"use strict"; return (' + printJS + ');');
+      for (let x = s; x <= e; x++) {
+        if (condFn(x) === true) {
+          out.push(printFn(x));
+          if (breakEnabled) break;
+        }
+      }
+    } catch (err) {
+      statusCode.textContent = '✗ Ошибка выполнения: ' + err.message;
+      statusCode.className = 'status-msg err';
+      codeResult.classList.remove('show');
+      return;
+    }
+
+    codeOutput.textContent = out.length ? out.join(', ') : '(пусто — ни одно x не подошло)';
+    codeResult.classList.add('show');
+    finalBlock.style.display = 'block';
+    inputFinal.focus();
+  });
+
+  btnCheckFinal.addEventListener('click', () => {
+    const val = evaluateAnswer(inputFinal.value);
+    if (val === null) {
+      statusFinal.textContent = 'Не могу распознать';
+      statusFinal.className = 'status-msg err';
+      return;
+    }
+    if (Math.abs(val - tpl.finalAnswer) < 1e-9) {
+      inputFinal.classList.add('correct'); inputFinal.classList.remove('wrong');
+      statusFinal.textContent = '✔ Верно';
+      statusFinal.className = 'status-msg ok';
+      btnCheckFinal.disabled = true;
+      inputFinal.disabled = true;
+      finalConfirm.classList.add('show');
+
+      taskSolved[currentTaskIndex] = true;
+      updateStats();
+      renderStrip();
+
+      setTimeout(() => {
+        if (currentTaskIndex < TASKS.length - 1) {
+          currentTaskIndex++;
+          currentStepIndex = 0;
+          solvedSteps = [];
+          mode = 'manual';
+          earlyAnswerMode = false;
+          loadTask();
+        }
+      }, 1500);
+    } else {
+      inputFinal.classList.add('wrong'); inputFinal.classList.remove('correct');
+      statusFinal.textContent = '✗ Неверно';
+      statusFinal.className = 'status-msg err';
+    }
+  });
+
+  inputFinal.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !btnCheckFinal.disabled) btnCheckFinal.click();
+  });
+}
+
+/* ============================================================
+   РУЧНОЙ РЕЖИМ
+   ============================================================ */
+function renderCurrentStep() {
+  if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+  const task = TASKS[currentTaskIndex];
+  const total = task.steps.length;
+
+  if (currentStepIndex >= total) {
+    taskSolved[currentTaskIndex] = true;
+    renderStrip();
+    updateStats();
+    showSummary();
+    return;
+  }
+
+  const step = task.steps[currentStepIndex];
+  const finalAnswer = task.code.finalAnswer;
+
+  let accumHTML = '';
+  if (solvedSteps.length > 0) {
+    const chips = solvedSteps.map(s =>
+      `<span class="chip" style="margin-right:8px">${s.label}: <b>${s.answer}</b></span>`
+    ).join('');
+    accumHTML = `<div class="step-accum"><span class="label">Получено ранее</span>${chips}</div>`;
+  }
+
+  const schemaHTML = renderSchema(task.schema);
+
+  if (earlyAnswerMode) {
+    stepContainer.innerHTML = `
+      <div class="step-card" id="currentCard">
+        <div class="step-header">
+          <span class="step-num">🎯</span>
+          <span class="step-title">Досрочный ответ · № ${task.id}</span>
+        </div>
+        <div class="step-context"><span class="label">Условие задачи</span>${task.context}</div>
+        ${schemaHTML}
+        ${accumHTML}
+        <div class="step-question"><span class="label">Введи итоговый ответ</span>Введи число — и мы проверим его без пошаговых вопросов.</div>
+        <div class="input-row">
+          <input type="text" id="earlyInput" placeholder="Ответ">
+          <button class="btn btn-check" id="earlyCheck">Проверить</button>
+          <button class="btn btn-hint" id="backToSteps">← К шагам</button>
+          <span class="status-msg" id="earlyStatus"></span>
+        </div>
+        <div class="explain-box" id="earlyExplain"><span class="lbl">✅ Верно!</span>${task.code.finalExplain}</div>
+        <div class="final-confirm" id="earlyConfirm">🎉 Верно! Переходим к следующей…</div>
+      </div>
+    `;
+    bindSchemaExpressions();
+
+    const earlyInput = document.getElementById('earlyInput');
+    const earlyCheck = document.getElementById('earlyCheck');
+    const backToSteps = document.getElementById('backToSteps');
+    const earlyStatus = document.getElementById('earlyStatus');
+    const earlyExplain = document.getElementById('earlyExplain');
+    const earlyConfirm = document.getElementById('earlyConfirm');
+
+    earlyInput.focus();
+    earlyCheck.addEventListener('click', () => {
+      const val = evaluateAnswer(earlyInput.value);
+      if (val === null) {
+        earlyStatus.textContent = 'Не могу распознать';
+        earlyStatus.className = 'status-msg err';
+        return;
+      }
+      if (Math.abs(val - finalAnswer) < 1e-9) {
+        earlyInput.classList.add('correct'); earlyInput.classList.remove('wrong');
+        earlyStatus.textContent = '✔ Верно';
+        earlyStatus.className = 'status-msg ok';
+        earlyExplain.classList.add('show');
+        earlyCheck.disabled = true;
+        earlyInput.disabled = true;
+        earlyConfirm.classList.add('show');
+
+        taskSolved[currentTaskIndex] = true;
+        updateStats();
+        renderStrip();
+
+        setTimeout(() => {
+          if (currentTaskIndex < TASKS.length - 1) {
+            currentTaskIndex++;
+            currentStepIndex = 0;
+            solvedSteps = [];
+            earlyAnswerMode = false;
+            loadTask();
+          }
+        }, 1500);
+      } else {
+        earlyInput.classList.add('wrong'); earlyInput.classList.remove('correct');
+        earlyStatus.textContent = '✗ Неверно';
+        earlyStatus.className = 'status-msg err';
+      }
+    });
+    earlyInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !earlyCheck.disabled) earlyCheck.click();
+    });
+    backToSteps.addEventListener('click', () => {
+      earlyAnswerMode = false;
+      renderCurrentStep();
+    });
+    return;
+  }
+
+  stepContainer.innerHTML = `
+    <div class="step-card" id="currentCard">
+      <div class="step-header">
+        <span class="step-num">${currentStepIndex + 1}</span>
+        <span class="step-title">Шаг ${currentStepIndex + 1} из ${total} · № ${task.id}</span>
+      </div>
+      <div class="step-context"><span class="label">Условие задачи</span>${task.context}</div>
+      ${schemaHTML}
+      ${accumHTML}
+      <div class="step-question">
+        <span class="label">Вопрос</span>
+        <span class="q-text">${step.question}</span>
+      </div>
+      <div class="input-row">
+        <input type="text" id="inputStep" placeholder="Введите число или формулу">
+      </div>
+      <div class="formula-help">
+        Можно ввести: число (<b>12</b>), формулу (<b>ceil(log2(2100))</b>), арифметику (<b>5*3+3*4</b>) или степень (<b>2^10</b>).
+      </div>
+      <div class="input-row">
+        <button class="btn btn-check" id="checkStep">Проверить</button>
+        <button class="btn btn-hint" id="hintStep">Подсказка</button>
+        <button class="btn btn-skip" id="skipSteps">🎯 Ввести итоговый ответ сразу</button>
+        <span class="status-msg" id="statusStep"></span>
+      </div>
+      <div class="hint-box" id="hintBox"><span class="lbl">💡 Подсказка</span>${step.hint}</div>
+      <div class="explain-box" id="explainBox"><span class="lbl">✅ Верно!</span>${step.explanation}</div>
+    </div>
+  `;
+  bindSchemaExpressions();
+
+  const input = document.getElementById('inputStep');
+  const checkBtn = document.getElementById('checkStep');
+  const hintBtn = document.getElementById('hintStep');
+  const skipBtn = document.getElementById('skipSteps');
+  const statusEl = document.getElementById('statusStep');
+  const hintBox = document.getElementById('hintBox');
+  const explainBox = document.getElementById('explainBox');
+
+  checkBtn.addEventListener('click', () => {
+    const val = evaluateAnswer(input.value);
+    if (val === null) {
+      statusEl.textContent = 'Не могу распознать';
+      statusEl.className = 'status-msg err';
+      return;
+    }
+    if (Math.abs(val - step.answer) < 1e-9) {
+      input.classList.add('correct'); input.classList.remove('wrong');
+      statusEl.textContent = '✔ Верно';
+      statusEl.className = 'status-msg ok';
+      explainBox.classList.add('show');
+      hintBox.classList.remove('show');
+      checkBtn.disabled = true;
+      input.disabled = true;
+      solvedSteps.push({ label: step.label, answer: step.answer });
+
+      advanceTimer = setTimeout(() => {
+        const card = document.getElementById('currentCard');
+        if (card) card.classList.add('fade');
+        setTimeout(() => {
+          currentStepIndex++;
+          renderCurrentStep();
+        }, 150);
+      }, 400);
+    } else {
+      input.classList.add('wrong'); input.classList.remove('correct');
+      statusEl.textContent = '✗ Неверно';
+      statusEl.className = 'status-msg err';
+    }
+  });
+
+  hintBtn.addEventListener('click', () => hintBox.classList.toggle('show'));
+  skipBtn.addEventListener('click', () => {
+    earlyAnswerMode = true;
+    renderCurrentStep();
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !checkBtn.disabled) checkBtn.click();
+  });
+  input.focus();
+}
+
+/* ============================================================
+   ИТОГ ЗАДАЧИ
+   ============================================================ */
+function showSummary() {
+  const task = TASKS[currentTaskIndex];
+  const last = task.steps[task.steps.length - 1].answer;
+  let html = `<b>Итог: ${last}</b><br><br>Как получили — по шагам:<br>`;
+  task.steps.forEach((s, i) => { html += `${i + 1}. ${s.label} → <b>${s.answer}</b><br>`; });
+  summaryText.innerHTML = html;
+
+  const isLast = currentTaskIndex === TASKS.length - 1;
+  nextHint.innerHTML = isLast ? '🎉 Последняя задача.' : '➡️ Открывается следующая задача…';
+  summary.classList.add('show');
+  stepContainer.innerHTML = '';
+  summary.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  if (!isLast) {
+    nextTaskTimer = setTimeout(() => {
+      currentTaskIndex++;
+      currentStepIndex = 0;
+      solvedSteps = [];
+      mode = 'manual';
+      earlyAnswerMode = false;
+      loadTask();
+    }, 1500);
+  }
+}
+
+/* ============================================================
+   НИЖНИЕ КНОПКИ
+   ============================================================ */
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnTop = document.getElementById('btnTop');
+const btnReset = document.getElementById('btnReset');
+
+btnPrev.addEventListener('click', () => {
+  if (currentTaskIndex > 0) {
+    currentTaskIndex--; currentStepIndex = 0; solvedSteps = []; earlyAnswerMode = false; mode = 'manual'; loadTask();
+  }
+});
+btnNext.addEventListener('click', () => {
+  if (currentTaskIndex < TASKS.length - 1) {
+    currentTaskIndex++; currentStepIndex = 0; solvedSteps = []; earlyAnswerMode = false; mode = 'manual'; loadTask();
+  }
+});
+btnTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+btnReset.addEventListener('click', () => {
+  taskSolved = new Array(TASKS.length).fill(false);
+  currentTaskIndex = 0; currentStepIndex = 0; solvedSteps = []; earlyAnswerMode = false; mode = 'manual';
+  Object.keys(schemaValues).forEach(k => delete schemaValues[k]);
+  loadTask();
+});
+
+/* ============ СТАРТ ============ */
+loadTask();
+</script>
+</body>
+</html>

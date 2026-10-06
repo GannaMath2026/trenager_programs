@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>🌀 Единичная окружность — sin/cos/tg/ctg</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            background: linear-gradient(135deg, #0a0a23, #1a1a3e, #16213e); 
+            color: #ffdd44; 
+            font-family: 'Segoe UI', Arial; 
+            margin: 0; 
+            padding: 15px; 
+            min-height: 100vh;
+            font-weight: bold;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        h1 {
+            text-align: center; 
+            font-size: 28px; 
+            text-shadow: 0 0 20px #aa00ff;
+            margin-bottom: 15px;
+            padding: 10px 0;
+        }
+        
+        /* Адаптивный контейнер */
+        .main-container {
+            display: flex; 
+            flex-direction: column;
+            gap: 15px; 
+            width: 100%;
+            max-width: 1400px; 
+            margin: 0 auto; 
+            align-items: center;
+            flex: 1;
+        }
+        
+        /* Горизонтальная ориентация */
+        @media (orientation: landscape) {
+            .main-container {
+                flex-direction: row;
+                align-items: flex-start;
+                height: calc(100vh - 100px);
+            }
+            
+            h1 {
+                font-size: 24px;
+                margin-bottom: 10px;
+                padding: 5px 0;
+            }
+            
+            .canvas-container {
+                flex: 1;
+                order: 2;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .controls {
+                flex: 0 0 280px;
+                order: 1;
+                height: 100%;
+                overflow-y: auto;
+            }
+            
+            .result {
+                flex: 0 0 350px;
+                order: 3;
+                height: 100%;
+                overflow-y: auto;
+            }
+        }
+        
+        /* Контейнер для канваса */
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        canvas { 
+            border: 3px solid #aa00ff; 
+            background: radial-gradient(circle, #1a1a1a, #000000); 
+            box-shadow: 0 0 40px #aa00ff;
+            border-radius: 15px; 
+            cursor: grab;
+            touch-action: none;
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        canvas:active { cursor: grabbing; }
+        
+        .controls { 
+            background: rgba(170,0,255,0.1); 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 2px solid #aa00ff; 
+            width: 100%;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .result { 
+            font-size: 16px; 
+            padding: 15px; 
+            border: 2px solid #667eea; 
+            border-radius: 12px;
+            background: rgba(102, 126, 234, 0.12); 
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+            width: 100%;
+            max-width: 350px;
+            backdrop-filter: blur(15px);
+        }
+        
+        /* Для вертикальной ориентации */
+        @media (orientation: portrait) {
+            .main-container {
+                min-height: calc(100vh - 150px);
+            }
+            
+            canvas {
+                max-height: 60vh;
+            }
+            
+            .controls, .result {
+                max-width: 100%;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+        
+        /* Для очень маленьких экранов */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 22px;
+                margin-bottom: 10px;
+            }
+            
+            .controls, .result {
+                padding: 12px;
+            }
+            
+            .value-main {
+                font-size: 18px;
+            }
+            
+            .value-related {
+                font-size: 16px;
+            }
+            
+            @media (orientation: landscape) {
+                .controls {
+                    flex: 0 0 220px;
+                }
+                
+                .result {
+                    flex: 0 0 280px;
+                }
+            }
+        }
+        
+        /* Для очень больших экранов */
+        @media (min-width: 1200px) {
+            .canvas-container {
+                max-width: 600px;
+            }
+        }
+        
+        input, button { 
+            font-size: 16px; 
+            padding: 12px; 
+            width: 100%;
+            border: 2px solid #aa00ff; 
+            border-radius: 10px;
+            background: rgba(170,0,255,0.2); 
+            color: #ffdd44;
+            margin: 8px 0; 
+            font-weight: bold;
+        }
+        
+        button:hover, button:active { 
+            background: rgba(170,0,255,0.4); 
+            box-shadow: 0 0 15px #aa00ff; 
+        }
+        
+        .quadrant-btns {
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 8px; 
+            margin: 12px 0;
+        }
+        
+        .quadrant-btn { 
+            background: rgba(102,126,234,0.3); 
+            border-color: #667eea; 
+            font-size: 14px; 
+            padding: 10px;
+        }
+        
+        .quadrant-btn.active { 
+            background: rgba(102,126,234,0.6); 
+            box-shadow: 0 0 12px #667eea; 
+        }
+        
+        .value-main { 
+            font-size: 18px; 
+            color: #ff69b4; 
+            margin: 8px 0; 
+        }
+        
+        .value-related { 
+            font-size: 16px; 
+            color: #00ff88; 
+            margin: 8px 0; 
+        }
+        
+        .quadrant-angle { 
+            font-size: 15px; 
+            color: #ffaa88; 
+            margin: 12px 0 8px; 
+            font-weight: bold; 
+        }
+        
+        .function-group { 
+            margin: 12px 0; 
+            padding: 10px; 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 8px; 
+        }
+        
+        .nonexistent { 
+            font-size: 16px; 
+            color: #ff4444; 
+            font-weight: bold; 
+            margin: 8px 0; 
+            text-shadow: 0 0 8px #ff4444;
+        }
+        
+        label { 
+            display: block; 
+            margin: 8px 0 5px; 
+            font-size: 15px; 
+        }
+        
+        /* Индикатор для отладки */
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px;
+            font-size: 12px;
+            border-radius: 5px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info" id="debugInfo"></div>
+    
+    <h1>🎯 Единичная окружность — sin/cos/tg/ctg</h1>
+    
+    <div class="main-container">
+        <div class="controls">
+            <label>Угол (градусы):</label>
+            <input type="range" id="angleSlider" min="0" max="360" value="135" step="1">
+            <div class="value-main" id="angleValue">135°</div>
+            
+            <div class="quadrant-btns">
+                <button class="quadrant-btn" onclick="setQuadrant(1)">📍 I</button>
+                <button class="quadrant-btn" onclick="setQuadrant(2)">📍 II</button>
+                <button class="quadrant-btn" onclick="setQuadrant(3)">📍 III</button>
+                <button class="quadrant-btn" onclick="setQuadrant(4)">📍 IV</button>
+            </div>
+            
+            <button onclick="snapToStandard()">📍 Основные углы</button>
+            <button onclick="resetAngle()">🔄 Сброс 0°</button>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="unitCircle"></canvas>
+        </div>
+        
+        <div class="result" id="functions">
+            Перетащи радиус-вектор!
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('unitCircle');
+        const ctx = canvas.getContext('2d');
+        const debugInfo = document.getElementById('debugInfo');
+        
+        // Переменные для хранения размеров
+        let canvasSize = 400; // начальный размер
+        let centerX, centerY, radius;
+        
+        let currentAngle = 135;
+        let isDragging = false;
+        let currentQuadrant = 2;
+        let touchId = null; // Для отслеживания конкретного касания
+
+        const standardAngles = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+
+        // Функция для обновления размеров канваса
+        function updateCanvasSize() {
+            const container = canvas.parentElement;
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            
+            // Определяем размер на основе ориентации и доступного пространства
+            if (window.innerWidth > window.innerHeight) {
+                // Горизонтальная ориентация
+                canvasSize = Math.min(containerWidth * 0.8, containerHeight * 0.9, 500);
+            } else {
+                // Вертикальная ориентация
+                canvasSize = Math.min(containerWidth * 0.95, containerHeight * 0.6, 450);
+            }
+            
+            // Ограничиваем минимальный и максимальный размер
+            canvasSize = Math.max(canvasSize, 250);
+            canvasSize = Math.min(canvasSize, 600);
+            
+            // Устанавливаем размеры канваса
+            canvas.width = canvasSize;
+            canvas.height = canvasSize;
+            
+            // Обновляем центр и радиус
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            radius = canvasSize * 0.35;
+            
+            // Отладочная информация
+            debugInfo.innerHTML = `
+                Размер: ${canvas.width}x${canvas.height}<br>
+                Ориентация: ${window.innerWidth > window.innerHeight ? 'горизонтальная' : 'вертикальная'}<br>
+                Центр: ${centerX}, ${centerY}<br>
+                Радиус: ${radius}
+            `;
+            
+            // Перерисовываем
+            draw();
+        }
+
+        // Инициализация и обработка изменений размера
+        window.addEventListener('load', updateCanvasSize);
+        window.addEventListener('resize', updateCanvasSize);
+        window.addEventListener('orientationchange', function() {
+            // Ждем немного перед обновлением, чтобы ориентация успела измениться
+            setTimeout(updateCanvasSize, 100);
+        });
+
+        function getQuadrantInfo(angleDeg) {
+            const normAngle = angleDeg % 360;
+            if (normAngle < 90) return { quadrant: 1, relatedAngle: null, formula: '' };
+            if (normAngle < 180) return { quadrant: 2, relatedAngle: 180 - normAngle, formula: `180° - ${normAngle.toFixed(0)}°` };
+            if (normAngle < 270) return { quadrant: 3, relatedAngle: normAngle - 180, formula: `${normAngle.toFixed(0)}° - 180°` };
+            return { quadrant: 4, relatedAngle: 360 - normAngle, formula: `360° - ${normAngle.toFixed(0)}°` };
+        }
+
+        function setQuadrant(q) {
+            currentQuadrant = q;
+            
+            const quadrantInfo = getQuadrantInfo(currentAngle);
+            let referenceAngle = quadrantInfo.relatedAngle !== null ? quadrantInfo.relatedAngle : (currentAngle % 90);
+            
+            const quadrantAngles = {
+                1: referenceAngle,
+                2: 180 - referenceAngle,
+                3: 180 + referenceAngle,
+                4: 360 - referenceAngle
+            };
+            
+            currentAngle = quadrantAngles[q];
+            
+            document.querySelectorAll('.quadrant-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            draw();
+        }
+
+        function sinValue(deg) { return Math.sin(deg * Math.PI / 180).toFixed(3); }
+        function cosValue(deg) { return Math.cos(deg * Math.PI / 180).toFixed(3); }
+        
+        function tgValue(deg) { 
+            const radians = deg * Math.PI / 180;
+            const cosVal = Math.cos(radians);
+            if (Math.abs(cosVal) < 1e-10) return 'не существует';
+            const tan = Math.sin(radians) / cosVal;
+            return tan.toFixed(3);
+        }
+        
+        function ctgValue(deg) { 
+            const radians = deg * Math.PI / 180;
+            const sinVal = Math.sin(radians);
+            if (Math.abs(sinVal) < 1e-10) return 'не существует';
+            const cot = Math.cos(radians) / sinVal;
+            return cot.toFixed(3);
+        }
+
+        function draw() {
+            if (!ctx || canvas.width === 0 || canvas.height === 0) {
+                console.error('Canvas не готов к отрисовке');
+                return;
+            }
+            
+            // Очищаем канвас
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Проверяем, что центр и радиус определены
+            if (!centerX || !centerY || !radius) {
+                updateCanvasSize();
+                return;
+            }
+
+            // Адаптивные размеры
+            const baseFontSize = Math.max(12, canvasSize / 35);
+            const labelFontSize = Math.max(10, canvasSize / 45);
+            const angleFontSize = Math.max(14, canvasSize / 30);
+            const pointRadius = Math.max(8, canvasSize / 60);
+
+            // Окружность
+            ctx.beginPath(); 
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#aa00ff'; 
+            ctx.lineWidth = 3; 
+            ctx.shadowColor = '#aa00ff'; 
+            ctx.shadowBlur = 15; 
+            ctx.stroke();
+
+            // ОСИ sin/cos
+            ctx.strokeStyle = '#ffdd44'; 
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(centerX - radius * 1.2, centerY); 
+            ctx.lineTo(centerX + radius * 1.2, centerY);
+            ctx.moveTo(centerX, centerY - radius * 1.2); 
+            ctx.lineTo(centerX, centerY + radius * 1.2);
+            ctx.stroke();
+
+            // ФИКСИРОВАННЫЕ УГЛЫ (только основные)
+            ctx.fillStyle = '#ffffff'; 
+            ctx.font = `bold ${baseFontSize}px Arial`; 
+            ctx.textAlign = 'center'; 
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = '#ffffff'; 
+            ctx.shadowBlur = 5;
+            
+            const keyAngles = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+            keyAngles.forEach(angle => {
+                const rad = angle * Math.PI / 180;
+                const labelRadius = radius + 20;
+                const x = centerX + labelRadius * Math.cos(rad);
+                const y = centerY - labelRadius * Math.sin(rad);
+                ctx.fillText(`${angle}°`, x, y);
+            });
+            ctx.shadowBlur = 0;
+
+            // ОСИ tg/ctg
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#ffaa00'; 
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(centerX + radius, centerY - radius); 
+            ctx.lineTo(centerX + radius, centerY + radius);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#00ff88'; 
+            ctx.beginPath();
+            ctx.moveTo(centerX - radius, centerY - radius); 
+            ctx.lineTo(centerX + radius, centerY - radius);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            const quadrantInfo = getQuadrantInfo(currentAngle);
+            const mainRad = currentAngle * Math.PI / 180;
+            const mainEndX = centerX + radius * Math.cos(mainRad);
+            const mainEndY = centerY - radius * Math.sin(mainRad);
+
+            // ЛУЧИ
+            ctx.lineWidth = 1; 
+            ctx.strokeStyle = '#ffaa00'; 
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            const rayLength = radius * 1.5;
+            ctx.moveTo(centerX + rayLength * Math.cos(mainRad), centerY - rayLength * Math.sin(mainRad));
+            ctx.lineTo(centerX - rayLength * Math.cos(mainRad), centerY + rayLength * Math.sin(mainRad));
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // РАДИУС-ВЕКТОР
+            ctx.lineWidth = 4; 
+            ctx.strokeStyle = '#ff69b4'; 
+            ctx.setLineDash([6, 6]);
+            ctx.beginPath(); 
+            ctx.moveTo(centerX, centerY); 
+            ctx.lineTo(mainEndX, mainEndY); 
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Точка на окружности
+            ctx.beginPath(); 
+            ctx.arc(mainEndX, mainEndY, pointRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ff69b4'; 
+            ctx.shadowColor = '#ff69b4'; 
+            ctx.shadowBlur = 20; 
+            ctx.fill();
+            ctx.strokeStyle = '#ff1493'; 
+            ctx.lineWidth = 2; 
+            ctx.stroke();
+
+            // ПУНКТИРЫ К sin/cos
+            ctx.lineWidth = 1.5; 
+            ctx.strokeStyle = '#ff69b4'; 
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath(); 
+            ctx.moveTo(mainEndX, mainEndY); 
+            ctx.lineTo(centerX, mainEndY); 
+            ctx.stroke();
+            ctx.beginPath(); 
+            ctx.moveTo(mainEndX, mainEndY); 
+            ctx.lineTo(mainEndX, centerY); 
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Подписи функций
+            ctx.font = `bold ${labelFontSize}px Arial`; 
+            ctx.textAlign = 'center'; 
+            ctx.textBaseline = 'middle';
+            
+            // sin
+            ctx.fillStyle = '#ffdd44'; 
+            ctx.shadowColor = '#ffdd44'; 
+            ctx.shadowBlur = 8;
+            ctx.save();
+            ctx.translate(centerX - 18, mainEndY); 
+            ctx.rotate(-Math.PI/2); 
+            ctx.fillText('sin', 0, 0); 
+            ctx.restore();
+            
+            // cos  
+            ctx.fillText('cos', mainEndX, centerY + 18);
+            
+            // Подписи углов
+            ctx.fillStyle = '#ffdd44'; 
+            ctx.font = `bold ${angleFontSize}px Arial`;
+            const labelDistance = radius * 0.6;
+            const mainAngleX = mainEndX - labelDistance * Math.cos(mainRad);
+            const mainAngleY = mainEndY + labelDistance * Math.sin(mainRad);
+            ctx.fillText(`${currentAngle.toFixed(0)}°`, mainAngleX, mainAngleY);
+
+            updateFunctions(quadrantInfo);
+        }
+
+        function updateFunctions(quadrantInfo) {
+            const sinMain = sinValue(currentAngle);
+            const cosMain = cosValue(currentAngle);
+            const tgMain = tgValue(currentAngle);
+            const ctgMain = ctgValue(currentAngle);
+
+            let html = `
+                <div class="function-group">
+                    <div style="font-size: 16px; color: #ffdd44; margin-bottom: 10px;">🔴 ${currentAngle.toFixed(0)}° (Квадрант ${quadrantInfo.quadrant})</div>
+                    <div class="value-main">sin ${currentAngle.toFixed(0)}° = ${sinMain}</div>
+                    <div class="value-main">cos ${currentAngle.toFixed(0)}° = ${cosMain}</div>
+            `;
+
+            if (tgMain === 'не существует') {
+                html += `<div class="nonexistent">tg ${currentAngle.toFixed(0)}° = не существует</div>`;
+            } else {
+                html += `<div class="value-main">tg ${currentAngle.toFixed(0)}° = ${tgMain}</div>`;
+            }
+
+            if (ctgMain === 'не существует') {
+                html += `<div class="nonexistent">ctg ${currentAngle.toFixed(0)}° = не существует</div>`;
+            } else {
+                html += `<div class="value-main">ctg ${currentAngle.toFixed(0)}° = ${ctgMain}</div>`;
+            }
+
+            html += `</div>`;
+
+            if (quadrantInfo.relatedAngle !== null) {
+                const sinRel = sinValue(quadrantInfo.relatedAngle);
+                const cosRel = cosValue(quadrantInfo.relatedAngle);
+                const tgRel = tgValue(quadrantInfo.relatedAngle);
+                const ctgRel = ctgValue(quadrantInfo.relatedAngle);
+                
+                html += `
+                    <div class="function-group">
+                        <div class="quadrant-angle">🟢 ${quadrantInfo.formula} = ${quadrantInfo.relatedAngle.toFixed(0)}°</div>
+                        <div class="value-related">sin ${quadrantInfo.relatedAngle.toFixed(0)}° = ${sinRel}</div>
+                        <div class="value-related">cos ${quadrantInfo.relatedAngle.toFixed(0)}° = ${cosRel}</div>
+                `;
+
+                if (tgRel === 'не существует') {
+                    html += `<div class="value-related nonexistent">tg ${quadrantInfo.relatedAngle.toFixed(0)}° = не существует</div>`;
+                } else {
+                    html += `<div class="value-related">tg ${quadrantInfo.relatedAngle.toFixed(0)}° = ${tgRel}</div>`;
+                }
+
+                if (ctgRel === 'не существует') {
+                    html += `<div class="value-related nonexistent">ctg ${quadrantInfo.relatedAngle.toFixed(0)}° = не существует</div>`;
+                } else {
+                    html += `<div class="value-related">ctg ${quadrantInfo.relatedAngle.toFixed(0)}° = ${ctgRel}</div>`;
+                }
+
+                html += `</div>`;
+            }
+
+            document.getElementById('functions').innerHTML = html;
+            document.getElementById('angleValue').textContent = `${currentAngle.toFixed(0)}°`;
+            document.getElementById('angleSlider').value = currentAngle;
+        }
+
+        // Функция для получения координат с учётом масштаба канваса
+        function getCanvasCoordinates(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            
+            // Масштабируем координаты к реальному размеру канваса
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            const x = (clientX - rect.left) * scaleX;
+            const y = (clientY - rect.top) * scaleY;
+            
+            return { x, y };
+        }
+
+        // Обработчики для мыши
+        canvas.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            const { x, y } = getCanvasCoordinates(e.clientX, e.clientY);
+            const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+            
+            if (dist > radius - 20 && dist < radius + 20) {
+                isDragging = true;
+                canvas.style.cursor = 'grabbing';
+                
+                // Сразу обновляем угол
+                const dx = x - centerX;
+                const dy = y - centerY;
+                currentAngle = (Math.atan2(-dy, dx) * 180 / Math.PI + 360) % 360;
+                draw();
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            const { x, y } = getCanvasCoordinates(e.clientX, e.clientY);
+            const dx = x - centerX;
+            const dy = y - centerY;
+            currentAngle = (Math.atan2(-dy, dx) * 180 / Math.PI + 360) % 360;
+            draw();
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+            canvas.style.cursor = 'grab';
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            canvas.style.cursor = 'grab';
+        });
+
+        // УПРОЩЕННЫЕ обработчики для touch-событий
+        canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+        canvas.addEventListener('touchend', handleTouchEnd);
+        canvas.addEventListener('touchcancel', handleTouchEnd);
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                const { x, y } = getCanvasCoordinates(touch.clientX, touch.clientY);
+                const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+                
+                if (dist > radius - 30 && dist < radius + 30) {
+                    isDragging = true;
+                    touchId = touch.identifier;
+                    
+                    // Сразу обновляем угол
+                    const dx = x - centerX;
+                    const dy = y - centerY;
+                    currentAngle = (Math.atan2(-dy, dx) * 180 / Math.PI + 360) % 360;
+                    draw();
+                }
+            }
+        }
+
+        function handleTouchMove(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            // Находим наш touch
+            for (let i = 0; i < e.touches.length; i++) {
+                const touch = e.touches[i];
+                if (touch.identifier === touchId) {
+                    const { x, y } = getCanvasCoordinates(touch.clientX, touch.clientY);
+                    const dx = x - centerX;
+                    const dy = y - centerY;
+                    currentAngle = (Math.atan2(-dy, dx) * 180 / Math.PI + 360) % 360;
+                    draw();
+                    break;
+                }
+            }
+        }
+
+        function handleTouchEnd(e) {
+            isDragging = false;
+            touchId = null;
+        }
+
+        // Слайдер
+        document.getElementById('angleSlider').addEventListener('input', (e) => {
+            currentAngle = parseFloat(e.target.value);
+            draw();
+        });
+
+        function snapToStandard() {
+            const closest = standardAngles.reduce((prev, curr) => 
+                Math.abs(curr - currentAngle) < Math.abs(prev - currentAngle) ? curr : prev
+            );
+            currentAngle = closest;
+            draw();
+        }
+
+        function resetAngle() {
+            currentAngle = 0;
+            draw();
+        }
+
+        // Инициализация
+        updateCanvasSize();
+    </script>
+</body>
+</html>

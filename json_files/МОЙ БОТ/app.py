@@ -1,16 +1,15 @@
-from functools import *
-import sys
-sys.setrecursionlimit(10000)
-# @lru_cache(10000)
-def F(n):
-    if n < 3:        return n + 1
-    if n%2==0 and n>999: return 1000
-    if n % 2 == 0:   return n + 2 * F(n + 2)
-    return F(n - 2) + n - 2
-count = 0
-# for n in range(1,1000, 2): F(n)
-# for n in range(999, 0,-1): F(n)
+G = [0] * 100000
+for n in range(99999, -1, -1):
+    if n < 20000:
+        G[n] = 20 + n + G[n + 4]
+    else:
+        G[n] = n * n
 
-for n in range(1, 1000):
-    if 100 <= F(n) <= 999:   count += 1
-print(count)
+F = [0] * 70000
+for n in range(0, 70000, 1):
+    if n > 19999:
+        F[n] = n + F[n - 6]
+    else:
+        F[n] = n + G[n - 3]
+
+print(F[65000])
