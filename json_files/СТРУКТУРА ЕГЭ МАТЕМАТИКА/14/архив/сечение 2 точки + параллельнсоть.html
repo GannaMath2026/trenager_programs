@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>3D тренажёр — построение сечения</title>
+<style>
+:root{--bg:#0b0d10;--panel:#11151a;--line:#26303a;--text:#e9eef3;--muted:#8f9aa6;--red:#ff4b4b;--yellow:#ffd84d;--trace:#c5ccd2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.35 Inter,system-ui,sans-serif;overflow:hidden}
+#app{display:grid;grid-template-columns:340px 1fr;height:100vh}
+aside{background:var(--panel);border-right:1px solid var(--line);padding:18px;overflow:auto}
+h1{font-size:18px;margin:0 0 8px}.sub{color:var(--muted);font-size:12px;margin-bottom:16px}
+.step{border:1px solid var(--line);border-radius:12px;padding:12px;margin:9px 0;background:#0e1216}
+.step.active{border-color:#596873}.step.done{background:#0f1713}
+.step b{display:block;margin-bottom:6px}.hint{color:var(--muted);font-size:12px}
+button{width:100%;border:1px solid #394550;background:#1a222a;color:var(--text);padding:10px 11px;border-radius:9px;margin-top:8px;cursor:pointer}
+button:hover{background:#222d36}button.primary{border-color:#7d6c22;background:#3a3212}button.active{border-color:#8aaac0;background:#172d3c}
+.row{display:flex;gap:7px}.row button{flex:1}
+label{display:block;color:var(--muted);font-size:12px;margin-top:10px}
+#status{margin-top:12px;padding:9px;border-radius:8px;background:#0a0e12;color:#b9c4ce;font-size:12px;min-height:34px}
+#view{position:relative;min-width:0}canvas{display:block;width:100%;height:100%}
+#legend{position:absolute;right:14px;top:14px;background:#0c1014dd;border:1px solid #28313a;border-radius:10px;padding:9px 11px;font-size:12px}
+.legend{display:flex;align-items:center;gap:7px;margin:3px 0}.dot{width:10px;height:10px;border-radius:50%}
+#tooltip{position:absolute;pointer-events:none;display:none;background:#0d1217ef;border:1px solid #394550;padding:6px 8px;border-radius:7px;font-size:12px}
+.small{font-size:11px;color:#7f8b96}
+</style>
+</head>
+<body>
+<div id="app">
+<aside>
+<h1>Построение сечения</h1>
+<div class="sub">1) заданная прямая → 2) две точки сечения → 3) движение → 4) построение.</div>
+
+<div class="step" id="s1"><b>1. Первая точка P₁</b><div class="hint">Выделите ребро и щёлкните по нему. Точка остаётся привязанной к выбранному ребру.</div><button id="m1">Выбрать ребро для P₁</button></div>
+
+<div class="step" id="s2"><b>2. Вторая точка P₂</b><div class="hint">Выберите второе ребро и поставьте P₂. После этого строится красная заданная прямая P₁P₂.</div><button id="m2" disabled>Выбрать ребро для P₂</button></div>
+
+<div class="step" id="s3"><b>3. Две точки будущего сечения Q₁, Q₂</b><div class="hint">Поставьте две точки на рёбрах. После постановки включите «Движение»: можно тащить любую из четырёх точек по поверхности и переносить её с ребра на ребро.</div>
+  <div class="row"><button id="q1" disabled>Поставить Q₁</button><button id="q2" disabled>Поставить Q₂</button></div>
+  <button id="move" disabled>Режим движения: ВЫКЛ</button>
+</div>
+
+<div class="step" id="s4"><b>4. Построить сечение</b><div class="hint">Параллельность: плоскость через Q₁,Q₂ параллельна P₁P₂. Следы: на каждой грани показываются продолжения линий до соответствующих рёбер грани.</div>
+  <div class="row"><button id="parallel" disabled>Параллельность</button><button id="traces" disabled>Метод следов</button></div>
+</div>
+
+<button id="reset">Начать заново</button>
+<div id="status">Шаг 1: выберите ребро для P₁.</div>
+<div class="small" style="margin-top:10px">Вращение — свободная область. В режиме движения тяните P₁, P₂, Q₁ или Q₂. Точка может перемещаться по текущему ребру и переходить на другие рёбра куба.</div>
+</aside>
+
+<div id="view">
+<div id="legend">
+<div class="legend"><span class="dot" style="background:#ff4b4b"></span> заданная прямая P₁P₂</div>
+<div class="legend"><span class="dot" style="background:#ffd84d"></span> плоскость и рёбра сечения</div>
+<div class="legend"><span class="dot" style="background:#d6dde4"></span> следы и продолжения</div>
+<div class="legend"><span class="dot" style="background:#fff"></span> вершины куба и точки</div>
+</div>
+</div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const view=document.querySelector('#view');
+const statusEl=document.querySelector('#status');
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0b0d10);
+
+const camera=new THREE.PerspectiveCamera(45,1,.01,100);
+camera.position.set(4.8,4.1,5.4);
+
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+view.prepend(renderer.domElement);
+
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;
+controls.dampingFactor=.08;
+controls.target.set(0,0,0);
+
+scene.add(new THREE.AmbientLight(0xffffff,.78));
+const dl=new THREE.DirectionalLight(0xffffff,1.05);dl.position.set(4,6,5);scene.add(dl);
+
+// Куб
+const body=new THREE.Mesh(
+  new THREE.BoxGeometry(2,2,2),
+  new THREE.MeshStandardMaterial({color:0x35424e,transparent:true,opacity:.22,roughness:.8,side:THREE.DoubleSide,depthWrite:false})
+);
+body.renderOrder=1;
+scene.add(body);
+
+const cubeVertices={
+ A:new THREE.Vector3(-1,-1,-1), B:new THREE.Vector3(1,-1,-1),
+ C:new THREE.Vector3(1,1,-1),  D:new THREE.Vector3(-1,1,-1),
+ E:new THREE.Vector3(-1,-1,1), F:new THREE.Vector3(1,-1,1),
+ G:new THREE.Vector3(1,1,1),  H:new THREE.Vector3(-1,1,1)
+};
+
+const edgePairs=[
+  ['AB','A','B'],['BC','B','C'],['CD','C','D'],['DA','D','A'],
+  ['EF','E','F'],['FG','F','G'],['GH','G','H'],['HE','H','E'],
+  ['AE','A','E'],['BF','B','F'],['CG','C','G'],['DH','D','H']
+].map(([name,a,b])=>({name,a,b,p1:cubeVertices[a].clone(),p2:cubeVertices[b].clone()}));
+
+const edgeMeshes=[];
+const edgeBaseMat=new THREE.LineBasicMaterial({color:0x71808d,transparent:true,opacity:.88,depthTest:false,depthWrite:false});
+edgePairs.forEach((e,i)=>{
+  const g=new THREE.BufferGeometry().setFromPoints([e.p1,e.p2]);
+  const l=new THREE.Line(g,edgeBaseMat.clone());
+  l.userData.edge=i;l.renderOrder=20;scene.add(l);edgeMeshes.push(l);
+});
+
+// Перекрёстная граница куба — всегда видима
+const cubeOutline=new THREE.LineSegments(
+  new THREE.EdgesGeometry(new THREE.BoxGeometry(2.02,2.02,2.02)),
+  new THREE.LineBasicMaterial({color:0xa8b5bf,transparent:true,opacity:.85,depthTest:false,depthWrite:false})
+);
+cubeOutline.renderOrder=21;scene.add(cubeOutline);
+
+// Широкие невидимые области для выбора рёбер
+const hitMeshes=[];
+edgePairs.forEach((e,i)=>{
+  const mid=e.p1.clone().add(e.p2).multiplyScalar(.5);
+  const dir=e.p2.clone().sub(e.p1);
+  const len=dir.length();
+  const g=new THREE.CylinderGeometry(.09,.09,len,10);
+  const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false,depthTest:false}));
+  m.position.copy(mid);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());
+  m.userData.edge=i;
+  m.renderOrder=30;scene.add(m);hitMeshes.push(m);
+});
+
+const S={
+  mode:'placeP1',
+  moving:false,
+  dragging:null,
+  method:null,
+  points:{P1:null,P2:null,Q1:null,Q2:null},
+  edgeInfo:{P1:null,P2:null,Q1:null,Q2:null}
+};
+
+const pointGroup=new THREE.Group();pointGroup.renderOrder=60;scene.add(pointGroup);
+const pointMeshes={};
+const pointColors={P1:0xff4b4b,P2:0xff4b4b,Q1:0xffffff,Q2:0xffffff};
+
+function setStatus(t){statusEl.textContent=t}
+
+function makePoint(name){
+  const m=new THREE.Mesh(
+    new THREE.SphereGeometry(.105,20,14),
+    new THREE.MeshStandardMaterial({color:pointColors[name],emissive:pointColors[name],emissiveIntensity:.18,depthTest:false,depthWrite:false})
+  );
+  m.userData.name=name;m.visible=false;m.renderOrder=80;
+  pointGroup.add(m);pointMeshes[name]=m;
+}
+['P1','P2','Q1','Q2'].forEach(makePoint);
+
+// Белые подписи всех 8 вершин куба + P/Q
+const labelGroup=new THREE.Group();labelGroup.renderOrder=90;scene.add(labelGroup);
+function makeLabel(text,pos){
+  const c=document.createElement('canvas');c.width=192;c.height=64;
+  const ctx=c.getContext('2d');
+  ctx.font='bold 32px Arial';ctx.fillStyle='#ffffff';ctx.strokeStyle='#11151a';ctx.lineWidth=7;
+  ctx.strokeText(text,10,42);ctx.fillText(text,10,42);
+  const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;
+  const mat=new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,depthWrite:false});
+  const spr=new THREE.Sprite(mat);spr.scale.set(.44,.16,1);spr.position.copy(pos);spr.renderOrder=90;labelGroup.add(spr);return spr;
+}
+const vertexLabelOffsets={A:[-.13,-.13,-.13],B:[.13,-.13,-.13],C:[.13,.13,-.13],D:[-.13,.13,-.13],E:[-.13,-.13,.13],F:[.13,-.13,.13],G:[.13,.13,.13],H:[-.13,.13,.13]};
+const labels={};
+Object.entries(cubeVertices).forEach(([name,p])=>labels[name]=makeLabel(name,p.clone().add(new THREE.Vector3(...vertexLabelOffsets[name]))));
+['P1','P2','Q1','Q2'].forEach(n=>labels[n]=makeLabel(n,new THREE.Vector3()));
+
+function updateLabels(){
+  Object.entries(cubeVertices).forEach(([name,p])=>{labels[name].visible=true;labels[name].position.copy(p).add(new THREE.Vector3(...vertexLabelOffsets[name]));});
+  ['P1','P2','Q1','Q2'].forEach(n=>{
+    const p=S.points[n];labels[n].visible=!!p;if(p)labels[n].position.copy(p).add(new THREE.Vector3(0,.16,.02));
+  });
+}
+
+function pointOnEdge(edge,t){return edgePairs[edge].p1.clone().lerp(edgePairs[edge].p2,t)}
+function setPoint(name,edge,t){
+  t=THREE.MathUtils.clamp(t,0,1);
+  const p=pointOnEdge(edge,t);
+  S.points[name]=p;
+  S.edgeInfo[name]={edge,t};
+  pointMeshes[name].position.copy(p);pointMeshes[name].visible=true;
+  labels[name].visible=true;labels[name].position.copy(p).add(new THREE.Vector3(0,.16,.02));
+  edgeMeshes[edge].material.color.set(name.startsWith('P')?0xff4b4b:0xe3e9ef);
+}
+
+function rayFromEvent(evt){
+  const r=renderer.domElement.getBoundingClientRect();
+  const ndc=new THREE.Vector2((evt.clientX-r.left)/r.width*2-1,-((evt.clientY-r.top)/r.height*2-1));
+  const ray=new THREE.Raycaster();ray.setFromCamera(ndc,camera);return ray;
+}
+
+function pickEdge(evt){
+  const ray=rayFromEvent(evt);
+  const hits=ray.intersectObjects(hitMeshes,false);
+  if(!hits.length)return null;
+  const h=hits[0],i=h.object.userData.edge,e=edgePairs[i],d=e.p2.clone().sub(e.p1);
+  const t=THREE.MathUtils.clamp(h.point.clone().sub(e.p1).dot(d)/d.lengthSq(),0,1);
+  return {edge:i,t};
+}
+
+function place(name,evt){
+  const h=pickEdge(evt);if(!h)return false;
+  setPoint(name,h.edge,h.t);rebuild();return true;
+}
+
+const lineGroup=new THREE.Group();lineGroup.renderOrder=30;scene.add(lineGroup);
+const sectionGroup=new THREE.Group();sectionGroup.renderOrder=40;scene.add(sectionGroup);
+const traceGroup=new THREE.Group();traceGroup.renderOrder=35;scene.add(traceGroup);
+
+function clearGroup(g){while(g.children.length){g.remove(g.children[g.children.length-1])}}
+function lineObj(a,b,color,dash=false,opacity=1,width=1){
+  const g=new THREE.BufferGeometry().setFromPoints([a,b]);
+  const m=dash?new THREE.LineDashedMaterial({color,transparent:true,opacity,dashSize:.11,gapSize:.09,depthTest:false,depthWrite:false}):new THREE.LineBasicMaterial({color,transparent:true,opacity,depthTest:false,depthWrite:false});
+  if(width>1 && !dash)m.linewidth=width;
+  const l=new THREE.Line(g,m);l.renderOrder=width>1?70:50;if(dash)l.computeLineDistances();return l;
+}
+
+function addTracePoint(group,p,color=0xd6dde4){
+  const s=new THREE.Mesh(new THREE.SphereGeometry(.042,12,8),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.88,depthTest:false,depthWrite:false}));
+  s.position.copy(p);s.renderOrder=55;group.add(s);
+}
+
+function infiniteLineBoxIntersections(A,B){
+  const d=B.clone().sub(A),hits=[];
+  const planes=[['x',-1],['x',1],['y',-1],['y',1],['z',-1],['z',1]];
+  for(const [axis,v] of planes){
+    const den=d[axis];if(Math.abs(den)<1e-9)continue;
+    const t=(v-A[axis])/den;
+    const p=A.clone().addScaledVector(d,t);
+    if(p.x>=-1.000001&&p.x<=1.000001&&p.y>=-1.000001&&p.y<=1.000001&&p.z>=-1.000001&&p.z<=1.000001)hits.push({p,axis,v,t});
+  }
+  hits.sort((a,b)=>a.t-b.t);return hits;
+}
+
+function drawGivenLine(){
+  clearGroup(lineGroup);
+  const {P1,P2}=S.points;if(!P1||!P2)return;
+  const d=P2.clone().sub(P1);if(d.lengthSq()<1e-9)return;
+  const u=d.clone().normalize();
+  // Очень длинная красная заданная прямая внутри/через куб — всегда видима поверх куба.
+  const far=5;
+  lineGroup.add(lineObj(P1.clone().addScaledVector(u,-far),P1.clone().addScaledVector(u,far),0xff4b4b,false,.98,2));
+  // При методе следов показываем её продолжение к границам как бледный пунктир.
+  if(S.method==='traces'){
+    const hits=infiniteLineBoxIntersections(P1,P2);
+    if(hits.length>=2){
+      lineGroup.add(lineObj(hits[0].p,hits[1].p,0xffc1c1,true,.48));
+      hits.forEach(h=>addTracePoint(lineGroup,h.p,0xffb2b2));
+    }
+  }
+}
+
+function sectionPlane(A,B,Q1,Q2){
+  const d=B.clone().sub(A),w=Q2.clone().sub(Q1);
+  const n=new THREE.Vector3().crossVectors(d,w);
+  if(n.lengthSq()<1e-9)return null;
+  n.normalize();
+  return {n,base:Q1.clone(),d:d.normalize()};
+}
+
+function intersectPlaneWithCube(A,B,Q1,Q2){
+  const sec=sectionPlane(A,B,Q1,Q2);if(!sec)return null;
+  const {n,base,d}=sec;
+  const hits=[];
+  edgePairs.forEach((e,i)=>{
+    const ev=e.p2.clone().sub(e.p1),den=n.dot(ev);
+    if(Math.abs(den)<1e-9)return;
+    const t=n.dot(base.clone().sub(e.p1))/den;
+    if(t>=-1e-7&&t<=1+1e-7)hits.push({p:e.p1.clone().addScaledVector(ev,t),edge:i});
+  });
+  const uniq=[];hits.forEach(h=>{if(!uniq.some(u=>u.p.distanceToSquared(h.p)<1e-8))uniq.push(h)});
+  if(uniq.length<3)return null;
+
+  const center=uniq.reduce((acc,h)=>acc.add(h.p),new THREE.Vector3()).multiplyScalar(1/uniq.length);
+  let u=d.clone();
+  if(Math.abs(u.dot(n))>.999){u=new THREE.Vector3(1,0,0);if(Math.abs(u.dot(n))>.9)u.set(0,1,0);}
+  u.sub(n.clone().multiplyScalar(u.dot(n))).normalize();
+  const v=new THREE.Vector3().crossVectors(n,u).normalize();
+  uniq.sort((a,b)=>{
+    const aa=Math.atan2(a.p.clone().sub(center).dot(v),a.p.clone().sub(center).dot(u));
+    const bb=Math.atan2(b.p.clone().sub(center).dot(v),b.p.clone().sub(center).dot(u));
+    return aa-bb;
+  });
+  return {poly:uniq.map(h=>h.p),edgeHits:uniq,n,v,d};
+}
+
+function buildPlaneFill(poly){
+  const verts=[];
+  for(let i=1;i<poly.length-1;i++)verts.push(...poly[0].toArray(),...poly[i].toArray(),...poly[i+1].toArray());
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+  g.computeVertexNormals();
+  return g;
+}
+
+function clipLineToConvexPolygon(X,d,poly,n){
+  // Координаты в плоскости сечения: u = d, v = n × d.
+  const u=d.clone().normalize();
+  const v=new THREE.Vector3().crossVectors(n,u).normalize();
+  const vals=[];
+  for(let i=0;i<poly.length;i++){
+    const A=poly[i],B=poly[(i+1)%poly.length];
+    const va=A.clone().sub(X).dot(v), vb=B.clone().sub(X).dot(v);
+    if(Math.abs(va)<1e-8)vals.push(A.clone().sub(X).dot(u));
+    if(va*vb<0){
+      const alpha=va/(va-vb);
+      const P=A.clone().lerp(B,alpha);
+      vals.push(P.clone().sub(X).dot(u));
+    }
+  }
+  const unique=[];vals.forEach(t=>{if(!unique.some(x=>Math.abs(x-t)<1e-7))unique.push(t)});
+  if(unique.length<2)return null;
+  unique.sort((a,b)=>a-b);
+  return {a:X.clone().addScaledVector(u,unique[0]),b:X.clone().addScaledVector(u,unique[unique.length-1])};
+}
+
+function drawSection(){
+  clearGroup(sectionGroup);
+  if(!S.method)return;
+  const {P1,P2,Q1,Q2}=S.points;if(!P1||!P2||!Q1||!Q2)return;
+  const sec=intersectPlaneWithCube(P1,P2,Q1,Q2);
+  if(!sec){setStatus('Плоскость вырожденна. Переместите Q₁ или Q₂.');return;}
+  const {poly,n,d}=sec;
+
+  const fill=new THREE.Mesh(
+    buildPlaneFill(poly),
+    new THREE.MeshBasicMaterial({color:0xffd84d,transparent:true,opacity:.28,side:THREE.DoubleSide,depthTest:false,depthWrite:false})
+  );
+  fill.renderOrder=42;sectionGroup.add(fill);
+
+  // Дополнительная мягкая подсветка — широкая бледная линия вокруг сечения.
+  const glowGeom=new THREE.BufferGeometry().setFromPoints(poly.concat([poly[0]]));
+  const glow=new THREE.Line(glowGeom,new THREE.LineBasicMaterial({color:0xfff09a,transparent:true,opacity:.28,depthTest:false,depthWrite:false}));
+  glow.renderOrder=43;sectionGroup.add(glow);
+
+  const outline=new THREE.Line(glowGeom,new THREE.LineBasicMaterial({color:0xffd84d,transparent:true,opacity:1,depthTest:false,depthWrite:false}));
+  outline.renderOrder=70;sectionGroup.add(outline);
+
+  poly.forEach(p=>{
+    const m=new THREE.Mesh(new THREE.SphereGeometry(.072,16,10),new THREE.MeshBasicMaterial({color:0xffe76d,depthTest:false,depthWrite:false}));
+    m.position.copy(p);m.renderOrder=75;sectionGroup.add(m);
+  });
+
+  // Выделяем в сечении прямую, параллельную заданной P₁P₂.
+  // Она проходит через Q₁ и целиком лежит внутри плоскости сечения.
+  const clipped=clipLineToConvexPolygon(Q1,d,poly,n);
+  if(clipped){
+    sectionGroup.add(lineObj(clipped.a,clipped.b,0xff7f00,false,1,4));
+    // тонкий жёлтый сердечник
+    sectionGroup.add(lineObj(clipped.a,clipped.b,0xfff06a,false,1,2));
+  }
+}
+
+function faceOfSectionEdge(a,b){
+  const eps=1e-5;
+  for(const axis of ['x','y','z']){
+    if(Math.abs(Math.abs(a[axis])-1)<eps&&Math.abs(Math.abs(b[axis])-1)<eps&&Math.abs(a[axis]-b[axis])<eps){
+      return {axis,value:a[axis]};
+    }
+  }
+  return null;
+}
+
+function faceBoundaryIntersections(a,b,face){
+  // Линия ab в прямоугольной грани x=±1 / y=±1 / z=±1.
+  const axis=face.axis,value=face.value;
+  const free=axis==='x'?['y','z']:axis==='y'?['x','z']:['x','y'];
+  const d=b.clone().sub(a);
+  const hits=[];
+  for(const freeAxis of free){
+    for(const edgeValue of [-1,1]){
+      const den=d[freeAxis];if(Math.abs(den)<1e-9)continue;
+      const t=(edgeValue-a[freeAxis])/den;
+      const p=a.clone().addScaledVector(d,t);p[axis]=value;
+      if(p[free[0]]>=-1-1e-6&&p[free[0]]<=1+1e-6&&p[free[1]]>=-1-1e-6&&p[free[1]]<=1+1e-6){
+        if(!hits.some(q=>q.distanceToSquared(p)<1e-8))hits.push(p);
+      }
+    }
+  }
+  hits.sort((p,q)=>p.distanceTo(a)-q.distanceTo(a));
+  return hits;
+}
+
+function sectionEdgeLineOnFace(a,b,face){
+  const hits=faceBoundaryIntersections(a,b,face);
+  if(hits.length<2)return null;
+  return {start:hits[0],end:hits[hits.length-1]};
+}
+
+function findCubeEdgeAtPoint(p){
+  let best=null,dist=Infinity;
+  edgePairs.forEach((e,i)=>{
+    const d=e.p2.clone().sub(e.p1);
+    const t=THREE.MathUtils.clamp(p.clone().sub(e.p1).dot(d)/d.lengthSq(),0,1);
+    const q=e.p1.clone().addScaledVector(d,t);
+    const dd=q.distanceTo(p);
+    if(dd<dist){dist=dd;best={edge:i,t,q}};
+  });
+  return best;
+}
+
+function drawTraceExtensions(poly){
+  // Для каждого ребра сечения строим его продолжение в плоскости соответствующей грани,
+  // от одного ребра грани до другого. Собственное ребро сечения остаётся жёлтым.
+  for(let i=0;i<poly.length;i++){
+    const a=poly[i],b=poly[(i+1)%poly.length];
+    const face=faceOfSectionEdge(a,b);if(!face)continue;
+    const full=sectionEdgeLineOnFace(a,b,face);if(!full)continue;
+
+    // полный след на грани — длинная пунктирная линия
+    traceGroup.add(lineObj(full.start,full.end,0xd5dce2,true,.72));
+    addTracePoint(traceGroup,full.start);addTracePoint(traceGroup,full.end);
+
+    // сплошной участок — само ребро сечения, слегка поверх пунктира
+    traceGroup.add(lineObj(a,b,0xffd84d,false,1,3));
+
+    // Показываем, с какими рёбрами куба встретился след.
+    const e1=findCubeEdgeAtPoint(full.start),e2=findCubeEdgeAtPoint(full.end);
+    if(e1)edgeMeshes[e1.edge].material.opacity=.98;
+    if(e2)edgeMeshes[e2.edge].material.opacity=.98;
+  }
+}
+
+function drawAllTraces(){
+  clearGroup(traceGroup);
+  if(!S.method)return;
+  const {P1,P2,Q1,Q2}=S.points;if(!P1||!P2||!Q1||!Q2)return;
+
+  // В методе следов нужны длинные продолжения всех рёбер сечения.
+  if(S.method==='traces'){
+    const sec=intersectPlaneWithCube(P1,P2,Q1,Q2);
+    if(sec){
+      drawTraceExtensions(sec.poly);
+
+      // Также показываем следы основных исходных линий на гранях — бледно и пунктиром.
+      const helperLines=[
+        {a:P1,b:P2,c:0xffa0a0},
+        {a:P1,b:Q1,c:0xb9c1c8},
+        {a:P2,b:Q2,c:0xb9c1c8},
+        {a:Q1,b:Q2,c:0xb9c1c8}
+      ];
+      helperLines.forEach(L=>{
+        const hits=infiniteLineBoxIntersections(L.a,L.b);
+        if(hits.length>=2){
+          for(let k=0;k<hits.length-1;k++)traceGroup.add(lineObj(hits[k].p,hits[k+1].p,L.c,true,.32));
+          hits.forEach(h=>addTracePoint(traceGroup,h.p,L.c));
+        }
+      });
+    }
+  }
+}
+
+function rebuild(){
+  drawGivenLine();drawSection();drawAllTraces();updateLabels();
+  const vals=['P1','P2','Q1','Q2'];
+  vals.forEach(n=>pointMeshes[n].visible=!!S.points[n]);
+  if(S.method){
+    setStatus(S.method==='parallel'?'Сечение построено методом параллельности. Прямая в жёлтом сечении параллельна P₁P₂.':'Сечение построено методом следов. Показаны продолжения рёбер сечения и их следы на гранях.');
+  }else if(S.points.P1&&S.points.P2&&S.points.Q1&&S.points.Q2){
+    setStatus('Выберите способ построения.');
+  }else if(S.points.P1&&S.points.P2&&!S.points.Q1){
+    setStatus('Шаг 3: поставьте Q₁.');
+  }else if(S.points.Q1&&!S.points.Q2){
+    setStatus('Поставьте Q₂.');
+  }
+}
+
+function nearestEdgeToSurfacePoint(p){
+  // Ближайшее ребро к точке на поверхности; сохраняем t, поэтому вдоль ребра движение непрерывное.
+  return findCubeEdgeAtPoint(p);
+}
+
+function dragAnyPoint(name,evt){
+  const ray=rayFromEvent(evt);
+  const hits=ray.intersectObject(body,false);
+  if(!hits.length)return;
+  const surface=hits[0].point;
+  const best=nearestEdgeToSurfacePoint(surface);
+  if(!best||best.q.distanceTo(surface)>.95)return;
+  setPoint(name,best.edge,best.t);
+  // После изменения любой точки все зависимые построения пересчитываются сразу.
+  rebuild();
+}
+
+function startPointDrag(evt){
+  const ray=rayFromEvent(evt);
+  const pts=['P1','P2','Q1','Q2'].map(n=>pointMeshes[n]).filter(m=>m.visible);
+  const hits=ray.intersectObjects(pts,false);
+  if(!hits.length)return false;
+  S.dragging=hits[0].object.userData.name;
+  controls.enabled=false;
+  return true;
+}
+
+renderer.domElement.addEventListener('pointerdown',evt=>{
+  if(evt.button!==0)return;
+
+  // В режиме движения точка имеет абсолютный приоритет над вращением.
+  if(S.moving && startPointDrag(evt))return;
+
+  if(S.mode==='placeP1'&&place('P1',evt)){
+    S.mode='placeP2';document.querySelector('#m2').disabled=false;return;
+  }
+  if(S.mode==='placeP2'&&place('P2',evt)){
+    S.mode='placeQ1';document.querySelector('#q1').disabled=false;return;
+  }
+  if(S.mode==='placeQ1'&&place('Q1',evt)){
+    S.mode='placeQ2';document.querySelector('#q2').disabled=false;return;
+  }
+  if(S.mode==='placeQ2'&&place('Q2',evt)){
+    S.mode='idle';document.querySelector('#move').disabled=false;document.querySelector('#parallel').disabled=false;document.querySelector('#traces').disabled=false;return;
+  }
+});
+
+renderer.domElement.addEventListener('pointermove',evt=>{
+  if(S.dragging)dragAnyPoint(S.dragging,evt);
+});
+window.addEventListener('pointerup',()=>{S.dragging=null;controls.enabled=true;});
+
+// Кнопки режимов постановки
+const m1=document.querySelector('#m1'), m2=document.querySelector('#m2'), q1=document.querySelector('#q1'), q2=document.querySelector('#q2');
+const move=document.querySelector('#move'), parallel=document.querySelector('#parallel'), traces=document.querySelector('#traces'), reset=document.querySelector('#reset');
+m1.onclick=()=>{S.mode='placeP1';setStatus('Выберите ребро для P₁.');};
+m2.onclick=()=>{S.mode='placeP2';setStatus('Выберите ребро для P₂.');};
+q1.onclick=()=>{S.mode='placeQ1';setStatus('Выберите ребро для Q₁.');};
+q2.onclick=()=>{S.mode='placeQ2';setStatus('Выберите ребро для Q₂.');};
+
+move.onclick=()=>{
+  S.moving=!S.moving;
+  move.classList.toggle('active',S.moving);
+  move.textContent='Режим движения: '+(S.moving?'ВКЛ':'ВЫКЛ');
+  setStatus(S.moving?'Тяните P₁, P₂, Q₁ или Q₂: точка двигается по ребру и переходит на другое ребро.':'Режим движения выключен.');
+};
+parallel.onclick=()=>{S.method='parallel';rebuild();};
+traces.onclick=()=>{S.method='traces';rebuild();};
+reset.onclick=()=>location.reload();
+
+function resize(){
+  const w=view.clientWidth,h=view.clientHeight||1;
+  camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);
+}
+window.addEventListener('resize',resize);resize();
+
+function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}
+animate();
+</script>
+</body>
+</html>

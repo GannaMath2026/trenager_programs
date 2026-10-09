@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Стереометрия</title>
+<style>
+:root{--bg:#0b0d10;--panel:#151a21;--panel2:#1b222b;--border:#303b49;--text:#edf2f7;--muted:#98a5b4;--blue:#62b6ff;--red:#ff4b4b;--yellow:#ffd93d}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Calibri,Arial,sans-serif}
+#app{position:relative;width:100%;height:100%}
+#scene{position:absolute;inset:0}
+#ui{position:absolute;inset:0;z-index:20;pointer-events:none}
+.panel{background:rgba(21,26,33,.96);border:1px solid var(--border);border-radius:13px;box-shadow:0 12px 40px #0008;pointer-events:auto}
+#left{position:absolute;left:12px;top:12px;bottom:12px;width:285px;padding:13px;display:flex;flex-direction:column;overflow:hidden}
+
+#taskScroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:4px}
+#drawService{flex:0 0 auto;border-top:1px solid var(--border);margin-top:10px;padding-top:4px;background:rgba(21,26,33,.98)}
+#taskScroll::-webkit-scrollbar{width:6px}
+#taskScroll::-webkit-scrollbar-thumb{background:#3a4653;border-radius:6px}
+.title{font-size:19px;font-weight:800}.sub{font-size:11px;color:var(--muted);margin:2px 0 13px}
+.sectionTitle{margin:14px 2px 7px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#7f8c9c}
+.bodySwitch{display:flex;gap:6px}.bodyBtn{flex:1;padding:10px 6px;border:1px solid var(--border);border-radius:9px;background:var(--panel2);color:var(--text);cursor:pointer;font-size:12px}
+.bodyBtn.active{border-color:var(--blue);background:#142b40;box-shadow:inset 0 0 0 1px #62b6ff55}
+.sceneBtn{width:100%;display:block;text-align:left;margin:5px 0;padding:8px 9px;border:1px solid var(--border);border-radius:8px;background:var(--panel2);color:var(--text);cursor:pointer;font-size:12px}
+.sceneBtn:hover{border-color:#566575}.sceneBtn.active{border-color:var(--blue);background:#142b40;box-shadow:inset 3px 0 0 var(--blue)}
+.sceneBtn .num{display:inline-block;width:22px;color:var(--blue);font-weight:800}.sceneBtn small{display:block;color:var(--muted);font-size:10px;margin:2px 0 0 22px}
+.controlRow{display:flex;gap:6px}.btn{flex:1;padding:8px 7px;border:1px solid var(--border);border-radius:8px;background:var(--panel2);color:var(--text);cursor:pointer;font-size:11px}.btn:hover{border-color:#5a6878}.btn.active{border-color:var(--yellow);color:var(--yellow)}
+#brightnessBox{padding:9px;background:#10151b;border:1px solid #293441;border-radius:9px}#brightnessTop{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}#brightnessValue{color:var(--text)}
+#brightness{width:100%;accent-color:var(--blue);cursor:pointer;margin-top:5px}
+#drawHelp{font-size:10px;color:var(--muted);line-height:1.4}.colors{display:flex;gap:6px;align-items:center}
+.color{width:25px;height:25px;min-width:25px;padding:0;border-radius:50%;border:2px solid #59636e;cursor:pointer}.color.active{outline:2px solid white;outline-offset:1px}
+#status{margin-top:10px;padding:8px 9px;border-radius:8px;background:#10151b;color:var(--muted);font-size:10px;line-height:1.4}#status b{color:var(--text)}
+#top{position:absolute;right:12px;top:12px;padding:7px;display:flex;gap:6px}
+#drawCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:15;display:none;touch-action:none}body.drawing #drawCanvas{display:block;cursor:crosshair}
+#hint{position:absolute;right:12px;bottom:12px;padding:8px 10px;color:var(--muted);font-size:10px}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<div id="app">
+<div id="scene"></div><canvas id="drawCanvas"></canvas>
+<div id="ui">
+<aside id="left" class="panel">
+<div class="title">Стереометрия</div><div class="sub">Визуализатор скрещивающихся прямых</div>
+<div id="taskScroll">
+<div class="sectionTitle">Выбор тела</div>
+<div class="bodySwitch"><button class="bodyBtn active" id="cubeBody">Куб</button><button class="bodyBtn" id="prismBody">Треугольная<br>призма</button></div>
+<div class="sectionTitle" id="sceneTitle">Сцены — куб</div><div id="sceneButtons"></div>
+<div class="sectionTitle">Яркость клонов</div>
+<div id="brightnessBox"><div id="brightnessTop"><span>бледнее</span><span id="brightnessValue">0.055</span><span>ярче</span></div><input id="brightness" type="range" min="0.02" max="0.42" step="0.01" value="0.055"></div>
+<div class="sectionTitle">Управление</div>
+<div class="controlRow"><button class="btn" id="prev">← Пред.</button><button class="btn" id="next">След. →</button></div>
+<div class="controlRow" style="margin-top:6px"><button class="btn" id="reset">Сброс вида</button><button class="btn" id="clear">Очистить всё</button></div>
+</div>
+<div id="drawService">
+<div class="sectionTitle">Рисование</div>
+<div class="controlRow"><button class="btn" id="pencil">Карандаш</button><button class="btn" id="solid">Прямая</button><button class="btn" id="dash">Пунктир</button></div>
+<div class="colors" style="margin-top:7px">
+<button class="color active" data-color="#ff4b4b" style="background:#ff4b4b"></button><button class="color" data-color="#62b6ff" style="background:#62b6ff"></button><button class="color" data-color="#3ddc97" style="background:#3ddc97"></button><button class="color" data-color="#ffd93d" style="background:#ffd93d"></button><button class="color" data-color="#fff" style="background:#fff"></button><button class="color" data-color="#ff9f43" style="background:#ff9f43"></button><button class="color" data-color="#c27cff" style="background:#c27cff"></button>
+</div>
+<div id="drawHelp" style="margin-top:7px">Рисование свободное — по всему экрану, без привязки к телу.<br><b>Esc</b> — выйти из режима.</div>
+<div id="status">Тело: <b id="bodyName">Куб</b><br>Сцена: <b id="currentScene">1</b> — <span id="currentDesc">A₁B и AC</span><br><span id="drawStatus">Рисование выключено</span></div>
+</div>
+</aside>
+<div id="top" class="panel"><button class="btn" id="iso">Изометрия</button></div>
+<div id="hint" class="panel">ЛКМ — вращение · колесо — масштаб · ПКМ — панорамирование</div>
+</div></div>
+
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+const host=document.getElementById('scene');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);
+renderer.setClearColor(0x0b0d10,1);renderer.outputColorSpace=THREE.SRGBColorSpace;host.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,.1,100);camera.position.set(7,6,8);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.07;controls.target.set(0,0,0);
+scene.add(new THREE.AmbientLight(0xffffff,.75));const light=new THREE.DirectionalLight(0xffffff,1.15);light.position.set(6,8,7);scene.add(light);
+
+const bodyGroup=new THREE.Group(),cloneGroup=new THREE.Group(),lineGroup=new THREE.Group(),labelGroup=new THREE.Group(),occluderGroup=new THREE.Group();
+scene.add(bodyGroup,cloneGroup,lineGroup,labelGroup,occluderGroup);
+
+const BLUE=0x62b6ff,RED=0xff4b4b;
+let cloneOpacity=.055,currentBody='cube',currentScene=0;
+
+function disposeGroup(g){while(g.children.length){const o=g.children.pop();o.traverse(x=>{if(x.geometry)x.geometry.dispose();if(x.material){if(Array.isArray(x.material))x.material.forEach(m=>m.dispose());else x.material.dispose()}})}}
+
+/* ======================= КУБ ======================= */
+const CV={
+ A:new THREE.Vector3(-1,-1,-1),B:new THREE.Vector3(1,-1,-1),C:new THREE.Vector3(1,1,-1),D:new THREE.Vector3(-1,1,-1),
+ A1:new THREE.Vector3(-1,-1,1),B1:new THREE.Vector3(1,-1,1),C1:new THREE.Vector3(1,1,1),D1:new THREE.Vector3(-1,1,1)
+};
+const CE=[['A','B'],['B','C'],['C','D'],['D','A'],['A1','B1'],['B1','C1'],['C1','D1'],['D1','A1'],['A','A1'],['B','B1'],['C','C1'],['D','D1']];
+const cubeScenes=[
+ {desc:'A₁B и AC',a:['A1','B'],b:['A','C']},
+ {desc:'AC и B₁D₁',a:['A','C'],b:['B1','D1']},
+ {desc:'A₁B и CB₁',a:['A1','B'],b:['C','B1']},
+ {desc:'B₁C и BD₁',a:['B1','C'],b:['B','D1']},
+ {desc:'AB и CA₁',a:['A','B'],b:['C','A1']},
+ {desc:'AB₁ и BD₁',a:['A','B1'],b:['B','D1']},
+ {desc:'AC и BD',a:['A','C'],b:['B','D']},
+ {desc:'A₁C₁ и B₁C',a:['A1','C1'],b:['B1','C']},
+ {desc:'CC₁ и AD',a:['C','C1'],b:['A','D']},
+ {desc:'BB₁ и A₁C',a:['B','B1'],b:['A1','C']},
+ {desc:'A₁C и DC₁',a:['A1','C'],b:['D','C1']},
+ {desc:'AD₁ и BD',a:['A','D1'],b:['B','D']},
+ {desc:'A₁C и DC₁ — вариант',a:['A1','C'],b:['D','C1']},
+ {desc:'A₁D₁ и BC',a:['A1','D1'],b:['B','C']}
+];
+
+function dashedLine(a,b,color=BLUE,opacity=cloneOpacity){
+ const g=new THREE.BufferGeometry().setFromPoints([a,b]);
+ const m=new THREE.LineDashedMaterial({color,transparent:true,opacity,dashSize:.065,gapSize:.055});
+ const l=new THREE.Line(g,m);l.computeLineDistances();return l;
+}
+function solidLine(a,b,color=BLUE){
+ return new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),new THREE.LineBasicMaterial({color,linewidth:2}));
+}
+function makeCube(center,central=false){
+ const g=new THREE.Group();
+ CE.forEach(([na,nb])=>{const a=CV[na].clone().add(center),b=CV[nb].clone().add(center);g.add(central?solidLine(a,b,BLUE):dashedLine(a,b))});
+ return g;
+}
+
+/* ======================= ПРИЗМА =======================
+   Основание теперь горизонтальное: треугольник в плоскости XZ,
+   высота призмы идет по Y. Поэтому на старте основание снизу.
+*/
+const PH=Math.sqrt(3);
+const PV={
+ A:new THREE.Vector3(-1,-1,-PH/3),B:new THREE.Vector3(1,-1,-PH/3),C:new THREE.Vector3(0,-1,2*PH/3),
+ A1:new THREE.Vector3(-1,1,-PH/3),B1:new THREE.Vector3(1,1,-PH/3),C1:new THREE.Vector3(0,1,2*PH/3),
+ // M лежит на A₁C₁, N — на B₁C₁.
+ M:new THREE.Vector3(-2/3,1,0), N:new THREE.Vector3(2/3,1,0)
+};
+const PE=[['A','B'],['B','C'],['C','A'],['A1','B1'],['B1','C1'],['C1','A1'],['A','A1'],['B','B1'],['C','C1']];
+const prismScenes=[
+ {desc:'AB₁ и BC',a:['A','B1'],b:['B','C']},
+ {desc:'AC и B₁C₁',a:['A','C'],b:['B1','C1']},
+ {desc:'AB₁ и A₁C',a:['A','B1'],b:['A1','C']},
+ {desc:'A₁B и AC₁',a:['A1','B'],b:['A','C1']},
+ {desc:'AC₁ и BA₁',a:['A','C1'],b:['B','A1']},
+ {desc:'BC₁ и CA₁',a:['B','C1'],b:['C','A1']},
+ {desc:'AB₁ и A₁C₁',a:['A','B1'],b:['A1','C1']},
+ {desc:'AB и B₁C',a:['A','B'],b:['B1','C']},
+ {desc:'A₁C₁ и BC₁',a:['A1','C1'],b:['B','C1']},
+ {desc:'AM и BN',a:['A','M'],b:['B','N']}
+];
+function makePrism(center,central=false){
+ const g=new THREE.Group();
+ PE.forEach(([na,nb])=>{const a=PV[na].clone().add(center),b=PV[nb].clone().add(center);g.add(central?solidLine(a,b,BLUE):dashedLine(a,b))});
+ return g;
+}
+
+/* ======================= ПОВЕРХНОСТИ ДЛЯ СКРЫТИЯ ======================= */
+function addOccluder(geometry,pos=new THREE.Vector3()){
+ const m=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide}));
+ m.position.copy(pos);occluderGroup.add(m);return m;
+}
+function rebuildOccluders(){
+ disposeGroup(occluderGroup);
+ if(currentBody==='cube'){
+   for(let x=-2;x<=2;x+=2)for(let y=-2;y<=2;y+=2)for(let z=-2;z<=2;z+=2)
+     addOccluder(new THREE.BoxGeometry(2,2,2),new THREE.Vector3(x,y,z));
+ }else{
+   const lattice=[[0,0]];
+   for(let m=-1;m<=1;m++) for(let n=-1;n<=1;n++){
+     if(m===0&&n===0) continue;
+     lattice.push([2*m+n,PH*n]);
+   }
+   lattice.forEach(([x,z])=>{
+     const s=new THREE.Shape();
+     s.moveTo(-1,-PH/3);s.lineTo(1,-PH/3);s.lineTo(0,2*PH/3);s.closePath();
+     const geo=new THREE.ExtrudeGeometry(s,{depth:2,bevelEnabled:false});
+     geo.rotateX(Math.PI/2);geo.translate(0,-1,0);
+     addOccluder(geo,new THREE.Vector3(x,0,z));
+   });
+ }
+}
+
+/* ======================= ЦЕНТРАЛЬНОЕ ТЕЛО ======================= */
+function buildLabels(list){
+ disposeGroup(labelGroup);
+ list.forEach(([name,p])=>{
+   const c=document.createElement('canvas');c.width=120;c.height=60;
+   const x=c.getContext('2d');x.fillStyle='#fff';x.font='bold 36px Calibri,Arial';x.textAlign='center';x.textBaseline='middle';x.fillText(name,60,30);
+   const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;
+   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+   s.position.set(p[0]*1.015,p[1]*1.015,p[2]*1.015);s.scale.set(.56,.28,1);labelGroup.add(s);
+ });
+}
+function buildBody(){
+ disposeGroup(bodyGroup);disposeGroup(cloneGroup);
+ if(currentBody==='cube'){
+   bodyGroup.add(makeCube(new THREE.Vector3(),true));
+   for(let x=-2;x<=2;x+=2)for(let y=-2;y<=2;y+=2)for(let z=-2;z<=2;z+=2)if(x||y||z)
+     cloneGroup.add(makeCube(new THREE.Vector3(x,y,z)));
+   buildLabels([['A',[-1,-1,-1]],['B',[1,-1,-1]],['C',[1,1,-1]],['D',[-1,1,-1]],['A₁',[-1,-1,1]],['B₁',[1,-1,1]],['C₁',[1,1,1]],['D₁',[-1,1,1]]]);
+ }else{
+   bodyGroup.add(makePrism(new THREE.Vector3(),true));
+   // 9 одинаково ориентированных призм на треугольной решётке.
+   // Каждый сдвиг равен длине стороны основания: вершины совпадают с вершинами.
+   const lattice=[];
+   for(let m=-1;m<=1;m++) for(let n=-1;n<=1;n++){
+     if(m===0&&n===0) continue;
+     // Базисные векторы треугольной решётки: (2,0) и (1,√3).
+     const x=2*m+n, z=PH*n;
+     lattice.push([x,z]);
+   }
+   lattice.forEach(([x,z])=>cloneGroup.add(makePrism(new THREE.Vector3(x,0,z))));
+   buildLabels([['A',[-1,-1,-1]],['B',[1,-1,-1]],['C',[0,-1,1]],['A₁',[-1,1,-1]],['B₁',[1,1,-1]],['C₁',[0,1,1]]]);
+ }
+ updateCloneOpacity();
+}
+
+/* ======================= РЁБРА ЦЕНТРАЛЬНОГО ТЕЛА =======================
+   У куба все 12 рёбер постоянно видимы, как у призмы.
+*/
+function refreshBodyEdgeVisibility(){
+  const g=bodyGroup.children[0];
+  if(!g)return;
+  g.children.forEach(l=>{
+    if(l.material?.isLineDashedMaterial){
+      const old=l.material;
+      l.material=new THREE.LineBasicMaterial({color:BLUE});
+      old.dispose();
+    }
+  });
+}
+
+/* ======================= ОТРЕЗКИ НА ГРАНЯХ + СЛЕДЫ =======================
+   Красная часть — только конечный отрезок между заданными точками тела.
+   Бледный точечный пунктир — продолжение за тело.
+*/
+function clearLines(){while(lineGroup.children.length){const o=lineGroup.children.pop();o.geometry?.dispose();o.material?.dispose()}}
+function dottedTrace(a,b){
+ const d=new THREE.Vector3().subVectors(b,a).normalize();
+ const parts=[
+   [a.clone().addScaledVector(d,-1.8),a.clone()],
+   [b.clone(),b.clone().addScaledVector(d,1.8)]
+ ];
+ for(const [u,v] of parts){
+   const pts=[];
+   const n=22;
+   for(let i=0;i<=n;i++) pts.push(u.clone().lerp(v,i/n));
+   const geom=new THREE.BufferGeometry().setFromPoints(pts);
+   const mat=new THREE.PointsMaterial({color:RED,size:.045,transparent:true,opacity:.28,sizeAttenuation:true});
+   lineGroup.add(new THREE.Points(geom,mat));
+ }
+}
+function segmentLine(a,b){
+ lineGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),new THREE.LineBasicMaterial({color:RED})));
+ dottedTrace(a,b);
+}
+function rebuildLines(){
+ clearLines();
+ const arr=currentBody==='cube'?cubeScenes:prismScenes,data=arr[currentScene];
+ if(currentBody==='cube'){
+   segmentLine(CV[data.a[0]],CV[data.a[1]]);
+   segmentLine(CV[data.b[0]],CV[data.b[1]]);
+ }else{
+   segmentLine(PV[data.a[0]],PV[data.a[1]]);
+   segmentLine(PV[data.b[0]],PV[data.b[1]]);
+ }
+}
+
+/* ======================= СЦЕНЫ ======================= */
+const sceneButtons=document.getElementById('sceneButtons');
+function renderSceneButtons(){
+ sceneButtons.innerHTML='';
+ const arr=currentBody==='cube'?cubeScenes:prismScenes;
+ arr.forEach((s,i)=>{
+   const b=document.createElement('button');b.className='sceneBtn'+(i===currentScene?' active':'');
+   b.innerHTML='<span class="num">'+(i+1)+'</span>'+s.desc+'<small>Скрещивающиеся прямые</small>';
+   b.onclick=()=>activateScene(i);sceneButtons.appendChild(b);
+ });
+}
+function activateScene(i){
+ clearDrawings();
+ const arr=currentBody==='cube'?cubeScenes:prismScenes;
+ currentScene=(i+arr.length)%arr.length;
+ renderSceneButtons();
+ const s=arr[currentScene];
+ document.getElementById('currentScene').textContent=currentScene+1;
+ document.getElementById('currentDesc').textContent=s.desc;
+ rebuildLines();
+}
+function switchBody(body){
+ clearDrawings();
+ currentBody=body;currentScene=0;
+ document.getElementById('cubeBody').classList.toggle('active',body==='cube');
+ document.getElementById('prismBody').classList.toggle('active',body==='prism');
+ document.getElementById('bodyName').textContent=body==='cube'?'Куб':'Треугольная призма';
+ document.getElementById('sceneTitle').textContent=body==='cube'?'Сцены — куб':'Сцены — треугольная призма';
+ buildBody();rebuildOccluders();renderSceneButtons();activateScene(0);
+ // Для призмы сразу выставляем правильный ракурс: треугольное основание горизонтально снизу.
+ if(body==='prism'){
+   camera.position.set(7,7,8);controls.target.set(0,0,0);controls.update();
+ }else{
+   camera.position.set(7,6,8);controls.target.set(0,0,0);controls.update();
+ }
+}
+document.getElementById('cubeBody').onclick=()=>switchBody('cube');
+document.getElementById('prismBody').onclick=()=>switchBody('prism');
+document.getElementById('prev').onclick=()=>activateScene(currentScene-1);
+document.getElementById('next').onclick=()=>activateScene(currentScene+1);
+
+/* ======================= ЯРКОСТЬ ======================= */
+function updateCloneOpacity(){
+ const v=Number(document.getElementById('brightness').value);cloneOpacity=v;
+ document.getElementById('brightnessValue').textContent=v.toFixed(3);
+ cloneGroup.traverse(o=>{if(o.material?.isLineDashedMaterial)o.material.opacity=v});
+}
+document.getElementById('brightness').oninput=updateCloneOpacity;
+
+/* ======================= СВОБОДНОЕ РИСОВАНИЕ ======================= */
+const drawCanvas=document.getElementById('drawCanvas'),ctx=drawCanvas.getContext('2d');
+let drawMode=null,drawColor='#ff4b4b',drawing=false,sx=0,sy=0;
+let undoStack=[];
+function resizeDraw(){const d=devicePixelRatio;drawCanvas.width=innerWidth*d;drawCanvas.height=innerHeight*d;drawCanvas.style.width=innerWidth+'px';drawCanvas.style.height=innerHeight+'px';ctx.setTransform(d,0,0,d,0,0)}resizeDraw();
+function setDrawMode(mode){
+ drawMode=drawMode===mode?null:mode;document.body.classList.toggle('drawing',!!drawMode);
+ ['pencil','solid','dash'].forEach(id=>document.getElementById(id).classList.toggle('active',drawMode===({pencil:'pencil',solid:'solid',dash:'dash'}[id])));
+ controls.enabled=!drawMode;document.getElementById('drawStatus').textContent=drawMode?'Рисование свободное по всему экрану':'Рисование выключено';
+}
+document.getElementById('pencil').onclick=()=>setDrawMode('pencil');
+document.getElementById('solid').onclick=()=>setDrawMode('solid');
+document.getElementById('dash').onclick=()=>setDrawMode('dash');
+document.querySelectorAll('.color').forEach(b=>b.onclick=()=>{drawColor=b.dataset.color;document.querySelectorAll('.color').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
+function snapshotCanvas(){
+  const c=document.createElement('canvas');
+  c.width=drawCanvas.width;c.height=drawCanvas.height;
+  c.getContext('2d').drawImage(drawCanvas,0,0);
+  return c;
+}
+function restoreSnapshot(c){
+  ctx.clearRect(0,0,innerWidth,innerHeight);
+  if(c)ctx.drawImage(c,0,0,innerWidth,innerHeight);
+}
+drawCanvas.addEventListener('pointerdown',e=>{
+  if(!drawMode||e.button!==0)return;
+  undoStack.push(snapshotCanvas());
+  drawing=true;sx=e.clientX;sy=e.clientY;drawCanvas.setPointerCapture(e.pointerId);
+  ctx.strokeStyle=drawColor;ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';
+  if(drawMode==='pencil'){ctx.beginPath();ctx.moveTo(sx,sy)}
+});
+drawCanvas.addEventListener('pointermove',e=>{
+  if(drawing&&drawMode==='pencil'){ctx.lineTo(e.clientX,e.clientY);ctx.stroke()}
+});
+drawCanvas.addEventListener('pointerup',e=>{
+  if(!drawing)return;
+  drawing=false;
+  if(drawMode==='solid'||drawMode==='dash'){
+    ctx.strokeStyle=drawColor;ctx.lineWidth=3;ctx.lineCap='round';
+    ctx.setLineDash(drawMode==='dash'?[9,8]:[]);
+    ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(e.clientX,e.clientY);ctx.stroke();
+    ctx.setLineDash([]);
+  }
+});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'){setDrawMode(null);ctx.clearRect(0,0,innerWidth,innerHeight);undoStack=[]}});
+function clearDrawings(){ctx.clearRect(0,0,innerWidth,innerHeight);undoStack=[]}
+document.getElementById('clear').onclick=clearDrawings;
+window.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){
+    e.preventDefault();
+    restoreSnapshot(undoStack.length?undoStack.pop():null);
+  }
+});
+
+/* ======================= КАМЕРА ======================= */
+function resetView(){camera.position=currentBody==='prism'?new THREE.Vector3(7,7,8):new THREE.Vector3(7,6,8);controls.target.set(0,0,0);controls.update()}
+document.getElementById('reset').onclick=resetView;document.getElementById('iso').onclick=resetView;
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);resizeDraw()});
+
+/* ======================= СТАРТ ======================= */
+switchBody('cube');
+
+function animate(){
+ requestAnimationFrame(animate);controls.update();refreshBodyEdgeVisibility();renderer.render(scene,camera);
+}
+animate();
+</script>
+</body>
+</html>

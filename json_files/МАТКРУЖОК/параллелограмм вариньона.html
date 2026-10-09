@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Параллелограмм Вариньона — тренажёр</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0f172a; color: #e2e8f0;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; color: #38bdf8; }
+  .sub { font-size: 13px; color: #94a3b8; margin-bottom: 14px; text-align: center; }
+
+  .wrap {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    justify-content: center; align-items: flex-start;
+  }
+
+  /* Жёстко фиксируем пропорции canvas */
+  canvas {
+    width: 640px;
+    height: 640px;
+    flex-shrink: 0;
+    display: block;
+    background: #1e293b;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.5);
+    touch-action: none;
+    cursor: crosshair;
+  }
+
+  .panel {
+    background: #1e293b; border-radius: 12px; padding: 16px;
+    min-width: 300px; max-width: 340px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.5);
+  }
+  .panel h2 {
+    font-size: 12px; margin: 14px 0 8px; color: #38bdf8;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  .panel h2:first-child { margin-top: 0; }
+
+  .shapes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .shapes button {
+    padding: 9px 6px; font-size: 12px; font-weight: 600;
+    background: #334155; color: #e2e8f0; border: 1px solid #475569;
+    border-radius: 8px; cursor: pointer; transition: all .15s;
+  }
+  .shapes button:hover { background: #475569; border-color: #38bdf8; }
+  .shapes button.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
+  .shapes button.wide { grid-column: span 2; }
+
+  .row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; padding: 5px 0; border-bottom: 1px solid #334155; gap: 8px;
+  }
+  .row:last-child { border-bottom: none; }
+  .val { color: #4ade80; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 6px;
+           font-size: 11px; font-weight: 700; }
+  .yes { background: #166534; color: #4ade80; }
+  .no  { background: #7f1d1d; color: #fca5a5; }
+
+  .verdict {
+    margin-top: 12px; padding: 12px; border-radius: 10px;
+    background: #0f172a; border-left: 4px solid #38bdf8;
+    font-size: 13px; line-height: 1.5;
+  }
+  .verdict b { color: #38bdf8; }
+  .verdict .big { font-size: 16px; color: #4ade80; font-weight: 700;
+                  display: block; margin: 4px 0; }
+
+  button.action {
+    width: 100%; margin-top: 10px; padding: 9px;
+    background: #38bdf8; color: #0f172a; border: none;
+    border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px;
+  }
+  button.action:hover { background: #7dd3fc; }
+
+  .hint { font-size: 12px; color: #64748b; margin-top: 12px; line-height: 1.6; }
+  .hint b { color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<h1>Параллелограмм Вариньона</h1>
+<div class="sub">Выбери фигуру хозяина из списка — потом можешь тащить вершины</div>
+
+<div class="wrap">
+  <canvas id="cv" width="640" height="640"></canvas>
+
+  <div class="panel">
+    <h2>Фигура хозяина</h2>
+    <div class="shapes" id="shapes">
+      <button data-shape="square">Квадрат</button>
+      <button data-shape="rect">Прямоугольник</button>
+      <button data-shape="para">Параллелограмм</button>
+      <button data-shape="rhombus">Ромб</button>
+      <button data-shape="trap">Трапеция</button>
+      <button data-shape="trapRect">Прямоуг. трапеция</button>
+      <button data-shape="trapIso">Равнобедр. трапеция</button>
+      <button data-shape="kite">Дельтоид</button>
+      <button data-shape="convex" class="wide">Произвольный выпуклый</button>
+      <button data-shape="concave" class="wide">Невыпуклый (вогнутый)</button>
+    </div>
+
+    <h2>Хозяин</h2>
+    <div class="row"><span>Площадь</span><span class="val" id="sQuad">—</span></div>
+    <div class="row"><span>AC</span><span class="val" id="dAC">—</span></div>
+    <div class="row"><span>BD</span><span class="val" id="dBD">—</span></div>
+    <div class="row"><span>∠(AC, BD)</span><span class="val" id="angD">—</span></div>
+
+    <h2>Диагонали</h2>
+    <div class="row"><span>AC = BD</span><span id="chkEq" class="badge no">нет</span></div>
+    <div class="row"><span>AC ⊥ BD</span><span id="chkPerp" class="badge no">нет</span></div>
+
+    <h2>Вариньон</h2>
+    <div class="row"><span>Площадь EFGH</span><span class="val" id="sVar">—</span></div>
+    <div class="row"><span>S<sub>EFGH</sub> / S<sub>ABCD</sub></span><span class="val" id="ratio">—</span></div>
+
+    <div class="verdict" id="verdict">Выбери фигуру…</div>
+
+    <button class="action" id="reset">↺ Вернуть выбранную фигуру</button>
+
+    <div class="hint">
+      <b>Правило:</b><br>
+      AC = BD → <b>ромб</b><br>
+      AC ⊥ BD → <b>прямоугольник</b><br>
+      оба → <b>квадрат</b>
+    </div>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const R = 9, HIT = 18;
+const W = cv.width, H = cv.height;   // 640 × 640
+
+let pts = [];
+let drag = -1;
+let currentShape = 'square';
+
+const C = {x: W/2, y: H/2};
+const P = (x,y,name,color) => ({x,y,name,color});
+const COL = { A:'#f87171', B:'#fbbf24', C:'#4ade80', D:'#a78bfa' };
+
+// ============ ТОЧНЫЕ ГЕНЕРАТОРЫ ФИГУР ============
+const shapes = {
+  // Квадрат: все стороны равны, диагонали РАВНЫ и ⊥ → Вариньон = квадрат
+  square(){
+    const s = 260, h = s/2;
+    return [
+      P(C.x-h, C.y-h, 'A', COL.A),
+      P(C.x+h, C.y-h, 'B', COL.B),
+      P(C.x+h, C.y+h, 'C', COL.C),
+      P(C.x-h, C.y+h, 'D', COL.D)
+    ];
+  },
+
+  // Прямоугольник: диагонали РАВНЫ, НЕ ⊥ → Вариньон = ромб
+  rect(){
+    const w = 340, h = 220;
+    return [
+      P(C.x-w/2, C.y-h/2, 'A', COL.A),
+      P(C.x+w/2, C.y-h/2, 'B', COL.B),
+      P(C.x+w/2, C.y+h/2, 'C', COL.C),
+      P(C.x-w/2, C.y+h/2, 'D', COL.D)
+    ];
+  },
+
+  // Параллелограмм: диагонали НЕ равны, НЕ ⊥
+  para(){
+    const w = 280, h = 200, shift = 90;
+    return [
+      P(C.x-w/2 - shift/2, C.y-h/2, 'A', COL.A),
+      P(C.x+w/2 - shift/2, C.y-h/2, 'B', COL.B),
+      P(C.x+w/2 + shift/2, C.y+h/2, 'C', COL.C),
+      P(C.x-w/2 + shift/2, C.y+h/2, 'D', COL.D)
+    ];
+  },
+
+  // Ромб: диагонали ⊥, НЕ равны → Вариньон = прямоугольник
+  rhombus(){
+    const d1 = 340, d2 = 220;
+    return [
+      P(C.x, C.y-d2/2, 'A', COL.A),
+      P(C.x+d1/2, C.y, 'B', COL.B),
+      P(C.x, C.y+d2/2, 'C', COL.C),
+      P(C.x-d1/2, C.y, 'D', COL.D)
+    ];
+  },
+
+  // Трапеция: диагонали разные, не ⊥
+  trap(){
+    const top = 180, bot = 360, h = 220, shift = 40;
+    return [
+      P(C.x-top/2 + shift, C.y-h/2, 'A', COL.A),
+      P(C.x+top/2 + shift, C.y-h/2, 'B', COL.B),
+      P(C.x+bot/2,         C.y+h/2, 'C', COL.C),
+      P(C.x-bot/2,         C.y+h/2, 'D', COL.D)
+    ];
+  },
+
+  // Прямоугольная трапеция: два прямых угла
+  trapRect(){
+    const top = 150, bot = 320, h = 220;
+    return [
+      P(C.x-bot/2,       C.y-h/2, 'A', COL.A),
+      P(C.x-bot/2 + top, C.y-h/2, 'B', COL.B),
+      P(C.x+bot/2,       C.y+h/2, 'C', COL.C),
+      P(C.x-bot/2,       C.y+h/2, 'D', COL.D)
+    ];
+  },
+
+  // Равнобедренная трапеция: диагонали РАВНЫ → Вариньон = ромб
+  trapIso(){
+    const top = 160, bot = 340, h = 220;
+    return [
+      P(C.x-top/2, C.y-h/2, 'A', COL.A),
+      P(C.x+top/2, C.y-h/2, 'B', COL.B),
+      P(C.x+bot/2, C.y+h/2, 'C', COL.C),
+      P(C.x-bot/2, C.y+h/2, 'D', COL.D)
+    ];
+  },
+
+  // Дельтоид: диагонали ⊥, НЕ равны → Вариньон = прямоугольник
+  kite(){
+    const dy = 280, dx = 160;
+    return [
+      P(C.x, C.y-dy/2, 'A', COL.A),
+      P(C.x+dx/2, C.y, 'B', COL.B),
+      P(C.x, C.y+dy/2, 'C', COL.C),
+      P(C.x-dx/2, C.y, 'D', COL.D)
+    ];
+  },
+
+  // Произвольный выпуклый
+  convex(){
+    return [
+      P(140, 120, 'A', COL.A),
+      P(520, 180, 'B', COL.B),
+      P(480, 520, 'C', COL.C),
+      P(130, 470, 'D', COL.D)
+    ];
+  },
+
+  // Невыпуклый (вогнутый)
+  concave(){
+    return [
+      P(140, 140, 'A', COL.A),
+      P(520, 170, 'B', COL.B),
+      P(300, 360, 'C', COL.C),
+      P(160, 510, 'D', COL.D)
+    ];
+  }
+};
+
+// ============ ГЕОМЕТРИЯ ============
+const mid = (p,q) => ({x:(p.x+q.x)/2, y:(p.y+q.y)/2});
+const dist = (p,q) => Math.hypot(p.x-q.x, p.y-q.y);
+const dot = (u,v) => u.x*v.x + u.y*v.y;
+
+function polyArea(P){
+  let s = 0;
+  for(let i=0;i<P.length;i++){
+    const a = P[i], b = P[(i+1)%P.length];
+    s += a.x*b.y - b.x*a.y;
+  }
+  return Math.abs(s)/2;
+}
+
+function angleBetween(u,v){
+  const c = Math.abs(dot(u,v)) / (Math.hypot(u.x,u.y)*Math.hypot(v.x,v.y) || 1);
+  return Math.acos(Math.min(1, c)) * 180 / Math.PI;
+}
+
+// ============ ОТРИСОВКА ============
+function draw(){
+  ctx.clearRect(0,0,W,H);
+
+  const [A,B,Cc,D] = pts;
+  const E = mid(A,B), F = mid(B,Cc), G = mid(Cc,D), Hh = mid(D,A);
+
+  // сетка
+  ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1;
+  for(let x=0;x<W;x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0;y<H;y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  const ac = {x:Cc.x-A.x, y:Cc.y-A.y};
+  const bd = {x:D.x-B.x, y:D.y-B.y};
+  const dAC = dist(A,Cc), dBD = dist(B,D);
+  const ang = angleBetween(ac, bd);
+
+  // ОТНОСИТЕЛЬНЫЕ проверки — не зависят от масштаба
+  const eq   = Math.abs(dAC - dBD) / Math.max(dAC, dBD) < 0.005;   // 0.5%
+  const perp = Math.abs(ang - 90) < 0.5;                            // 0.5°
+
+  // диагонали
+  ctx.setLineDash([7,7]);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = perp ? '#f472b6' : '#475569';
+  ctx.beginPath(); ctx.moveTo(A.x,A.y); ctx.lineTo(Cc.x,Cc.y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(B.x,B.y); ctx.lineTo(D.x,D.y); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // маркер прямого угла между диагоналями
+  if (perp){
+    const denom = (A.x-Cc.x)*(B.y-D.y) - (A.y-Cc.y)*(B.x-D.x);
+    if (Math.abs(denom) > 1e-6){
+      const px = ((A.x*Cc.y - A.y*Cc.x)*(B.x-D.x) - (A.x-Cc.x)*(B.x*D.y - B.y*D.x)) / denom;
+      const py = ((A.x*Cc.y - A.y*Cc.x)*(B.y-D.y) - (A.y-Cc.y)*(B.x*D.y - B.y*D.x)) / denom;
+      ctx.strokeStyle = '#f472b6'; ctx.lineWidth = 2;
+      const s = 12;
+      const u1 = {x:Cc.x-A.x, y:Cc.y-A.y}; const l1 = Math.hypot(u1.x,u1.y) || 1;
+      const u2 = {x:D.x-B.x, y:D.y-B.y}; const l2 = Math.hypot(u2.x,u2.y) || 1;
+      const v1 = {x:u1.x/l1*s, y:u1.y/l1*s};
+      const v2 = {x:u2.x/l2*s, y:u2.y/l2*s};
+      ctx.beginPath();
+      ctx.moveTo(px+v1.x, py+v1.y);
+      ctx.lineTo(px+v1.x+v2.x, py+v1.y+v2.y);
+      ctx.lineTo(px+v2.x, py+v2.y);
+      ctx.stroke();
+    }
+  }
+
+  // хозяин
+  ctx.beginPath();
+  ctx.moveTo(A.x,A.y); ctx.lineTo(B.x,B.y); ctx.lineTo(Cc.x,Cc.y); ctx.lineTo(D.x,D.y); ctx.closePath();
+  ctx.fillStyle = 'rgba(56,189,248,0.07)';
+  ctx.fill();
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.5; ctx.stroke();
+
+  // параллелограмм Вариньона
+  ctx.beginPath();
+  ctx.moveTo(E.x,E.y); ctx.lineTo(F.x,F.y); ctx.lineTo(G.x,G.y); ctx.lineTo(Hh.x,Hh.y); ctx.closePath();
+  ctx.fillStyle = 'rgba(74,222,128,0.18)';
+  ctx.fill();
+  ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 3; ctx.stroke();
+
+  // середины
+  [['E',E],['F',F],['G',G],['H',Hh]].forEach(([n,p])=>{
+    ctx.beginPath(); ctx.arc(p.x,p.y,6,0,7);
+    ctx.fillStyle = '#4ade80'; ctx.fill();
+    ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#bbf7d0'; ctx.font = 'bold 14px Arial';
+    ctx.fillText(n, p.x+10, p.y-8);
+  });
+
+  // вершины хозяина
+  pts.forEach((p,i)=>{
+    ctx.beginPath(); ctx.arc(p.x,p.y,R+4,0,7);
+    ctx.fillStyle = (i===drag) ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0)';
+    ctx.fill();
+
+    ctx.beginPath(); ctx.arc(p.x,p.y,R,0,7);
+    ctx.fillStyle = p.color; ctx.fill();
+    ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2.5; ctx.stroke();
+
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 14px Arial';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(p.name, p.x, p.y+0.5);
+    ctx.textAlign='start'; ctx.textBaseline='alphabetic';
+  });
+
+  updatePanel({eq, perp, dAC, dBD, ang});
+}
+
+// ============ ПАНЕЛЬ ============
+function setBadge(id, on){
+  const el = document.getElementById(id);
+  el.textContent = on ? 'да ✓' : 'нет';
+  el.className = 'badge ' + (on ? 'yes' : 'no');
+}
+
+function updatePanel({eq, perp, dAC, dBD, ang}){
+  const [A,B,Cc,D] = pts;
+  const E = mid(A,B), F = mid(B,Cc), G = mid(Cc,D), Hh = mid(D,A);
+
+  const sQ = polyArea(pts);
+  const sV = polyArea([E,F,G,Hh]);
+
+  document.getElementById('sQuad').textContent = sQ.toFixed(1);
+  document.getElementById('dAC').textContent = dAC.toFixed(1);
+  document.getElementById('dBD').textContent = dBD.toFixed(1);
+  document.getElementById('angD').textContent = ang.toFixed(1) + '°';
+  document.getElementById('sVar').textContent = sV.toFixed(1);
+  document.getElementById('ratio').textContent = (sV/sQ).toFixed(4);
+
+  setBadge('chkEq', eq);
+  setBadge('chkPerp', perp);
+
+  const v = document.getElementById('verdict');
+  let big = 'произвольный параллелограмм';
+  let why = 'диагонали хозяина не равны и не перпендикулярны';
+
+  if (eq && perp){
+    big = 'КВАДРАТ';
+    why = 'диагонали хозяина равны и перпендикулярны';
+    v.style.borderLeftColor = '#a78bfa';
+  } else if (eq){
+    big = 'РОМБ';
+    why = 'диагонали хозяина равны';
+    v.style.borderLeftColor = '#4ade80';
+  } else if (perp){
+    big = 'ПРЯМОУГОЛЬНИК';
+    why = 'диагонали хозяина перпендикулярны';
+    v.style.borderLeftColor = '#4ade80';
+  } else {
+    v.style.borderLeftColor = '#38bdf8';
+  }
+
+  v.innerHTML = `Параллелограмм Вариньона:<span class="big">${big}</span>так как ${why}.`;
+}
+
+// ============ МЫШЬ / ТАЧ ============
+function getPos(e){
+  const r = cv.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  return {
+    x: (t.clientX - r.left) * W / r.width,
+    y: (t.clientY - r.top)  * H / r.height
+  };
+}
+function down(e){
+  e.preventDefault();
+  const m = getPos(e);
+  drag = pts.findIndex(p => Math.hypot(p.x-m.x, p.y-m.y) < HIT);
+  if(drag >= 0) draw();
+}
+function move(e){
+  if(drag < 0) return;
+  e.preventDefault();
+  const m = getPos(e);
+  const pad = R + 2;
+  pts[drag].x = Math.max(pad, Math.min(W - pad, m.x));
+  pts[drag].y = Math.max(pad, Math.min(H - pad, m.y));
+  draw();
+}
+function up(){ drag = -1; draw(); }
+
+cv.addEventListener('mousedown', down);
+window.addEventListener('mousemove', move);
+window.addEventListener('mouseup', up);
+cv.addEventListener('touchstart', down, {passive:false});
+window.addEventListener('touchmove', move, {passive:false});
+window.addEventListener('touchend', up);
+
+// ============ КНОПКИ ============
+document.querySelectorAll('#shapes button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#shapes button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentShape = btn.dataset.shape;
+    pts = shapes[currentShape]();
+    draw();
+  });
+});
+
+document.getElementById('reset').onclick = () => {
+  pts = shapes[currentShape]();
+  draw();
+};
+
+// старт
+pts = shapes.square();
+document.querySelector('#shapes button[data-shape="square"]').classList.add('active');
+draw();
+</script>
+</body>
+</html>

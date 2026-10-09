@@ -1,0 +1,2461 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Самоучитель по тригонометрии · Полный курс</title>
+<style>
+    :root {
+        --bg: #0b0d10;
+        --panel: #11151a;
+        --text: #e9eef3;
+        --muted: #8f9aa6;
+        --accent: #4ecdc4;
+        --red: #ff4b4b;
+        --blue: #62b6ff;
+        --yellow: #ffd93d;
+        --green: #3ddc97;
+        --lilac: #b18cff;
+        --orange: #ffa94d;
+        --pink: #ff3d7f;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+        height: 100%;
+        overflow: hidden;
+        background: radial-gradient(1200px 800px at 75% 15%, #1c2740 0%, #0b1018 60%, #070a10 100%);
+        color: var(--text);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    #app { position: fixed; inset: 0; display: flex; flex-direction: column; }
+    .header {
+        position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+        text-align: center; z-index: 10; pointer-events: none;
+        width: min(900px, 90%);
+    }
+    .header h1 { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: .3px; margin-bottom: 3px; }
+    .header p { font-size: 12.5px; color: var(--muted); }
+    .step-indicator {
+        position: absolute; top: 16px; right: 20px; font-size: 12px; color: var(--muted);
+        background: rgba(17, 21, 26, 0.85); padding: 6px 12px; border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.08); z-index: 10;
+    }
+    .step-indicator b { color: var(--accent); }
+
+    .stage {
+        position: relative; width: 100%; flex: 1;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+    }
+    #canvas-wrap {
+        position: relative; width: min(88vmin, 600px); height: min(88vmin, 600px);
+        display: flex; align-items: center; justify-content: center;
+    }
+    svg { display: block; overflow: visible; }
+
+    .scene-caption {
+        position: absolute; bottom: 92px; left: 50%; transform: translateX(-50%);
+        font-size: 14px; color: #eaf2f8; text-align: center;
+        max-width: 800px; padding: 10px 18px;
+        background: rgba(17, 21, 26, 0.85);
+        border: 1px solid rgba(78, 205, 196, 0.25);
+        border-radius: 10px; backdrop-filter: blur(8px);
+        z-index: 5; line-height: 1.5;
+    }
+    .scene-caption b { color: var(--accent); }
+
+    .controls {
+        position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+        display: flex; gap: 10px; z-index: 20;
+        background: rgba(17, 21, 26, 0.92);
+        padding: 9px 13px; border-radius: 13px;
+        border: 1px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .controls button {
+        background: rgba(78, 205, 196, 0.12);
+        border: 1px solid rgba(78, 205, 196, 0.45);
+        color: var(--accent); padding: 8px 20px; border-radius: 9px;
+        cursor: pointer; font: inherit; font-weight: 700; font-size: 13px;
+        letter-spacing: .3px; transition: .18s;
+    }
+    .controls button:hover:not(:disabled) {
+        background: rgba(78, 205, 196, 0.28); color: #fff; border-color: var(--accent);
+    }
+    .controls button:disabled { opacity: .35; cursor: not-allowed; }
+    .controls button.primary { background: rgba(78, 205, 196, 0.22); color: #fff; }
+    .controls button.reset {
+        background: rgba(255, 75, 75, 0.08); border-color: rgba(255, 75, 75, 0.4); color: var(--red);
+    }
+    .controls button.reset:hover { background: rgba(255, 75, 75, 0.2); color: #fff; }
+
+    .pi-plate {
+        position: absolute; top: 72px; left: 50%; transform: translateX(-50%);
+        z-index: 12; padding: 9px 24px;
+        background: linear-gradient(135deg, rgba(255,217,61,0.18), rgba(255,169,77,0.18));
+        border: 2px solid var(--yellow); border-radius: 12px;
+        font-family: ui-monospace, "Consolas", monospace;
+        font-size: 19px; font-weight: 800; color: #fff;
+        letter-spacing: 1px;
+        box-shadow: 0 0 30px rgba(255,217,61,0.35), 0 0 12px rgba(255,217,61,0.25) inset;
+        text-shadow: 0 0 14px rgba(255,217,61,0.6);
+        animation: pulse 2s ease-in-out infinite;
+        display: none;
+    }
+    .pi-plate.on { display: block; }
+    @keyframes pulse {
+        0%, 100% { box-shadow: 0 0 30px rgba(255,217,61,0.35), 0 0 12px rgba(255,217,61,0.25) inset; }
+        50%      { box-shadow: 0 0 45px rgba(255,217,61,0.55), 0 0 18px rgba(255,217,61,0.35) inset; }
+    }
+
+    .facts-column {
+        position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+        z-index: 8; display: flex; flex-direction: column; gap: 8px; width: 250px;
+    }
+    .fact-card {
+        background: rgba(17, 21, 26, 0.92);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-left: 4px solid var(--accent);
+        border-radius: 10px; padding: 9px 13px;
+        font-size: 12.5px; line-height: 1.4;
+        font-family: ui-monospace, "Consolas", monospace;
+        color: #cfd9e8; cursor: pointer; transition: all .22s;
+        opacity: 0.35; user-select: none;
+    }
+    .fact-card.revealed {
+        opacity: 1; border-left-color: var(--yellow); color: #fff;
+        font-weight: 700; box-shadow: 0 0 20px rgba(255,217,61,0.15);
+    }
+    .fact-card:hover { opacity: 0.9; }
+    .fact-card .hint-mini {
+        display: block; font-size: 10px; color: var(--muted);
+        margin-top: 3px; font-family: system-ui; font-weight: 400;
+    }
+    .fact-card.revealed .hint-mini { display: none; }
+
+    .angles-layout {
+        position: absolute; inset: 0; display: none;
+        align-items: center; justify-content: center; gap: 40px;
+        padding: 100px 40px 130px; z-index: 4;
+    }
+    .angles-layout.active { display: flex; }
+    .angles-table {
+        width: 260px; max-height: 62vh; overflow-y: auto;
+        background: rgba(17, 21, 26, 0.9);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px; padding: 10px;
+        display: flex; flex-direction: column; gap: 4px;
+    }
+    .angles-table::-webkit-scrollbar { width: 6px; }
+    .angles-table::-webkit-scrollbar-thumb { background: #2a3a52; border-radius: 3px; }
+    .angle-btn {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 7px 12px; border-radius: 8px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid transparent; cursor: pointer;
+        font-size: 13px; color: var(--text); transition: .15s; font-family: inherit;
+    }
+    .angle-btn:hover { background: rgba(78, 205, 196, 0.1); border-color: rgba(78, 205, 196, 0.35); }
+    .angle-btn.active {
+        background: rgba(78, 205, 196, 0.22); border-color: var(--accent);
+        color: #fff; font-weight: 700;
+    }
+    .angle-btn .deg { color: var(--text); font-weight: 600; }
+    .angle-btn .rad { color: #b6f3ed; font-family: ui-monospace, monospace; font-size: 12.5px; }
+    .angle-btn.active .deg,
+    .angle-btn.active .rad { color: #fff; }
+
+    .angles-canvas {
+        position: relative; width: min(62vmin, 520px); height: min(62vmin, 520px);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .angles-canvas svg { width: 100%; height: 100%; }
+
+    /* Единичная окружность */
+    .unit-layout {
+        position: absolute; inset: 0; display: none;
+        align-items: center; justify-content: center; gap: 30px;
+        padding: 88px 20px 130px; z-index: 4;
+    }
+    .unit-layout.active { display: flex; }
+    .unit-main {
+        flex: 1; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; max-width: 700px;
+    }
+    .unit-svg-wrap {
+        width: min(58vmin, 470px); height: min(58vmin, 470px);
+        display: flex; align-items: center; justify-content: center;
+        cursor: grab;
+    }
+    .unit-svg-wrap:active { cursor: grabbing; }
+
+    .func-selector {
+        display: flex; gap: 8px; margin-top: 10px;
+        flex-wrap: wrap; justify-content: center;
+    }
+    .func-selector button {
+        background: rgba(17, 21, 26, 0.9);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: var(--muted); padding: 7px 16px; border-radius: 8px;
+        cursor: pointer; font: inherit; font-size: 13px; font-weight: 700;
+        transition: .18s;
+    }
+    .func-selector button:hover { color: #fff; border-color: var(--accent); }
+    .func-selector button.active {
+        background: rgba(78, 205, 196, 0.22); color: #fff; border-color: var(--accent);
+    }
+
+    .unit-values {
+        position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+        display: flex; flex-direction: column; gap: 8px;
+        width: 240px;
+        padding: 14px 16px;
+        background: rgba(17, 21, 26, 0.94);
+        border: 1px solid rgba(78, 205, 196, 0.35);
+        border-radius: 12px;
+        font-family: ui-monospace, monospace;
+        font-size: 13px;
+        color: #cfd9e8;
+        z-index: 6;
+    }
+    .unit-values .row {
+        display: flex; justify-content: space-between; gap: 8px;
+        padding: 4px 0;
+        border-bottom: 1px dashed rgba(255,255,255,0.06);
+    }
+    .unit-values .row:last-child { border-bottom: none; }
+    .unit-values .row .k { color: var(--muted); }
+    .unit-values .row .v { color: var(--yellow); font-weight: 800; }
+    .unit-values .row.active .k { color: var(--accent); font-weight: 700; }
+    .unit-values .row.active .v { color: #fff; }
+
+    /* Уравнения */
+    .eq-layout {
+        position: absolute; inset: 0; display: none;
+        flex-direction: row;
+        padding: 88px 20px 130px; z-index: 4; gap: 20px;
+        align-items: flex-start; justify-content: center;
+    }
+    .eq-layout.active { display: flex; }
+
+    .eq-sidebar {
+        display: flex; flex-direction: column;
+        gap: 6px;
+        width: 260px;
+        max-height: calc(100vh - 240px);
+        overflow-y: auto;
+        padding: 12px;
+        background: rgba(17, 21, 26, 0.92);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+    }
+    .eq-sidebar::-webkit-scrollbar { width: 6px; }
+    .eq-sidebar::-webkit-scrollbar-thumb { background: #2a3a52; border-radius: 3px; }
+    .eq-sidebar .eq-group-title {
+        font-size: 11px; color: var(--muted); text-transform: uppercase;
+        letter-spacing: 1px; font-weight: 800; margin: 6px 0 4px;
+    }
+    .eq-btn {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: #cfd9e8; padding: 8px 12px; border-radius: 7px;
+        cursor: pointer; font: inherit; font-size: 13px; font-weight: 700;
+        transition: .18s; font-family: ui-monospace, monospace;
+        text-align: left;
+    }
+    .eq-btn:hover { color: #fff; border-color: var(--accent); background: rgba(78, 205, 196, 0.1); }
+    .eq-btn.active {
+        background: rgba(78, 205, 196, 0.22); color: #fff;
+        border-color: var(--accent); font-weight: 800;
+    }
+
+    .eq-main {
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: flex-start;
+        gap: 12px;
+        flex: 1; max-width: 700px;
+    }
+    .eq-canvas {
+        width: min(52vmin, 440px); height: min(52vmin, 440px);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .eq-canvas svg { width: 100%; height: 100%; }
+
+    .turns-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .turns-controls button {
+        background: rgba(255, 169, 77, 0.1);
+        border: 1px solid rgba(255, 169, 77, 0.45);
+        color: var(--orange); padding: 6px 14px; border-radius: 8px;
+        cursor: pointer; font: inherit; font-size: 12px; font-weight: 700;
+    }
+    .turns-controls button:hover { background: rgba(255,169,77,0.22); color: #fff; }
+    .turns-controls button.answer-btn {
+        background: rgba(78, 205, 196, 0.18);
+        border-color: var(--accent);
+        color: var(--accent);
+        font-weight: 800;
+    }
+    .turns-controls button.answer-btn:hover { background: rgba(78,205,196,0.35); color: #fff; }
+
+    .answer-panel {
+        position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+        z-index: 12;
+        display: none;
+        flex-direction: column; gap: 10px;
+        width: 300px;
+        padding: 16px 18px;
+        background: rgba(17, 21, 26, 0.96);
+        border: 1px solid rgba(78, 205, 196, 0.5);
+        border-radius: 12px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+    }
+    .answer-panel.on { display: flex; }
+    .answer-panel .title {
+        font-size: 11px; text-transform: uppercase; letter-spacing: 1.4px;
+        color: var(--accent); font-weight: 800;
+    }
+    .answer-panel .eq-text {
+        font-family: ui-monospace, monospace; font-size: 14px; color: #fff;
+        font-weight: 700; padding-bottom: 8px;
+        border-bottom: 1px dashed rgba(255,255,255,0.15);
+    }
+    .answer-panel .series {
+        font-family: ui-monospace, monospace; font-size: 14px;
+        line-height: 1.9; color: var(--yellow); font-weight: 700;
+        word-break: break-word;
+    }
+    .answer-panel .series .plus { color: var(--accent); font-weight: 800; }
+    .answer-panel .note { font-size: 11px; color: var(--muted); font-style: italic; }
+
+    /* График */
+    .graph-layout {
+        position: absolute; inset: 0; display: none;
+        flex-direction: column;
+        align-items: center; justify-content: flex-start;
+        padding: 78px 20px 130px; z-index: 4;
+        gap: 12px;
+    }
+    .graph-layout.active { display: flex; }
+    .graph-row {
+        display: flex; gap: 16px;
+        align-items: stretch; justify-content: center;
+        flex-wrap: wrap;
+        width: 100%; max-width: 1200px;
+    }
+    .graph-left, .graph-right {
+        width: min(46vmin, 500px); height: min(46vmin, 500px);
+        background: rgba(17, 21, 26, 0.55);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        position: relative;
+        flex-shrink: 0;
+    }
+    .graph-left svg, .graph-right svg { width: 100%; height: 100%; }
+    .graph-selector {
+        display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+        padding: 6px 12px;
+        background: rgba(17, 21, 26, 0.92);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+    }
+    .graph-selector button {
+        background: rgba(17, 21, 26, 0.9);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: var(--muted); padding: 7px 16px; border-radius: 8px;
+        cursor: pointer; font: inherit; font-size: 13px; font-weight: 700;
+        transition: .18s;
+    }
+    .graph-selector button:hover { color: #fff; border-color: var(--accent); }
+    .graph-selector button.active {
+        background: rgba(78, 205, 196, 0.22); color: #fff; border-color: var(--accent);
+    }
+    .graph-mode {
+        display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+    }
+    .graph-mode button {
+        background: rgba(255, 169, 77, 0.1);
+        border: 1px solid rgba(255, 169, 77, 0.45);
+        color: var(--orange); padding: 6px 14px; border-radius: 8px;
+        cursor: pointer; font: inherit; font-size: 12px; font-weight: 700;
+        transition: .18s;
+    }
+    .graph-mode button:hover { background: rgba(255,169,77,0.22); color: #fff; }
+    .graph-mode button.active {
+        background: rgba(255,169,77,0.3); color: #fff; border-color: var(--orange);
+    }
+
+    .graph-formula {
+        position: absolute; top: 8px; left: 8px;
+        padding: 6px 12px;
+        background: rgba(17, 21, 26, 0.92);
+        border: 1px solid rgba(255,217,61,0.4);
+        border-radius: 8px;
+        font-family: ui-monospace, monospace;
+        font-size: 13px;
+        color: var(--yellow);
+        font-weight: 800;
+        letter-spacing: .3px;
+        max-width: calc(100% - 16px);
+        word-break: break-word;
+    }
+
+    .params-panel {
+        display: flex; flex-direction: column; gap: 10px;
+        padding: 12px 16px;
+        background: rgba(17, 21, 26, 0.94);
+        border: 1px solid rgba(78, 205, 196, 0.35);
+        border-radius: 12px;
+        width: min(300px, 30vw);
+        min-width: 240px;
+    }
+    .param {
+        display: flex; flex-direction: column; gap: 3px;
+    }
+    .param label {
+        font-size: 11px; color: var(--muted); text-transform: uppercase;
+        letter-spacing: .5px; font-weight: 700;
+    }
+    .param .value {
+        font-family: ui-monospace, monospace; font-size: 12px;
+        color: var(--accent); font-weight: 700;
+    }
+    .param input[type=range] {
+        -webkit-appearance: none; appearance: none;
+        height: 4px; border-radius: 3px;
+        background: linear-gradient(90deg, #4ecdc4, #62b6ff);
+        outline: none; cursor: pointer;
+    }
+    .param input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none; appearance: none;
+        width: 14px; height: 14px; border-radius: 50%;
+        background: #fff; border: 2px solid #2a3546; cursor: grab;
+    }
+    .param input[type=range]::-moz-range-thumb {
+        width: 14px; height: 14px; border-radius: 50%;
+        background: #fff; border: 2px solid #2a3546; cursor: grab;
+    }
+
+    /* Формулы */
+    .formulas-layout {
+        position: absolute; inset: 0; display: none;
+        flex-direction: row;
+        padding: 80px 20px 120px; z-index: 4;
+        gap: 16px;
+    }
+    .formulas-layout.active { display: flex; }
+
+    .formulas-list {
+        width: 340px; overflow-y: auto;
+        background: rgba(17, 21, 26, 0.9);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px; padding: 10px;
+        display: flex; flex-direction: column; gap: 4px;
+    }
+    .formulas-list::-webkit-scrollbar { width: 6px; }
+    .formulas-list::-webkit-scrollbar-thumb { background: #2a3a52; border-radius: 3px; }
+    .formula-item {
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.03);
+        border-left: 3px solid var(--muted);
+        cursor: pointer;
+        font-family: ui-monospace, monospace;
+        font-size: 13px;
+        color: #cfd9e8;
+        transition: .15s;
+    }
+    .formula-item:hover {
+        background: rgba(78, 205, 196, 0.1);
+        border-left-color: var(--accent);
+        color: #fff;
+    }
+    .formula-item.active {
+        background: rgba(78, 205, 196, 0.2);
+        border-left-color: var(--yellow);
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .formula-detail {
+        flex: 1; overflow-y: auto;
+        padding: 20px 26px;
+        background: rgba(17, 21, 26, 0.92);
+        border: 1px solid rgba(78, 205, 196, 0.35);
+        border-radius: 12px;
+        display: flex; flex-direction: column; gap: 14px;
+    }
+    .formula-detail::-webkit-scrollbar { width: 6px; }
+    .formula-detail::-webkit-scrollbar-thumb { background: #2a3a52; border-radius: 3px; }
+    .formula-detail .f-title {
+        font-size: 12px; color: var(--accent); text-transform: uppercase;
+        letter-spacing: 1.2px; font-weight: 800;
+    }
+    .formula-detail .f-big {
+        font-family: "Cambria Math", "STIX Two Math", ui-monospace, monospace;
+        font-size: 24px;
+        color: var(--yellow);
+        font-weight: 800;
+        padding: 16px 20px;
+        background: rgba(78, 205, 196, 0.08);
+        border: 1px solid rgba(78, 205, 196, 0.3);
+        border-radius: 10px;
+        text-align: center;
+        line-height: 1.6;
+    }
+    .frac {
+        display: inline-flex;
+        flex-direction: column;
+        vertical-align: middle;
+        text-align: center;
+        margin: 0 4px;
+        line-height: 1.1;
+    }
+    .frac .num {
+        padding: 0 6px;
+        border-bottom: 2px solid currentColor;
+    }
+    .frac .den {
+        padding: 0 6px;
+    }
+    .formula-detail .f-buttons {
+        display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .formula-detail .f-buttons button {
+        background: rgba(78, 205, 196, 0.12);
+        border: 1px solid rgba(78, 205, 196, 0.45);
+        color: var(--accent); padding: 7px 16px; border-radius: 8px;
+        cursor: pointer; font: inherit; font-size: 12px; font-weight: 700;
+    }
+    .formula-detail .f-buttons button:hover { background: rgba(78, 205, 196, 0.28); color: #fff; }
+    .formula-detail .f-buttons button.active {
+        background: rgba(255,217,61,0.2); color: #fff; border-color: var(--yellow);
+    }
+    .formula-detail .f-content {
+        font-size: 14px;
+        line-height: 1.8;
+        color: #cfd9e8;
+    }
+    .formula-detail .f-content .step {
+        padding: 8px 12px;
+        margin: 5px 0;
+        background: rgba(255,255,255,0.03);
+        border-left: 3px solid var(--accent);
+        border-radius: 6px;
+        font-size: 13.5px;
+        color: #e6edf7;
+        line-height: 1.7;
+    }
+    .formula-detail .f-content .step b { color: var(--yellow); }
+    .formula-detail .f-content br + br { display: none; }
+
+    /* Формулы приведения — встроенная сцена */
+    .reduction-layout {
+        position: absolute; inset: 0; display: none;
+        flex-direction: row;
+        padding: 80px 20px 120px; z-index: 4;
+        gap: 20px;
+    }
+    .reduction-layout.active { display: flex; }
+
+    .reduction-controls {
+        width: 320px;
+        display: flex; flex-direction: column; gap: 10px;
+        padding: 16px;
+        background: rgba(17, 21, 26, 0.92);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        overflow-y: auto;
+    }
+    .reduction-controls .block-title {
+        font-size: 11px; color: var(--muted); text-transform: uppercase;
+        letter-spacing: 1px; font-weight: 800; margin: 6px 0 2px;
+    }
+    .reduction-controls label {
+        font-size: 12px; color: var(--muted); font-weight: 700;
+    }
+    .reduction-controls select,
+    .reduction-controls input[type=range] {
+        width: 100%;
+        background: rgba(17, 21, 26, 0.9);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #fff; padding: 8px 10px; border-radius: 8px;
+        font: inherit; font-size: 13px;
+        font-family: ui-monospace, monospace;
+    }
+    .reduction-controls input[type=range] {
+        -webkit-appearance: none; appearance: none;
+        height: 4px; padding: 0;
+        background: linear-gradient(90deg, #4ecdc4, #62b6ff);
+        cursor: pointer;
+    }
+    .reduction-controls input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px; height: 14px; border-radius: 50%;
+        background: #fff; border: 2px solid #2a3546;
+    }
+    .reduction-controls .angle-value {
+        font-family: ui-monospace, monospace;
+        color: var(--yellow); font-size: 18px; font-weight: 800;
+        text-align: center;
+    }
+    .reduction-controls .buttons {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+        margin-top: 6px;
+    }
+    .reduction-controls .buttons button {
+        background: rgba(78, 205, 196, 0.1);
+        border: 1px solid rgba(78, 205, 196, 0.4);
+        color: var(--accent); padding: 8px 6px; border-radius: 8px;
+        cursor: pointer; font: inherit; font-size: 12px; font-weight: 700;
+    }
+    .reduction-controls .buttons button:hover { background: rgba(78, 205, 196, 0.28); color: #fff; }
+    .reduction-controls .result {
+        margin-top: 10px;
+        padding: 12px;
+        background: rgba(255,217,61,0.08);
+        border: 1px solid rgba(255,217,61,0.3);
+        border-radius: 10px;
+        font-family: ui-monospace, monospace;
+        font-size: 14px;
+        color: #fff;
+        line-height: 1.7;
+    }
+    .reduction-controls .result .val { color: var(--yellow); font-weight: 800; }
+
+    .reduction-canvas {
+        flex: 1;
+        max-width: 700px;
+        background: rgba(17, 21, 26, 0.55);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .reduction-canvas svg { width: 100%; height: 100%; max-width: 640px; }
+
+    .link-bottom {
+        position: absolute; bottom: 88px; right: 20px;
+        font-size: 11.5px; color: var(--muted); z-index: 8;
+        background: rgba(17, 21, 26, 0.85);
+        padding: 7px 12px; border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.08); max-width: 280px;
+    }
+
+    .fade-in { animation: fadeIn .55s ease-out both; }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(.96); }
+        to   { opacity: 1; transform: scale(1); }
+    }
+    .draw-arc {
+        stroke-dasharray: 1200; stroke-dashoffset: 1200;
+        animation: drawArc .9s ease-out forwards;
+    }
+    @keyframes drawArc { to { stroke-dashoffset: 0; } }
+</style>
+</head>
+<body>
+<div id="app">
+    <div class="header">
+        <h1 id="title">Радиан — единица измерения углов</h1>
+        <p id="subtitle">Пошаговое введение</p>
+    </div>
+    <div class="step-indicator">Шаг <b id="stepNum">1</b> / <span id="stepTotal">11</span></div>
+    <div class="pi-plate" id="piPlate">180° = π рад</div>
+
+    <div class="stage">
+        <div id="canvas-wrap"></div>
+        <div class="scene-caption" id="caption"></div>
+
+        <div class="facts-column" id="factsCol" style="display:none;">
+            <div class="fact-card" data-i="0">C = 2πR<span class="hint-mini">нажмите, чтобы показать</span></div>
+            <div class="fact-card" data-i="1">дуга 1 рад = R<span class="hint-mini">нажмите, чтобы показать</span></div>
+            <div class="fact-card" data-i="2">1 рад = 360°/2π ≈ 57.3°<span class="hint-mini">нажмите, чтобы показать</span></div>
+            <div class="fact-card" data-i="3">360° = 2π рад<span class="hint-mini">нажмите, чтобы показать</span></div>
+            <div class="fact-card" data-i="4">180° = π рад<span class="hint-mini">нажмите, чтобы показать</span></div>
+        </div>
+
+        <div class="angles-layout" id="anglesLayout">
+            <div class="angles-table" id="anglesTable"></div>
+            <div class="angles-canvas" id="anglesCanvas"></div>
+        </div>
+
+        <div class="unit-layout" id="unitLayout">
+            <div class="unit-main">
+                <div class="unit-svg-wrap" id="unitSvgWrap"></div>
+                <div class="func-selector" id="funcSelector"></div>
+            </div>
+            <div class="unit-values" id="unitValues"></div>
+        </div>
+
+        <div class="eq-layout" id="eqLayout">
+            <div class="eq-sidebar" id="eqSidebar"></div>
+            <div class="eq-main">
+                <div class="eq-canvas" id="eqCanvas"></div>
+                <div class="turns-controls" id="turnsControls" style="display:none;">
+                    <button id="btnTurnsAdd">+ оборот</button>
+                    <button id="btnTurnsSub">− оборот</button>
+                    <button id="btnTurnsReset">сброс</button>
+                    <button id="btnAnswer" class="answer-btn">Ответ</button>
+                    <span style="font-size:12px;color:var(--muted)">оборотов: <b id="turnsVal" style="color:#ffa94d">0</b></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="answer-panel" id="answerPanel">
+            <div class="title">Ответ</div>
+            <div class="eq-text" id="answerEq">—</div>
+            <div class="series" id="answerSeries">—</div>
+            <div class="note">k ∈ ℤ (целые числа)</div>
+        </div>
+
+        <div class="graph-layout" id="graphLayout">
+            <div class="graph-row">
+                <div class="graph-left" id="graphLeft"></div>
+                <div class="graph-right" id="graphRight"></div>
+                <div class="params-panel" id="paramsPanel">
+                    <div class="param">
+                        <label>Амплитуда a</label>
+                        <input type="range" id="paramA" min="-3" max="3" step="0.1" value="1">
+                        <span class="value" id="valA">1</span>
+                    </div>
+                    <div class="param">
+                        <label>Сдвиг по вертикали b</label>
+                        <input type="range" id="paramB" min="-2" max="2" step="0.1" value="0">
+                        <span class="value" id="valB">0</span>
+                    </div>
+                    <div class="param">
+                        <label>Сдвиг по горизонтали c</label>
+                        <input type="range" id="paramC" min="-3.1" max="3.1" step="0.1" value="0">
+                        <span class="value" id="valC">0</span>
+                    </div>
+                    <div class="param">
+                        <label>Частота ω</label>
+                        <input type="range" id="paramW" min="0.5" max="3" step="0.1" value="1">
+                        <span class="value" id="valW">1</span>
+                    </div>
+                    <div class="param">
+                        <label>&nbsp;</label>
+                        <button id="btnParamsReset" style="background:rgba(255,75,75,.08);border:1px solid rgba(255,75,75,.4);color:#ff4b4b;padding:8px;border-radius:8px;cursor:pointer;font:inherit;font-weight:700;font-size:12px;">Сбросить ползунки</button>
+                    </div>
+                </div>
+            </div>
+            <div class="graph-mode" id="graphMode">
+                <button data-mode="manual" class="active">Ручной</button>
+                <button data-mode="auto">Автоматический</button>
+            </div>
+            <div class="graph-selector" id="graphSelector"></div>
+        </div>
+
+        <div class="formulas-layout" id="formulasLayout">
+            <div class="formulas-list" id="formulasList"></div>
+            <div class="formula-detail" id="formulaDetail"></div>
+        </div>
+
+        <!-- Сцена "Формулы приведения" -->
+        <div class="reduction-layout" id="reductionLayout">
+            <div class="reduction-controls" id="reductionControls">
+                <div class="block-title">Угол</div>
+                <input type="range" id="reductionSlider" min="0" max="360" step="1" value="150">
+                <div class="angle-value" id="reductionAngleVal">150°</div>
+
+                <div class="block-title">Функция</div>
+                <select id="reductionFunc">
+                    <option value="sin">sin</option>
+                    <option value="cos">cos</option>
+                    <option value="tan">tg</option>
+                    <option value="cot">ctg</option>
+                </select>
+
+                <div class="block-title">Быстрые углы</div>
+                <div class="buttons" id="reductionQuick">
+                    <button data-ang="30">30°</button>
+                    <button data-ang="45">45°</button>
+                    <button data-ang="60">60°</button>
+                    <button data-ang="90">90°</button>
+                    <button data-ang="120">120°</button>
+                    <button data-ang="135">135°</button>
+                    <button data-ang="150">150°</button>
+                    <button data-ang="180">180°</button>
+                    <button data-ang="210">210°</button>
+                    <button data-ang="225">225°</button>
+                    <button data-ang="240">240°</button>
+                    <button data-ang="270">270°</button>
+                </div>
+
+                <div class="result" id="reductionResult"></div>
+            </div>
+            <div class="reduction-canvas" id="reductionCanvas"></div>
+        </div>
+    </div>
+
+    <div class="controls" id="controls">
+        <button id="btnPrev">← Назад</button>
+        <button id="btnNext" class="primary">Далее →</button>
+        <button id="btnReset" class="reset">Начать заново</button>
+    </div>
+</div>
+
+<script>
+/* ============================================================
+   САМОУЧИТЕЛЬ ПО ТРИГОНОМЕТРИИ · РАДИАНЫ
+   ============================================================ */
+
+const svgNS = "http://www.w3.org/2000/svg";
+const canvasWrap = document.getElementById('canvas-wrap');
+const captionEl  = document.getElementById('caption');
+const titleEl    = document.getElementById('title');
+const subtitleEl = document.getElementById('subtitle');
+const stepNumEl  = document.getElementById('stepNum');
+const stepTotalEl= document.getElementById('stepTotal');
+const btnPrev    = document.getElementById('btnPrev');
+const btnNext    = document.getElementById('btnNext');
+const btnReset   = document.getElementById('btnReset');
+const anglesLayout = document.getElementById('anglesLayout');
+const anglesTable = document.getElementById('anglesTable');
+const anglesCanvas = document.getElementById('anglesCanvas');
+const factsCol = document.getElementById('factsCol');
+const piPlate = document.getElementById('piPlate');
+const unitLayout = document.getElementById('unitLayout');
+const unitSvgWrap = document.getElementById('unitSvgWrap');
+const funcSelector = document.getElementById('funcSelector');
+const unitValues = document.getElementById('unitValues');
+const eqLayout = document.getElementById('eqLayout');
+const eqSidebar = document.getElementById('eqSidebar');
+const eqCanvas = document.getElementById('eqCanvas');
+const turnsControls = document.getElementById('turnsControls');
+const turnsVal = document.getElementById('turnsVal');
+const btnTurnsAdd = document.getElementById('btnTurnsAdd');
+const btnTurnsSub = document.getElementById('btnTurnsSub');
+const btnTurnsReset = document.getElementById('btnTurnsReset');
+const btnAnswer = document.getElementById('btnAnswer');
+const graphLayout = document.getElementById('graphLayout');
+const graphLeft = document.getElementById('graphLeft');
+const graphRight = document.getElementById('graphRight');
+const graphSelector = document.getElementById('graphSelector');
+const graphMode = document.getElementById('graphMode');
+const answerPanel = document.getElementById('answerPanel');
+const answerEq = document.getElementById('answerEq');
+const answerSeries = document.getElementById('answerSeries');
+const formulasLayout = document.getElementById('formulasLayout');
+const formulasList = document.getElementById('formulasList');
+const formulaDetail = document.getElementById('formulaDetail');
+const paramA = document.getElementById('paramA');
+const paramB = document.getElementById('paramB');
+const paramC = document.getElementById('paramC');
+const paramW = document.getElementById('paramW');
+const valA = document.getElementById('valA');
+const valB = document.getElementById('valB');
+const valC = document.getElementById('valC');
+const valW = document.getElementById('valW');
+const btnParamsReset = document.getElementById('btnParamsReset');
+const reductionLayout = document.getElementById('reductionLayout');
+const reductionSlider = document.getElementById('reductionSlider');
+const reductionAngleVal = document.getElementById('reductionAngleVal');
+const reductionFunc = document.getElementById('reductionFunc');
+const reductionResult = document.getElementById('reductionResult');
+const reductionCanvas = document.getElementById('reductionCanvas');
+
+const R = 180;
+const CX = 220, CY = 220;
+const SIZE = 440;
+
+/* ---------- Утилиты SVG ---------- */
+function svgEl(tag, attrs = {}, parent = null) {
+    const e = document.createElementNS(svgNS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+}
+function makeSVG(w = SIZE, h = SIZE, viewBox = null) {
+    return svgEl('svg', {
+        viewBox: viewBox || `0 0 ${w} ${h}`,
+        width: w, height: h
+    });
+}
+function polar(angleDeg, r = R, cx = CX, cy = CY) {
+    const rad = (angleDeg - 90) * Math.PI / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+function clear(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+function drawCircle(svg, r = R, cx = CX, cy = CY, stroke = '#5a6a7a') {
+    svgEl('circle', { cx, cy, r, fill: 'none', stroke, 'stroke-width': 1.6 }, svg);
+    svgEl('circle', { cx, cy, r: 3, fill: '#cfd9e8' }, svg);
+}
+function frac(num, den) {
+    return `<span class="frac"><span class="num">${num}</span><span class="den">${den}</span></span>`;
+}
+/* Формат числа: убираем лишние нули, максимум 1 знак после запятой */
+function fmt(v) {
+    if (!isFinite(v)) return '—';
+    const r = Math.round(v * 10) / 10;
+    if (Number.isInteger(r)) return String(r);
+    return r.toFixed(1);
+}
+
+/* ============================================================
+   СЦЕНЫ 1–5
+   ============================================================ */
+
+let currentStep = 0;
+let selectedAngle = null;
+
+function scene1(svg) {
+    const g = svgEl('g', { class: 'fade-in' }, svg);
+    const end = polar(0);
+    svgEl('line', { x1: CX, y1: CY, x2: end.x, y2: end.y,
+        stroke: 'var(--red)', 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
+    const mid = { x: (CX + end.x) / 2, y: (CY + end.y) / 2 };
+    svgEl('text', { x: mid.x + 12, y: mid.y, fill: 'var(--red)', 'font-size': 18,
+        'font-style': 'italic', 'font-weight': 700, 'font-family': 'system-ui' }, g).textContent = 'R';
+    svgEl('circle', { cx: end.x, cy: end.y, r: 5, fill: 'var(--red)' }, g);
+}
+function scene2(svg) {
+    const g = svgEl('g', { class: 'fade-in' }, svg);
+    const end = polar(0);
+    svgEl('line', { x1: CX, y1: CY, x2: end.x, y2: end.y,
+        stroke: 'var(--red)', 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
+    svgEl('circle', { cx: end.x, cy: end.y, r: 5, fill: 'var(--red)' }, g);
+    const arcAngleDeg = 180 / Math.PI;
+    const start = polar(0), finish = polar(arcAngleDeg);
+    svgEl('path', { d: `M ${start.x} ${start.y} A ${R} ${R} 0 0 1 ${finish.x} ${finish.y}`,
+        fill: 'none', stroke: 'var(--red)', 'stroke-width': 5, 'stroke-linecap': 'round',
+        class: 'draw-arc' }, g);
+    const labelPos = polar(arcAngleDeg / 2, R + 24);
+    svgEl('text', { x: labelPos.x, y: labelPos.y, fill: 'var(--red)', 'font-size': 15,
+        'font-weight': 700, 'text-anchor': 'middle', 'font-family': 'system-ui' }, g)
+        .textContent = 'дуга = R';
+}
+function scene3(svg) {
+    const g = svgEl('g', { class: 'fade-in' }, svg);
+    const arcAngleDeg = 180 / Math.PI;
+    const start = polar(0), finish = polar(arcAngleDeg);
+    svgEl('path', { d: `M ${CX} ${CY} L ${start.x} ${start.y} A ${R} ${R} 0 0 1 ${finish.x} ${finish.y} Z`,
+        fill: 'var(--yellow)', opacity: 0.22 }, g);
+    svgEl('line', { x1: CX, y1: CY, x2: start.x, y2: start.y,
+        stroke: 'var(--red)', 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
+    svgEl('line', { x1: CX, y1: CY, x2: finish.x, y2: finish.y,
+        stroke: 'var(--red)', 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
+    svgEl('path', { d: `M ${start.x} ${start.y} A ${R} ${R} 0 0 1 ${finish.x} ${finish.y}`,
+        fill: 'none', stroke: 'var(--yellow)', 'stroke-width': 5, 'stroke-linecap': 'round' }, g);
+    const labelPos = polar(arcAngleDeg / 2, R * 0.6);
+    svgEl('text', { x: labelPos.x, y: labelPos.y, fill: 'var(--yellow)', 'font-size': 16,
+        'font-weight': 800, 'text-anchor': 'middle', 'font-family': 'system-ui' }, g)
+        .textContent = '1 радиан';
+}
+function scene4(svg) {
+    const g = svgEl('g', { class: 'fade-in' }, svg);
+    const stepDeg = 180 / Math.PI;
+    const colors = ['#ff4b4b', '#ffd93d', '#3ddc97', '#4ecdc4', '#62b6ff', '#b18cff'];
+    let a = 0;
+    for (let k = 0; k < 6; k++) {
+        const aStart = a, aEnd = a + stepDeg;
+        const p1 = polar(aStart), p2 = polar(aEnd);
+        svgEl('path', { d: `M ${CX} ${CY} L ${p1.x} ${p1.y} A ${R} ${R} 0 0 1 ${p2.x} ${p2.y} Z`,
+            fill: colors[k], opacity: 0.20, stroke: colors[k], 'stroke-width': 1.5 }, g);
+        const midA = (aStart + aEnd) / 2;
+        const lblPos = polar(midA, R * 0.65);
+        svgEl('text', { x: lblPos.x, y: lblPos.y, fill: '#fff', 'font-size': 12,
+            'font-weight': 700, 'text-anchor': 'middle', 'font-family': 'system-ui' }, g)
+            .textContent = '1 рад';
+        a = aEnd;
+    }
+    const p1 = polar(a), p2 = polar(360);
+    svgEl('path', { d: `M ${CX} ${CY} L ${p1.x} ${p1.y} A ${R} ${R} 0 0 1 ${p2.x} ${p2.y} Z`,
+        fill: '#2a3a4a', opacity: 0.4, stroke: '#5a6a7a', 'stroke-width': 1.5,
+        'stroke-dasharray': '4 3' }, g);
+    for (let k = 0; k <= 6; k++) {
+        const ang = k * stepDeg;
+        const p = polar(ang);
+        svgEl('line', { x1: CX, y1: CY, x2: p.x, y2: p.y,
+            stroke: '#5a6a7a', 'stroke-width': 1 }, g);
+    }
+}
+function scene5(svg) {
+    const g = svgEl('g', { class: 'fade-in' }, svg);
+    svgEl('circle', { cx: CX, cy: CY, r: R, fill: 'none',
+        stroke: 'var(--accent)', 'stroke-width': 2, 'stroke-dasharray': '6 4' }, g);
+    const end = polar(0);
+    svgEl('line', { x1: CX, y1: CY, x2: end.x, y2: end.y,
+        stroke: 'var(--red)', 'stroke-width': 3.5, 'stroke-linecap': 'round' }, g);
+    const midR = { x: (CX + end.x) / 2, y: (CY + end.y) / 2 };
+    svgEl('text', { x: midR.x + 10, y: midR.y, fill: 'var(--red)', 'font-size': 16,
+        'font-style': 'italic', 'font-weight': 700, 'font-family': 'system-ui' }, g).textContent = 'R';
+    svgEl('text', { x: CX + R + 18, y: CY + 5, fill: 'var(--accent)', 'font-size': 14,
+        'font-weight': 700, 'font-family': 'ui-monospace, monospace' }, g).textContent = 'C = 2πR';
+}
+
+/* --- Сцена 6: таблица углов --- */
+const ANGLES = [
+    { deg: 0,   rad: '0' },    { deg: 30,  rad: 'π/6' },  { deg: 45,  rad: 'π/4' },
+    { deg: 60,  rad: 'π/3' },  { deg: 90,  rad: 'π/2' },  { deg: 120, rad: '2π/3' },
+    { deg: 135, rad: '3π/4' }, { deg: 150, rad: '5π/6' }, { deg: 180, rad: 'π' },
+    { deg: 210, rad: '7π/6' }, { deg: 225, rad: '5π/4' }, { deg: 240, rad: '4π/3' },
+    { deg: 270, rad: '3π/2' }, { deg: 300, rad: '5π/3' }, { deg: 315, rad: '7π/4' },
+    { deg: 330, rad: '11π/6' },{ deg: 360, rad: '2π' }
+];
+
+function buildAnglesTable() {
+    anglesTable.innerHTML = '';
+    ANGLES.forEach(a => {
+        const btn = document.createElement('button');
+        btn.className = 'angle-btn';
+        btn.dataset.deg = a.deg;
+        btn.innerHTML = `<span class="deg">${a.deg}°</span><span class="rad">${a.rad}</span>`;
+        btn.addEventListener('click', () => selectAngle(a.deg));
+        anglesTable.appendChild(btn);
+    });
+}
+function selectAngle(deg) {
+    selectedAngle = deg;
+    anglesTable.querySelectorAll('.angle-btn').forEach(b => {
+        b.classList.toggle('active', Number(b.dataset.deg) === deg);
+    });
+    renderAngleCircle(deg);
+}
+function renderAngleCircle(deg) {
+    clear(anglesCanvas);
+    const svg = makeSVG(500, 500, '0 0 500 500');
+    anglesCanvas.appendChild(svg);
+    const RC = 200, CCX = 250, CCY = 250;
+    function polarC(angleDeg, r = RC) {
+        const rad = angleDeg * Math.PI / 180;
+        return { x: CCX + r * Math.cos(rad), y: CCY - r * Math.sin(rad) };
+    }
+    svgEl('circle', { cx: CCX, cy: CCY, r: RC, fill: 'none',
+        stroke: '#5a6a7a', 'stroke-width': 1.6 }, svg);
+    svgEl('line', { x1: CCX - RC - 20, y1: CCY, x2: CCX + RC + 20, y2: CCY,
+        stroke: '#3a4a5a', 'stroke-width': 1 }, svg);
+    svgEl('line', { x1: CCX, y1: CCY - RC - 20, x2: CCX, y2: CCY + RC + 20,
+        stroke: '#3a4a5a', 'stroke-width': 1 }, svg);
+    const p0 = polarC(0, RC + 15);
+    svgEl('text', { x: p0.x + 8, y: p0.y + 5, fill: '#fff', 'font-size': 14,
+        'font-weight': 700, 'font-family': 'ui-monospace, monospace' }, svg).textContent = '0°';
+    const p180 = polarC(180, RC + 15);
+    svgEl('text', { x: p180.x - 8, y: p180.y + 5, fill: '#fff', 'font-size': 14,
+        'font-weight': 700, 'text-anchor': 'end',
+        'font-family': 'ui-monospace, monospace' }, svg).textContent = '180°';
+    svgEl('text', { x: p180.x - 8, y: p180.y + 24, fill: 'var(--yellow)', 'font-size': 13,
+        'font-weight': 800, 'text-anchor': 'end',
+        'font-family': 'ui-monospace, monospace' }, svg).textContent = 'π рад';
+    for (let a = 0; a <= 360; a += 30) {
+        const p1 = polarC(a, RC), p2 = polarC(a, RC - 8);
+        svgEl('line', { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
+            stroke: '#5a6a7a', 'stroke-width': 1 }, svg);
+        if (a > 0 && a < 360 && a !== 180) {
+            const lp = polarC(a, RC + 18);
+            svgEl('text', { x: lp.x, y: lp.y + 4, fill: '#8f9aa6', 'font-size': 11,
+                'text-anchor': 'middle', 'font-family': 'system-ui' }, svg).textContent = a + '°';
+        }
+    }
+    if (deg > 0) {
+        const pStart = polarC(0), pFinish = polarC(deg);
+        const largeArc = deg > 180 ? 1 : 0;
+        svgEl('path', { d: `M ${CCX} ${CCY} L ${pStart.x} ${pStart.y} A ${RC} ${RC} 0 ${largeArc} 0 ${pFinish.x} ${pFinish.y} Z`,
+            fill: 'var(--yellow)', opacity: 0.25, class: 'fade-in' }, svg);
+        svgEl('path', { d: `M ${pStart.x} ${pStart.y} A ${RC} ${RC} 0 ${largeArc} 0 ${pFinish.x} ${pFinish.y}`,
+            fill: 'none', stroke: 'var(--yellow)', 'stroke-width': 4, 'stroke-linecap': 'round' }, svg);
+        svgEl('line', { x1: CCX, y1: CCY, x2: pStart.x, y2: pStart.y,
+            stroke: 'var(--red)', 'stroke-width': 3.5, 'stroke-linecap': 'round' }, svg);
+        svgEl('line', { x1: CCX, y1: CCY, x2: pFinish.x, y2: pFinish.y,
+            stroke: 'var(--red)', 'stroke-width': 3.5, 'stroke-linecap': 'round' }, svg);
+        const info = ANGLES.find(a => a.deg === deg);
+        const midA = deg / 2;
+        const lblPos = polarC(midA, RC * 0.62);
+        svgEl('text', { x: lblPos.x, y: lblPos.y, fill: '#fff', 'font-size': 16,
+            'font-weight': 800, 'text-anchor': 'middle',
+            'font-family': 'system-ui' }, svg).textContent = `${deg}° = ${info.rad}`;
+    } else {
+        svgEl('text', { x: CCX, y: CCY - RC - 30, fill: 'var(--accent)',
+            'font-size': 15, 'font-weight': 700, 'text-anchor': 'middle',
+            'font-family': 'system-ui' }, svg).textContent = '0° = 0 рад';
+    }
+    svgEl('circle', { cx: CCX, cy: CCY, r: 3.5, fill: '#cfd9e8' }, svg);
+}
+
+/* --- Сцена 7: единичная окружность --- */
+let unitAngle = 45 * Math.PI / 180;
+let unitFunc = 'sin';
+let unitDragging = false;
+
+function buildFuncSelector() {
+    funcSelector.innerHTML = '';
+    const funcs = [
+        { id: 'sin', label: 'sin α' },
+        { id: 'cos', label: 'cos α' },
+        { id: 'tan', label: 'tg α' },
+        { id: 'cot', label: 'ctg α' }
+    ];
+    funcs.forEach(f => {
+        const b = document.createElement('button');
+        b.textContent = f.label;
+        b.dataset.f = f.id;
+        b.className = unitFunc === f.id ? 'active' : '';
+        b.addEventListener('click', () => {
+            unitFunc = f.id;
+            buildFuncSelector();
+            renderUnit();
+        });
+        funcSelector.appendChild(b);
+    });
+}
+
+function renderUnit() {
+    clear(unitSvgWrap);
+    const SZ = 500;
+    const svg = makeSVG(SZ, SZ, `0 0 ${SZ} ${SZ}`);
+    unitSvgWrap.appendChild(svg);
+
+    const RC = 165, CCX = 250, CCY = 250;
+
+    svgEl('line', { x1: CCX - RC - 40, y1: CCY, x2: CCX + RC + 40, y2: CCY,
+        stroke: '#3a4a5a', 'stroke-width': 1 }, svg);
+    svgEl('line', { x1: CCX, y1: CCY - RC - 40, x2: CCX, y2: CCY + RC + 40,
+        stroke: '#3a4a5a', 'stroke-width': 1 }, svg);
+    for (let i = -3; i <= 3; i++) {
+        if (i === 0) continue;
+        const x = CCX + i * (RC / 2);
+        const y = CCY - i * (RC / 2);
+        svgEl('line', { x1: x, y1: CCY - 4, x2: x, y2: CCY + 4, stroke: '#3a4a5a', 'stroke-width': 1 }, svg);
+        svgEl('line', { x1: CCX - 4, y1: y, x2: CCX + 4, y2: y, stroke: '#3a4a5a', 'stroke-width': 1 }, svg);
+    }
+    svgEl('circle', { cx: CCX, cy: CCY, r: RC, fill: 'none',
+        stroke: '#5a6a7a', 'stroke-width': 1.6 }, svg);
+
+    const px = CCX + RC * Math.cos(unitAngle);
+    const py = CCY - RC * Math.sin(unitAngle);
+
+    const deg = unitAngle * 180 / Math.PI;
+    const largeArc = deg > 180 ? 1 : 0;
+    const p0x = CCX + RC, p0y = CCY;
+    svgEl('path', { d: `M ${CCX} ${CCY} L ${p0x} ${p0y} A ${RC} ${RC} 0 ${largeArc} 0 ${px} ${py} Z`,
+        fill: 'var(--yellow)', opacity: 0.12 }, svg);
+    svgEl('path', { d: `M ${p0x} ${p0y} A ${RC} ${RC} 0 ${largeArc} 0 ${px} ${py}`,
+        fill: 'none', stroke: 'var(--yellow)', 'stroke-width': 3, 'stroke-linecap': 'round' }, svg);
+
+    const midA = unitAngle / 2;
+    const lblA = { x: CCX + (RC * 0.20) * Math.cos(midA),
+                   y: CCY - (RC * 0.20) * Math.sin(midA) - 4 };
+    svgEl('text', { x: lblA.x, y: lblA.y, fill: 'var(--yellow)', 'font-size': 14,
+        'font-weight': 800, 'font-family': 'ui-monospace, monospace',
+        'text-anchor': 'middle' }, svg).textContent = 'α';
+
+    svgEl('line', { x1: CCX, y1: CCY, x2: px, y2: py,
+        stroke: 'var(--accent)', 'stroke-width': 3, 'stroke-linecap': 'round' }, svg);
+    svgEl('circle', { cx: px, cy: py, r: 7, fill: 'var(--red)',
+        stroke: '#fff', 'stroke-width': 1.5, style: 'cursor:grab' }, svg);
+
+    const projX = px, projY = CCY;
+    svgEl('line', { x1: CCX, y1: CCY, x2: projX, y2: projY,
+        stroke: 'var(--blue)', 'stroke-width': 2, 'stroke-dasharray': '4 3' }, svg);
+    svgEl('line', { x1: projX, y1: projY, x2: px, y2: py,
+        stroke: 'var(--green)', 'stroke-width': 2, 'stroke-dasharray': '4 3' }, svg);
+
+    const rSize = 10;
+    const sX = Math.sign(px - CCX) || 1;
+    const sY = Math.sign(py - CCY) || 1;
+    svgEl('path', { d: `M ${projX + sX * rSize} ${projY} L ${projX + sX * rSize} ${projY + sY * rSize} L ${projX} ${projY + sY * rSize}`,
+        fill: 'none', stroke: '#fff', 'stroke-width': 1.2, opacity: 0.5 }, svg);
+
+    const s = Math.sin(unitAngle), c = Math.cos(unitAngle);
+    const t = Math.tan(unitAngle), ct = 1 / t;
+
+    if (unitFunc === 'sin') {
+        svgEl('line', { x1: px, y1: py, x2: CCX, y2: py,
+            stroke: 'var(--yellow)', 'stroke-width': 2, 'stroke-dasharray': '5 4' }, svg);
+        svgEl('circle', { cx: CCX, cy: py, r: 5, fill: 'var(--yellow)' }, svg);
+    } else if (unitFunc === 'cos') {
+        svgEl('line', { x1: px, y1: py, x2: px, y2: CCY,
+            stroke: 'var(--yellow)', 'stroke-width': 2, 'stroke-dasharray': '5 4' }, svg);
+        svgEl('circle', { cx: px, cy: CCY, r: 5, fill: 'var(--yellow)' }, svg);
+    } else if (unitFunc === 'tan' || unitFunc === 'cot') {
+        const tanAxisX = CCX + RC;
+        const cotAxisY = CCY - RC;
+        svgEl('line', { x1: tanAxisX, y1: CCY - RC * 1.6, x2: tanAxisX, y2: CCY + RC * 1.6,
+            stroke: 'var(--orange)', 'stroke-width': 1.4, 'stroke-dasharray': '5 4', opacity: 0.6 }, svg);
+        svgEl('line', { x1: CCX - RC * 1.6, y1: cotAxisY, x2: CCX + RC * 1.6, y2: cotAxisY,
+            stroke: 'var(--pink)', 'stroke-width': 1.4, 'stroke-dasharray': '5 4', opacity: 0.6 }, svg);
+        svgEl('circle', { cx: tanAxisX, cy: CCY, r: 4, fill: 'var(--orange)', opacity: 0.8 }, svg);
+        svgEl('text', { x: tanAxisX + 6, y: CCY - 6, fill: 'var(--orange)',
+            'font-size': 11, 'font-weight': 700,
+            'font-family': 'ui-monospace, monospace' }, svg).textContent = '1';
+        svgEl('circle', { cx: CCX, cy: cotAxisY, r: 4, fill: 'var(--pink)', opacity: 0.8 }, svg);
+        svgEl('text', { x: CCX + 6, y: cotAxisY - 6, fill: 'var(--pink)',
+            'font-size': 11, 'font-weight': 700,
+            'font-family': 'ui-monospace, monospace' }, svg).textContent = '1';
+
+        if (Math.abs(c) > 1e-3) {
+            const tEnd = 1 / c;
+            const ty = CCY - tEnd * RC * s;
+            if (Math.abs(tEnd) < 3) {
+                svgEl('line', { x1: CCX, y1: CCY, x2: tanAxisX, y2: ty,
+                    stroke: 'var(--red)', 'stroke-width': 2.5, 'stroke-dasharray': '4 3' }, svg);
+                svgEl('circle', { cx: tanAxisX, cy: ty, r: 6, fill: 'var(--orange)' }, svg);
+                if (unitFunc === 'tan') {
+                    const sign = (c > 0) ? '' : '−';
+                    svgEl('text', { x: tanAxisX + 12, y: ty - 12, fill: 'var(--orange)',
+                        'font-size': 13, 'font-weight': 800,
+                        'font-family': 'ui-monospace, monospace' }, svg)
+                        .textContent = `tg = ${sign}c`;
+                }
+            }
+        }
+        if (Math.abs(s) > 1e-3) {
+            const tEnd = 1 / s;
+            const tx = CCX + tEnd * RC * c;
+            if (Math.abs(tEnd) < 3) {
+                svgEl('line', { x1: CCX, y1: CCY, x2: tx, y2: cotAxisY,
+                    stroke: 'var(--red)', 'stroke-width': 2.5, 'stroke-dasharray': '4 3' }, svg);
+                svgEl('circle', { cx: tx, cy: cotAxisY, r: 6, fill: 'var(--pink)' }, svg);
+                if (unitFunc === 'cot') {
+                    const sign = (s > 0) ? '' : '−';
+                    svgEl('text', { x: tx, y: cotAxisY - 14, fill: 'var(--pink)',
+                        'font-size': 13, 'font-weight': 800, 'text-anchor': 'middle',
+                        'font-family': 'ui-monospace, monospace' }, svg)
+                        .textContent = `ctg = ${sign}c`;
+                }
+            }
+        }
+    }
+
+    let valuesHtml = '';
+    valuesHtml += `<div class="row"><span class="k">α (°)</span><span class="v">${fmt(deg)}</span></div>`;
+    valuesHtml += `<div class="row"><span class="k">α (рад)</span><span class="v">${(unitAngle / Math.PI).toFixed(2)}π</span></div>`;
+    valuesHtml += `<div class="row ${unitFunc === 'sin' ? 'active' : ''}"><span class="k">sin α</span><span class="v">${fmt(s)}</span></div>`;
+    valuesHtml += `<div class="row ${unitFunc === 'cos' ? 'active' : ''}"><span class="k">cos α</span><span class="v">${fmt(c)}</span></div>`;
+    valuesHtml += `<div class="row ${unitFunc === 'tan' ? 'active' : ''}"><span class="k">tg α</span><span class="v">${isFinite(t) ? fmt(t) : '∞'}</span></div>`;
+    valuesHtml += `<div class="row ${unitFunc === 'cot' ? 'active' : ''}"><span class="k">ctg α</span><span class="v">${isFinite(ct) ? fmt(ct) : '∞'}</span></div>`;
+    unitValues.innerHTML = valuesHtml;
+
+    unitSvgWrap._ccx = CCX;
+    unitSvgWrap._ccy = CCY;
+    unitSvgWrap._rc = RC;
+    unitSvgWrap._svg = svg;
+}
+
+function unitHandleMove(evt) {
+    const svg = unitSvgWrap._svg;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const x = evt.clientX - rect.left;
+    const y = evt.clientY - rect.top;
+    const svgX = x / rect.width * 500;
+    const svgY = y / rect.height * 500;
+    const dx = svgX - unitSvgWrap._ccx;
+    const dy = unitSvgWrap._ccy - svgY;
+    let ang = Math.atan2(dy, dx);
+    if (ang < 0) ang += 2 * Math.PI;
+    unitAngle = ang;
+    renderUnit();
+}
+
+function buildUnitScene() {
+    unitLayout.classList.add('active');
+    buildFuncSelector();
+    renderUnit();
+    unitSvgWrap.addEventListener('pointerdown', (e) => {
+        unitDragging = true;
+        unitSvgWrap.setPointerCapture(e.pointerId);
+        unitHandleMove(e);
+    });
+    unitSvgWrap.addEventListener('pointermove', (e) => {
+        if (unitDragging) unitHandleMove(e);
+    });
+    unitSvgWrap.addEventListener('pointerup', () => { unitDragging = false; });
+    unitSvgWrap.addEventListener('pointercancel', () => { unitDragging = false; });
+}
+
+/* --- Сцена 8: уравнения (слева столбиком) --- */
+let eqSelected = null;
+let eqTurns = 0;
+
+const EQUATIONS = [
+    { id: 'sin=1/2',   text: 'sin x = 1/2',   func: 'sin', value: 1/2 },
+    { id: 'sin=√2/2',  text: 'sin x = √2/2',  func: 'sin', value: Math.SQRT1_2 },
+    { id: 'sin=√3/2',  text: 'sin x = √3/2',  func: 'sin', value: Math.sqrt(3)/2 },
+    { id: 'sin=0',     text: 'sin x = 0',     func: 'sin', value: 0 },
+    { id: 'sin=-1/2',  text: 'sin x = -1/2',  func: 'sin', value: -1/2 },
+    { id: 'cos=1/2',   text: 'cos x = 1/2',   func: 'cos', value: 1/2 },
+    { id: 'cos=√2/2',  text: 'cos x = √2/2',  func: 'cos', value: Math.SQRT1_2 },
+    { id: 'cos=√3/2',  text: 'cos x = √3/2',  func: 'cos', value: Math.sqrt(3)/2 },
+    { id: 'cos=0',     text: 'cos x = 0',     func: 'cos', value: 0 },
+    { id: 'cos=-1/2',  text: 'cos x = -1/2',  func: 'cos', value: -1/2 },
+    { id: 'tan=1',     text: 'tg x = 1',      func: 'tan', value: 1 },
+    { id: 'tan=√3',    text: 'tg x = √3',     func: 'tan', value: Math.sqrt(3) },
+    { id: 'tan=1/√3',  text: 'tg x = 1/√3',   func: 'tan', value: 1/Math.sqrt(3) }
+];
+
+function buildEqSidebar() {
+    eqSidebar.innerHTML = '';
+    const groups = [
+        { title: 'Синус', func: 'sin' },
+        { title: 'Косинус', func: 'cos' },
+        { title: 'Тангенс', func: 'tan' }
+    ];
+    groups.forEach(g => {
+        const title = document.createElement('div');
+        title.className = 'eq-group-title';
+        title.textContent = g.title;
+        eqSidebar.appendChild(title);
+        EQUATIONS.filter(e => e.func === g.func).forEach(eq => {
+            const b = document.createElement('button');
+            b.className = 'eq-btn' + (eqSelected && eqSelected.id === eq.id ? ' active' : '');
+            b.textContent = eq.text;
+            b.addEventListener('click', () => {
+                eqSelected = eq;
+                eqTurns = 0;
+                turnsControls.style.display = 'flex';
+                answerPanel.classList.remove('on');
+                updateTurnsVal();
+                buildEqSidebar();
+                renderEq();
+            });
+            eqSidebar.appendChild(b);
+        });
+    });
+}
+function updateTurnsVal() { turnsVal.textContent = eqTurns; }
+
+function renderEq() {
+    clear(eqCanvas);
+    if (!eqSelected) return;
+    const SZ = 500;
+    const svg = makeSVG(SZ, SZ, `0 0 ${SZ} ${SZ}`);
+    eqCanvas.appendChild(svg);
+    const RC = 180, CCX = 250, CCY = 250;
+
+    svgEl('line', { x1: CCX - RC - 30, y1: CCY, x2: CCX + RC + 30, y2: CCY,
+        stroke: '#3a4a5a', 'stroke-width': 1.2 }, svg);
+    svgEl('line', { x1: CCX, y1: CCY - RC - 30, x2: CCX, y2: CCY + RC + 30,
+        stroke: '#3a4a5a', 'stroke-width': 1.2 }, svg);
+    svgEl('text', { x: CCX + RC + 36, y: CCY + 5, fill: '#8f9aa6',
+        'font-size': 12, 'font-family': 'ui-monospace, monospace' }, svg).textContent = 'cos';
+    svgEl('text', { x: CCX + 6, y: CCY - RC - 36, fill: '#8f9aa6',
+        'font-size': 12, 'font-family': 'ui-monospace, monospace' }, svg).textContent = 'sin';
+
+    svgEl('circle', { cx: CCX, cy: CCY, r: RC, fill: 'none',
+        stroke: '#5a6a7a', 'stroke-width': 1.6 }, svg);
+
+    const eq = eqSelected;
+
+    if (eq.func === 'tan') {
+        const tanAxisX = CCX + RC;
+        svgEl('line', { x1: tanAxisX, y1: CCY - RC * 1.4, x2: tanAxisX, y2: CCY + RC * 1.4,
+            stroke: 'var(--orange)', 'stroke-width': 1.6, 'stroke-dasharray': '5 4', opacity: 0.7 }, svg);
+        svgEl('circle', { cx: tanAxisX, cy: CCY, r: 4, fill: 'var(--orange)' }, svg);
+        svgEl('text', { x: tanAxisX + 6, y: CCY - 6, fill: 'var(--orange)',
+            'font-size': 12, 'font-weight': 700,
+            'font-family': 'ui-monospace, monospace' }, svg).textContent = '1';
+    }
+
+    const absV = Math.abs(eq.value);
+    let stepDeg = 30;
+    if (Math.abs(absV - 0.5) < 1e-6) stepDeg = 30;
+    else if (Math.abs(absV - Math.SQRT1_2) < 1e-6) stepDeg = 45;
+    else if (Math.abs(absV - Math.sqrt(3)/2) < 1e-6) stepDeg = 60;
+    else if (absV < 1e-6) stepDeg = 90;
+    else if (Math.abs(absV - 1) < 1e-6) stepDeg = 90;
+
+    const numParts = Math.round(360 / stepDeg);
+    for (let k = 0; k < numParts; k++) {
+        const a = k * stepDeg;
+        const rad = a * Math.PI / 180;
+        const pOuter = { x: CCX + RC * Math.cos(rad), y: CCY - RC * Math.sin(rad) };
+        const pInner = { x: CCX + (RC - 16) * Math.cos(rad), y: CCY - (RC - 16) * Math.sin(rad) };
+        svgEl('line', { x1: pInner.x, y1: pInner.y, x2: pOuter.x, y2: pOuter.y,
+            stroke: '#8fa3bf', 'stroke-width': 1.8, opacity: 0.75 }, svg);
+        svgEl('line', { x1: CCX, y1: CCY, x2: pInner.x, y2: pInner.y,
+            stroke: '#5a6a7a', 'stroke-width': 0.8, opacity: 0.4 }, svg);
+    }
+
+    let angleRad = 0;
+    if (eq.func === 'sin') angleRad = Math.asin(eq.value);
+    else if (eq.func === 'cos') angleRad = Math.acos(eq.value);
+    else angleRad = Math.atan(eq.value);
+    if (angleRad < 0) angleRad += 2 * Math.PI;
+
+    let solutions = [];
+    if (eq.func === 'sin') {
+        const a1 = angleRad, a2 = Math.PI - angleRad;
+        solutions = [a1, a2];
+        if (absV < 1e-9) solutions = [0, Math.PI];
+        if (Math.abs(absV - 1) < 1e-9) solutions = [Math.PI/2];
+    } else if (eq.func === 'cos') {
+        const a1 = angleRad, a2 = 2 * Math.PI - angleRad;
+        solutions = [a1, a2];
+        if (absV < 1e-9) solutions = [Math.PI/2, 3*Math.PI/2];
+        if (Math.abs(absV - 1) < 1e-9) solutions = [0];
+    } else {
+        solutions = [angleRad, angleRad + Math.PI];
+    }
+
+    if (eqTurns > 0) {
+        const totalAngle = solutions[0] + eqTurns * 2 * Math.PI;
+        const spiralPts = [];
+        const N = 200;
+        for (let i = 0; i <= N; i++) {
+            const t = i / N;
+            const ang = t * totalAngle;
+            const r = RC * 0.9 * t;
+            spiralPts.push(`${CCX + r * Math.cos(ang)},${CCY - r * Math.sin(ang)}`);
+        }
+        svgEl('polyline', { points: spiralPts.join(' '), fill: 'none',
+            stroke: 'var(--orange)', 'stroke-width': 2, opacity: 0.85 }, svg);
+        const lastR = RC * 0.9;
+        const lastX = CCX + lastR * Math.cos(totalAngle);
+        const lastY = CCY - lastR * Math.sin(totalAngle);
+        svgEl('circle', { cx: lastX, cy: lastY, r: 5, fill: 'var(--orange)' }, svg);
+    }
+
+    solutions.forEach((a, i) => {
+        const px = CCX + RC * Math.cos(a);
+        const py = CCY - RC * Math.sin(a);
+        const color = i === 0 ? 'var(--yellow)' : 'var(--blue)';
+        svgEl('line', { x1: CCX, y1: CCY, x2: px, y2: py,
+            stroke: color, 'stroke-width': 2.5 }, svg);
+        svgEl('circle', { cx: px, cy: py, r: 7, fill: color,
+            stroke: '#fff', 'stroke-width': 1.5 }, svg);
+    });
+
+    if (eq.func === 'sin') {
+        const yVal = CCY - eq.value * RC;
+        svgEl('line', { x1: CCX - RC - 20, y1: yVal, x2: CCX + RC + 20, y2: yVal,
+            stroke: 'var(--green)', 'stroke-width': 1.5, 'stroke-dasharray': '5 4', opacity: 0.7 }, svg);
+        svgEl('circle', { cx: CCX, cy: yVal, r: 5, fill: 'var(--green)' }, svg);
+        svgEl('text', { x: CCX - RC - 24, y: yVal + 5, fill: 'var(--green)',
+            'font-size': 12, 'font-weight': 700, 'text-anchor': 'end',
+            'font-family': 'ui-monospace, monospace' }, svg).textContent = fmt(eq.value);
+    } else if (eq.func === 'cos') {
+        const xVal = CCX + eq.value * RC;
+        svgEl('line', { x1: xVal, y1: CCY - RC - 20, x2: xVal, y2: CCY + RC + 20,
+            stroke: 'var(--green)', 'stroke-width': 1.5, 'stroke-dasharray': '5 4', opacity: 0.7 }, svg);
+        svgEl('circle', { cx: xVal, cy: CCY, r: 5, fill: 'var(--green)' }, svg);
+        svgEl('text', { x: xVal, y: CCY + RC + 36, fill: 'var(--green)',
+            'font-size': 12, 'font-weight': 700, 'text-anchor': 'middle',
+            'font-family': 'ui-monospace, monospace' }, svg).textContent = fmt(eq.value);
+    } else if (eq.func === 'tan') {
+        const tanAxisX = CCX + RC;
+        const ty = CCY - eq.value * RC;
+        svgEl('circle', { cx: tanAxisX, cy: ty, r: 6, fill: 'var(--orange)' }, svg);
+        svgEl('text', { x: tanAxisX + 12, y: ty + 5, fill: 'var(--orange)',
+            'font-size': 13, 'font-weight': 800,
+            'font-family': 'ui-monospace, monospace' }, svg)
+            .textContent = `tg = ${fmt(eq.value)}`;
+        svgEl('line', { x1: CCX, y1: CCY, x2: tanAxisX, y2: ty,
+            stroke: 'var(--red)', 'stroke-width': 2, 'stroke-dasharray': '4 3', opacity: 0.5 }, svg);
+    }
+}
+
+function angleToPiText(a) {
+    const piFrac = a / Math.PI;
+    for (let den = 1; den <= 6; den++) {
+        const num = Math.round(piFrac * den);
+        if (Math.abs(num / den - piFrac) < 1e-6) {
+            if (num === 0) return '0';
+            if (den === 1) {
+                if (num === 1) return 'π';
+                if (num === -1) return '-π';
+                return num + 'π';
+            }
+            if (num === 1) return 'π/' + den;
+            if (num === -1) return '-π/' + den;
+            return num + 'π/' + den;
+        }
+    }
+    return piFrac.toFixed(2) + 'π';
+}
+
+function buildEqScene() {
+    eqLayout.classList.add('active');
+    buildEqSidebar();
+    answerPanel.classList.remove('on');
+    if (eqSelected) {
+        turnsControls.style.display = 'flex';
+        renderEq();
+    }
+}
+
+btnAnswer.addEventListener('click', () => {
+    if (!eqSelected) return;
+    answerPanel.classList.add('on');
+    answerEq.textContent = eqSelected.text;
+    const eq = eqSelected;
+    const absV = Math.abs(eq.value);
+    let angleRad = 0;
+    if (eq.func === 'sin') angleRad = Math.asin(eq.value);
+    else if (eq.func === 'cos') angleRad = Math.acos(eq.value);
+    else angleRad = Math.atan(eq.value);
+    if (angleRad < 0) angleRad += 2 * Math.PI;
+
+    let solutions = [];
+    let seriesText = '';
+    if (eq.func === 'sin') {
+        const a1 = angleRad, a2 = Math.PI - angleRad;
+        solutions = [a1, a2];
+        if (absV < 1e-9) solutions = [0, Math.PI];
+        if (Math.abs(absV - 1) < 1e-9) solutions = [Math.PI/2];
+        const p1 = angleToPiText(solutions[0]);
+        seriesText = `x = ${p1} + 2πk`;
+        if (solutions.length === 2) {
+            const p2 = angleToPiText(solutions[1]);
+            seriesText += `<br>x = ${p2} + 2πk`;
+        }
+        seriesText += `,   k ∈ ℤ`;
+    } else if (eq.func === 'cos') {
+        const a1 = angleRad, a2 = 2 * Math.PI - angleRad;
+        solutions = [a1, a2];
+        if (absV < 1e-9) solutions = [Math.PI/2, 3*Math.PI/2];
+        if (Math.abs(absV - 1) < 1e-9) solutions = [0];
+        const p1 = angleToPiText(solutions[0]);
+        seriesText = `x = ±${p1} + 2πk,   k ∈ ℤ`;
+    } else {
+        const p1 = angleToPiText(angleRad);
+        seriesText = `x = ${p1} + πk,   k ∈ ℤ`;
+    }
+    if (eqTurns > 0) {
+        seriesText += `<br><span style="color:var(--orange)">+ ${eqTurns}·2π (учтено)</span>`;
+    }
+    answerSeries.innerHTML = seriesText.replace(/\+/g, '<span class="plus">+</span>');
+});
+
+btnTurnsAdd.addEventListener('click', () => {
+    eqTurns = Math.min(eqTurns + 1, 5);
+    updateTurnsVal(); renderEq();
+});
+btnTurnsSub.addEventListener('click', () => {
+    eqTurns = Math.max(eqTurns - 1, 0);
+    updateTurnsVal(); renderEq();
+});
+btnTurnsReset.addEventListener('click', () => {
+    eqTurns = 0; updateTurnsVal(); renderEq();
+});
+
+/* --- Сцена 9: график --- */
+let graphAngle = 0;
+let graphFunc = 'sin';
+let graphDragging = false;
+let graphMode_ = 'manual';
+let autoTimer = null;
+let paramA_ = 1, paramB_ = 0, paramC_ = 0, paramW_ = 1;
+
+function buildGraphSelector() {
+    graphSelector.innerHTML = '';
+    const funcs = [
+        { id: 'sin', label: 'sin α' },
+        { id: 'cos', label: 'cos α' },
+        { id: 'tan', label: 'tg α' },
+        { id: 'cot', label: 'ctg α' }
+    ];
+    funcs.forEach(f => {
+        const b = document.createElement('button');
+        b.textContent = f.label;
+        b.dataset.f = f.id;
+        b.className = graphFunc === f.id ? 'active' : '';
+        b.addEventListener('click', () => {
+            graphFunc = f.id;
+            graphAngle = 0;
+            buildGraphSelector();
+            renderGraph();
+        });
+        graphSelector.appendChild(b);
+    });
+}
+
+function setupGraphMode() {
+    graphMode.querySelectorAll('button').forEach(b => {
+        b.addEventListener('click', () => {
+            graphMode_ = b.dataset.mode;
+            graphMode.querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+            if (graphMode_ === 'auto') startAuto();
+            else stopAuto();
+        });
+    });
+}
+function startAuto() {
+    stopAuto();
+    autoTimer = setInterval(() => {
+        graphAngle += 0.06;
+        if (graphAngle > Math.PI * 2) graphAngle -= Math.PI * 2;
+        renderGraph();
+    }, 30);
+}
+function stopAuto() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } }
+
+function setupParams() {
+    paramA.addEventListener('input', () => { paramA_ = +paramA.value; valA.textContent = fmt(paramA_); renderGraph(); });
+    paramB.addEventListener('input', () => { paramB_ = +paramB.value; valB.textContent = fmt(paramB_); renderGraph(); });
+    paramC.addEventListener('input', () => { paramC_ = +paramC.value; valC.textContent = fmt(paramC_); renderGraph(); });
+    paramW.addEventListener('input', () => { paramW_ = +paramW.value; valW.textContent = fmt(paramW_); renderGraph(); });
+    btnParamsReset.addEventListener('click', () => {
+        paramA_ = 1; paramB_ = 0; paramC_ = 0; paramW_ = 1;
+        paramA.value = 1; paramB.value = 0; paramC.value = 0; paramW.value = 1;
+        valA.textContent = '1'; valB.textContent = '0';
+        valC.textContent = '0'; valW.textContent = '1';
+        renderGraph();
+    });
+}
+
+function renderGraph() {
+    clear(graphLeft);
+    clear(graphRight);
+    const LS = 460;
+    const svgL = makeSVG(LS, LS, `0 0 ${LS} ${LS}`);
+    graphLeft.appendChild(svgL);
+    const RC = 160, CCX = 230, CCY = 230;
+
+    svgL.appendChild(svgEl('line', { x1: CCX - RC - 20, y1: CCY, x2: CCX + RC + 20, y2: CCY,
+        stroke: '#3a4a5a', 'stroke-width': 1 }));
+    svgL.appendChild(svgEl('line', { x1: CCX, y1: CCY - RC - 20, x2: CCX, y2: CCY + RC + 20,
+        stroke: '#3a4a5a', 'stroke-width': 1 }));
+    svgL.appendChild(svgEl('circle', { cx: CCX, cy: CCY, r: RC, fill: 'none',
+        stroke: '#5a6a7a', 'stroke-width': 1.6 }));
+
+    if (graphFunc === 'tan' || graphFunc === 'cot') {
+        const tanAxisX = CCX + RC;
+        const cotAxisY = CCY - RC;
+        svgL.appendChild(svgEl('line', { x1: tanAxisX, y1: CCY - RC * 1.4, x2: tanAxisX, y2: CCY + RC * 1.4,
+            stroke: 'var(--orange)', 'stroke-width': 1.4, 'stroke-dasharray': '5 4', opacity: 0.6 }));
+        svgL.appendChild(svgEl('line', { x1: CCX - RC * 1.4, y1: cotAxisY, x2: CCX + RC * 1.4, y2: cotAxisY,
+            stroke: 'var(--pink)', 'stroke-width': 1.4, 'stroke-dasharray': '5 4', opacity: 0.6 }));
+        svgL.appendChild(svgEl('circle', { cx: tanAxisX, cy: CCY, r: 3.5, fill: 'var(--orange)' }));
+        svgL.appendChild(svgEl('text', { x: tanAxisX + 5, y: CCY - 5, fill: 'var(--orange)',
+            'font-size': 11, 'font-family': 'ui-monospace, monospace' })).textContent = '1';
+        svgL.appendChild(svgEl('circle', { cx: CCX, cy: cotAxisY, r: 3.5, fill: 'var(--pink)' }));
+        svgL.appendChild(svgEl('text', { x: CCX + 5, y: cotAxisY - 5, fill: 'var(--pink)',
+            'font-size': 11, 'font-family': 'ui-monospace, monospace' })).textContent = '1';
+    }
+
+    const px = CCX + RC * Math.cos(graphAngle);
+    const py = CCY - RC * Math.sin(graphAngle);
+    const largeArc = graphAngle > Math.PI ? 1 : 0;
+    svgL.appendChild(svgEl('path', { d: `M ${CCX} ${CCY} L ${CCX + RC} ${CCY} A ${RC} ${RC} 0 ${largeArc} 0 ${px} ${py} Z`,
+        fill: 'var(--yellow)', opacity: 0.12 }));
+    svgL.appendChild(svgEl('path', { d: `M ${CCX + RC} ${CCY} A ${RC} ${RC} 0 ${largeArc} 0 ${px} ${py}`,
+        fill: 'none', stroke: 'var(--yellow)', 'stroke-width': 3 }));
+    const midA = graphAngle / 2;
+    svgL.appendChild(svgEl('text', { x: CCX + (RC * 0.4) * Math.cos(midA),
+        y: CCY - (RC * 0.4) * Math.sin(midA) + 5, fill: 'var(--yellow)',
+        'font-size': 14, 'font-weight': 800, 'text-anchor': 'middle',
+        'font-family': 'ui-monospace, monospace' })).textContent = 'α';
+    svgL.appendChild(svgEl('line', { x1: CCX, y1: CCY, x2: px, y2: py,
+        stroke: 'var(--accent)', 'stroke-width': 3 }));
+    svgL.appendChild(svgEl('circle', { cx: px, cy: py, r: 7, fill: 'var(--red)',
+        stroke: '#fff', 'stroke-width': 1.5, style: 'cursor:grab' }));
+
+    if (graphFunc === 'sin') {
+        svgL.appendChild(svgEl('line', { x1: px, y1: py, x2: CCX, y2: py,
+            stroke: 'var(--yellow)', 'stroke-width': 2, 'stroke-dasharray': '5 4' }));
+        svgL.appendChild(svgEl('circle', { cx: CCX, cy: py, r: 5, fill: 'var(--yellow)' }));
+    } else if (graphFunc === 'cos') {
+        svgL.appendChild(svgEl('line', { x1: px, y1: py, x2: px, y2: CCY,
+            stroke: 'var(--yellow)', 'stroke-width': 2, 'stroke-dasharray': '5 4' }));
+        svgL.appendChild(svgEl('circle', { cx: px, cy: CCY, r: 5, fill: 'var(--yellow)' }));
+    } else if (graphFunc === 'tan') {
+        if (Math.abs(Math.cos(graphAngle)) > 1e-3) {
+            const tEnd = 1 / Math.cos(graphAngle);
+            const ty = CCY - tEnd * RC * Math.sin(graphAngle);
+            if (Math.abs(tEnd) < 3) {
+                svgL.appendChild(svgEl('line', { x1: CCX, y1: CCY, x2: CCX + RC, y2: ty,
+                    stroke: 'var(--red)', 'stroke-width': 2.5, 'stroke-dasharray': '4 3' }));
+                svgL.appendChild(svgEl('circle', { cx: CCX + RC, cy: ty, r: 5, fill: 'var(--orange)' }));
+            }
+        }
+    } else if (graphFunc === 'cot') {
+        if (Math.abs(Math.sin(graphAngle)) > 1e-3) {
+            const tEnd = 1 / Math.sin(graphAngle);
+            const tx = CCX + tEnd * RC * Math.cos(graphAngle);
+            if (Math.abs(tEnd) < 3) {
+                svgL.appendChild(svgEl('line', { x1: CCX, y1: CCY, x2: tx, y2: CCY - RC,
+                    stroke: 'var(--red)', 'stroke-width': 2.5, 'stroke-dasharray': '4 3' }));
+                svgL.appendChild(svgEl('circle', { cx: tx, cy: CCY - RC, r: 5, fill: 'var(--pink)' }));
+            }
+        }
+    }
+
+    const svgR = makeSVG(LS, LS, `0 0 ${LS} ${LS}`);
+    graphRight.appendChild(svgR);
+
+    const gX0 = 55, gX1 = LS - 20;
+    const gW = gX1 - gX0;
+    const f = graphFunc;
+    const isTanLike = (f === 'tan' || f === 'cot');
+    const range = isTanLike ? 3 : 1.5;
+    const gYmid = LS / 2;
+    const gH = LS - 60;
+    const pxPerUnit = (gH / 2) / (range + 0.3);
+    const yOf = v => gYmid - v * pxPerUnit;
+
+    svgR.appendChild(svgEl('line', { x1: gX0, y1: gYmid, x2: gX1, y2: gYmid,
+        stroke: '#5a6a7a', 'stroke-width': 1.4 }));
+    svgR.appendChild(svgEl('line', { x1: gX0, y1: 30, x2: gX0, y2: LS - 30,
+        stroke: '#5a6a7a', 'stroke-width': 1.4 }));
+
+    [0.5, 1, 1.5, 2].forEach(k => {
+        const x = gX0 + (k / 2) * gW;
+        svgR.appendChild(svgEl('line', { x1: x, y1: gYmid - 4, x2: x, y2: gYmid + 4,
+            stroke: '#5a6a7a', 'stroke-width': 1 }));
+        const label = k === 0.5 ? 'π/2' : k === 1 ? 'π' : k === 1.5 ? '3π/2' : '2π';
+        svgR.appendChild(svgEl('text', { x, y: gYmid + 20, fill: '#8f9aa6',
+            'font-size': 11, 'text-anchor': 'middle',
+            'font-family': 'ui-monospace, monospace' })).textContent = label;
+    });
+
+    const yLabels = isTanLike
+        ? [-3, -2, -1, 1, 2, 3]
+        : [-1, -0.5, 0.5, 1];
+    yLabels.forEach(v => {
+        const y = yOf(v);
+        if (y < 25 || y > LS - 25) return;
+        svgR.appendChild(svgEl('line', { x1: gX0 - 4, y1: y, x2: gX0 + 4, y2: y,
+            stroke: '#5a6a7a', 'stroke-width': 1 }));
+        svgR.appendChild(svgEl('text', { x: gX0 - 8, y: y + 4, fill: '#8f9aa6',
+            'font-size': 10, 'text-anchor': 'end',
+            'font-family': 'ui-monospace, monospace' })).textContent = v;
+    });
+
+    function evalFunc(t) {
+        const tt = paramW_ * t + paramC_ * Math.PI;
+        let v;
+        if (f === 'sin') v = Math.sin(tt);
+        else if (f === 'cos') v = Math.cos(tt);
+        else if (f === 'tan') v = Math.tan(tt);
+        else v = 1 / Math.tan(tt);
+        return paramA_ * v + paramB_;
+    }
+    function isDiscontinuity(t) {
+        const tt = paramW_ * t + paramC_ * Math.PI;
+        if (f === 'tan') return Math.abs(Math.cos(tt)) < 0.05;
+        if (f === 'cot') return Math.abs(Math.sin(tt)) < 0.05;
+        return false;
+    }
+
+    const N = 500;
+    const pts = [];
+    for (let i = 0; i <= N; i++) {
+        const t = i / N * 2 * Math.PI;
+        if (isDiscontinuity(t)) { pts.push(null); continue; }
+        const v = evalFunc(t);
+        if (v > range * 1.2 || v < -range * 1.2) { pts.push(null); continue; }
+        pts.push(`${gX0 + (t / (2 * Math.PI)) * gW},${yOf(v)}`);
+    }
+    let segment = [];
+    pts.forEach(p => {
+        if (p === null) {
+            if (segment.length > 1) {
+                svgR.appendChild(svgEl('polyline', { points: segment.join(' '), fill: 'none',
+                    stroke: 'var(--yellow)', 'stroke-width': 2.5 }));
+            }
+            segment = [];
+        } else segment.push(p);
+    });
+    if (segment.length > 1) {
+        svgR.appendChild(svgEl('polyline', { points: segment.join(' '), fill: 'none',
+            stroke: 'var(--yellow)', 'stroke-width': 2.5 }));
+    }
+
+    let yVal = 0;
+    if (!isDiscontinuity(graphAngle)) yVal = evalFunc(graphAngle);
+    else yVal = NaN;
+
+    if (isFinite(yVal) && yVal >= -range && yVal <= range) {
+        const gxp = gX0 + (graphAngle / (2 * Math.PI)) * gW;
+        const gyp = yOf(yVal);
+        svgR.appendChild(svgEl('line', { x1: gxp, y1: gYmid, x2: gxp, y2: gyp,
+            stroke: 'var(--accent)', 'stroke-width': 1.5, 'stroke-dasharray': '4 3', opacity: 0.7 }));
+        svgR.appendChild(svgEl('circle', { cx: gxp, cy: gyp, r: 7, fill: 'var(--red)',
+            stroke: '#fff', 'stroke-width': 1.5 }));
+    }
+
+    // Формула с учётом знака и нулевых коэффициентов
+    const fName = { sin:'sin', cos:'cos', tan:'tg', cot:'ctg' }[f];
+    let formulaParts = ['y = '];
+    const showA = Math.abs(paramA_ - 1) > 1e-6 && Math.abs(paramA_) > 1e-6;
+    if (showA) {
+        formulaParts.push(fmt(paramA_) + ' · ');
+    } else if (Math.abs(paramA_) < 1e-6) {
+        formulaParts.push('0 · ');
+    }
+    let inner = fName + '(';
+    const showW = Math.abs(paramW_ - 1) > 1e-6 && Math.abs(paramW_) > 1e-6;
+    if (showW) inner += fmt(paramW_) + '·';
+    inner += 'x';
+    const showC = Math.abs(paramC_) > 1e-6;
+    if (showC) {
+        if (paramC_ > 0) inner += ' + ' + fmt(paramC_) + 'π';
+        else inner += ' − ' + fmt(Math.abs(paramC_)) + 'π';
+    }
+    inner += ')';
+    formulaParts.push(inner);
+    const showB = Math.abs(paramB_) > 1e-6;
+    if (showB) {
+        if (paramB_ > 0) formulaParts.push(' + ' + fmt(paramB_));
+        else formulaParts.push(' − ' + fmt(Math.abs(paramB_)));
+    }
+    const formulaText = formulaParts.join('');
+
+    let existingFormula = graphRight.querySelector('.graph-formula');
+    if (existingFormula) existingFormula.remove();
+    const formulaEl = document.createElement('div');
+    formulaEl.className = 'graph-formula';
+    formulaEl.textContent = formulaText;
+    graphRight.appendChild(formulaEl);
+
+    graphLeft._ccx = CCX; graphLeft._ccy = CCY; graphLeft._rc = RC;
+    graphLeft._svg = svgL;
+}
+
+function graphHandleMove(evt) {
+    const svg = graphLeft._svg;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const x = evt.clientX - rect.left;
+    const y = evt.clientY - rect.top;
+    const svgX = x / rect.width * 460;
+    const svgY = y / rect.height * 460;
+    const dx = svgX - graphLeft._ccx;
+    const dy = graphLeft._ccy - svgY;
+    let ang = Math.atan2(dy, dx);
+    if (ang < 0) ang += 2 * Math.PI;
+    graphAngle = ang;
+    renderGraph();
+}
+
+function buildGraphScene() {
+    graphLayout.classList.add('active');
+    buildGraphSelector();
+    setupGraphMode();
+    setupParams();
+    renderGraph();
+
+    graphLeft.addEventListener('pointerdown', (e) => {
+        if (graphMode_ === 'auto') return;
+        graphDragging = true;
+        graphLeft.setPointerCapture(e.pointerId);
+        graphHandleMove(e);
+    });
+    graphLeft.addEventListener('pointermove', (e) => {
+        if (graphDragging) graphHandleMove(e);
+    });
+    graphLeft.addEventListener('pointerup', () => { graphDragging = false; });
+    graphLeft.addEventListener('pointercancel', () => { graphDragging = false; });
+}
+
+/* --- Сцена 10: формулы --- */
+const FORMULAS = [
+    {
+        id: 'basic',
+        title: 'Основное тригонометрическое тождество',
+        f: 'sin²α + cos²α = 1',
+        example:
+            'Угол: α = 30°<br>' +
+            'Расчёт: sin²30° + cos²30° = ' + frac('1','4') + ' + ' + frac('3','4') + ' = <b>1</b><br><br>' +
+            'Угол: α = 45°<br>' +
+            'Расчёт: ' + frac('1','2') + ' + ' + frac('1','2') + ' = <b>1</b><br><br>' +
+            'Угол: α = 120°<br>' +
+            'Расчёт: ' + frac('3','4') + ' + ' + frac('1','4') + ' = <b>1</b>',
+        proof: '<div class="step">Из единичной окружности: точка (cos α, sin α) лежит на окружности x² + y² = 1.</div>' +
+               '<div class="step">Подставляем: <b>cos²α + sin²α = 1</b>.</div>'
+    },
+    {
+        id: 'tg',
+        title: 'Тангенс через синус и косинус',
+        f: 'tg α = ' + frac('sin α','cos α'),
+        example:
+            'Угол: α = 45°<br>' +
+            'Расчёт: ' + frac(frac('√2','2'), frac('√2','2')) + ' = <b>1</b><br><br>' +
+            'Угол: α = 60°<br>' +
+            'Расчёт: ' + frac(frac('√3','2'), frac('1','2')) + ' = <b>√3</b><br><br>' +
+            'Угол: α = 30°<br>' +
+            'Расчёт: ' + frac(frac('1','2'), frac('√3','2')) + ' = <b>1/√3</b>',
+        proof: '<div class="step">Из определения tg α = y / x, где (x, y) — точка на единичной окружности.</div>' +
+               '<div class="step">x = cos α, y = sin α, поэтому <b>tg α = sin α / cos α</b>.</div>'
+    },
+    {
+        id: 'ctg',
+        title: 'Котангенс через синус и косинус',
+        f: 'ctg α = ' + frac('cos α','sin α'),
+        example:
+            'Угол: α = 45°<br>' +
+            'Расчёт: <b>1</b><br><br>' +
+            'Угол: α = 60°<br>' +
+            'Расчёт: ' + frac(frac('1','2'), frac('√3','2')) + ' = <b>1/√3</b><br><br>' +
+            'Угол: α = 30°<br>' +
+            'Расчёт: ' + frac(frac('√3','2'), frac('1','2')) + ' = <b>√3</b>',
+        proof: '<div class="step">Из определения ctg α = x / y.</div>' +
+               '<div class="step">x = cos α, y = sin α, поэтому <b>ctg α = cos α / sin α</b>.</div>'
+    },
+    {
+        id: 'tg2',
+        title: 'Связь tg² и cos² (вывод через тождество)',
+        f: '1 + tg²α = ' + frac('1','cos²α'),
+        example:
+            'Угол: α = 45°<br>' +
+            'Расчёт: 1 + 1 = ' + frac('1','1/2') + ' = <b>2</b><br><br>' +
+            'Угол: α = 30°<br>' +
+            'Расчёт: 1 + ' + frac('1','3') + ' = ' + frac('1','3/4') + ' = <b>4/3</b>',
+        proof: '<div class="step">Из основного тождества: <b>sin²α + cos²α = 1</b>.</div>' +
+               '<div class="step">Разделим обе части на cos²α:</div>' +
+               '<div class="step">' + frac('sin²α','cos²α') + ' + ' + frac('cos²α','cos²α') + ' = ' + frac('1','cos²α') + '</div>' +
+               '<div class="step">Получаем: <b>tg²α + 1 = 1 / cos²α</b>.</div>'
+    },
+    {
+        id: 'ctg2',
+        title: 'Связь ctg² и sin² (вывод через тождество)',
+        f: '1 + ctg²α = ' + frac('1','sin²α'),
+        example:
+            'Угол: α = 45°<br>' +
+            'Расчёт: 1 + 1 = ' + frac('1','1/2') + ' = <b>2</b><br><br>' +
+            'Угол: α = 60°<br>' +
+            'Расчёт: 1 + ' + frac('1','3') + ' = ' + frac('1','3/4') + ' = <b>4/3</b>',
+        proof: '<div class="step">Из основного тождества: <b>sin²α + cos²α = 1</b>.</div>' +
+               '<div class="step">Разделим обе части на sin²α:</div>' +
+               '<div class="step">' + frac('sin²α','sin²α') + ' + ' + frac('cos²α','sin²α') + ' = ' + frac('1','sin²α') + '</div>' +
+               '<div class="step">Получаем: <b>1 + ctg²α = 1 / sin²α</b>.</div>'
+    },
+    {
+        id: 'sin2a',
+        title: 'Синус двойного угла (вывод через сумму)',
+        f: 'sin 2α = 2 sin α cos α',
+        example:
+            'Угол: α = 30°<br>' +
+            'Расчёт: 2 · ' + frac('1','2') + ' · ' + frac('√3','2') + ' = <b>√3/2</b><br><br>' +
+            'Угол: α = 45°<br>' +
+            'Расчёт: 2 · ' + frac('√2','2') + ' · ' + frac('√2','2') + ' = <b>1</b>',
+        proof: '<div class="step">Возьмём формулу синуса суммы:</div>' +
+               '<div class="step">sin(α + β) = sin α cos β + cos α sin β</div>' +
+               '<div class="step">Положим β = α:</div>' +
+               '<div class="step">sin(2α) = sin α cos α + cos α sin α = <b>2 sin α cos α</b>.</div>'
+    },
+    {
+        id: 'cos2a_1',
+        title: 'Косинус двойного угла — вариант 1',
+        f: 'cos 2α = cos²α − sin²α',
+        example:
+            'Угол: α = 60°<br>' +
+            'Расчёт: ' + frac('1','4') + ' − ' + frac('3','4') + ' = <b>−1/2</b><br><br>' +
+            'Угол: α = 45°<br>' +
+            'Расчёт: ' + frac('1','2') + ' − ' + frac('1','2') + ' = <b>0</b>',
+        proof: '<div class="step">Возьмём формулу косинуса суммы:</div>' +
+               '<div class="step">cos(α + β) = cos α cos β − sin α sin β</div>' +
+               '<div class="step">Положим β = α:</div>' +
+               '<div class="step">cos(2α) = cos α cos α − sin α sin α = <b>cos²α − sin²α</b>.</div>'
+    },
+    {
+        id: 'cos2a_2',
+        title: 'Косинус двойного угла — вариант 2',
+        f: 'cos 2α = 2cos²α − 1',
+        example:
+            'Угол: α = 60°<br>' +
+            'Расчёт: 2 · ' + frac('1','4') + ' − 1 = <b>−1/2</b><br><br>' +
+            'Угол: α = 30°<br>' +
+            'Расчёт: 2 · ' + frac('3','4') + ' − 1 = <b>1/2</b>',
+        proof: '<div class="step">Из базовой формулы: cos 2α = cos²α − sin²α.</div>' +
+               '<div class="step">Заменяем sin²α = 1 − cos²α:</div>' +
+               '<div class="step">cos 2α = cos²α − (1 − cos²α) = <b>2cos²α − 1</b>.</div>'
+    },
+    {
+        id: 'cos2a_3',
+        title: 'Косинус двойного угла — вариант 3',
+        f: 'cos 2α = 1 − 2sin²α',
+        example:
+            'Угол: α = 60°<br>' +
+            'Расчёт: 1 − 2 · ' + frac('3','4') + ' = <b>−1/2</b><br><br>' +
+            'Угол: α = 30°<br>' +
+            'Расчёт: 1 − 2 · ' + frac('1','4') + ' = <b>1/2</b>',
+        proof: '<div class="step">Из базовой формулы: cos 2α = cos²α − sin²α.</div>' +
+               '<div class="step">Заменяем cos²α = 1 − sin²α:</div>' +
+               '<div class="step">cos 2α = (1 − sin²α) − sin²α = <b>1 − 2sin²α</b>.</div>'
+    },
+    {
+        id: 'sin_sum',
+        title: 'Синус суммы',
+        f: 'sin(α + β) = sin α cos β + cos α sin β',
+        example:
+            'Угол: α = 45°, β = 30°<br>' +
+            'Расчёт: sin 75° = ' + frac('√2','2') + ' · ' + frac('√3','2') + ' + ' + frac('√2','2') + ' · ' + frac('1','2') + ' = <b>(√6 + √2)/4</b>',
+        proof: '<div class="step">Формула доказывается через единичную окружность.</div>' +
+               '<div class="step">Рассматриваем поворот на углы α и β, применяем проекции.</div>'
+    },
+    {
+        id: 'sin_diff',
+        title: 'Синус разности',
+        f: 'sin(α − β) = sin α cos β − cos α sin β',
+        example:
+            'Угол: α = 45°, β = 30°<br>' +
+            'Расчёт: sin 15° = ' + frac('√2','2') + ' · ' + frac('√3','2') + ' − ' + frac('√2','2') + ' · ' + frac('1','2') + ' = <b>(√6 − √2)/4</b>',
+        proof: '<div class="step">Из формулы синуса суммы с заменой β → −β.</div>' +
+               '<div class="step">sin(α + (−β)) = sin α cos β − cos α sin β.</div>'
+    },
+    {
+        id: 'cos_sum',
+        title: 'Косинус суммы',
+        f: 'cos(α + β) = cos α cos β − sin α sin β',
+        example:
+            'Угол: α = 45°, β = 30°<br>' +
+            'Расчёт: cos 75° = ' + frac('√2','2') + ' · ' + frac('√3','2') + ' − ' + frac('√2','2') + ' · ' + frac('1','2') + ' = <b>(√6 − √2)/4</b>',
+        proof: '<div class="step">Формула доказывается через единичную окружность.</div>'
+    },
+    {
+        id: 'cos_diff',
+        title: 'Косинус разности',
+        f: 'cos(α − β) = cos α cos β + sin α sin β',
+        example:
+            'Угол: α = 45°, β = 30°<br>' +
+            'Расчёт: cos 15° = ' + frac('√2','2') + ' · ' + frac('√3','2') + ' + ' + frac('√2','2') + ' · ' + frac('1','2') + ' = <b>(√6 + √2)/4</b>',
+        proof: '<div class="step">Из формулы косинуса суммы с заменой β → −β.</div>' +
+               '<div class="step">cos(α + (−β)) = cos α cos β + sin α sin β.</div>'
+    },
+    {
+        id: 'sin_half',
+        title: 'Понижение степени для синуса (через cos 2α)',
+        f: 'sin²α = ' + frac('1 − cos 2α','2'),
+        example:
+            'Угол: α = 60°<br>' +
+            'Расчёт: sin²60° = ' + frac('1 − cos 120°','2') + ' = ' + frac('1 − (−1/2)','2') + ' = <b>3/4</b>',
+        proof: '<div class="step">Из формулы: <b>cos 2α = 1 − 2sin²α</b>.</div>' +
+               '<div class="step">Выражаем sin²α: 2sin²α = 1 − cos 2α.</div>' +
+               '<div class="step">Получаем: <b>sin²α = (1 − cos 2α) / 2</b>.</div>'
+    },
+    {
+        id: 'cos_half',
+        title: 'Понижение степени для косинуса (через cos 2α)',
+        f: 'cos²α = ' + frac('1 + cos 2α','2'),
+        example:
+            'Угол: α = 60°<br>' +
+            'Расчёт: cos²60° = ' + frac('1 + cos 120°','2') + ' = ' + frac('1 + (−1/2)','2') + ' = <b>1/4</b>',
+        proof: '<div class="step">Из формулы: <b>cos 2α = 2cos²α − 1</b>.</div>' +
+               '<div class="step">Выражаем cos²α: 2cos²α = 1 + cos 2α.</div>' +
+               '<div class="step">Получаем: <b>cos²α = (1 + cos 2α) / 2</b>.</div>'
+    }
+];
+
+let currentFormulaId = 'basic';
+
+function buildFormulas() {
+    formulasList.innerHTML = '';
+    FORMULAS.forEach(f => {
+        const item = document.createElement('div');
+        item.className = 'formula-item' + (f.id === currentFormulaId ? ' active' : '');
+        item.textContent = f.title;
+        item.addEventListener('click', () => {
+            currentFormulaId = f.id;
+            buildFormulas();
+        });
+        formulasList.appendChild(item);
+    });
+
+    const cur = FORMULAS.find(x => x.id === currentFormulaId);
+    if (!cur) return;
+    formulaDetail.innerHTML = `
+        <div class="f-title">${cur.title}</div>
+        <div class="f-big">${cur.f}</div>
+        <div class="f-buttons">
+            <button data-tab="example" class="active">Пример</button>
+            <button data-tab="proof">Доказательство</button>
+        </div>
+        <div class="f-content" id="fContent">${cur.example}</div>
+    `;
+    const btns = formulaDetail.querySelectorAll('.f-buttons button');
+    const content = formulaDetail.querySelector('#fContent');
+    btns.forEach(b => {
+        b.addEventListener('click', () => {
+            btns.forEach(x => x.classList.toggle('active', x === b));
+            if (b.dataset.tab === 'example') content.innerHTML = cur.example;
+            else content.innerHTML = cur.proof;
+        });
+    });
+}
+
+function buildFormulasScene() {
+    formulasLayout.classList.add('active');
+    buildFormulas();
+}
+
+/* --- Сцена 11: формулы приведения (встроено) --- */
+let reductionAngle = 150;
+let reductionFunc_ = 'sin';
+
+function buildReductionScene() {
+    reductionLayout.classList.add('active');
+    setupReduction();
+    renderReduction();
+}
+
+function setupReduction() {
+    reductionSlider.addEventListener('input', () => {
+        reductionAngle = +reductionSlider.value;
+        renderReduction();
+    });
+    reductionFunc.addEventListener('change', () => {
+        reductionFunc_ = reductionFunc.value;
+        renderReduction();
+    });
+    document.querySelectorAll('#reductionQuick button').forEach(b => {
+        b.addEventListener('click', () => {
+            reductionAngle = +b.dataset.ang;
+            reductionSlider.value = reductionAngle;
+            renderReduction();
+        });
+    });
+}
+
+function reductionInfo(angleDeg, func) {
+    const norm = ((angleDeg % 360) + 360) % 360;
+    // Определяем приведённый острый угол и четверть
+    let baseAngle, baseRadText, quadrant, signRule = '';
+    const table90 = [
+        { from: 0, to: 90, quad: 'I', ref: norm, refRad: null },
+        { from: 90, to: 180, quad: 'II', ref: 180 - norm, refRad: null },
+        { from: 180, to: 270, quad: 'III', ref: norm - 180, refRad: null },
+        { from: 270, to: 360, quad: 'IV', ref: 360 - norm, refRad: null }
+    ];
+    const q = table90.find(r => norm >= r.from && norm < r.to) || table90[0];
+    quadrant = q.quad;
+    baseAngle = q.ref;
+
+    // Определяем, как меняется функция и знак
+    // Работаем по правилу: если угол вида 90°±α, 180°±α, 270°±α, 360°±α
+    let resultFunc = func;
+    let resultSign = '+';
+
+    // Определяем четверть исходного угла
+    const origQuad = quadrant;
+
+    // Функция в приведённой форме
+    if (func === 'sin' || func === 'cos' || func === 'tan' || func === 'cot') {
+        // Ищем представление: norm = A*90 + baseAngle, где A — число квадрантов
+        let A = Math.floor(norm / 90);
+        let baseNorm = norm - A * 90;  // 0..90
+        if (A === 0) {
+            // 0..90
+            resultFunc = func;
+            resultSign = '+';
+        } else if (A === 1) {
+            // 90..180
+            if (func === 'sin') { resultFunc = 'cos'; resultSign = '+'; }
+            else if (func === 'cos') { resultFunc = 'sin'; resultSign = '-'; }
+            else if (func === 'tan') { resultFunc = 'ctg'; resultSign = '-'; }
+            else { resultFunc = 'tg'; resultSign = '-'; }
+        } else if (A === 2) {
+            // 180..270
+            if (func === 'sin') { resultFunc = 'sin'; resultSign = '-'; }
+            else if (func === 'cos') { resultFunc = 'cos'; resultSign = '-'; }
+            else if (func === 'tan') { resultFunc = 'tan'; resultSign = '+'; }
+            else { resultFunc = 'ctg'; resultSign = '+'; }
+        } else {
+            // 270..360
+            if (func === 'sin') { resultFunc = 'cos'; resultSign = '-'; }
+            else if (func === 'cos') { resultFunc = 'sin'; resultSign = '+'; }
+            else if (func === 'tan') { resultFunc = 'ctg'; resultSign = '+'; }
+            else { resultFunc = 'tg'; resultSign = '+'; }
+        }
+
+        // Проверяем знак исходной функции в исходной четверти
+        let origValue;
+        const radians = norm * Math.PI / 180;
+        if (func === 'sin') origValue = Math.sin(radians);
+        else if (func === 'cos') origValue = Math.cos(radians);
+        else if (func === 'tan') origValue = Math.tan(radians);
+        else origValue = 1 / Math.tan(radians);
+
+        // Приведённое значение
+        let refValue;
+        const refRad = baseNorm * Math.PI / 180;
+        if (resultFunc === 'sin') refValue = Math.sin(refRad);
+        else if (resultFunc === 'cos') refValue = Math.cos(refRad);
+        else if (resultFunc === 'tan') refValue = Math.tan(refRad);
+        else refValue = 1 / Math.tan(refRad);
+
+        // Определяем знак: origValue ≈ sign * refValue
+        if (Math.abs(origValue - refValue) < Math.abs(origValue + refValue)) {
+            resultSign = '+';
+        } else {
+            resultSign = '−';
+        }
+
+        return { quadrant: origQuad, baseAngle: baseNorm, resultFunc, resultSign, baseAngleText: `${baseNorm}°` };
+    }
+}
+
+function renderReduction() {
+    reductionAngleVal.textContent = reductionAngle + '°';
+    const info = reductionInfo(reductionAngle, reductionFunc_);
+
+    // Численное значение
+    const radians = reductionAngle * Math.PI / 180;
+    let val;
+    if (reductionFunc_ === 'sin') val = Math.sin(radians);
+    else if (reductionFunc_ === 'cos') val = Math.cos(radians);
+    else if (reductionFunc_ === 'tan') val = Math.tan(radians);
+    else val = 1 / Math.tan(radians);
+
+    // Знак исходной функции в четверти
+    const quadSigns = {
+        'sin': { I:'+', II:'+', III:'−', IV:'−' },
+        'cos': { I:'+', II:'−', III:'−', IV:'+' },
+        'tan': { I:'+', II:'−', III:'+', IV:'−' },
+        'cot': { I:'+', II:'−', III:'+', IV:'−' }
+    };
+    const origSign = quadSigns[reductionFunc_][info.quadrant];
+
+    const fmtVal = isFinite(val) ? fmt(val) : '—';
+    const signDisplay = info.resultSign === '−' ? '−' : '';
+
+    const funcName = { sin:'sin', cos:'cos', tan:'tg', cot:'ctg' }[reductionFunc_];
+    const resFuncName = { sin:'sin', cos:'cos', tan:'tg', cot:'ctg' }[info.resultFunc];
+
+    reductionResult.innerHTML = `
+        <div><b>${funcName}(${reductionAngle}°)</b> = <span class="val">${fmtVal}</span></div>
+        <div style="margin-top:6px;color:#cfd9e8;font-size:13px;">Четверть: <b>${info.quadrant}</b>, знак: <b>${origSign}</b></div>
+        <div style="margin-top:6px;color:#cfd9e8;font-size:13px;">Приведение:</div>
+        <div style="font-size:16px;color:#ffd93d;font-weight:800;margin-top:4px;">
+            ${funcName}(α) = ${signDisplay}${resFuncName}(${info.baseAngleText})
+        </div>
+    `;
+
+    // Отрисовать окружность
+    clear(reductionCanvas);
+    const SZ = 520;
+    const svg = makeSVG(SZ, SZ, `0 0 ${SZ} ${SZ}`);
+    reductionCanvas.appendChild(svg);
+    const RC = 170, CCX = 260, CCY = 260;
+
+    // Оси
+    svg.appendChild(svgEl('line', { x1: CCX - RC - 30, y1: CCY, x2: CCX + RC + 30, y2: CCY,
+        stroke: '#5a6a7a', 'stroke-width': 1.4 }));
+    svg.appendChild(svgEl('line', { x1: CCX, y1: CCY - RC - 30, x2: CCX, y2: CCY + RC + 30,
+        stroke: '#5a6a7a', 'stroke-width': 1.4 }));
+    svg.appendChild(svgEl('circle', { cx: CCX, cy: CCY, r: RC, fill: 'none',
+        stroke: '#5a6a7a', 'stroke-width': 1.6 }));
+
+    // Подписи четвертей
+    svg.appendChild(svgEl('text', { x: CCX + RC / 2, y: CCY - RC / 2, fill: '#3a4a5a',
+        'font-size': 26, 'font-weight': 800, 'text-anchor': 'middle',
+        'font-family': 'ui-monospace, monospace', opacity: 0.6 })).textContent = 'I';
+    svg.appendChild(svgEl('text', { x: CCX - RC / 2, y: CCY - RC / 2, fill: '#3a4a5a',
+        'font-size': 26, 'font-weight': 800, 'text-anchor': 'middle',
+        'font-family': 'ui-monospace, monospace', opacity: 0.6 })).textContent = 'II';
+    svg.appendChild(svgEl('text', { x: CCX - RC / 2, y: CCY + RC / 2 + 8, fill: '#3a4a5a',
+        'font-size': 26, 'font-weight': 800, 'text-anchor': 'middle',
+        'font-family': 'ui-monospace, monospace', opacity: 0.6 })).textContent = 'III';
+    svg.appendChild(svgEl('text', { x: CCX + RC / 2, y: CCY + RC / 2 + 8, fill: '#3a4a5a',
+        'font-size': 26, 'font-weight': 800, 'text-anchor': 'middle',
+        'font-family': 'ui-monospace, monospace', opacity: 0.6 })).textContent = 'IV';
+
+    // Угол
+    const norm = ((reductionAngle % 360) + 360) % 360;
+    const rad = norm * Math.PI / 180;
+    const px = CCX + RC * Math.cos(rad);
+    const py = CCY - RC * Math.sin(rad);
+
+    // Сектор
+    const largeArc = norm > 180 ? 1 : 0;
+    svg.appendChild(svgEl('path', {
+        d: `M ${CCX} ${CCY} L ${CCX + RC} ${CCY} A ${RC} ${RC} 0 ${largeArc} 0 ${px} ${py} Z`,
+        fill: 'var(--yellow)', opacity: 0.13 }));
+    svg.appendChild(svgEl('path', {
+        d: `M ${CCX + RC} ${CCY} A ${RC} ${RC} 0 ${largeArc} 0 ${px} ${py}`,
+        fill: 'none', stroke: 'var(--yellow)', 'stroke-width': 3 }));
+
+    // Радиус
+    svg.appendChild(svgEl('line', { x1: CCX, y1: CCY, x2: px, y2: py,
+        stroke: 'var(--accent)', 'stroke-width': 3 }));
+    svg.appendChild(svgEl('circle', { cx: px, cy: py, r: 7, fill: 'var(--red)',
+        stroke: '#fff', 'stroke-width': 1.5 }));
+
+    // Подпись угла
+    svg.appendChild(svgEl('text', { x: px + 20, y: py - 15, fill: '#fff',
+        'font-size': 16, 'font-weight': 800, 'font-family': 'ui-monospace, monospace' }))
+        .textContent = reductionAngle + '°';
+
+    // Связанный (приведённый) угол — отражение к ближайшей оси
+    let relatedRad = 0;
+    if (norm < 90) relatedRad = rad;
+    else if (norm < 180) relatedRad = Math.PI - rad;
+    else if (norm < 270) relatedRad = rad - Math.PI;
+    else relatedRad = 2 * Math.PI - rad;
+
+    const rx = CCX + RC * Math.cos(relatedRad);
+    const ry = CCY - RC * Math.sin(relatedRad);
+    svg.appendChild(svgEl('line', { x1: CCX, y1: CCY, x2: rx, y2: ry,
+        stroke: 'var(--green)', 'stroke-width': 2.5, 'stroke-dasharray': '6 4' }));
+    svg.appendChild(svgEl('circle', { cx: rx, cy: ry, r: 6, fill: 'var(--green)',
+        stroke: '#fff', 'stroke-width': 1.5 }));
+    svg.appendChild(svgEl('text', { x: rx - 25, y: ry + 20, fill: 'var(--green)',
+        'font-size': 14, 'font-weight': 800, 'font-family': 'ui-monospace, monospace' }))
+        .textContent = info.baseAngleText;
+}
+
+/* ============================================================
+   УПРАВЛЕНИЕ
+   ============================================================ */
+
+const SCENES = [
+    { title: 'Радиус окружности', subtitle: 'Начнём с окружности радиуса R',
+      caption: 'Проведём радиус — отрезок от центра до окружности.', render: scene1 },
+    { title: 'Дуга длиной в радиус', subtitle: 'Отложим дугу, равную радиусу',
+      caption: 'Пройдём по окружности дугу длиной <b>R</b>.', render: scene2 },
+    { title: 'Центральный угол', subtitle: 'Этот угол называется 1 радиан',
+      caption: 'Угол между радиусами — <b>1 радиан</b>.', render: scene3 },
+    { title: 'Сколько радиан в окружности?', subtitle: 'Примерно 6 секторов по 1 радиану',
+      caption: 'Получаем примерно <b>6 радиан</b> (точнее — <b>2π</b>).', render: scene4 },
+    { title: 'Пропорция и формула', subtitle: 'Кликайте по карточкам справа',
+      caption: 'Кликайте по формулам справа, чтобы открыть их одну за другой.',
+      render: scene5,
+      onEnter: () => {
+          factsCol.style.display = 'flex';
+          factsCol.querySelectorAll('.fact-card').forEach(c => c.classList.remove('revealed'));
+      },
+      onLeave: () => { factsCol.style.display = 'none'; } },
+    { title: 'Таблица углов', subtitle: 'Углы от правой точки, против часовой',
+      caption: 'Кликните на угол слева — увидите его меру в радианах.',
+      isTable: true,
+      onEnter: () => { piPlate.classList.add('on'); },
+      onLeave: () => { piPlate.classList.remove('on'); } },
+    { title: 'Единичная окружность: sin, cos, tg, ctg',
+      subtitle: 'Перетащите точку — выберите функцию',
+      caption: 'Потяните красную точку и выберите функцию ниже.',
+      isUnit: true },
+    { title: 'Простейшие тригонометрические уравнения',
+      subtitle: 'Выберите уравнение слева — увидите решения',
+      caption: 'Выберите уравнение, добавляйте обороты, нажмите «Ответ».',
+      isEq: true },
+    { title: 'Динамическая визуализация графика',
+      subtitle: 'Слева окружность — справа график',
+      caption: 'Выберите функцию, режим и настройте параметры.',
+      isGraph: true },
+    { title: 'Тригонометрические формулы',
+      subtitle: 'Основные тождества и формулы',
+      caption: 'Выберите формулу слева — справа увидите детали.',
+      isFormulas: true },
+    { title: 'Формулы приведения',
+      subtitle: 'Приведение углов к острому углу',
+      caption: 'Выберите угол и функцию — увидите приведение и численное значение.',
+      isReduction: true }
+];
+
+stepTotalEl.textContent = SCENES.length;
+
+function renderScene(idx) {
+    clear(canvasWrap);
+    captionEl.style.display = '';
+    captionEl.innerHTML = '';
+    anglesLayout.classList.remove('active');
+    unitLayout.classList.remove('active');
+    eqLayout.classList.remove('active');
+    graphLayout.classList.remove('active');
+    formulasLayout.classList.remove('active');
+    reductionLayout.classList.remove('active');
+    factsCol.style.display = 'none';
+    piPlate.classList.remove('on');
+    answerPanel.classList.remove('on');
+    stopAuto();
+
+    if (SCENES[currentStep] && SCENES[currentStep].onLeave) {
+        try { SCENES[currentStep].onLeave(); } catch(e){}
+    }
+
+    const scene = SCENES[idx];
+    titleEl.textContent = scene.title;
+    subtitleEl.textContent = scene.subtitle;
+    stepNumEl.textContent = idx + 1;
+    btnPrev.disabled = idx === 0;
+    btnNext.disabled = idx === SCENES.length - 1;
+
+    if (scene.isTable) {
+        canvasWrap.style.display = 'none';
+        anglesLayout.classList.add('active');
+        buildAnglesTable();
+        if (selectedAngle === null) selectedAngle = 90;
+        selectAngle(selectedAngle);
+    } else if (scene.isUnit) {
+        canvasWrap.style.display = 'none';
+        unitLayout.classList.add('active');
+        buildUnitScene();
+    } else if (scene.isEq) {
+        canvasWrap.style.display = 'none';
+        eqLayout.classList.add('active');
+        buildEqScene();
+    } else if (scene.isGraph) {
+        canvasWrap.style.display = 'none';
+        graphLayout.classList.add('active');
+        buildGraphScene();
+    } else if (scene.isFormulas) {
+        canvasWrap.style.display = 'none';
+        formulasLayout.classList.add('active');
+        buildFormulasScene();
+    } else if (scene.isReduction) {
+        canvasWrap.style.display = 'none';
+        reductionLayout.classList.add('active');
+        buildReductionScene();
+    } else {
+        canvasWrap.style.display = '';
+        const svg = makeSVG();
+        canvasWrap.appendChild(svg);
+        drawCircle(svg);
+        scene.render(svg);
+        captionEl.innerHTML = scene.caption;
+    }
+
+    if (scene.onEnter) {
+        try { scene.onEnter(); } catch(e){}
+    }
+}
+
+factsCol.addEventListener('click', (e) => {
+    const card = e.target.closest('.fact-card');
+    if (!card) return;
+    card.classList.add('revealed');
+});
+
+function nextScene() {
+    if (currentStep < SCENES.length - 1) {
+        if (SCENES[currentStep].onLeave) SCENES[currentStep].onLeave();
+        currentStep++;
+        renderScene(currentStep);
+    }
+}
+function prevScene() {
+    if (currentStep > 0) {
+        if (SCENES[currentStep].onLeave) SCENES[currentStep].onLeave();
+        currentStep--;
+        renderScene(currentStep);
+    }
+}
+function resetAll() {
+    if (SCENES[currentStep].onLeave) SCENES[currentStep].onLeave();
+    currentStep = 0;
+    selectedAngle = null;
+    unitAngle = 45 * Math.PI / 180;
+    unitFunc = 'sin';
+    eqSelected = null;
+    eqTurns = 0;
+    graphAngle = 0;
+    graphFunc = 'sin';
+    graphMode_ = 'manual';
+    paramA_ = 1; paramB_ = 0; paramC_ = 0; paramW_ = 1;
+    paramA.value = 1; paramB.value = 0; paramC.value = 0; paramW.value = 1;
+    valA.textContent = '1'; valB.textContent = '0';
+    valC.textContent = '0'; valW.textContent = '1';
+    reductionAngle = 150;
+    reductionSlider.value = 150;
+    reductionFunc_ = 'sin';
+    reductionFunc.value = 'sin';
+    stopAuto();
+    answerPanel.classList.remove('on');
+    renderScene(0);
+}
+
+btnNext.addEventListener('click', nextScene);
+btnPrev.addEventListener('click', prevScene);
+btnReset.addEventListener('click', resetAll);
+
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextScene(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevScene(); }
+});
+
+renderScene(0);
+</script>
+</body>
+</html>
