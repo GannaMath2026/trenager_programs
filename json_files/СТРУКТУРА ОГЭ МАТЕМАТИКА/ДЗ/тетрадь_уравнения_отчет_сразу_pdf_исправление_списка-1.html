@@ -85,52 +85,43 @@ const GITHUB_REPO="gannamath2026/trenager_programs";
 const GITHUB_FOLDER="json_files/СТРУКТУРА ОГЭ МАТЕМАТИКА/ДЗ";
 const GITHUB_HOMEWORK_BASE="https://gannamath2026.github.io/trenager_programs/json_files/СТРУКТУРА ОГЭ МАТЕМАТИКА/ДЗ";
 let availableHomeworkFiles=[];
-function githubApiFolderUrl(){return "https://api.github.com/repos/"+GITHUB_REPO+"/contents/"+GITHUB_FOLDER.split("/").map(encodeURIComponent).join("/")}
 async function updateHomeworkList(){
  const sel=$("homeworkSelect"), old=sel.value, btn=$("refreshHomeworkList");
  btn.disabled=true; sel.innerHTML="";
- const waiting=document.createElement("option"); waiting.value=""; waiting.textContent="Ищу файлы ДЗ на GitHub…"; sel.appendChild(waiting);
- setStatus("Получаю актуальный список файлов из папки ДЗ на GitHub…");
- const folder=GITHUB_FOLDER.replace(/^\/+|\/+$/g,"");
- const folderUrl="https://api.github.com/repos/"+GITHUB_REPO+"/contents/"+folder.split("/").map(encodeURIComponent).join("/");
- let lastError="";
+ const waiting=document.createElement("option");waiting.value="";waiting.textContent="Проверяю файлы ДЗ на GitHub…";sel.appendChild(waiting);
+ setStatus("Проверяю реальные файлы ДЗ на GitHub Pages…");
  try{
-  let entries=null;
-  // Сперва запрашиваем именно содержимое нужной папки.
-  try{
-   const r=await fetch(folderUrl,{headers:{Accept:"application/vnd.github+json"},cache:"no-store"});
-   if(!r.ok) throw new Error("GitHub Contents API: HTTP "+r.status);
-   const body=await r.json();
-   if(!Array.isArray(body)) throw new Error("GitHub вернул не список файлов");
-   entries=body;
-  }catch(e){lastError=e.message||String(e)}
-  // Резервный способ: дерево репозитория (помогает, если Contents API не отрабатывает).
-  if(!entries){
-   for(const branch of ["main","master"]){
+  // GitHub API иногда отвечает 403 (лимит/доступ). Поэтому проверяем сами публичные JSON-файлы Pages.
+  // Это не выдуманный список: в меню попадут только файлы, которые реально существуют и возвращают JSON.
+  const found=[]; let networkErrors=0;
+  for(let first=1;first<=200;first+=10){
+   const nums=Array.from({length:Math.min(10,201-first)},(_,i)=>first+i);
+   const results=await Promise.all(nums.map(async n=>{
+    const name=`ДЗ ${n}.json`, url=githubFileUrl(GITHUB_HOMEWORK_BASE,name);
     try{
-     const treeUrl="https://api.github.com/repos/"+GITHUB_REPO+"/git/trees/"+branch+"?recursive=1";
-     const r=await fetch(treeUrl,{headers:{Accept:"application/vnd.github+json"},cache:"no-store"});
-     if(!r.ok){lastError="GitHub Tree API ("+branch+"): HTTP "+r.status;continue}
-     const body=await r.json();
-     if(!Array.isArray(body.tree)) {lastError="GitHub не вернул дерево файлов";continue}
-     const prefix=folder+"/";
-     entries=body.tree.filter(x=>x.type==="blob"&&x.path.startsWith(prefix)&&!x.path.slice(prefix.length).includes("/"))
-       .map(x=>({type:"file",name:x.path.slice(prefix.length),path:x.path}));
-     break;
-    }catch(e){lastError=e.message||String(e)}
-   }
+     const r=await fetch(url,{cache:"no-store"});
+     if(!r.ok) return null;
+     const txt=await r.text();
+     const data=JSON.parse(txt);
+     if(findTaskArray(data)) return {name,url};
+     return null;
+    }catch(e){ if(e instanceof TypeError) networkErrors++; return null; }
+   }));
+   results.forEach(x=>{if(x)found.push(x)});
   }
-  if(!entries) throw new Error(lastError||"Не удалось получить список файлов через GitHub API");
-  availableHomeworkFiles=entries.filter(x=>x.type==="file"&&/\.json$/i.test(x.name))
-   .sort((a,b)=>a.name.localeCompare(b.name,"ru",{numeric:true,sensitivity:"base"}));
+  availableHomeworkFiles=found.sort((a,b)=>a.name.localeCompare(b.name,"ru",{numeric:true,sensitivity:"base"}));
   sel.innerHTML="";
-  if(!availableHomeworkFiles.length){const o=document.createElement("option");o.value="";o.textContent="JSON-файлы не найдены";sel.appendChild(o);throw new Error("В папке «"+folder+"» не найдено JSON-файлов. Проверь путь и ветку репозитория.")}
+  if(!availableHomeworkFiles.length){
+   const o=document.createElement("option");o.value="";o.textContent="Не удалось найти файлы ДЗ";sel.appendChild(o);
+   if(networkErrors) throw new Error("браузер не разрешил прочитать JSON с GitHub Pages (возможен CORS или отсутствие доступа к сайту)");
+   throw new Error("не найден ни один доступный файл «ДЗ N.json» с номером от 1 до 200");
+  }
   for(const f of availableHomeworkFiles){const o=document.createElement("option");o.value=f.name;o.textContent=f.name.replace(/\.json$/i,"");sel.appendChild(o)}
   if(availableHomeworkFiles.some(f=>f.name===old))sel.value=old;
-  setStatus("Список обновлён: найдено файлов — "+availableHomeworkFiles.length+".","ok");
+  setStatus(`Список обновлён: найдено реальных файлов — ${availableHomeworkFiles.length}.`,"ok");
  }catch(e){
-  sel.innerHTML="";const o=document.createElement("option");o.value="";o.textContent="Список не загрузился — нажми обновить";sel.appendChild(o);
-  setStatus("Не удалось получить список с GitHub. Причина: "+(e.message||String(e))+". Если ошибка повторяется при открытии HTML с компьютера, размести приложение на GitHub Pages или проверь доступ к api.github.com.","warn");
+  sel.innerHTML="";const o=document.createElement("option");o.value="";o.textContent="Список не загружен — повтори попытку";sel.appendChild(o);
+  setStatus("Не удалось получить список ДЗ: "+(e.message||String(e))+". GitHub API для списка больше не используется.","warn");
  }finally{btn.disabled=false}
 }
 function githubFileUrl(base,file){
