@@ -1,0 +1,355 @@
+<!doctype html>
+
+<!--
+ПРОМПТ ДЛЯ CHATGPT — ПРОВЕРКА ЭТОГО ПРИЛОЖЕНИЯ
+Когда пользователь загружает этот HTML-файл и просит проверить его, сначала изучи весь файл и дай краткий вердикт на русском языке:
+1) Работает ли сценарий ученика: список заданий → снимок только через камеру → несколько фото на задание → один общий отчёт.
+2) Сохраняется ли отчёт в самостоятельный файл, включающий задания и все фотографии.
+3) Удобно ли отправить файл учителю через обычный Telegram-чат.
+4) Безопасность фотографий и разрешений: камера запускается только после нажатия пользователем кнопки; выбора фото из галереи нет. Не заявляй, что фото загружаются на сервер, если этого нет в коде.
+5) В отчёте порядок для каждого задания: УСЛОВИЕ → ПРАВИЛЬНЫЙ ОТВЕТ (ТОЛЬКО ДЛЯ УЧИТЕЛЯ) → ФОТО РЕШЕНИЯ УЧЕНИКА → следующее задание.
+6) Отдельно укажи критические ошибки, риски приватности и функции, которые не работают. Не додумывай отсутствующие возможности.
+Формат ответа: «Вердикт: ГОТОВО / ЧАСТИЧНО ГОТОВО / НЕ ГОТОВО», затем не более 5 коротких пунктов: что работает, что не работает, риск безопасности, что исправить в первую очередь. Не переписывай всё приложение и не давай длинных объяснений без прямого запроса.
+ВАЖНО: если правильный ответ включён в ученический HTML/JavaScript, он технически не является секретом — ученик может изучить исходный код. Для настоящей конфиденциальности ключ ответов должен храниться отдельно и быть доступен только учителю/серверу.
+-->
+
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Уравнения в тетради — отчёт учителю</title>
+<style>
+:root{--ink:#20284b;--muted:#697397;--purple:#6c55ed;--line:#e4defa;--bg:#f5f2ff;--pink:#ffeaf2;--green:#e1faef}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#eeeaff,#fff2f7);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+header{padding:22px max(18px,calc((100vw - 1080px)/2));background:#fffdfefa;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{font-weight:800;font-size:20px}.subtitle{color:var(--muted);font-size:13px;margin-top:5px}
+main{max-width:1080px;margin:24px auto;padding:0 16px 44px}.panel{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;margin-bottom:18px;box-shadow:0 12px 36px #4b36840c}
+h1{font-size:clamp(25px,4vw,34px);margin:0 0 8px}h2{font-size:21px;margin:0 0 14px}p{line-height:1.5}.muted{color:var(--muted);font-size:13px}
+label{font-weight:700;font-size:14px;display:block;margin:0 0 7px}input[type=text],textarea{font:inherit;border:1px solid #dcd5f6;border-radius:12px;padding:12px;width:100%;color:var(--ink);background:#fff}textarea{min-height:115px;resize:vertical}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.field{margin:14px 0}
+button,.button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:11px 15px;border-radius:12px;font-weight:700;cursor:pointer;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+button.primary{background:linear-gradient(120deg,#6c55ed,#8a5bea);color:white;border:0;box-shadow:0 6px 14px #6c55ed30}button.danger{color:#b4233a;background:#fff1f3;border-color:#ffcbd3}button:disabled{opacity:.45;cursor:not-allowed}
+.task{border:1px solid var(--line);border-radius:18px;margin:0;overflow:hidden;background:#fff;min-width:0}.task-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.task-image{display:block;width:90px;height:90px;max-width:90px;max-height:90px;object-fit:cover;border:1px solid var(--line);border-radius:8px;margin:8px 0;cursor:zoom-in}.teacher-fields{padding:12px 0 0;border-top:1px dashed var(--line);margin-top:12px}.teacher-fields input{margin-bottom:8px}.modebar{display:flex;gap:8px;flex-wrap:wrap}.modebar button.active{background:#272344;color:#fff;border-color:#272344}.task-body .equation{font-size:20px}.task-body{min-width:0;overflow-wrap:anywhere}
+.task-head{padding:15px 17px;background:linear-gradient(110deg,#f0ecff,#fff0f5);display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+.task-title{font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:800;color:#5b49c8;margin-bottom:8px}
+.equation{font-size:clamp(22px,3vw,30px);font-weight:750;line-height:1.4;overflow-wrap:anywhere}
+.task-body{padding:16px 17px}.photo-grid{display:grid;grid-template-columns:repeat(3,58px);gap:5px;margin-top:10px}
+.photo{position:relative;width:58px;height:58px;border:1px solid var(--line);border-radius:7px;padding:2px;background:#faf9ff;overflow:hidden}.photo img{width:52px;height:52px;object-fit:cover;border-radius:4px;background:#f2f2f5}.photo small{display:none}.photo small{display:block;padding:2px;color:var(--muted);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.photo button{padding:0 4px;font-size:12px;position:absolute;right:1px;top:1px;background:#fff0f3;color:#b4233a}
+.camera-box{position:fixed;inset:0;background:#101323eF;z-index:99;display:flex;align-items:center;justify-content:center;padding:14px}.camera-card{background:white;border-radius:18px;padding:16px;width:min(600px,100%)}.camera-card video{display:block;width:100%;max-height:65vh;background:#111;border-radius:12px;object-fit:contain}.camera-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.camera-actions button{flex:1}
+.paste-zone{border:2px dashed #9d8de9;border-radius:14px;background:#f8f6ff;padding:15px;text-align:center;color:#5140bd;font-weight:700;outline:none;cursor:text}.paste-zone:focus{border-color:#6c55ed;box-shadow:0 0 0 3px #6c55ed22}.paste-preview{display:flex;align-items:center;gap:10px;margin-top:8px}.paste-preview img{width:54px;height:54px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff}.upload{display:inline-flex;align-items:center;gap:8px;border:1px dashed #9d8de9;border-radius:12px;background:#f7f4ff;padding:11px 14px;color:#5140bd;font-weight:700;cursor:pointer}.upload input{display:none}
+.status{border-radius:14px;padding:12px 14px;background:#f4f1ff;color:#5140bd;font-size:14px;margin-top:12px}.status.ok{background:var(--green);color:#146548}.status.warn{background:#fff3df;color:#87520c}
+.progress{height:8px;background:#eeeaf9;border-radius:9px;overflow:hidden;margin:12px 0}.progress span{display:block;height:100%;background:linear-gradient(90deg,#6c55ed,#ff78a4);width:0}
+.report-preview{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}.report-task{padding:14px 0;border-bottom:1px solid #ddd6f7}.report-task:last-child{border-bottom:0}.report-task h3{margin:0 0 8px}.report-task p{margin:0 0 10px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:16px}
+@media(max-width:650px){header{padding:16px}main{margin-top:14px}.panel{padding:16px}.task-grid{grid-template-columns:1fr}.task-head{flex-direction:column}.row>*{flex-basis:100%}}
+@media print{body{background:#fff}.noprint,header,.panel.setup{display:none!important}main{max-width:none;margin:0;padding:0}.panel{border:0;box-shadow:none;padding:0}.report-preview{border:0;padding:0}.report-task{break-inside:avoid}.report-task img{max-width:100%;max-height:75vh;object-fit:contain}.report-photo{display:block;max-width:100%;max-height:75vh;margin:8px 0 14px;page-break-inside:avoid}}
+.answer-feedback{min-height:22px;margin:8px 0;font-weight:800}.answer-feedback.correct{color:#137547}.answer-feedback.incorrect{color:#b4233a}[data-student-photos]{display:block;width:100%;margin:8px 0;padding:10px;border:1px solid var(--line);border-radius:10px;background:#faf9ff}
+</style>
+</head>
+<body>
+<header><div><div class="brand">✦ Уравнения в тетради</div><div class="subtitle">Решай от руки · прикрепляй фото · отправляй один отчёт</div></div><button id="clearAll" class="danger noprint">Очистить текущую работу</button></header>
+<main>
+<div class="modebar" style="margin:14px 0 18px"><button id="teacherMode">✏️ Учитель</button><button id="studentMode" class="active">📘 Ученик</button></div>
+<div class="panel noprint"><h2>Сохранение работы</h2><p class="muted">Сохраняй весь набор заданий, правильные и ученические ответы, результаты проверки и все фотографии в файл. При возвращении открой последний сохранённый файл — продолжишь с актуальной версией на момент сохранения.</p><div class="row"><button class="primary" id="saveWork">⬇️ Сохранить работу в файл</button><label class="upload" for="loadWorkFile">📂 Открыть сохранённую работу<input id="loadWorkFile" type="file" accept=".json,application/json"></label></div><p class="muted">Файл содержит фотографии и ответы учителя. Не отправляй его ученику, если ответы должны оставаться секретными.</p></div>
+<div class="panel" style="padding:14px 18px"><div class="field"><label for="student">Имя ученика</label><input id="student" type="text" placeholder="Например, Миша"></div></div>
+<section class="panel setup" id="homeworkLibraryPanel">
+<h2>Домашнее задание</h2>
+<div class="field"><label for="homeworkSelect">Выбери ДЗ</label><select id="homeworkSelect" style="width:100%;padding:12px;border:1px solid #dcd5f6;border-radius:12px;font:inherit"></select></div>
+<div class="row"><button class="primary" id="loadHomework">Загрузить выбранное ДЗ</button><button id="refreshHomeworkList">Подгрузить актуальные ДЗ</button></div>
+</section>
+<section class="panel setup" id="teacherPanel" hidden>
+<h1>Редактор заданий</h1>
+<p class="muted">В режиме «Учитель» добавляй текстовые задания или условия-картинки. Они появляются ниже отдельными карточками. Переключись в режим «Ученик», чтобы решать и фотографировать работу. Ученик вводит ответ для мгновенной проверки и может прикрепить фото решения из галереи.</p>
+
+
+<div class="field"><label for="newTaskText">Текст задания (необязательно, если условие — картинка)</label><textarea id="newTaskText" placeholder="Введи условие или короткое название задания"></textarea></div>
+<div class="field"><label>Условие-картинка</label><div id="newImagePasteZone" class="paste-zone" tabindex="0">Нажми сюда и вставь картинку из буфера обмена (Ctrl+V)</div><div class="muted">Можно скопировать картинку и вставить сюда. На телефоне нажми и удерживай эту область, затем выбери «Вставить», если клавиатура поддерживает вставку изображения.</div><div id="newImagePreview" class="paste-preview" hidden></div><div style="margin-top:8px"><label for="newTaskImage">Или выбрать изображение из файлов</label><input id="newTaskImage" type="file" accept="image/*"></div></div>
+<div class="field"><label for="newTaskAnswer">Правильный ответ (виден только в режиме учителя)</label><input id="newTaskAnswer" type="text" placeholder="Ответ для проверки"></div>
+<div class="row"><button class="primary" id="addTask">+ Добавить задание снизу</button><button id="clearNewTask">Очистить поля</button></div>
+</section>
+<section class="panel">
+<div class="row" style="justify-content:space-between"><div><h2>Задания и фотографии</h2><div class="muted" id="countLabel">Заданий: 0 · фото: 0</div></div></div>
+<div class="progress"><span id="progressBar"></span></div>
+<div id="tasks" class="task-grid"></div>
+<div id="status" class="status">Сначала укажи имя и добавь задания. Затем прикрепи фотографии.</div>
+<div class="row noprint" style="margin-top:16px"><button class="primary" id="buildReport">Сформировать и скачать отчёт</button></div>
+</section>
+
+<footer>Автоматического сохранения нет. Перед отчётом сохрани работу в JSON-файл. При следующем открытии загрузи самый свежий файл через «Открыть сохранённую работу»: в нём будут ответы и прикрепления, сохранённые на момент последнего сохранения. Изменения после сохранения в файл не попадут.</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let tasks=[], reportText="", currentMode="student", pendingNewImage="", reportAnswersAuthorized=false;
+const TEACHER_PASSWORD="баб";
+const GITHUB_REPO="gannamath2026/trenager_programs";
+const GITHUB_FOLDER="json_files/СТРУКТУРА ОГЭ МАТЕМАТИКА/ДЗ";
+const GITHUB_HOMEWORK_BASE="https://gannamath2026.github.io/trenager_programs/json_files/СТРУКТУРА ОГЭ МАТЕМАТИКА/ДЗ";
+let availableHomeworkFiles=[];
+function githubApiFolderUrl(){return "https://api.github.com/repos/"+GITHUB_REPO+"/contents/"+GITHUB_FOLDER.split("/").map(encodeURIComponent).join("/")}
+async function updateHomeworkList(){
+ const sel=$("homeworkSelect"), old=sel.value, btn=$("refreshHomeworkList");
+ btn.disabled=true; sel.innerHTML="";
+ const waiting=document.createElement("option"); waiting.value=""; waiting.textContent="Ищу файлы ДЗ на GitHub…"; sel.appendChild(waiting);
+ setStatus("Получаю актуальный список файлов из папки ДЗ на GitHub…");
+ const folder=GITHUB_FOLDER.replace(/^\/+|\/+$/g,"");
+ const folderUrl="https://api.github.com/repos/"+GITHUB_REPO+"/contents/"+folder.split("/").map(encodeURIComponent).join("/");
+ let lastError="";
+ try{
+  let entries=null;
+  // Сперва запрашиваем именно содержимое нужной папки.
+  try{
+   const r=await fetch(folderUrl,{headers:{Accept:"application/vnd.github+json"},cache:"no-store"});
+   if(!r.ok) throw new Error("GitHub Contents API: HTTP "+r.status);
+   const body=await r.json();
+   if(!Array.isArray(body)) throw new Error("GitHub вернул не список файлов");
+   entries=body;
+  }catch(e){lastError=e.message||String(e)}
+  // Резервный способ: дерево репозитория (помогает, если Contents API не отрабатывает).
+  if(!entries){
+   for(const branch of ["main","master"]){
+    try{
+     const treeUrl="https://api.github.com/repos/"+GITHUB_REPO+"/git/trees/"+branch+"?recursive=1";
+     const r=await fetch(treeUrl,{headers:{Accept:"application/vnd.github+json"},cache:"no-store"});
+     if(!r.ok){lastError="GitHub Tree API ("+branch+"): HTTP "+r.status;continue}
+     const body=await r.json();
+     if(!Array.isArray(body.tree)) {lastError="GitHub не вернул дерево файлов";continue}
+     const prefix=folder+"/";
+     entries=body.tree.filter(x=>x.type==="blob"&&x.path.startsWith(prefix)&&!x.path.slice(prefix.length).includes("/"))
+       .map(x=>({type:"file",name:x.path.slice(prefix.length),path:x.path}));
+     break;
+    }catch(e){lastError=e.message||String(e)}
+   }
+  }
+  if(!entries) throw new Error(lastError||"Не удалось получить список файлов через GitHub API");
+  availableHomeworkFiles=entries.filter(x=>x.type==="file"&&/\.json$/i.test(x.name))
+   .sort((a,b)=>a.name.localeCompare(b.name,"ru",{numeric:true,sensitivity:"base"}));
+  sel.innerHTML="";
+  if(!availableHomeworkFiles.length){const o=document.createElement("option");o.value="";o.textContent="JSON-файлы не найдены";sel.appendChild(o);throw new Error("В папке «"+folder+"» не найдено JSON-файлов. Проверь путь и ветку репозитория.")}
+  for(const f of availableHomeworkFiles){const o=document.createElement("option");o.value=f.name;o.textContent=f.name.replace(/\.json$/i,"");sel.appendChild(o)}
+  if(availableHomeworkFiles.some(f=>f.name===old))sel.value=old;
+  setStatus("Список обновлён: найдено файлов — "+availableHomeworkFiles.length+".","ok");
+ }catch(e){
+  sel.innerHTML="";const o=document.createElement("option");o.value="";o.textContent="Список не загрузился — нажми обновить";sel.appendChild(o);
+  setStatus("Не удалось получить список с GitHub. Причина: "+(e.message||String(e))+". Если ошибка повторяется при открытии HTML с компьютера, размести приложение на GitHub Pages или проверь доступ к api.github.com.","warn");
+ }finally{btn.disabled=false}
+}
+function githubFileUrl(base,file){
+ const clean=String(base||"").trim().replace(/\/+$/g,"");
+ // Кодируем каждый сегмент пути отдельно: кириллица и пробелы должны быть URL-encoded,
+ // а разделители между папками остаются обычными слешами.
+ const encoded=String(file).split("/").map(part=>encodeURIComponent(part)).join("/");
+ return clean+"/"+encoded;
+}
+function findTaskArray(data){
+ if(Array.isArray(data)) return data;
+ if(!data || typeof data!=="object") return null;
+ const keys=["tasks","задания","Задания","questions","problems","items","data","упражнения","задачи"];
+ for(const key of keys) if(Array.isArray(data[key])) return data[key];
+ for(const key of ["homework","дз","ДЗ","content","result","payload","worksheet"]){
+  const nested=data[key];
+  if(Array.isArray(nested)) return nested;
+  if(nested && typeof nested==="object") { const found=findTaskArray(nested); if(found) return found; }
+ }
+ const vals=Object.values(data);
+ if(vals.length && vals.every(v=>v && typeof v==="object" && !Array.isArray(v)) && vals.some(v=>["text","condition","task","условие","question","задание"].some(k=>k in v))) return vals;
+ return null;
+}
+function mapHomeworkTask(t,index){
+ if(typeof t==="string") return {id:uid(),text:t,answer:"",studentAnswer:"",checked:false,isCorrect:false,image:"",photos:[]};
+ t=t && typeof t==="object" ? t : {};
+ const pick=(...keys)=>{for(const k of keys) if(t[k]!==undefined && t[k]!==null && t[k]!=="") return t[k]; return ""};
+ let text=pick("text","condition","task","question","statement","title","условие","задание","текст","условие задачи","name","content");
+ let image=pick("image","img","picture","imageUrl","image_url","условиеКартинка","картинка");
+ if(text && typeof text==="object") { image=image||text.image||text.img||""; text=text.text||text.content||text.value||text.condition||text.question||""; }
+ if(Array.isArray(text)) text=text.join("\n");
+ if(typeof image!=="string") image="";
+ const answer=pick("answer","correctAnswer","correct_answer","solution","ответ","правильный ответ","верныйОтвет","result");
+ return {id:uid(),text:String(text||(!image?`Задание ${index+1}`:"")),answer:String(answer||""),studentAnswer:"",checked:false,isCorrect:false,image,photos:[]};
+}
+async function loadHomework(){
+ const file=$("homeworkSelect").value;
+ if(!file){setStatus("Сначала нажми «Подгрузить актуальные ДЗ» и выбери файл из найденного списка.","warn");return}
+ const url=githubFileUrl(GITHUB_HOMEWORK_BASE,file);
+ const button=$("loadHomework"); button.disabled=true;
+ setStatus(`Загружаю ${file}…`);
+ try{
+  let response;
+  try{response=await fetch(url,{cache:"no-store"});}
+  catch(netErr){throw new Error("Браузер не смог получить файл с GitHub. Проверь интернет и доступность GitHub Pages; если HTML открыт как локальный файл, возможна блокировка CORS.");}
+  if(!response.ok) throw new Error(`GitHub вернул ошибку HTTP ${response.status}. Проверь, что файл «${file}» существует.`);
+  const raw=await response.text();
+  let data;
+  try{data=JSON.parse(raw);}catch(parseErr){throw new Error("По адресу получен не корректный JSON.");}
+  const list=findTaskArray(data);
+  if(!list || !list.length) throw new Error("Файл загружен, но список заданий не найден или пуст. Нужна структура JSON с массивом заданий.");
+  const mapped=list.map(mapHomeworkTask).filter(t=>t.text || t.image);
+  if(!mapped.length) throw new Error("Массив найден, но условия заданий не распознаны.");
+  tasks=mapped; reportAnswersAuthorized=false; render();
+  setStatus(`ДЗ загружено: ${tasks.length} заданий.`,"ok");
+ }catch(e){setStatus(`Не удалось загрузить ${file}: ${e.message}`,"warn");}
+ finally{button.disabled=false;}
+}
+function uid(){return "t"+Math.random().toString(36).slice(2,10)}
+function normalizeAnswer(value){return String(value??"").normalize("NFKC").toLocaleLowerCase("ru-RU").replace(/ё/g,"е").replace(/[\s]+/g,"").replace(/,/g,".").replace(/[−–—]/g,"-").replace(/\u00a0/g,"").trim()}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function photoCount(){return tasks.reduce((n,t)=>n+t.photos.length,0)}
+function setStatus(msg,kind=""){const el=$("status");el.textContent=msg;el.className="status "+kind}
+function setMode(mode){
+  if(mode==="teacher"){
+    const entered=prompt("Пароль учителя:");
+    if(entered===null) return;
+    if(entered.trim().toLocaleLowerCase("ru-RU")!==TEACHER_PASSWORD){
+      alert("Неверный пароль. Для режима учителя нужен пароль.");
+      return;
+    }
+  }
+  currentMode=mode;
+  const teacher=mode==="teacher";
+  $("teacherMode").classList.toggle("active",teacher);
+  $("studentMode").classList.toggle("active",!teacher);
+  $("teacherPanel").hidden=!teacher;
+  document.querySelectorAll(".teacher-only").forEach(e=>e.hidden=!teacher);
+  render();
+  setStatus(teacher?"Режим учителя: можно добавлять и редактировать задания.":"Режим ученика: условия доступны для просмотра, вводить ответы для мгновенной проверки и прикреплять фотографии из галереи.","ok");
+}
+function render(){
+ const root=$("tasks");root.innerHTML="";
+ tasks.forEach((t,i)=>{
+  const el=document.createElement("article");el.className="task";
+  const condition=t.image?`<img class="task-image" src="${t.image}" alt="Условие задания ${i+1}">`:"";
+  const text=t.text?`<div class="equation">${esc(t.text)}</div>`:"";
+  const teacherFields=currentMode==="teacher"?`<div class="teacher-fields">${t.studentAnswer!==undefined?`<p><b>Ответ ученика:</b> ${esc(t.studentAnswer||"не введён")}<br><b>Результат:</b> ${t.checked?(t.isCorrect?"Верно":"Неверно"):"ещё не проверен"}</p>`:""}<label>Редактировать условие</label><textarea data-edit-text="${t.id}" rows="3">${esc(t.text)}</textarea><label>Правильный ответ — только для учителя</label><input type="text" data-edit-answer="${t.id}" value="${esc(t.answer)}" placeholder="Правильный ответ"><label>Заменить картинку условия</label><div class="paste-zone" tabindex="0" data-paste-edit="${t.id}">Нажми сюда и вставь картинку из буфера (Ctrl+V)</div><input style="margin-top:7px" type="file" accept="image/*" data-edit-image="${t.id}"><div class="row"><button class="danger" data-remove-task="${t.id}">Удалить задание</button></div></div>`:"";
+  const studentFields=currentMode==="student"?`<div class="task-body"><label>Твой ответ</label><div class="row"><input type="text" data-student-answer="${t.id}" value="${esc(t.studentAnswer||"")}" placeholder="Введи ответ"><button class="primary" data-check-answer="${t.id}">Проверить</button></div><div class="answer-feedback ${t.checked?(t.isCorrect?"correct":"incorrect"):""}" data-feedback="${t.id}" aria-live="polite">${t.checked?(t.isCorrect?"Верно!":"Неверно. Попробуй ещё раз."):""}</div><label style="margin-top:14px">Прикрепить файл с решением</label><input type="file" accept="image/*" multiple data-student-photos="${t.id}"><div class="muted" style="margin-top:6px">Выбери один или несколько снимков тетради.</div><div class="photo-grid">${t.photos.map((ph,j)=>`<div class="photo"><img src="${ph.url||ph.data}" alt="Фото решения задания ${i+1}"><small>Фото ${j+1}</small><button class="noprint" data-remove-photo="${t.id}" data-photo-index="${j}" aria-label="Удалить фото">×</button></div>`).join("")}</div></div>`:"";
+  el.innerHTML=`<div class="task-head"><div style="min-width:0"><div class="task-title">Задание ${i+1}</div>${text}${condition}</div>${currentMode==="teacher"?"":`<span class="muted">Фото: ${t.photos.length}</span>`}</div>${studentFields}${teacherFields}`;root.appendChild(el);
+ });
+ root.querySelectorAll("[data-student-photos]").forEach(input=>input.addEventListener("change",()=>{const t=tasks.find(x=>x.id===input.dataset.studentPhotos);if(!t)return;const files=Array.from(input.files||[]);let pending=files.length;if(!pending)return;files.forEach(file=>readImage(file,data=>{t.photos.push({name:file.name||`Фото ${t.photos.length+1}`,data,url:data});pending--;if(!pending){render();setStatus("Фотографии добавлены к заданию.","ok")}}));input.value=""}));
+ root.querySelectorAll("[data-student-answer]").forEach(input=>input.addEventListener("input",()=>{const t=tasks.find(x=>x.id===input.dataset.studentAnswer);if(t){t.studentAnswer=input.value;t.checked=false;t.isCorrect=false;const fb=root.querySelector(`[data-feedback="${t.id}"]`);if(fb){fb.textContent="";fb.className="answer-feedback"}}}));
+ root.querySelectorAll("[data-check-answer]").forEach(b=>b.addEventListener("click",()=>{const t=tasks.find(x=>x.id===b.dataset.checkAnswer);if(!t)return;t.studentAnswer=root.querySelector(`[data-student-answer="${t.id}"]`)?.value||"";t.checked=true;t.isCorrect=normalizeAnswer(t.studentAnswer)!==""&&normalizeAnswer(t.studentAnswer)===normalizeAnswer(t.answer);const fb=root.querySelector(`[data-feedback="${t.id}"]`);if(fb){fb.textContent=t.isCorrect?"Верно!":"Неверно. Попробуй ещё раз.";fb.className="answer-feedback "+(t.isCorrect?"correct":"incorrect")} }));
+ root.querySelectorAll("[data-remove-task]").forEach(b=>b.addEventListener("click",()=>{tasks=tasks.filter(t=>t.id!==b.dataset.removeTask);render()}));
+ root.querySelectorAll("[data-remove-photo]").forEach(b=>b.addEventListener("click",()=>{const t=tasks.find(x=>x.id===b.dataset.removePhoto);if(t)t.photos.splice(Number(b.dataset.photoIndex),1);render()}));
+ root.querySelectorAll("[data-edit-text]").forEach(e=>e.addEventListener("change",()=>{const t=tasks.find(x=>x.id===e.dataset.editText);if(t)t.text=e.value.trim();}));
+ root.querySelectorAll("[data-edit-answer]").forEach(e=>e.addEventListener("change",()=>{const t=tasks.find(x=>x.id===e.dataset.editAnswer);if(t)t.answer=e.value.trim();}));
+ root.querySelectorAll("[data-edit-image]").forEach(e=>e.addEventListener("change",()=>{const file=e.files&&e.files[0],t=tasks.find(x=>x.id===e.dataset.editImage);if(!file||!t)return;readImage(file,data=>{t.image=data;render()})}));
+ $("countLabel").textContent=`Заданий: ${tasks.length} · фото решений: ${photoCount()}`;
+ const attached=tasks.filter(t=>t.photos.length).length;$("progressBar").style.width=(tasks.length?attached/tasks.length*100:0)+"%";
+}
+function readImage(file,done){if(!file||!file.type||!file.type.startsWith("image/")){setStatus("В буфере нет картинки. Скопируй именно изображение и попробуй снова.","warn");return}const r=new FileReader();r.onload=()=>done(String(r.result));r.onerror=()=>setStatus("Не удалось прочитать картинку.","warn");r.readAsDataURL(file)}
+function showNewImage(data){pendingNewImage=data;const preview=$("newImagePreview");preview.hidden=!data;preview.innerHTML=data?`<img src="${data}" alt="Предпросмотр условия"><span>Картинка условия добавлена</span><button type="button" id="removePendingImage">Убрать</button>`:"";const b=$("removePendingImage");if(b)b.onclick=()=>showNewImage("");}
+function handleClipboardImage(event){if(currentMode!=="teacher")return;const items=event.clipboardData&&event.clipboardData.items;if(!items)return;for(const item of items){if(item.type&&item.type.startsWith("image/")){const file=item.getAsFile();if(!file)continue;event.preventDefault();const target=document.activeElement;const editId=target&&target.dataset?target.dataset.pasteEdit:"";readImage(file,data=>{if(editId){const t=tasks.find(x=>x.id===editId);if(t){t.image=data;render();setStatus("Картинка условия заменена.","ok")}}else{showNewImage(data);setStatus("Картинка из буфера добавлена. Нажми «Добавить задание снизу».","ok")}});return}}}
+document.addEventListener("paste",handleClipboardImage);
+async function addTask(){
+ const text=$("newTaskText").value.trim(),file=$("newTaskImage").files[0],answer=$("newTaskAnswer").value.trim();
+ if(!text&&!pendingNewImage&&!file){setStatus("Вставь картинку из буфера или введи текст задания.","warn");return}
+ const create=image=>{tasks.push({id:uid(),text,answer,image:image||"",photos:[],studentAnswer:"",checked:false,isCorrect:false});$("newTaskText").value="";$("newTaskImage").value="";$("newTaskAnswer").value="";showNewImage("");render();setStatus("Задание добавлено отдельной карточкой внизу.","ok")};
+ if(pendingNewImage){create(pendingNewImage)}else if(file){readImage(file,create)}else create("");
+}
+function summary(){const name=$("student").value.trim()||"Не указано",dt=new Date().toLocaleString("ru-RU");return `ОТЧЁТ УЧИТЕЛЮ\nУченик: ${name}\nДата: ${dt}\nЗаданий: ${tasks.length}\nПрикреплено фотографий: ${photoCount()}\n\n`+tasks.map((t,i)=>`Задание ${i+1}: ${t.text||"условие-картинка"}\nФотографий: ${t.photos.length}`).join("\n\n")}
+let cameraStream=null, cameraTaskId=null;
+function openCamera(taskId){
+ cameraTaskId=taskId;
+ // В локальном HTML на телефоне getUserMedia часто недоступен. В таком случае
+ // используем системный захват изображения с камеры через input capture.
+ if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.isSecureContext){
+  openNativeCamera(taskId); return;
+ }
+ const box=document.createElement("div");box.className="camera-box";box.id="cameraBox";
+ box.innerHTML='<div class="camera-card"><h2>Камера</h2><video id="cameraVideo" autoplay playsinline></video><div class="camera-actions"><button class="primary" id="takePhoto">Сделать снимок</button><button class="danger" id="closeCamera">Закрыть</button></div><p class="muted">Если браузер спросит разрешение, разреши доступ к камере. Если камера не откроется, приложение предложит открыть камеру телефона.</p></div>';
+ document.body.appendChild(box);
+ $("closeCamera").addEventListener("click",closeCamera);
+ $("takePhoto").addEventListener("click",capturePhoto);
+ box.dataset.facing="environment";startCamera("environment",true);
+}
+function openNativeCamera(taskId){
+ cameraTaskId=taskId;
+ const input=document.createElement("input");
+ input.type="file";input.accept="image/*";input.setAttribute("capture","environment");
+ input.setAttribute("aria-label","Сфотографировать решение камерой");
+ input.style.position="fixed";input.style.left="-10000px";document.body.appendChild(input);
+ input.addEventListener("change",()=>{
+  const file=input.files&&input.files[0];
+  if(file){
+   if(!file.type.startsWith("image/")){setStatus("Камера не вернула изображение. Попробуй ещё раз.","warn");input.remove();return}
+   const reader=new FileReader();
+   reader.onload=()=>{const t=tasks.find(x=>x.id===taskId);if(t){const data=String(reader.result);t.photos.push({name:`Снимок ${t.photos.length+1}.jpg`,data,url:data});render();setStatus("Снимок с камеры добавлен к заданию. Можно сделать ещё фотографии.","ok")}input.remove()};
+   reader.onerror=()=>{setStatus("Не удалось прочитать снимок. Попробуй ещё раз.","warn");input.remove()};
+   reader.readAsDataURL(file);
+  } else {setStatus("Снимок не сделан. Нажми кнопку камеры и разреши доступ.","warn");input.remove()}
+ });
+ setStatus("Открываем камеру телефона… Если браузер спросит разрешение, разреши доступ к камере.");
+ input.click();
+}
+async function startCamera(facing,allowFallback=false){
+ try{
+  if(cameraStream)cameraStream.getTracks().forEach(t=>t.stop());
+  cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}},audio:false});
+  const video=$("cameraVideo");if(video){video.srcObject=cameraStream;await video.play().catch(()=>{})}
+ }catch(e){
+  const fallbackTaskId=cameraTaskId;
+  closeCamera();
+  if(allowFallback){openNativeCamera(fallbackTaskId)}
+  else setStatus("Не удалось открыть камеру. Проверь разрешение камеры для браузера.","warn");
+ }
+}
+function closeCamera(){if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null}const box=$("cameraBox");if(box)box.remove();cameraTaskId=null}
+function capturePhoto(){
+ const video=$("cameraVideo");if(!video||!video.videoWidth){setStatus("Камера ещё не готова. Подожди секунду и попробуй снова.","warn");return}
+ const canvas=document.createElement("canvas");const scale=Math.min(1,1600/video.videoWidth);canvas.width=Math.round(video.videoWidth*scale);canvas.height=Math.round(video.videoHeight*scale);
+ canvas.getContext("2d").drawImage(video,0,0,canvas.width,canvas.height);
+ const data=canvas.toDataURL("image/jpeg",0.86);const t=tasks.find(x=>x.id===cameraTaskId);
+ if(t){t.photos.push({name:`Снимок ${t.photos.length+1}.jpg`,data,url:data});render();setStatus("Снимок добавлен к заданию. Можно сделать ещё фотографии.","ok")}
+ closeCamera();
+}
+function setStatus(msg,kind=""){const el=$("status");el.textContent=msg;el.className="status "+kind}
+
+function summary(){
+ const name=$("student").value.trim()||"Не указано";
+ const title="Отчёт ученика";
+ const dt=new Date().toLocaleString("ru-RU");
+ return `ОТЧЁТ УЧИТЕЛЮ\n${title}\nУченик: ${name}\nДата: ${dt}\nЗаданий: ${tasks.length}\nПрикреплено фотографий: ${photoCount()}\n\n`+tasks.map((t,i)=>`Задание ${i+1}: ${t.text}\nФотографий: ${t.photos.length}`).join("\n\n");
+}
+function buildReport(){
+ if(!tasks.length){setStatus("Сначала загрузи или добавь задания.","warn");return}
+ if(!tasks.some(t=>t.photos.length) && !tasks.some(t=>String(t.studentAnswer||"").trim())){setStatus("Сначала введи ответы ученика или прикрепи фотографии решения.","warn");return}
+ if(!confirm("Перед формированием отчёта сохрани текущую работу кнопкой «Сохранить работу в файл». Если ты уже сохранила актуальную версию, нажми ОК.")){setStatus("Сначала сохрани работу в файл, затем снова нажми «Сформировать и скачать отчёт».","warn");return}
+ const name=$("student").value.trim()||"Не указано", title="Отчёт ученика", date=new Date().toLocaleString("ru-RU");
+ // Режим учителя доступен только после пароля, поэтому ответы включаются только в этом режиме.
+ const includeCorrectAnswers=currentMode==="teacher";
+ let html=`<h1>${esc(title)}</h1><p><b>Ученик:</b> ${esc(name)}<br><b>Дата:</b> ${esc(date)}<br><b>Заданий:</b> ${tasks.length} · <b>фотографий:</b> ${photoCount()}</p>`;
+ tasks.forEach((t,i)=>{
+   html+=`<section class="report-task"><h2>Задание ${i+1}</h2>`;
+   if(t.text) html+=`<p class="condition">${esc(t.text).replace(/\n/g,"<br>")}</p>`;
+   if(t.image) html+=`<p><b>Условие:</b></p><img class="report-photo" src="${t.image}" alt="Условие задания ${i+1}">`;
+   html+=`<p><b>Ответ ученика:</b> ${esc(t.studentAnswer||"не введён")}<br><b>Результат:</b> ${t.checked?(t.isCorrect?"Верно":"Неверно"):"не проверено"}</p>`;
+   if(includeCorrectAnswers) html+=`<p><b>Правильный ответ:</b> ${esc(t.answer||"не задан")}</p>`;
+   if(!t.photos.length) html+='<p>Фото решения не прикреплено.</p>';
+   t.photos.forEach((ph,j)=>{html+=`<p><b>Фото решения ${j+1}:</b></p><img class="report-photo" src="${ph.data||ph.url}" alt="Фото решения задания ${i+1}">`});
+   html+='</section>';
+ });
+ const full=`<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} — отчёт</title><style>body{font:16px Arial,sans-serif;max-width:900px;margin:25px auto;padding:0 16px;color:#20284b;line-height:1.5}h1{font-size:26px}.report-task{padding:14px 0 20px;border-bottom:1px solid #ddd;break-inside:avoid}h2{font-size:20px;margin:0 0 8px}.condition{white-space:normal}img{display:block;max-width:100%;height:auto;object-fit:contain;margin:10px 0 18px;break-inside:avoid;page-break-inside:avoid}@media print{body{margin:0;max-width:none}.report-task{break-inside:avoid}}</style></head><body>${html}</body></html>`;
+ const w=window.open("","_blank");
+ if(!w){setStatus("Браузер заблокировал окно печати. Разреши всплывающие окна и повтори.","warn");return;}
+ w.document.open();w.document.write(full);w.document.close();
+ // Открывается системное окно печати: выбери «Сохранить как PDF». Исходная работа остаётся открытой.
+ w.onload=()=>{setTimeout(()=>{w.focus();w.print();},400)};
+ setStatus("Открылось окно печати. Выбери «Сохранить как PDF». После сохранения вернись в эту вкладку — работа и все данные останутся на месте.","ok");
+}
+
+function saveWork(){
+ const payload={format:"equations-notebook-work-v1",savedAt:new Date().toISOString(),student:$("student").value,tasks:tasks.map(t=>({id:t.id,text:t.text,answer:t.answer,image:t.image,studentAnswer:t.studentAnswer||"",checked:!!t.checked,isCorrect:!!t.isCorrect,photos:t.photos.map(ph=>({name:ph.name,data:ph.data||ph.url}))}))};
+ const blob=new Blob([JSON.stringify(payload)],{type:"application/json;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="работа_с_заданиями_и_фото.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);setStatus("Работа сохранена в файл. На телефоне ищи его в папке «Загрузки».","ok");
+}
+function loadWorkFile(file){if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(String(reader.result));if(data.format!=="equations-notebook-work-v1"||!Array.isArray(data.tasks))throw new Error("wrong format");tasks=data.tasks.map(t=>({id:t.id||uid(),text:String(t.text||""),answer:String(t.answer||""),studentAnswer:String(t.studentAnswer||""),checked:!!t.checked,isCorrect:!!t.isCorrect,image:String(t.image||""),photos:Array.isArray(t.photos)?t.photos.map(ph=>({name:ph.name||"Снимок.jpg",data:ph.data||ph.url||"",url:ph.data||ph.url||""})).filter(ph=>ph.data):[]}));$("student").value=data.student||"";render();updateHomeworkList();setMode("student");setStatus("Работа загружена из файла. Для редактирования заданий перейди в режим учителя и введи пароль.","ok")}catch(e){alert("Не удалось открыть файл работы. Выбери JSON-файл, сохранённый этим приложением.")}};reader.readAsText(file)}
+$("refreshHomeworkList").addEventListener("click",updateHomeworkList);$("loadHomework").addEventListener("click",loadHomework);
+$("saveWork").addEventListener("click",saveWork);
+$("loadWorkFile").addEventListener("change",e=>{loadWorkFile(e.target.files&&e.target.files[0]);e.target.value=""});
+$("teacherMode").addEventListener("click",()=>setMode("teacher"));
+$("studentMode").addEventListener("click",()=>setMode("student"));
+$("newImagePasteZone").addEventListener("click",()=>{$("newImagePasteZone").focus();setStatus("Теперь вставь картинку из буфера обмена сочетанием Ctrl+V.")});
+$("clearNewTask").addEventListener("click",()=>{$("newTaskText").value="";$("newTaskImage").value="";$("newTaskAnswer").value="";showNewImage("")});
+$("addTask").addEventListener("click",addTask);
+$("buildReport").addEventListener("click",buildReport);
+$("clearAll").addEventListener("click",()=>{if(!confirm("Очистить задания и фотографии в текущей работе? Это нельзя отменить."))return;tasks=[];render();setStatus("Текущая работа очищена.")});
+updateHomeworkList();$("teacherPanel").hidden=true;document.querySelectorAll(".teacher-only").forEach(e=>e.hidden=true);render();setMode("student");
+</script>
+</body>
+</html>
