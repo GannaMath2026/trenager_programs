@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Геометрия — тест и работа над ошибками</title>
+<title>Геометрия — тест по темам и работа над ошибками</title>
 <style>
 :root{--bg:#f4f2ff;--card:#ffffff;--ink:#202544;--muted:#747995;--line:#e5e2f4;--blue:#6557e8;--blue2:#f0edff;--green:#16845d;--red:#d44762;--gold:#e5a52d;--pink:#ff7ba8;--cyan:#58c6d8}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 12% 5%,#e5e0ff 0,transparent 30%),radial-gradient(circle at 90% 20%,#ffe4ef 0,transparent 25%),var(--bg);color:var(--ink);font:16px/1.55 Calibri,Arial,sans-serif;min-height:100vh}
@@ -18,7 +18,7 @@ button:disabled{opacity:.45;cursor:not-allowed}.choice{min-width:130px;font-weig
 .topline{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:14px}
 .progress{height:9px;background:#eeecf8;border-radius:99px;overflow:hidden;margin:15px 0 25px}.progress span{display:block;height:100%;background:linear-gradient(90deg,#6254e7,#ff7ba8);width:0;transition:width .2s;border-radius:99px}
 .question-wrap{min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:15px 6px}
-.topic{color:var(--blue);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px;background:#f0edff;border-radius:99px;padding:7px 13px}
+.topic{color:var(--blue);font-size:clamp(18px,2.8vw,24px);font-weight:900;text-transform:none;letter-spacing:0;margin-bottom:18px;background:#f0edff;border-radius:14px;padding:10px 16px}
 .question{font-size:clamp(24px,3.5vw,34px);line-height:1.38;max-width:760px;font-weight:700;letter-spacing:-.025em}
 .hint{color:var(--muted);margin-top:14px;font-size:14px}
 .controls{display:flex;justify-content:center;gap:14px;margin:15px 0 5px;flex-wrap:wrap}
@@ -30,7 +30,7 @@ input[type="text"]{max-width:100%} textarea{width:100%;min-height:170px;border:1
 #topicSelect{font-weight:700;color:#4b35d1;border:2px solid #9d8cff;background:linear-gradient(135deg,#fff,#f0eaff);min-width:240px}
 #topicOptions label{font-weight:800;color:#4c35d4;font-size:17px}
 #topicOptions{padding:12px 14px;background:linear-gradient(110deg,#f0eaff,#ffe8f2);border:1px solid #c9baff;border-radius:16px}
-.topic{color:#4931d2;background:linear-gradient(110deg,#e5ddff,#ffe0ef);border:1px solid #b9aaff;font-size:14px}.options label{display:flex;align-items:center;gap:7px}
+.topic{color:#4931d2;background:linear-gradient(110deg,#e5ddff,#ffe0ef);border:1px solid #b9aaff;font-size:clamp(18px,2.8vw,24px)}.options label{display:flex;align-items:center;gap:7px}
 .feedback{min-height:24px;text-align:center;font-weight:700;margin-top:12px}.good{color:var(--green)}.bad{color:var(--red)}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 @media(max-width:600px){.panel{padding:16px}.question-wrap{min-height:250px}.choice{flex:1;min-width:110px}}
@@ -47,6 +47,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 .answer-badge{display:inline-block;border-radius:999px;padding:5px 13px;font-weight:800}
 .answer-badge.yes{background:#d9f8e9;color:#08724e;border:1px solid #9be4c2}
 .answer-badge.no{background:#ffe2e8;color:#b4233a;border:1px solid #ffb0be}
+#feedback{font-size:18px;min-height:30px}.question-navigation button{touch-action:manipulation}
 .comment-title{display:inline-block;background:#e5f7ef;color:#116a4b;border:1px solid #b4e7d0;border-radius:10px;padding:8px 13px;margin:12px 0 8px;font-weight:750}
 .comment{white-space:normal;line-height:1.75;background:#f7f8ff;border-left:4px solid #8d7af6;border-radius:0 12px 12px 0;padding:15px 17px;margin:0;color:#343b59}
 #report,#reviewReport{white-space:pre-wrap;overflow-wrap:anywhere;font-family:Arial,sans-serif;line-height:1.65}
@@ -78,24 +79,37 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 
 .mood-banner{display:flex;align-items:center;gap:14px;padding:14px 18px;margin:10px 0 18px;border-radius:18px;background:linear-gradient(120deg,#fff0f2,#f2edff);border:1px solid #e3c9ff;color:#424064;font-weight:700}
 .mood-banner span{font-size:42px;line-height:1}
+
+/* Новая компоновка: имя запрашивается один раз, темы — отдельными плитками. */
+header{justify-content:flex-start;gap:14px;padding-left:132px}header>.row:last-child{margin-left:auto}.header-left{gap:12px}#backToMenu{position:fixed;left:12px;top:12px;z-index:11001;box-shadow:0 5px 18px #40358b2b;background:#fff;border:2px solid #c9c1ff;font-weight:800;white-space:nowrap}#backToMenu:hover{background:#f4efff}
+.student-badge{background:#f0edff;color:#5140bd;border-radius:999px;padding:7px 11px;font-weight:800}
+.name-gate{position:fixed;inset:0;z-index:10000;background:rgba(24,20,60,.68);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:18px}
+.name-gate[hidden]{display:none!important}.name-gate-card{width:min(460px,100%);background:#fff;border-radius:24px;padding:clamp(22px,5vw,34px);box-shadow:0 24px 80px #21184e55}
+.name-gate-card h2{font-size:30px;margin:15px 0 7px}.name-gate-card p{color:var(--muted);margin:0 0 18px}.name-gate-card label{display:block;font-weight:800;margin-bottom:6px}.name-gate-card input{display:block;width:100%;padding:13px;border:1px solid #dcd5ff;border-radius:12px;font:inherit;margin-bottom:14px}
+.topic-picker-title{margin:0 0 12px}.topic-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 18px}
+.topic-tile{border:2px solid #e2ddfa;border-radius:17px;padding:14px 10px;background:linear-gradient(145deg,#fff,#f8f5ff);text-align:left;min-width:0;display:flex;flex-direction:column;gap:7px;align-items:flex-start;box-shadow:0 3px 12px #5143b508}
+.topic-tile.active{border-color:#7664ec;background:linear-gradient(135deg,#eeeaff,#ffeaf3);box-shadow:0 0 0 2px #7766eb20}.topic-tile.fully-mastered,.topic-tile.fully-mastered.active{border:2px solid #16a34a!important;box-shadow:0 0 0 2px #16a34a22,0 5px 18px #16a34a16!important;background:linear-gradient(135deg,#f0fff5,#e5f9ec)!important}.topic-tile .tile-check{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:99px;background:#dcfce7;color:#166534;font-size:10px;font-weight:900}.topic-tile .tile-icon{font-size:27px;line-height:1}.topic-tile .tile-name{font-size:15px;font-weight:800;line-height:1.25}.topic-tile .tile-progress{font-size:12px;color:#6254b4;font-weight:800}.topic-tile .tile-count{font-size:11px;color:var(--muted)}
+.overall-stat{margin:8px 0 12px}.overall-stat b{font-size:22px!important}.overall-stat .small{display:block;margin-top:5px}
+.menu-actions{position:fixed;z-index:1000;bottom:0;left:0;right:0;background:#ffffffed;backdrop-filter:blur(14px);border-top:1px solid #e5e2f4;box-shadow:0 -8px 28px #40358b12;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;align-items:center;padding:10px 14px calc(10px + env(safe-area-inset-bottom));}
+.menu-actions.hidden{display:none!important}.menu-actions button{font-weight:800;min-height:48px;white-space:normal;line-height:1.25;padding:9px 12px}.menu-actions .danger{border-color:#f3b3bf;color:#b4233a;background:#fff5f6}
+body{padding-bottom:76px}footer{padding-bottom:96px}
+.choice.selected{box-shadow:0 0 0 3px var(--blue);transform:translateY(-2px);outline:2px solid #fff;outline-offset:-5px}.choice.selected.yes{background:#b2f0d0}.choice.selected.no{background:#ffc6d2}
+.question-navigation button{min-width:112px}.question-navigation .small{flex:1;text-align:center}
+@media(max-width:760px){.topic-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.topic-tile{padding:12px}.menu-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:8px 10px calc(8px + env(safe-area-inset-bottom))}.menu-actions button{min-width:0;padding:9px 7px;font-size:14px}body{padding-bottom:140px}footer{padding-bottom:160px}header{padding:12px;padding-top:64px;padding-left:12px}.header-left{align-items:flex-start}#backToMenu{padding:9px 10px;left:10px;top:10px}}
+@media(max-width:380px){header{padding-top:62px;padding-left:8px}#backToMenu{left:8px;top:8px;font-size:14px}.topic-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.topic-tile .tile-name{font-size:14px}.tile-progress{overflow-wrap:anywhere}.menu-actions button{font-size:13px;padding:8px 5px}.question-navigation{gap:6px}.question-navigation button{min-width:auto;padding:9px 11px}.question-navigation .small{font-size:11px}}
+
 </style>
 </head>
 <body>
-<header><div><div class="brand">Геометрия · тестовик</div><div class="small">Ответь «Да» или «Нет» — потом закрепи ошибки</div></div><div class="row"><button id="restartTop">Начать заново</button></div></header>
+<header><div class="row header-left"><button id="backToMenu" type="button">← В меню</button><div><div class="brand">Геометрия · тестовик</div><div class="small">Ответь «Да» или «Нет» — потом закрепи ошибки</div></div></div><div class="row"><span id="studentBadge" class="small student-badge"></span></div></header>
+<div id="nameGate" class="name-gate" hidden><form id="nameGateForm" class="name-gate-card"><div class="welcome-kicker">ОГЭ · МАТЕМАТИКА</div><h2>Как тебя зовут?</h2><p>Если имя уже сохранялось, оно появится в поле автоматически. Проверь его и нажми «Продолжить».</p><label for="nameGateInput">Имя ученика</label><input id="nameGateInput" type="text" autocomplete="name" maxlength="80" placeholder="Например, Маша Иванова" required><button type="submit" class="primary">Продолжить</button><div id="nameGateError" class="feedback bad"></div></form></div>
 <main>
 <section id="setup" class="panel">
 <div class="welcome"><div class="welcome-kicker">ОГЭ · МАТЕМАТИКА</div><h1>Проверь себя!</h1><p>Задание 19 · Геометрия</p></div>
-<div style="max-width:460px;margin:14px 0"><label for="studentName"><b>Имя ученика</b></label><input id="studentName" type="text" placeholder="Например, Маша Иванова" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid var(--line);border-radius:10px;font:inherit"></div>
-<div class="options">
-<label class="mode-card"><input type="radio" name="order" value="topic" checked><span class="mode-icon">🔺</span><span><b>По темам</b><small>Сначала выбери раздел геометрии</small></span></label>
-<label class="mode-card"><input type="radio" name="order" value="mixed"><span class="mode-icon">🎲</span><span><b>Вразнобой</b><small>20 случайных утверждений из всех тем</small></span></label>
-</div>
-<div class="options" id="topicOptions" style="display:none"><label for="topicSelect">Тема:</label><select id="topicSelect"><option value="Треугольники">🔺 Треугольники</option><option value="Окружности">🔵 Окружности</option><option value="Четырёхугольники">🟪 Четырёхугольники</option><option value="Прямые и углы">📐 Прямые и углы</option></select></div>
-<div class="stat" id="topicRemainingBox" style="margin-top:12px"><b id="topicRemaining">Не освоено: 20 из 20</b><span class="small">Считаются вопросы выбранной темы, ещё не закреплённые тремя правильными ответами подряд.</span></div>
-<div class="stat" style="margin-top:16px"><span>Статистика по незакреплённым вопросам</span><div id="savedStatsText" class="small">Пока нет ответов.</div></div>
-
-<div class="row" style="margin-top:22px"><button class="primary" id="start">Начать тест</button><button id="resumePending">Продолжить работу над ошибками</button><button id="resetProgress" class="danger">Сбросить прогресс</button></div><div id="setupMessage" class="feedback"></div>
-<p class="small">В режиме «По темам» выбери одну тему. В режиме «Вразнобой» каждый тест содержит 20 случайных утверждений из общего пула. Статистика по вопросам, которые ещё не закреплены, сохраняется в этом браузере.</p>
+<h2 class="topic-picker-title">Выбери тему</h2>
+<div id="topicTiles" class="topic-tiles" aria-label="Темы геометрии"></div>
+<div class="stat overall-stat"><span>Общий прогресс по всем темам</span><b id="overallStats">Освоено 0 из 62</b><span id="savedStatsText" class="small">Пока нет ответов.</span></div>
+<div id="setupMessage" class="feedback"></div>
 </section>
 <section id="quiz" class="panel hidden">
 <div class="topline"><span id="modeLabel">Основной тест</span><span id="counter"></span></div>
@@ -103,12 +117,12 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 <div class="question-wrap"><div class="topic" id="topic"></div><div class="question" id="question"></div><div class="hint" id="subhint">Верно ли утверждение?</div></div>
 <div class="controls"><button class="choice yes" id="yes">Да</button><button class="choice no" id="no">Нет</button></div>
 <div class="feedback" id="feedback"></div>
-<div class="row" style="justify-content:space-between;margin-top:16px"><button id="quit">Завершить сейчас</button><span class="small">Ответ фиксируется сразу</span></div>
+<div class="row" style="justify-content:flex-end;margin-top:16px"><button id="quit" type="button">Завершить тест сейчас</button></div>
 </section>
 <section id="result" class="panel hidden">
 <div class="mood-banner"><span id="resultMood" aria-label="Настроение результата">😔</span><div id="resultMoodText">Каждая попытка помогает учиться.</div></div><h2 id="resultTitle">Результат</h2><div class="result-grid" id="stats"></div>
 <h3>Разбор ошибок: теория</h3><div id="theoryBlocks"></div>
-<h3>Отчёт учителю</h3><p class="small">В этом отдельном блоке — имя ученика, результат, номера и полный текст неверных утверждений. Скопируй его и отправь в Telegram.</p><textarea id="report" readonly style="min-height:360px;font-family:Consolas,monospace;line-height:1.55;white-space:pre-wrap"></textarea>
+<h3>Отчёт учителю</h3><p class="small">Отчёт показывает ответы с первой попытки, результат работы над ошибками, пропуски и текст утверждений, которые не были решены сразу.</p><textarea id="report" readonly style="min-height:360px;font-family:Consolas,monospace;line-height:1.55;white-space:pre-wrap"></textarea>
 <div class="row" style="margin-top:12px"><button class="primary" id="copyReport">Скопировать результат</button><button id="mistakes" class="primary">Работа над ошибками</button><button id="again">Пройти тест ещё раз</button></div>
 <div class="feedback" id="copyFeedback"></div>
 </section>
@@ -120,6 +134,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 <div class="feedback" id="reviewCopyFeedback"></div>
 </section>
 </main>
+<nav id="menuActions" class="menu-actions" aria-label="Действия меню"><button id="start" class="primary" type="button">▶ Начать тест</button><button id="resumeTest" type="button">↪ Продолжить тест</button><button id="workMistakes" type="button">🧩 Работа над ошибками</button><button id="resetProgress" class="danger" type="button">↻ Сбросить прогресс</button></nav>
 <footer>Прогресс и имя сохраняются в этом браузере на этом устройстве. Чтобы отправить результат учителю, скопируй отчёт и вставь в Telegram.</footer>
 <script>
 const BANK = [
@@ -189,14 +204,31 @@ const BANK = [
 const EXPLANATIONS = {"Треугольники|1":"В прямоугольном треугольнике один угол равен 90°, а сумма двух острых углов равна 90°. Сумма всех трёх углов — 180°.","Треугольники|2":"У равносторонних треугольников все углы по 60°, поэтому они подобны по двум (и даже трём) равным углам.","Треугольники|3":"Равенства только двух соответствующих сторон недостаточно: нужен ещё признак, например равенство угла между этими сторонами.","Треугольники|4":"Площадь равна половине произведения двух сторон на синус угла между ними: S = ½ab·sin C, поэтому она меньше произведения ab.","Треугольники|5":"В тупоугольном треугольнике один угол тупой, а два других — острые, так как сумма углов 180°.","Треугольники|6":"У равностороннего треугольника все углы по 60°, то есть все острые.","Треугольники|7":"Это следует из неравенства треугольника: любая сторона меньше суммы двух других.","Треугольники|8":"В равностороннем треугольнике биссектрисы, медианы и серединные перпендикуляры совпадают, поэтому центры обеих окружностей — одна и та же точка.","Треугольники|9":"Если бы все три угла были больше 60°, их сумма превысила бы 180°. Значит, хотя бы один угол не больше 60°.","Треугольники|10":"У равностороннего треугольника все стороны равны, значит, равны и хотя бы две из них — это и есть условие равнобедренности.","Треугольники|11":"В равностороннем треугольнике все стороны и углы равны, поэтому и высоты, проведённые к равным сторонам, равны.","Треугольники|12":"Это признак подобия по двум углам: третьи углы автоматически равны, так как сумма углов 180°.","Треугольники|13":"Для существования треугольника сумма любых двух сторон должна быть больше третьей. Здесь 1 + 2 < 4.","Треугольники|14":"По теореме Пифагора квадрат гипотенузы равен сумме квадратов катетов: c² = a² + b².","Треугольники|15":"Внешний угол треугольника равен сумме двух внутренних углов, не смежных с ним. Поэтому он больше каждого из них: сумма двух положительных углов больше каждого угла по отдельности.","Треугольники|16":"Точка пересечения серединных перпендикуляров равноудалена от всех вершин, то есть является центром описанной окружности.","Треугольники|17":"Косинус острого угла — отношение прилежащего катета к гипотенузе.","Треугольники|18":"Гипотенуза меньше суммы катетов (неравенство треугольника), а равна она корню из суммы их квадратов.","Треугольники|19":"Равенство всех трёх углов гарантирует подобие, но не равенство: треугольники могут иметь разные размеры.","Треугольники|20":"Медиана делит противоположную сторону пополам. Угол она делит пополам только в специальных случаях, например в равнобедренном треугольнике из вершины при основании.","Окружности|1":"Диаметр равен двум радиусам, а все радиусы одной окружности равны.","Окружности|2":"Это определение окружности: все её точки находятся на одинаковом расстоянии (радиусе) от центра.","Окружности|3":"Касательная перпендикулярна радиусу, проведённому в точку касания.","Окружности|4":"Вписанный угол равен половине центрального угла, если они опираются на одну и ту же дугу.","Окружности|5":"Это свойство касательной: она перпендикулярна радиусу в точке касания.","Окружности|6":"Диаметры одной окружности проходят через центр, поэтому любые два диаметра имеют общую точку — центр.","Окружности|7":"Это свойство биссектрисы: любая её точка равноудалена от сторон угла.","Окружности|8":"Длина хорды зависит от расстояния до центра: диаметры — самые длинные хорды, а другие хорды могут иметь разную длину.","Окружности|9":"Вписанный угол, опирающийся на диаметр, равен половине развёрнутого центрального угла, то есть 90°.","Четырёхугольники|1":"Ромб — это параллелограмм, а диагонали параллелограмма точкой пересечения делятся пополам.","Четырёхугольники|2":"Равные диагонали параллелограмма означают, что это прямоугольник; ромбом он становится не обязательно.","Четырёхугольники|3":"Это свойство ромба: его диагонали взаимно перпендикулярны.","Четырёхугольники|4":"У квадрата все углы прямые, значит, он прямоугольник.","Четырёхугольники|5":"Если у параллелограмма равны две соседние стороны, то равны и все остальные, значит, это ромб.","Четырёхугольники|6":"В общем случае диагонали трапеции не делятся пополам. Это свойство диагоналей параллелограмма.","Четырёхугольники|7":"В параллелограмме противоположные углы равны.","Четырёхугольники|8":"Средняя линия трапеции равна полусумме оснований: m = (a + b)/2.","Четырёхугольники|9":"В прямоугольной трапеции два угла при одной боковой стороне прямые, то есть равны по 90°.","Четырёхугольники|10":"У ромба равны все стороны, но углы не обязательно равны. Все углы равны только у квадрата.","Четырёхугольники|11":"Смежные стороны квадрата равны его стороне, а площадь квадрата равна квадрату стороны.","Четырёхугольники|12":"Ромб — параллелограмм, а площадь параллелограмма равна произведению стороны на высоту к ней.","Четырёхугольники|13":"Диагонали прямоугольника равны и делятся пополам, но перпендикулярны только у квадрата.","Четырёхугольники|14":"Это определение трапеции: два основания параллельны.","Четырёхугольники|15":"Боковые стороны равны только у равнобедренной трапеции, а не у любой.","Четырёхугольники|16":"Если в ромбе один угол прямой, то и остальные прямые, а равные стороны делают его квадратом.","Четырёхугольники|17":"Например, квадрат — это прямоугольник, у которого диагонали перпендикулярны.","Четырёхугольники|18":"Площадь параллелограмма, в том числе ромба, равна ab·sin α. Для ромба a=b, поэтому S=a²·sin α.","Четырёхугольники|19":"Равенство диагоналей — признак прямоугольника.","Четырёхугольники|20":"Прямоугольник — параллелограмм, а диагонали параллелограмма делятся пополам.","Четырёхугольники|21":"Квадрат всегда является прямоугольником, так как все его углы прямые.","Четырёхугольники|22":"Это свойство средней линии трапеции.","Четырёхугольники|23":"В любой ромб можно вписать окружность, так как суммы противоположных сторон равны.","Четырёхугольники|24":"Сумма противоположных углов прямоугольника равна 180°, поэтому около него можно описать окружность.","Четырёхугольники|25":"Это формула средней линии трапеции: m = (a + b)/2.","Четырёхугольники|26":"Площадь трапеции равна произведению высоты на полусумму оснований: S = (a+b)h/2.","Четырёхугольники|27":"Диагональ параллелограмма делит его на два равных треугольника по трём сторонам.","Прямые и углы|1":"Через одну точку можно провести сколько угодно прямых, в том числе три.","Прямые и углы|2":"На плоскости две прямые, перпендикулярные одной прямой, параллельны друг другу.","Прямые и углы|3":"Смежные углы имеют общую сторону, а две другие стороны образуют прямую. Их сумма 180°, но величины могут различаться.","Прямые и углы|4":"Это аксиома параллельных прямых: через точку вне прямой проходит ровно одна параллельная ей прямая.","Прямые и углы|5":"Через одну точку можно провести бесконечно много прямых; единственность относится к параллельной прямой через точку вне заданной прямой.","Прямые и углы|6":"На плоскости две прямые, перпендикулярные одной прямой, параллельны друг другу."};
 
 const $=id=>document.getElementById(id);
-let mode="test", questions=[], idx=0, answers=[], wrongOriginal=[], reviewState={}, reviewQueue=[], reviewSeen=0, testResult=null;
+const TOPICS=["Прямые и углы","Окружности","Треугольники","Четырёхугольники"];
+const TOPIC_ICONS={"Прямые и углы":"📐","Окружности":"🔵","Треугольники":"🔺","Четырёхугольники":"🟪"};
+let selectedTopic="Прямые и углы";
+let mode="test", questions=[], idx=0, answers=[], wrongOriginal=[], reviewState={}, reviewQueue=[], reviewSeen=0, testResult=null, finishing=false;
+let correctedAfterReview=new Set();
+let autoAdvanceTimer=null;
+let reviewRoundQuestionIds=[];
 const NAME_KEY="geometryQuizStudentNameV1";
-try{$("studentName").value=localStorage.getItem(NAME_KEY)||""}catch(e){}
-$("studentName").addEventListener("input",()=>{try{localStorage.setItem(NAME_KEY,$("studentName").value.trim())}catch(e){}});
-function studentName(){return $("studentName").value.trim()||"Имя не указано";}
+let savedStudentName="";
+try{savedStudentName=(localStorage.getItem(NAME_KEY)||"").trim()}catch(e){}
+function studentName(){return savedStudentName||"Имя не указано";}
+function updateStudentBadge(){const el=$("studentBadge");if(el)el.textContent=savedStudentName?"Ученик: "+savedStudentName:"";}
+function setStudentName(name){savedStudentName=String(name||"").trim();if(!savedStudentName)return false;try{localStorage.setItem(NAME_KEY,savedStudentName)}catch(e){}updateStudentBadge();$("nameGate").hidden=true;return true;}
+function showNameGate(){const input=$("nameGateInput");if(input)input.value=savedStudentName||input.value||"";const gate=$("nameGate");if(gate)gate.hidden=false;setTimeout(()=>{if(input&&!input.value)input.focus();},0)}
+$("nameGateForm").addEventListener("submit",ev=>{ev.preventDefault();const val=$("nameGateInput").value.trim();if(!val){$("nameGateError").textContent="Укажи имя, чтобы продолжить.";return;}if(setStudentName(val)){$("nameGateError").textContent="";}});
+updateStudentBadge();
+const TEST_KEY="geometryQuizActiveTestV1";
+const REVIEW_KEY="geometryQuizActiveReviewV1";
 const STATS_KEY="geometryQuizUnmasteredStatsV1";
 const PENDING_KEY="geometryQuizPendingMistakesV1";
 const HISTORY_KEY="geometryQuizMistakeHistoryV1";
+const REPORT_SESSION_KEY="geometryQuizCumulativeReportV1";
+let reportSession=null;
+try{reportSession=JSON.parse(localStorage.getItem(REPORT_SESSION_KEY)||"null")}catch(e){reportSession=null}
+function saveReportSession(){try{localStorage.setItem(REPORT_SESSION_KEY,JSON.stringify(reportSession))}catch(e){}}
 let mistakeHistory={};
 try{mistakeHistory=JSON.parse(localStorage.getItem(HISTORY_KEY)||"{}")}catch(e){mistakeHistory={}}
 function saveMistakeHistory(){try{localStorage.setItem(HISTORY_KEY,JSON.stringify(mistakeHistory))}catch(e){}}
@@ -205,138 +237,242 @@ try{pendingMistakes=JSON.parse(localStorage.getItem(PENDING_KEY)||"{}")}catch(e)
 function savePending(){try{localStorage.setItem(PENDING_KEY,JSON.stringify(pendingMistakes))}catch(e){}}
 let persistentStats={};
 try{persistentStats=JSON.parse(localStorage.getItem(STATS_KEY)||"{}")}catch(e){persistentStats={}}
-function saveStats(){try{localStorage.setItem(STATS_KEY,JSON.stringify(persistentStats))}catch(e){};renderSavedStats()}
-function renderSavedStats(){const active=Object.entries(persistentStats).filter(([id,v])=>!v.mastered&&(v.seen||0)>0);const n=active.length,seen=active.reduce((a,[id,v])=>a+(v.seen||0),0),wrong=active.reduce((a,[id,v])=>a+(v.wrong||0),0);const el=$("savedStatsText");if(el)el.textContent=n?`Вопросов с историей, ещё не закреплено: ${n}; ответов: ${seen}; неверных ответов: ${wrong}.`:"Пока нет ответов по незакреплённым вопросам."}
-function trackAnswer(id,correct){
- const key=Number(id);
- const v=persistentStats[key]||(persistentStats[key]={seen:0,wrong:0,correct:0,mastered:false});
+function saveStats(){try{localStorage.setItem(STATS_KEY,JSON.stringify(persistentStats))}catch(e){};renderSavedStats();updateTopicRemaining()}
+function isPendingQuestion(id){
+ const n=Number(id);
+ return Object.values(pendingMistakes||{}).some(list=>Array.isArray(list)&&list.some(x=>Number(x)===n));
+}
+function isCountedAsCompleted(id){
+ const st=persistentStats[id];
+ if(!st || isPendingQuestion(id)) return false;
+ // Новая схема: верный ответ в обычном тесте или три правильных подряд в работе над ошибками.
+ if(typeof st.correctInTest === "boolean") return st.correctInTest || !!st.mastered;
+ // Миграция старых данных: не засчитываем ответы, полученные после ошибки,
+ // пока вопрос всё ещё находится в очереди работы над ошибками.
+ const history=mistakeHistory[id];
+ return !!st.mastered || (!history?.everWrong && (st.correct||0)>0);
+}
+function renderSavedStats(){
+ const attempted=Object.values(persistentStats).filter(v=>(v.seen||0)>0);
+ const completed=BANK.reduce((n,b,i)=>n+(isCountedAsCompleted(i)?1:0),0);
+ const mastered= BANK.reduce((n,b,i)=>n+(persistentStats[i]&&persistentStats[i].mastered&&!isPendingQuestion(i)?1:0),0);
+ const seen=attempted.reduce((a,v)=>a+(v.seen||0),0);
+ const wrong=attempted.reduce((a,v)=>a+(v.wrong||0),0);
+ const el=$("savedStatsText");if(el)el.textContent=attempted.length?`Решено в тесте или отработано: ${completed} из ${BANK.length} утверждений · закреплено 3 раза подряд: ${mastered} · попыток: ${seen} · неверных ответов: ${wrong}.`:"Попыток пока нет. Прогресс будет сохраняться автоматически.";
+}
+function trackAnswer(id,correct,source=mode){
+ const key=Number(id);if(!Number.isInteger(key)||!BANK[key])return;
+ const v=persistentStats[key]||(persistentStats[key]={seen:0,wrong:0,correct:0,mastered:false,correctInTest:false});
  v.seen++;
- if(correct){v.correct++}
- else{
-   v.wrong++;
-   const b=BANK[key];
-   // История ошибок не должна ломать ответ, даже если в сохранённых данных встретился некорректный ID.
-   if(b){mistakeHistory[key]={id:key,topic:b[0],number:b[1],text:b[2],everWrong:true};saveMistakeHistory();}
+ if(correct){
+   v.correct++;
+   // Ответы в режиме ошибок не делают задание освоенным. Для зачёта там нужны 3 подряд.
+   if(source==="test")v.correctInTest=true;
+ }else{
+   v.wrong++;const b=BANK[key];if(b){mistakeHistory[key]={id:key,topic:b[0],number:b[1],text:b[2],everWrong:true};saveMistakeHistory();}
  }
- saveStats();
+ try{localStorage.setItem(STATS_KEY,JSON.stringify(persistentStats))}catch(e){}
+ renderSavedStats();updateTopicRemaining();
 }
+function answeredOrMasteredCount(topic){
+ return BANK.reduce((n,b,i)=>n+(b[0]===topic&&isCountedAsCompleted(i)?1:0),0);
+}
+function masteredCount(topic){
+ return BANK.reduce((n,b,i)=>n+(b[0]===topic&&persistentStats[i]&&persistentStats[i].mastered&&!isPendingQuestion(i)?1:0),0);
+}
+function topicFullyCompleted(topic){
+ const ids=BANK.map((b,i)=>({b,id:i})).filter(x=>x.b[0]===topic);
+ return ids.length>0&&ids.every(x=>isCountedAsCompleted(x.id));
+}
+function renderTopicTiles(){
+ const host=$("topicTiles");if(!host)return;
+ host.innerHTML=TOPICS.map(topic=>{
+   const total=BANK.filter(b=>b[0]===topic).length;
+   const counted=answeredOrMasteredCount(topic), mastered=masteredCount(topic), complete=topicFullyCompleted(topic);
+   return `<button type="button" class="topic-tile ${selectedTopic===topic?"active ":""}${complete?"fully-mastered":""}" data-topic="${esc(topic)}" aria-pressed="${selectedTopic===topic}"><span class="tile-icon">${TOPIC_ICONS[topic]}</span><span class="tile-name">${esc(topic)}${complete?" ✅":""}</span>${complete?'<span class="tile-check">✅ ТЕМА ОСВОЕНА</span>':""}<span class="tile-progress">Решено в тесте / отработано: ${counted} из ${total}</span><span class="tile-count">Закреплено 3 раза подряд: ${mastered} из ${total} · всего ${total} утверждений</span></button>`;
+ }).join("");
+ const totalCounted=TOPICS.reduce((sum,topic)=>sum+answeredOrMasteredCount(topic),0);
+ const totalMastered=TOPICS.reduce((sum,topic)=>sum+masteredCount(topic),0);
+ const totalComplete=TOPICS.filter(topic=>topicFullyCompleted(topic)).length;
+ const overall=$("overallStats");if(overall)overall.textContent=`Решено в тесте или отработано: ${totalCounted} из ${BANK.length} · закреплено 3 раза подряд: ${totalMastered} · полностью освоено тем: ${totalComplete} из ${TOPICS.length}`;
+ host.querySelectorAll("[data-topic]").forEach(btn=>btn.addEventListener("click",()=>{selectedTopic=btn.dataset.topic;try{localStorage.setItem("geometryQuizSelectedTopicV1",selectedTopic)}catch(e){};renderTopicTiles();}));
+}
+function updateTopicRemaining(){renderTopicTiles();}
+function updateRemainingInfo(){renderTopicTiles();}
+function saveActiveTest(){
+ if(mode!=="test"||!questions.length||finishing)return;
+ const payload={topic:selectedTopic,questionIds:questions.map(q=>q.id),answers:questions.map((q,i)=>answers[i]||null),idx,studentName:savedStudentName};
+ try{localStorage.setItem(TEST_KEY,JSON.stringify(payload))}catch(e){}
+ updateResumeButton();
+}
+function loadActiveTest(){try{const raw=localStorage.getItem(TEST_KEY);if(!raw)return null;const d=JSON.parse(raw);if(!d||!Array.isArray(d.questionIds)||!d.questionIds.length)return null;if(d.questionIds.some(id=>!Number.isInteger(id)||!BANK[id]))return null;return d}catch(e){return null}}
+function updateResumeButton(){const btn=$("resumeTest");if(btn)btn.disabled=!loadActiveTest();}
+function show(id){["setup","quiz","result","reviewDone"].forEach(x=>$(x).classList.toggle("hidden",x!==id));const dock=$("menuActions");if(dock)dock.classList.toggle("hidden",id!=="setup");updateStudentBadge();if(id==="setup"){renderTopicTiles();updateResumeButton();}}
+function goToMenu(){if(mode==="test"&&!finishing)saveActiveTest();show("setup");}
+function aggregatePending(){const ids=[];Object.values(pendingMistakes||{}).forEach(list=>{if(Array.isArray(list))list.forEach(id=>{const n=Number(id);if(Number.isInteger(n)&&BANK[n]&&!ids.includes(n))ids.push(n);});});return ids;}
+
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function show(id){["setup","quiz","result","reviewDone"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
-function selectedOrder(){return document.querySelector('input[name="order"]:checked').value}
-function updateTopicRemaining(){
- const topic=$("topicSelect").value;
- const subset=BANK.map((b,id)=>({b,id})).filter(x=>x.b[0]===topic);
- const mastered=subset.filter(x=>persistentStats[x.id]&&persistentStats[x.id].mastered).length;
- $("topicRemaining").textContent=mastered===subset.length?`Тема «${topic}» полностью освоена: ${mastered} из ${subset.length}`:`Освоено: ${mastered} из ${subset.length} · осталось: ${subset.length-mastered}`;
-}
 const MASTERY_KEY="geometryQuizMasteredV1";
 function getMastered(){try{return JSON.parse(localStorage.getItem(MASTERY_KEY)||"[]")}catch(e){return []}}
 function setMastered(ids){try{localStorage.setItem(MASTERY_KEY,JSON.stringify([...new Set(ids)]))}catch(e){}}
-function updateRemainingInfo(){
- const order=selectedOrder();
- let subset=BANK.map((b,i)=>({b,id:i}));
- if(order==="topic")subset=subset.filter(x=>x.b[0]===$("topicSelect").value);
- const remaining=subset.filter(x=>!(persistentStats[x.id]&&persistentStats[x.id].mastered)).length;
- const total=subset.length;
- const info=$("remainingInfo"); if(info) info.innerHTML=`<b>Не освоено: ${remaining} из ${total}</b><span class="small">В этой выборке вопросы считаются освоенными после 3 правильных ответов подряд в работе над ошибками.</span>`;
-}
 function startTest(){
- finishing=false;
- const msg=$("setupMessage");msg.textContent="";
- mode="test";
- let q=BANK.map((b,i)=>({b,id:i}));
- if(selectedOrder()==="topic"){
-   const topic=$("topicSelect").value;
-   // Каждый новый запуск темы начинается с полного набора и обнуляет освоение только этой темы.
-   q=q.filter(x=>x.b[0]===topic);
-   q.forEach(x=>{if(persistentStats[x.id])persistentStats[x.id].mastered=false;});
-   delete pendingMistakes[topic];
-   savePending();saveStats();
-   updateTopicRemaining();updateRemainingInfo();
- } else {
-   // Для случайного режима сначала формируем новый пул, затем сбрасываем прогресс только у этих вопросов.
-   q=shuffle(q).slice(0,20);
-   const touchedTopics=new Set(q.map(x=>x.b[0]));
-   q.forEach(x=>{if(persistentStats[x.id])persistentStats[x.id].mastered=false;});
-   touchedTopics.forEach(topic=>{pendingMistakes[topic]=(pendingMistakes[topic]||[]).filter(id=>!q.some(x=>x.id===id));});
-   savePending();saveStats();updateTopicRemaining();updateRemainingInfo();
- }
- questions=q;idx=0;answers=[];wrongOriginal=[];show("quiz");$("modeLabel").textContent="Основной тест";renderQuestion();
+ if(!savedStudentName){showNameGate();return;}
+ finishing=false;if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null;}mode="test";const msg=$("setupMessage");msg.textContent="";
+ questions=BANK.map((b,id)=>({b,id})).filter(x=>x.b[0]===selectedTopic);
+ idx=0;answers=Array(questions.length).fill(null);wrongOriginal=[];testResult=null;correctedAfterReview=new Set();
+ reportSession={topic:selectedTopic,studentName:studentName(),original:null,rounds:[]};saveReportSession();
+ if(!questions.length){msg.textContent="В этой теме пока нет утверждений.";return;}
+ try{localStorage.removeItem(REVIEW_KEY)}catch(e){}
+ saveActiveTest();show("quiz");$("modeLabel").textContent=`Тема: ${selectedTopic}`;renderQuestion();
+}
+function resumeTest(){
+ if(!savedStudentName){showNameGate();return;}
+ const d=loadActiveTest();if(!d){$("setupMessage").textContent="Нет сохранённого теста для продолжения. Нажми «Начать тест».";return;}
+ if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null;}
+ selectedTopic=TOPICS.includes(d.topic)?d.topic:(BANK[d.questionIds[0]]||[])[0]||TOPICS[0];
+ questions=d.questionIds.map(id=>({id,b:BANK[id]}));answers=questions.map((q,i)=>d.answers&&d.answers[i]?d.answers[i]:null);idx=Math.max(0,Math.min(Number(d.idx)||0,questions.length-1));while(idx<questions.length&&answers[idx])idx++;mode="test";finishing=false;wrongOriginal=[];testResult=null;correctedAfterReview=new Set();
+ if(idx>=questions.length){finishTest();return;}
+ show("quiz");$("modeLabel").textContent=`Продолжение теста · ${selectedTopic}`;renderQuestion();
 }
 function renderQuestion(){
- const item=questions[idx]; if(!item){finishTest();return} if(!item.b){$("feedback").textContent="Не удалось найти данные вопроса. Вернись в меню и начни тест заново."; $("feedback").className="feedback bad"; console.error("Некорректный вопрос в пуле",item,idx); return;}
- const topicIcons={"Треугольники":"🔺","Окружности":"🔵","Четырёхугольники":"🟪","Прямые и углы":"📐"};
- $("topic").textContent=(topicIcons[item.b[0]]||"📘")+"  "+item.b[0]+" · утверждение №"+item.b[1];
+ const item=questions[idx];if(!item){if(mode==="test")finishTest();return;}
+ if(!item.b){$("feedback").textContent="Не удалось найти данные вопроса. Вернись в меню и начни тест заново.";$("feedback").className="feedback bad";console.error("Некорректный вопрос в пуле",item,idx);return;}
+ $("topic").textContent="Тема: "+item.b[0]+" · утверждение №"+item.b[1];
  $("question").textContent=item.b[2];$("counter").textContent=`Вопрос ${idx+1} из ${questions.length}`;
- $("bar").style.width=(idx/questions.length*100)+"%";$("feedback").textContent="";$("feedback").className="feedback";
- if(mode==="review" && reviewState[item.id]){
-   const st=reviewState[item.id].streak;
-   $("subhint").textContent=`Чтобы убрать вопрос, ответь верно 3 раза подряд. Сейчас серия: ${st}/3.`;
+ $("bar").style.width=((idx+1)/questions.length*100)+"%";
+ $("yes").classList.toggle("selected",!!(mode==="test"&&answers[idx]&&answers[idx].given===true));
+ $("no").classList.toggle("selected",!!(mode==="test"&&answers[idx]&&answers[idx].given===false));
+ $("yes").disabled=!!(mode==="test"&&answers[idx]);$("no").disabled=!!(mode==="test"&&answers[idx]);
+ $("quit").textContent=mode==="review"?"Завершить работу над ошибками":"Завершить тест сейчас";
+ if(mode==="test"&&!answers[idx]){$("yes").disabled=false;$("no").disabled=false;}
+ $("feedback").textContent="";$("feedback").className="feedback";
+ if(mode==="review"&&reviewState[item.id]){
+   const st=reviewState[item.id].streak;$("subhint").textContent=`Чтобы закрепить утверждение, ответь верно 3 раза подряд. Серия: ${st}/3.`;
    $("counter").textContent=`Осталось утверждений: ${reviewQueue.length} · ответов в работе: ${reviewSeen}`;
- } else {
-   $("subhint").textContent="Верно ли утверждение? Выбери «Да» или «Нет».";
+ }else{
+   if(answers[idx]){$("feedback").textContent=(answers[idx].correct?"✅ Верно. ":"❌ Неверно. ")+`Выбран ответ: ${answers[idx].given?"Да":"Нет"}. Его ещё можно изменить.`;$("feedback").className="feedback "+(answers[idx].correct?"good":"bad");}
  }
 }
-let finishing=false;
+
 function answer(v){
  if(finishing)return;
- const item=questions[idx];
- if(!item || !item.b || typeof item.id!=="number" || !BANK[item.id] || !$("quiz") || $("quiz").classList.contains("hidden")) return;
- if(mode!=="test" && mode!=="review") return;
+ const item=questions[idx];if(!item||!item.b||typeof item.id!=="number"||!BANK[item.id]||$("quiz").classList.contains("hidden"))return;
+ if(mode!=="test"&&mode!=="review")return;
  if(mode==="test"){
-   const correct=v===item.b[3];answers.push({id:item.id,given:v,correct});trackAnswer(item.id,correct);idx++;
-   if(idx>=questions.length){finishing=true;finishTest();return}
-   renderQuestion();return;
+   // Ответ по основному тесту фиксируется один раз; затем автоматически открывается следующий вопрос.
+   if(answers[idx])return;
+   if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null;}
+   const answeredIndex=idx;
+   const isCorrect=v===item.b[3];
+   answers[idx]={id:item.id,given:v,correct:isCorrect,tracked:true};
+   // Сразу учитываем результат, чтобы счётчики тем обновлялись во время теста.
+   trackAnswer(item.id,isCorrect,"test");
+   saveActiveTest();
+   $("yes").classList.toggle("selected",v===true);$("no").classList.toggle("selected",v===false);
+   $("yes").disabled=true;$("no").disabled=true;
+   $("feedback").textContent=isCorrect?"✅ Верно! Следующий вопрос…":"❌ Неверно. Следующий вопрос…";
+   $("feedback").className="feedback "+(isCorrect?"good":"bad");
+   const answeredId=item.id;
+   autoAdvanceTimer=setTimeout(()=>{
+     autoAdvanceTimer=null;
+     if(mode==="test"&&!finishing&&idx===answeredIndex&&questions[idx]&&questions[idx].id===answeredId){
+       if(idx<questions.length-1){idx++;saveActiveTest();renderQuestion();}
+       else finishTest();
+     }
+   },650);
+   return;
  }
- const s=reviewState[item.id];reviewSeen++;trackAnswer(item.id,v===item.b[3]);
- if(v===item.b[3]){s.streak++;$("feedback").textContent=`Верно! ${s.streak} из 3 подряд.`;$("feedback").className="feedback good"}
- else{s.streak=0;$("feedback").textContent="Пока не засчитано: серия сброшена. Попробуй ещё раз.";$("feedback").className="feedback bad"}
- if(s.streak>=3){s.done=true;reviewQueue=reviewQueue.filter(x=>x!==item.id);if(persistentStats[item.id])persistentStats[item.id].mastered=true;saveStats();updateTopicRemaining();const topic=item.b[0];pendingMistakes[topic]=(pendingMistakes[topic]||[]).filter(id=>id!==item.id);savePending()}
- idx++;
- setTimeout(()=>{nextReviewItem()},350);
+ const s=reviewState[item.id];if(!s||s.done)return;
+ reviewSeen++;trackAnswer(item.id,v===item.b[3],"review");
+ if(v===item.b[3]){$("feedback").textContent=`✅ Верно! ${s.streak+1} из 3 подряд.`;$("feedback").className="feedback good";s.streak++;}
+ else{s.streak=0;$("feedback").textContent="❌ Неверно. Серия сброшена. Попробуй ещё раз.";$("feedback").className="feedback bad";}
+ if(s.streak>=3){
+   s.done=true;reviewQueue=reviewQueue.filter(x=>x!==item.id);correctedAfterReview.add(item.id);
+   if(testResult)testResult.correctedAfterReview=[...correctedAfterReview];
+   const topic=item.b[0];
+   // Сначала исключаем вопрос из очереди ошибок, и только потом обновляем счётчики.
+   pendingMistakes[topic]=(pendingMistakes[topic]||[]).filter(id=>Number(id)!==item.id);savePending();
+   const st=persistentStats[item.id]||(persistentStats[item.id]={seen:0,wrong:0,correct:0,mastered:false,correctInTest:false});
+   st.mastered=true;saveStats();
+ }
+ try{localStorage.setItem(REVIEW_KEY,JSON.stringify({topic:selectedTopic,queue:reviewQueue,state:reviewState,seen:reviewSeen,idx}))}catch(e){}
+ idx++;setTimeout(()=>nextReviewItem(),350);
 }
 function finishTest(){
- if(mode!=="test")return;
- finishing=true;
- // Завершение допускается и до первого ответа; пропуски не считаются ошибками.
+ if(mode!=="test")return;finishing=true;
  const total=questions.length;
- testResult=answers.slice();wrongOriginal=answers.filter(a=>!a.correct).map(a=>a.id);
- const correct=answers.filter(a=>a.correct).length, answered=answers.length, unanswered=Math.max(0,total-answered);
+ const actualAnswers=answers.filter(a=>a&&Number.isInteger(a.id)&&BANK[a.id]);
+ const answeredIds=new Set(actualAnswers.map(a=>a.id));
+ const wrongIds=actualAnswers.filter(a=>!a.correct).map(a=>a.id);
+ const unansweredIds=questions.filter(q=>!answeredIds.has(q.id)).map(q=>q.id);
+ wrongOriginal=[...new Set([...wrongIds,...unansweredIds])];
+ const correct=actualAnswers.filter(a=>a.correct).length,answered=actualAnswers.length,unanswered=unansweredIds.length;
+ actualAnswers.forEach(a=>{if(!a.tracked){trackAnswer(a.id,a.correct,"test");a.tracked=true;}});
+ // Пропуск тоже требует отработки; фиксируем его в истории так же, как ошибочный ответ.
+ unansweredIds.forEach(id=>{const b=BANK[id];if(b)mistakeHistory[id]={id,topic:b[0],number:b[1],text:b[2],everWrong:true,unanswered:true};});
+ if(unansweredIds.length)saveMistakeHistory();
+ testResult={topic:selectedTopic,total,answers:actualAnswers.slice(),wrongIds:wrongIds.slice(),unansweredIds:unansweredIds.slice(),questionIds:questions.map(q=>q.id),correctedAfterReview:[...correctedAfterReview]};
+ reportSession=reportSession||{topic:selectedTopic,studentName:studentName(),rounds:[]};
+ reportSession.topic=selectedTopic;reportSession.studentName=studentName();reportSession.original={topic:selectedTopic,questionIds:questions.map(q=>q.id),answers:questions.map((q,i)=>answers[i]||null),total,wrongIds:wrongIds.slice(),unansweredIds:unansweredIds.slice(),completedAt:new Date().toISOString()};reportSession.rounds=Array.isArray(reportSession.rounds)?reportSession.rounds:[];saveReportSession();
+ // Обновляем отложенный пул для текущей темы, сохраняя ошибки из других тем.
+ const previous=(pendingMistakes[selectedTopic]||[]).map(Number).filter(id=>!questions.some(q=>q.id===id));
+ pendingMistakes[selectedTopic]=[...new Set([...previous,...wrongOriginal])];savePending();
  const pct=total?Math.round(correct/total*100):0;
- const firstBankItem=answers.length?BANK[Number(answers[0].id)]:null;
- const topic=firstBankItem?firstBankItem[0]:(selectedOrder()==="topic"?$("topicSelect").value:null);
- if(topic && selectedOrder()==="topic" && answered>0){
-   pendingMistakes[topic]=wrongOriginal.slice();savePending();
-   if(!wrongOriginal.length && unanswered===0){answers.forEach(a=>{if(persistentStats[a.id])persistentStats[a.id].mastered=true});saveStats();pendingMistakes[topic]=[];savePending();updateTopicRemaining();}
- }
- $("resultTitle").textContent=answered===0?"Тест завершён без ответов":(unanswered>0?"Тест завершён досрочно":(pct===100?"Отлично! Все ответы верны!":"Результат основного теста"));
- $("stats").innerHTML=`<div class="stat"><span>Верно</span><b>${correct}</b></div><div class="stat"><span>Ошибки</span><b>${wrongOriginal.length}</b></div><div class="stat"><span>Без ответа</span><b>${unanswered}</b></div><div class="stat"><span>Верно из всех вопросов</span><b>${correct} из ${total} · ${pct}%</b></div>`;
- const wrong=wrongOriginal.map(id=>BANK[Number(id)]).filter(Boolean);
- const unansweredBlock=unanswered?`<div class="stat"><b>Ответ не был дан</b><p>Пропущенные утверждения не включены в разбор ошибок.</p></div>`:"";
- $("theoryBlocks").innerHTML=(wrong.length?wrong.map(b=>theoryBlock(b)).join(""):(answered?"<div class='stat'><b>Неверных ответов нет.</b></div>":""))+unansweredBlock;
- $("resultMood").textContent=(pct===100 && unanswered===0)?"😊":"😔";
- $("resultMoodText").textContent=(pct===100 && unanswered===0)?"Отлично! Все утверждения решены верно.":"Не расстраивайся — ошибки помогут понять, что нужно повторить.";
- $("report").value=makeTeacherReport("ОСНОВНОЙ ТЕСТ",answers,wrongOriginal,total,unanswered);
- $("mistakes").disabled=wrongOriginal.length===0;
- $("mistakes").textContent=wrongOriginal.length?"Работа над ошибками ("+wrongOriginal.length+")":"Нет ошибок для разбора";
- show("result");if(total>0 && answered===total && pct===100)celebrate();
+ $("resultTitle").textContent=answered===0?"Тест завершён без ответов":(unanswered>0?"Тест завершён досрочно":(pct===100?"Отлично! Все ответы верны!":"Результат теста"));
+ $("stats").innerHTML=`<div class="stat"><span>🟢 Верно с первой попытки</span><b>${correct} из ${total}</b></div><div class="stat"><span>🔴 Неверно с первой попытки</span><b>${wrongIds.length}</b></div><div class="stat"><span>🤔 Без ответа</span><b>${unanswered}</b></div><div class="stat"><span>📊 Общий результат</span><b>${correct} из ${total} · ${pct}%</b></div>`;
+ const needsReview=wrongOriginal.map(id=>BANK[id]).filter(Boolean);
+ $("theoryBlocks").innerHTML=(wrongIds.length?wrongIds.map(id=>theoryBlock(BANK[id])).join(""):"<div class='stat'><b>Ошибочных ответов нет.</b></div>")+(unanswered?`<div class="stat"><b>🤔 Без ответа (${unanswered})</b><ul>${unansweredIds.map(id=>`<li>№${BANK[id][1]} — ${esc(BANK[id][2])}</li>`).join("")}</ul></div>`:"");
+ $("resultMood").textContent=(pct===100&&unanswered===0)?"😊":"🧩";
+ $("resultMoodText").textContent=(pct===100&&unanswered===0)?"Отлично! Все утверждения решены верно.":"Ошибки и пропуски сохранены для повторения.";
+ $("report").value=buildCumulativeReport();
+ $("mistakes").disabled=wrongOriginal.length===0;$("mistakes").textContent=wrongOriginal.length?"🧩 Работа над ошибками ("+wrongOriginal.length+")":"Нет заданий для повторения";
+ try{localStorage.removeItem(TEST_KEY);localStorage.removeItem(REVIEW_KEY)}catch(e){}
+ updateResumeButton();renderSavedStats();renderTopicTiles();show("result");if(total>0&&answered===total&&pct===100)celebrate();
 }
-function makeTeacherReport(title,ans,wrongIds,total=ans.length,unanswered=Math.max(0,total-ans.length)){
- let correct=ans.filter(a=>a.correct).length;
- let out=["Задание 19 ОГЭ по математике",`Ученик: ${studentName()}`,title,
- `Верно: ${correct} из ${total} (${total?Math.round(correct/total*100):0}%)`,
- `Ответов дано: ${ans.length} из ${total}`,`Без ответа: ${unanswered}`,`Ошибок: ${wrongIds.length}`,""];
- if(wrongIds.length){
-   out.push("ВОПРОСЫ ДЛЯ ПОВТОРЕНИЯ","");
-   wrongIds.forEach(id=>{
-     const b=BANK[Number(id)];
-     if(!b)return;
-     out.push(`${b[0]} · утверждение №${b[1]}`,b[2],"Разбор и теория:",theoryText(b),"");
+function makeTeacherReport(){return buildCumulativeReport();}
+function buildCumulativeReport(){
+ const sess=reportSession;
+ if(!sess||!sess.original)return `Ученик: ${sess&&sess.studentName?sess.studentName:studentName()}\n\nОтчёт появится после завершения основного теста.`;
+ const orig=sess.original;
+ const qids=Array.isArray(orig.questionIds)?orig.questionIds:[];
+ const ans=Array.isArray(orig.answers)?orig.answers:[];
+ const byId=new Map(ans.filter(Boolean).map(a=>[Number(a.id),a]));
+ // В отчёт входят только вопросы, не решённые верно с первой попытки:
+ // сюда относятся неверные ответы и вопросы без ответа.
+ const needs=[...new Set([
+   ...(Array.isArray(orig.wrongIds)?orig.wrongIds:[]),
+   ...(Array.isArray(orig.unansweredIds)?orig.unansweredIds:[])
+ ].map(Number).filter(id=>Number.isInteger(id)&&BANK[id]))];
+ // Задание считается отработанным, если хотя бы в одном круге ученик
+ // дал на него три правильных ответа подряд. Последующие круги статус не отменяют.
+ const worked=new Set();
+ (Array.isArray(sess.rounds)?sess.rounds:[]).forEach(round=>{
+   (Array.isArray(round.results)?round.results:[]).forEach(result=>{
+     if(result&&result.done)worked.add(Number(result.id));
    });
- }else if(ans.length===total && total>0)out.push("Все ответы верные.");
- else if(unanswered>0)out.push("Есть вопросы без ответа. Для них разбор не приводится: ответ не был дан.");
- return out.join("\n");
+ });
+ const out=[
+   `Ученик: ${sess.studentName||studentName()}`,
+   '',
+   `Заданий, не решённых с первой попытки: ${needs.length}`,
+   ''
+ ];
+ if(!needs.length){
+   out.push('✅ Все задания решены верно с первой попытки.');
+ }else{
+   needs.forEach((id,index)=>{
+     const b=BANK[id];
+     if(!b)return;
+     out.push(`${index+1}. ${b[0]} · №${b[1]}`);
+     out.push(b[2]);
+     out.push(`Статус: ${worked.has(id)?'✅ Отработано':'❗ Не отработано'}`);
+     out.push('');
+   });
+ }
+ return out.join('\n').trim();
 }
+function saveReportAfterReview(){const combined=buildCumulativeReport();$("report").value=combined;$("reviewReport").value=combined;saveReportSession();}
+
 function theoryText(b){
  const exact=EXPLANATIONS[`${b[0]}|${b[1]}`];
  if(exact)return exact;
@@ -394,15 +530,15 @@ function theoryBlock(b){
    <div class="comment">${esc(explanation).replace(/\\n/g,"<br>")}</div>
  </article>`;
 }
-function startReview(){
- if(!wrongOriginal.length)return;
- finishing=false;
- mode="review";reviewState={};wrongOriginal.forEach(id=>reviewState[id]={streak:0,done:false});reviewQueue=wrongOriginal.slice();reviewSeen=0;
- questions=wrongOriginal.map(id=>({b:BANK[id],id}));idx=0;
- // Randomize only the starting order when mixed was chosen.
- if(selectedOrder()==="mixed")questions=shuffle(questions);
- show("quiz");$("modeLabel").textContent="Работа над ошибками · 3 верных подряд";nextReviewItem();
+function startReview(idsToReview=null){
+ const ids=Array.isArray(idsToReview)?idsToReview.slice():wrongOriginal.slice();
+ const unique=[...new Set(ids.map(Number).filter(id=>Number.isInteger(id)&&BANK[id]))];
+ if(!unique.length){$("setupMessage").textContent="Пока нет заданий для работы над ошибками. Сначала пройди тест.";show("setup");return;}
+ finishing=false;if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null;}mode="review";reviewState={};unique.forEach(id=>reviewState[id]={streak:0,done:false});reviewQueue=unique.slice();reviewSeen=0;reviewRoundQuestionIds=unique.slice();
+ questions=unique.map(id=>({b:BANK[id],id}));idx=0;show("quiz");$("modeLabel").textContent="Работа над ошибками · 3 правильных ответа подряд";nextReviewItem();
 }
+function startReviewFromMenu(){const ids=aggregatePending();if(!ids.length){$("setupMessage").textContent="Пока нет заданий для работы над ошибками. Сначала пройди тест.";$("setupMessage").className="feedback";return;}wrongOriginal=ids.slice();startReview(ids);}
+
 function nextReviewItem(){
  if(!reviewQueue.length){finishReview();return}
  if(idx>=questions.length)idx=0;
@@ -414,12 +550,15 @@ function nextReviewItem(){
  $("bar").style.width=(Object.values(reviewState).filter(s=>s.done).length/Object.keys(reviewState).length*100)+"%";
 }
 function finishReview(){
- mode="reviewDone";const vals=Object.values(reviewState),done=vals.filter(s=>s.done).length;
- $("reviewStats").innerHTML=`<div class="stat"><span>Закреплено</span><b>${done}</b></div><div class="stat"><span>Ответов дано</span><b>${reviewSeen}</b></div><div class="stat"><span>Утверждений</span><b>${vals.length}</b></div>`;
- const lines=[`Ученик: ${studentName()}`,"РАБОТА НАД ОШИБКАМИ",`Закреплено: ${done}/${vals.length}`,`Всего ответов: ${reviewSeen}`,"","Закреплённые утверждения:"];
- Object.entries(reviewState).forEach(([id,st])=>{const b=BANK[Number(id)];if(b)lines.push(`${b[0]}, №${b[1]}: ${b[2]} — 3 верных подряд`); });
- const topics=[...new Set(Object.keys(reviewState).map(id=>BANK[Number(id)]).filter(Boolean).map(b=>b[0]))];topics.forEach(topic=>{if(!(pendingMistakes[topic]||[]).length){pendingMistakes[topic]=[];}});savePending();
- $("reviewReport").value=lines.join("\n");show("reviewDone");celebrate();
+ mode="reviewDone";const vals=Object.values(reviewState),done=vals.filter(st=>st.done).length;
+ $("reviewStats").innerHTML=`<div class="stat"><span>✅ Закреплено</span><b>${done}</b></div><div class="stat"><span>✍️ Ответов дано</span><b>${reviewSeen}</b></div><div class="stat"><span>📚 Утверждений</span><b>${vals.length}</b></div>`;
+ if(reportSession&&reportSession.original){
+   const ids=reviewRoundQuestionIds.length?reviewRoundQuestionIds:Object.keys(reviewState).map(Number);
+   const round={questionIds:ids.slice(),seen:reviewSeen,completedAt:new Date().toISOString(),results:ids.map(id=>({id:Number(id),done:!!(reviewState[id]&&reviewState[id].done),streak:reviewState[id]?reviewState[id].streak:0}))};
+   if(!Array.isArray(reportSession.rounds))reportSession.rounds=[];
+   reportSession.rounds.push(round);saveReportSession();
+ }
+ savePending();saveReportAfterReview();show("reviewDone");renderTopicTiles();updateResumeButton();celebrate();
 }
 function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function copy(id,feedbackId){const el=$(id);el.select();el.setSelectionRange(0,el.value.length);let ok=false;try{ok=document.execCommand("copy")}catch(e){};$(feedbackId).textContent=ok?"Скопировано! Теперь вставь текст в Telegram.":"Не удалось скопировать автоматически — выдели текст вручную.";$(feedbackId).className="feedback "+(ok?"good":"bad")}
@@ -428,33 +567,31 @@ function celebrate(){
  for(let i=0;i<18;i++){const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.value=900+Math.random()*1500;g.gain.setValueAtTime(.0001,now+i*.045);g.gain.exponentialRampToValueAtTime(.045,now+i*.045+.01);g.gain.exponentialRampToValueAtTime(.0001,now+i*.045+.18);o.connect(g);g.connect(ctx.destination);o.start(now+i*.045);o.stop(now+i*.045+.2)}
  setTimeout(()=>ctx.close(),1500)}catch(e){}
 }
-function syncModeOptions(){
- const topicMode=selectedOrder()==="topic";
- $("topicOptions").style.display=topicMode?"flex":"none";
- $("topicRemainingBox").style.display=topicMode?"block":"none";
- updateTopicRemaining();
-}
-document.querySelectorAll('input[name="order"]').forEach(el=>el.addEventListener("change",syncModeOptions));
-syncModeOptions();
-$("topicSelect").addEventListener("change",updateTopicRemaining);
-renderSavedStats();updateTopicRemaining();
-// Historical mistake pool is intentionally independent of the resettable mastery/progress flags.
-$("resumePending").title="Продолжить работу над ошибками по выбранной теме";
-$("resumePending").onclick=()=>{
- finishing=false;
- const topic=$("topicSelect").value;const ids=pendingMistakes[topic]||[];
- if(!ids.length){$("setupMessage").textContent=`Для темы «${topic}» нет незавершённой работы над ошибками.`;$("setupMessage").className="feedback";return;}
- wrongOriginal=ids.slice();mode="review";reviewState={};wrongOriginal.forEach(id=>reviewState[id]={streak:0,done:false});reviewQueue=wrongOriginal.slice();reviewSeen=0;questions=wrongOriginal.map(id=>({b:BANK[id],id}));idx=0;show("quiz");$("modeLabel").textContent=`Работа над ошибками · ${topic}`;nextReviewItem();
-};
-$("resetProgress").onclick=()=>{if(!confirm("Удалить весь прогресс, историю ответов и незавершённую работу над ошибками на этом устройстве?"))return;try{localStorage.removeItem(STATS_KEY);localStorage.removeItem(MASTERY_KEY);localStorage.removeItem(PENDING_KEY)}catch(e){}persistentStats={};pendingMistakes={};renderSavedStats();updateTopicRemaining();$("setupMessage").textContent="Прогресс сброшен.";$("setupMessage").className="feedback good";};
+try{selectedTopic=localStorage.getItem("geometryQuizSelectedTopicV1")||"Прямые и углы"}catch(e){};
+if(!TOPICS.includes(selectedTopic))selectedTopic=TOPICS[0];
+// Исправляем старую ложную отметку: вопрос, который всё ещё находится в работе над ошибками,
+// не может считаться закреплённым до трёх правильных ответов подряд.
+let clearedFalseMastery=false;
+Object.values(pendingMistakes||{}).forEach(list=>{if(Array.isArray(list))list.forEach(id=>{const st=persistentStats[Number(id)];if(st&&st.mastered){st.mastered=false;clearedFalseMastery=true;}})});
+if(clearedFalseMastery){try{localStorage.setItem(STATS_KEY,JSON.stringify(persistentStats))}catch(e){}}
+renderSavedStats();renderTopicTiles();updateResumeButton();
+$("start").type="button";$("resumeTest").type="button";$("workMistakes").type="button";$("resetProgress").type="button";
 $("start").onclick=startTest;
-updateRemainingInfo();
-$("yes").type="button"; $("no").type="button"; $("quit").type="button";
+$("resumeTest").onclick=resumeTest;
+$("workMistakes").onclick=startReviewFromMenu;
+$("backToMenu").onclick=()=>{if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null;}if(mode==="test"&&!finishing)saveActiveTest();show("setup");};
+$("resetProgress").onclick=()=>{
+ if(!confirm("Удалить весь прогресс, историю ответов, сохранённый тест и работу над ошибками на этом устройстве?"))return;
+ try{localStorage.removeItem(STATS_KEY);localStorage.removeItem(MASTERY_KEY);localStorage.removeItem(PENDING_KEY);localStorage.removeItem(HISTORY_KEY);localStorage.removeItem(TEST_KEY);localStorage.removeItem(REVIEW_KEY);localStorage.removeItem(REPORT_SESSION_KEY)}catch(e){}
+ reportSession=null;persistentStats={};pendingMistakes={};mistakeHistory={};answers=[];wrongOriginal=[];testResult=null;correctedAfterReview=new Set();renderSavedStats();renderTopicTiles();updateResumeButton();$("setupMessage").textContent="Прогресс сброшен.";$("setupMessage").className="feedback good";
+};
+$("yes").type="button";$("no").type="button";$("quit").type="button";
 $("yes").addEventListener("click",ev=>{ev.preventDefault();try{answer(true)}catch(err){console.error("Ошибка ответа:",err);$("feedback").textContent="Ошибка обработки ответа: "+(err&&err.message?err.message:"неизвестная ошибка");$("feedback").className="feedback bad"}});
 $("no").addEventListener("click",ev=>{ev.preventDefault();try{answer(false)}catch(err){console.error("Ошибка ответа:",err);$("feedback").textContent="Ошибка обработки ответа: "+(err&&err.message?err.message:"неизвестная ошибка");$("feedback").className="feedback bad"}});
-$("quit").onclick=()=>{if(mode==="test")finishTest();else finishReview()};
-$("mistakes").onclick=startReview;$("again").onclick=()=>{renderSavedStats();show("setup")};$("restartTop").onclick=()=>{renderSavedStats();show("setup")};
+$("quit").onclick=()=>{if(mode==="test")finishTest();else if(mode==="review")finishReview()};
+$("mistakes").onclick=()=>startReview(wrongOriginal);$("again").onclick=()=>{show("setup");renderTopicTiles();};
 $("copyReport").onclick=()=>copy("report","copyFeedback");$("copyReview").onclick=()=>copy("reviewReport","reviewCopyFeedback");
-$("repeatReview").onclick=startReview;$("toTest").onclick=()=>show("result");
+$("repeatReview").onclick=()=>startReview(aggregatePending().length?aggregatePending():wrongOriginal);$("toTest").onclick=()=>show("result");
+updateStudentBadge();showNameGate();
 </script>
 </body></html>
