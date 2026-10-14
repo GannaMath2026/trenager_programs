@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Визуализатор рекурсии — мемоизация</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#0b0f14;color:#edf3f8;font-family:Calibri,Arial,sans-serif}
+button,select,input,textarea{font:inherit}
+button{cursor:pointer}
+#app{height:100vh;display:grid;grid-template-columns:420px 1fr;gap:10px;padding:10px}
+.panel{background:#131a22;border:1px solid #303c4a;border-radius:12px}
+#left{display:flex;flex-direction:column;min-height:0}
+.head{padding:13px 15px;border-bottom:1px solid #303c4a}
+h1{font-size:20px;margin:0}.muted{font-size:11px;color:#8fa0b1;margin-top:3px}
+#edit{padding:10px;display:flex;flex-direction:column;gap:8px;min-height:0;overflow:auto}
+.lab{font-size:11px;color:#91a0af;text-transform:uppercase}
+select,input[type=text]{width:100%;background:#0e141b;color:#edf3f8;border:1px solid #354454;border-radius:8px;padding:8px}
+textarea{width:100%;background:#0e141b;color:#edf3f8;border:1px solid #354454;border-radius:8px;padding:9px;outline:none;font:12px/1.4 Consolas,monospace;resize:none}
+textarea:focus,select:focus,input:focus{border-color:#62b6ff}
+#code{height:190px}#data{height:175px}
+.row{display:flex;gap:6px;flex-wrap:wrap}.btn{background:#1a232d;color:#edf3f8;border:1px solid #354454;border-radius:8px;padding:8px 10px}.btn.primary{background:#153650;border-color:#62b6ff}
+.check{font-size:12px;color:#a8b6c4;display:flex;gap:7px;align-items:center}.check input{accent-color:#62b6ff}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.stat{background:#0e141b;border:1px solid #293745;border-radius:8px;padding:7px}.stat b{display:block;font-size:18px;color:#62b6ff}.stat span{font-size:10px;color:#8797a7}
+#main{min-width:0;display:flex;flex-direction:column;gap:10px}
+#top{padding:10px;display:flex;align-items:center;gap:8px}.state{margin-left:auto;color:#91a0af;font-size:12px}
+#steps{padding:9px;display:flex;gap:5px;overflow:auto;min-height:57px}
+.chip{padding:7px 9px;border:1px solid #303c4a;border-radius:8px;background:#10161d;font:11px Consolas,monospace;white-space:nowrap;cursor:pointer}
+.chip.cur{border-color:#62b6ff;background:#14324a}.chip.memo{border-color:#a78bfa;color:#d8caff}
+#work{display:grid;grid-template-columns:1fr 260px;gap:10px;flex:1;min-height:0}
+#wrap{min-width:0;overflow:auto;padding:10px}.tree{position:relative;min-width:100%;min-height:100%;padding:20px}
+.node{position:absolute;width:205px;min-height:92px;background:#10161d;border:2px solid #465361;border-radius:10px;padding:8px 10px;box-shadow:0 8px 24px #0005}
+.node.active{border-color:#62b6ff;box-shadow:0 0 0 2px #62b6ff22}
+.node.done{border-color:#3ddc97}.node.memo{border-color:#a78bfa;background:#17131f}.node.bad{border-color:#ff6868}
+.nh{display:flex;justify-content:space-between;font:700 13px Consolas,monospace}.args{color:#62b6ff;font:12px Consolas,monospace}.res{color:#3ddc97;font:13px Consolas,monospace;margin-top:5px}.meta{font-size:10px;color:#91a0af;margin-top:5px}
+.badge{font:10px Calibri;background:#202a35;border-radius:10px;padding:2px 6px;color:#91a0af}.badge.memo{background:#2a2140;color:#d9caff}
+.edge{position:absolute;height:2px;background:#465361;transform-origin:0 50%}
+#side{padding:10px;overflow:auto}
+.sideTitle{font-size:12px;color:#aebdca;text-transform:uppercase;margin:2px 0 8px}
+.cache{display:grid;grid-template-columns:1fr auto;gap:4px;font:12px Consolas,monospace}
+.cache div{padding:5px 7px;background:#0e141b;border-radius:5px}.cache .hit{color:#d7c8ff;border:1px solid #6d559c}
+.calcbox{margin-bottom:12px;padding:11px;background:#0e141b;border:1px solid #334454;border-radius:9px;font-size:13px;line-height:1.55}.calcbox .formula{font:13px Consolas,monospace;margin-top:7px}.calcbox .v{color:#62b6ff}.calcbox .fromcache{color:#d9c8ff;background:#2a2140;border:1px solid #7356a5;border-radius:5px;padding:1px 4px}.calcbox .source{color:#d9c8ff}.explain{margin-top:12px;padding:10px;background:#0e141b;border:1px solid #293745;border-radius:8px;font-size:12px;line-height:1.4;color:#aebdca}
+#log{height:125px;overflow:auto;padding:9px;font:11px/1.45 Consolas,monospace}.logline{padding:2px 0}
+</style>
+</head>
+<body>
+<div id="app">
+<section id="left" class="panel">
+  <div class="head"><h1>Визуализатор рекурсии</h1><div class="muted">Один и тот же алгоритм: без мемоизации и с мемоизацией</div></div>
+  <div id="edit">
+    <div class="lab">Встроенный пример</div>
+    <select id="example">
+      <option value="fib">Фибоначчи</option>
+      <option value="fact">Факториал</option>
+      <option value="sum">Сумма 1…n</option>
+      <option value="pow">Степень</option>
+      <option value="stairs">Лестница</option>
+      <option value="gcd">НОД Евклида</option>
+      <option value="graph">Граф из задания</option>
+    </select>
+    <div class="lab">Вызов</div>
+    <input id="call" type="text" value="f(6)">
+    <div class="lab">Рекурсивная функция</div>
+    <textarea id="code"></textarea>
+    <div class="lab">Глобальные переменные / данные</div>
+    <textarea id="data"></textarea>
+
+    <div class="row">
+      <label class="check"><input id="memo" type="checkbox"> Мемоизация</label>
+      <label class="check"><input id="stepmode" type="checkbox" checked> Пошагово</label>
+    </div>
+
+    <div class="row">
+      <button class="btn primary" id="run">▶ Запустить</button>
+      <button class="btn" id="step">Следующий шаг</button>
+      <button class="btn" id="back">← Назад</button>
+      <button class="btn" id="finishBtn">⏩ До финиша</button>
+      <button class="btn" id="reset">↻ Сброс</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="calls">0</b><span>вызовов</span></div>
+      <div class="stat"><b id="hits">0</b><span>попаданий в кэш</span></div>
+      <div class="stat"><b id="saved">0</b><span>сэкономлено</span></div>
+    </div>
+  </div>
+</section>
+
+<main id="main">
+  <div id="top" class="panel"><span>Дерево рекурсивных вызовов</span><span id="state" class="state">Готово</span></div>
+  <div id="steps" class="panel"></div>
+  <div id="work">
+    <div id="wrap" class="panel"><div id="tree" class="tree"></div></div>
+    <aside id="side" class="panel">
+      <div class="sideTitle">Как получено значение</div>
+      <div id="calcbox" class="calcbox">Запусти вычисление. Здесь будет показано, из каких значений складывается/умножается результат.</div>
+      <div class="sideTitle">Кэш мемоизации</div>
+      <div id="cache" class="cache"></div>
+      <div class="explain" id="explain"></div>
+    </aside>
+  </div>
+  <div id="log" class="panel"></div>
+</main>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const code=$('code'),data=$('data'),example=$('example'),call=$('call');
+const tree=$('tree'),wrap=$('wrap'),steps=$('steps'),state=$('state'),cache=$('cache'),logBox=$('log');
+let nodes=[],events=[],cursor=0,cacheMap=new Map(),result=null,mode='fib';
+
+const examples={
+fib:{
+ call:'f(6)',
+ code:`def f(n):
+    if n <= 1:
+        return n
+    return f(n - 1) + f(n - 2)`,
+ data:'',
+ eval:(args,ctx)=>{const n=args[0]; if(n<=1)return n; return ctx.call([n-1])+ctx.call([n-2])}
+},
+fact:{
+ call:'f(5)',
+ code:`def f(n):
+    if n == 0:
+        return 1
+    return n * f(n - 1)`,
+ data:'',
+ eval:(args,ctx)=>{const n=args[0]; if(n===0)return 1; return n*ctx.call([n-1])}
+},
+sum:{
+ call:'f(5)',
+ code:`def f(n):
+    if n == 0:
+        return 0
+    return n + f(n - 1)`,
+ data:'',
+ eval:(args,ctx)=>{const n=args[0]; if(n===0)return 0; return n+ctx.call([n-1])}
+},
+pow:{
+ call:'f(2, 5)',
+ code:`def f(a, n):
+    if n == 0:
+        return 1
+    return a * f(a, n - 1)`,
+ data:'',
+ eval:(args,ctx)=>{const a=args[0],n=args[1]; if(n===0)return 1; return a*ctx.call([a,n-1])}
+},
+stairs:{
+ call:'f(6)',
+ code:`def f(n):
+    if n <= 1:
+        return 1
+    return f(n - 1) + f(n - 2)`,
+ data:'',
+ eval:(args,ctx)=>{const n=args[0]; if(n<=1)return 1; return ctx.call([n-1])+ctx.call([n-2])}
+},
+gcd:{
+ call:'f(48, 18)',
+ code:`def f(a, b):
+    if b == 0:
+        return a
+    return f(b, a % b)`,
+ data:'',
+ eval:(args,ctx)=>{const a=args[0],b=args[1];if(b===0)return a;return ctx.call([b,a%b])}
+},
+graph:{
+ call:'f(1)',
+ code:`def f(a):
+    if a == finish:
+        return 0
+    if a not in g:
+        return -10**10
+    deti = g[a]
+    rez = [f(b) + 1 for b, w in deti]
+    return max(rez)
+
+finish = 100`,
+ data:`g = {
+    1: [(2, 4), (3, 7), (4, 3)],
+    2: [(5, 6), (6, 2)],
+    3: [(6, 5), (7, 4), (8, 8)],
+    4: [(8, 3), (9, 6)],
+    5: [(10, 4), (11, 7)],
+    6: [(11, 3), (12, 5)],
+    7: [(12, 6), (13, 2)],
+    8: [(13, 4), (14, 7)],
+    9: [(14, 3), (15, 5)],
+    10: [(16, 4), (100, 9)],
+    11: [(16, 2), (17, 6)],
+    12: [(17, 3), (18, 5)],
+    13: [(18, 4), (19, 7)],
+    14: [(19, 2), (100, 8)],
+    15: [(19, 6), (100, 5)],
+    16: [(20, 3), (100, 7)],
+    17: [(20, 4)],
+    18: [(20, 6)],
+    19: [(20, 2)],
+    20: [(100, 10)]
+}`,
+ eval:(args,ctx)=>{
+   const a=args[0];
+   const g=ctx.graph;
+   if(a===100)return 0;
+   if(!(a in g))return -1e10;
+   return Math.max(...g[a].map(x=>ctx.call([x[0]])+1));
+ }
+}
+};
+
+function loadExample(){
+ mode=example.value;const e=examples[mode];
+ call.value=e.call;code.value=e.code;data.value=e.data;
+ buildAndRun();
+}
+function parseArgs(s){
+ const m=s.match(/f\s*\((.*)\)/);
+ if(!m)throw Error('Вызов должен быть вида f(6) или f(2, 5)');
+ const a=m[1].trim(); if(!a)return [];
+ return a.split(',').map(x=>Number(x.trim())).map(x=>{if(!Number.isFinite(x))throw Error('Аргументы вызова должны быть числами');return x});
+}
+function parseGraph(){
+ if(!data.value.trim())return {};
+ const gm=data.value.match(/g\s*=\s*(\{[\s\S]*\})/);
+ if(!gm)return {};
+ try{return Function('"use strict";return ('+gm[1]+')')()}catch(e){throw Error('Не удалось прочитать g')}
+}
+function build(){
+ nodes=[];events=[];cursor=0;cacheMap=new Map();result=null;
+ const useMemo=$('memo').checked, graph=parseGraph(), root=parseArgs(call.value);
+ let serial=0;
+ function makeNode(args,parent){
+   const n={id:nodes.length,args,parent,children:[],depth:parent==null?0:nodes[parent].depth+1,state:'waiting',result:null,cacheKey:args.join(',')};
+   nodes.push(n);if(parent!=null)nodes[parent].children.push(n.id);
+   events.push({t:'enter',id:n.id});return n;
+ }
+ function makeCalculation(args, calls, value){
+   const f = calls.map(c => ({args:c.args, value:c.value, memo:c.memo, nodeId:c.nodeId}));
+   if(mode==='fib' || mode==='stairs') return {label:'Складываем два рекурсивных результата', parts:f, op:'+', result:value};
+   if(mode==='fact') return {label:'Умножаем n на результат предыдущего вызова', parts:f, op:'×', result:value, prefix:args[0]};
+   if(mode==='sum') return {label:'Прибавляем n к результату предыдущего вызова', parts:f, op:'+', result:value, prefix:args[0]};
+   if(mode==='pow') return {label:'Умножаем основание на результат предыдущей степени', parts:f, op:'×', result:value, prefix:args[0]};
+   if(mode==='gcd') return {label:'Следующий вызов: f(b, a % b)', parts:f, op:'→', result:value};
+   if(mode==='graph') return {label:'Берём максимум из результатов дочерних вызовов + 1', parts:f, op:'max', result:value, prefix:'+ 1'};
+   return {label:'Результат рекурсивного вычисления',parts:f,op:'',result:value};
+ }
+ function evaluate(args,parent=null){
+   const n=makeNode(args,parent);
+   const key=args.join(',');
+   if(useMemo && cacheMap.has(key)){
+     n.result=cacheMap.get(key);n.state='memo';n.calc={label:'Значение уже было вычислено раньше',parts:[],op:'cache',result:n.result,source:key};events.push({t:'memo',id:n.id,v:n.result,key});
+     return n.result;
+   }
+   const calls=[];
+   const ctx={call:a=>{const start=nodes.length;const v=evaluate(a,n.id);const child=nodes[start];calls.push({args:a,value:v,memo:child.state==='memo',nodeId:child.id});return v;},graph};
+   try{
+     const v=examples[mode].eval(args,ctx);
+     n.result=v;n.state='done';n.calc=makeCalculation(args,calls,v);events.push({t:'return',id:n.id,v,calc:n.calc});
+     if(useMemo)cacheMap.set(key,v);
+     return v;
+   }catch(e){
+     n.result='ERR';n.state='bad';events.push({t:'return',id:n.id,v:'ERR'});throw e;
+   }
+ }
+ result=evaluate(root);
+ return result;
+}
+function edge(x1,y1,x2,y2){
+ const e=document.createElement('div');e.className='edge';
+ const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+ e.style.left=x1+'px';e.style.top=y1+'px';e.style.width=L+'px';e.style.transform=`rotate(${Math.atan2(dy,dx)}rad)`;
+ tree.appendChild(e);
+}
+function render(){
+ tree.innerHTML='';
+ const shown=new Set(events.slice(0,cursor).map(e=>e.id));
+ const groups={};nodes.forEach(n=>{if(shown.has(n.id))(groups[n.depth]??=[]).push(n)});
+ const W=205,H=94,GX=28,GY=40;let mx=0,my=0;
+ Object.entries(groups).forEach(([d,arr])=>arr.forEach((n,i)=>{
+   n.x=25+i*(W+GX);n.y=25+Number(d)*(H+GY);mx=Math.max(mx,n.x+W);my=Math.max(my,n.y+H);
+ }));
+ nodes.forEach(n=>{
+   if(shown.has(n.id)&&n.parent!=null&&shown.has(n.parent))
+     edge(nodes[n.parent].x+W/2,nodes[n.parent].y+H,n.x+W/2,n.y);
+ });
+ nodes.forEach(n=>{
+   if(!shown.has(n.id))return;
+   const ev=events[cursor-1],active=ev&&ev.id===n.id;
+   const d=document.createElement('div');
+   d.className='node '+(active?'active ':'')+(n.state==='done'?'done ':'')+(n.state==='memo'?'memo ':'')+(n.state==='bad'?'bad':'');
+   d.style.left=n.x+'px';d.style.top=n.y+'px';
+   const args=n.args.join(', ');
+   d.innerHTML=`<div class="nh"><span>f(${args})</span><span class="badge ${n.state==='memo'?'memo':''}">${n.state==='memo'?'MEMO':n.state}</span></div>
+   <div class="args">аргументы: ${args}</div>
+   ${n.result!==null?`<div class="res">→ ${n.result}</div>`:''}
+   <div class="meta">${n.state==='memo'?'взято из кэша':'вычислено'} · вызов #${n.id+1}</div>`;
+   tree.appendChild(d);
+ });
+ tree.style.width=Math.max(mx+50,wrap.clientWidth-20)+'px';
+ tree.style.height=Math.max(my+50,wrap.clientHeight-20)+'px';
+ updateStats();renderCache();renderCalculation();renderExplain();
+}
+function renderSteps(){
+ steps.innerHTML='';
+ events.forEach((e,i)=>{
+   const n=nodes[e.id],b=document.createElement('div');
+   b.className='chip '+(i===cursor-1?'cur ':'')+(e.t==='memo'?'memo':'');
+   b.textContent=`${i+1}. `+(e.t==='enter'?`вызов f(${n.args.join(',')})`:e.t==='memo'?`MEMO: f(${n.args.join(',')}) = ${e.v}`:`return f(${n.args.join(',')}) = ${e.v}`);
+   b.onclick=()=>{cursor=i+1;render();renderSteps();state.textContent=`Шаг ${cursor} из ${events.length}`};
+   steps.appendChild(b);
+ });
+}
+function currentEvent(){ return cursor>0 ? events[cursor-1] : null; }
+function renderCalculation(){
+ const box=$('calcbox'); const ev=currentEvent();
+ if(!ev){box.innerHTML='Запусти вычисление. Здесь будет показано, из каких значений складывается/умножается результат.';return}
+ const n=nodes[ev.id];
+ if(ev.t==='memo'){
+   box.innerHTML=`<b>f(${n.args.join(', ')})</b> получила значение <span class="v">${ev.v}</span><br>
+   Значение <span class="source">уже было посчитано раньше</span> и взято из кэша.<div class="formula">кэш: f(${n.args.join(', ')}) = <span class="fromcache">${ev.v}</span></div>`;
+   return;
+ }
+ if(ev.t!=='return' || !n.calc){box.innerHTML=`Сейчас выполняется <b>f(${n.args.join(', ')})</b>.<br>После возврата значения здесь появится его вычисление.`;return}
+ const c=n.calc;
+ if(c.op==='cache') return;
+ let formula=`f(${n.args.join(', ')}) = `;
+ if(mode==='gcd'){
+   const a=n.args[0],b=n.args[1];
+   formula+= b===0 ? `${a}` : `f(${b}, ${a%b})`;
+ } else if(c.op==='max'){
+   formula+='max(' + c.parts.map(x=>`f(${x.args.join(', ')})${x.memo?'[кэш]':''} + 1`).join(', ') + ')';
+ } else {
+   const prefix=c.prefix!==undefined ? `<span class="v">${c.prefix}</span> ${c.op} ` : '';
+   const vals=c.parts.map(x=>`<span class="${x.memo?'fromcache':''}">${x.value}</span>`).join(` ${c.op} `);
+   if(c.parts.length===0) formula += (c.result===undefined?'':c.result);
+   else formula += prefix + c.parts.map(x=>`f(${x.args.join(', ')})`).join(` ${c.op} `) + ` = ` + prefix + vals;
+ }
+ formula += ` = <span class="v">${c.result}</span>`;
+ const cacheNote=c.parts.filter(x=>x.memo).map(x=>`f(${x.args.join(', ')}) = ${x.value}`).join(', ');
+ box.innerHTML=`<b>Как посчитано:</b> ${c.label}<div class="formula">${formula}</div>`+
+   (cacheNote?`<div style="margin-top:7px">🟣 <span class="source">Из кэша:</span> ${cacheNote}</div>`:'');
+}
+function renderCache(){
+ cache.innerHTML='';
+ if(!$('memo').checked){cache.innerHTML='<div style="grid-column:1/3;color:#778899">Мемоизация выключена</div>';return}
+ const entries=[...cacheMap.entries()];
+ const ev=currentEvent(); const active=ev&&ev.t==='memo'?ev.key:null;
+ if(!entries.length){cache.innerHTML='<div style="grid-column:1/3;color:#778899">Кэш пока пуст</div>';return}
+ entries.forEach(([k,v])=>{
+   const a=document.createElement('div');a.textContent=`f(${k})`; if(k===active)a.className='hit';
+   const b=document.createElement('div');b.textContent=v;b.className='hit'; if(k===active){b.style.boxShadow='0 0 0 2px #a78bfa66';b.style.fontWeight='700'}
+   cache.append(a,b);
+ });
+}
+function renderExplain(){
+ const hits=events.filter(e=>e.t==='memo').length;
+ if(!$('memo').checked){
+   $('explain').innerHTML='<b>Без мемоизации:</b><br>каждый одинаковый вызов вычисляется заново. На Фибоначчи это сразу видно по повторяющимся поддеревьям.';
+ }else{
+   $('explain').innerHTML=`<b>С мемоизацией:</b><br>результат первого вычисления сохраняется в кэше. Повторный вызов получает готовый результат и не раскрывает новое поддерево.<br><br><b>Попаданий в кэш:</b> ${hits}`;
+ }
+}
+function updateStats(){
+ const entered=events.filter(e=>e.t==='enter').length;
+ const hits=events.filter(e=>e.t==='memo').length;
+ $('calls').textContent=entered;
+ $('hits').textContent=hits;
+ $('saved').textContent=hits;
+}
+function log(){
+ logBox.innerHTML=events.map((e,i)=>{
+   const n=nodes[e.id];
+   if(i>=cursor)return '';
+   if(e.t==='enter')return `<div class="logline">${i+1}. → вызов f(${n.args.join(', ')})</div>`;
+   if(e.t==='memo')return `<div class="logline" style="color:#d6c7ff">${i+1}. ↺ MEMO f(${n.args.join(', ')}) = ${e.v}</div>`;
+   return `<div class="logline">${i+1}. ← return f(${n.args.join(', ')}) = ${e.v}</div>`;
+ }).join('');
+ logBox.scrollTop=logBox.scrollHeight;
+}
+function buildAndRun(){
+ try{
+   build();
+   cursor=$('stepmode').checked?1:events.length;
+   render();renderSteps();log();
+   state.textContent=`результат: ${result} · ${$('memo').checked?'с мемоизацией':'без мемоизации'}`;
+ }catch(e){state.textContent='Ошибка: '+e.message}
+}
+$('run').onclick=buildAndRun;
+$('finishBtn').onclick=()=>{if(!events.length)build();cursor=events.length;render();renderSteps();log();state.textContent=`До финиша · результат: ${result}`};
+$('step').onclick=()=>{if(!events.length)build();if(cursor<events.length)cursor++;render();renderSteps();log();state.textContent=`Шаг ${cursor} из ${events.length}`};
+$('back').onclick=()=>{if(cursor>0)cursor--;render();renderSteps();log();state.textContent=`Шаг ${cursor} из ${events.length}`};
+$('reset').onclick=()=>{cursor=0;render();renderSteps();log();state.textContent='Сброс'};
+example.onchange=loadExample;
+$('memo').onchange=()=>{if(nodes.length)buildAndRun()};
+$('stepmode').onchange=()=>{if(nodes.length)buildAndRun()};
+window.onresize=render;
+
+example.value='fib';loadExample();
+</script>
+</body>
+</html>
