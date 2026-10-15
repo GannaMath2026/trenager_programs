@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Формулы приведения — отдельная сцена</title>
+<style>
+:root{--bg:#0b0d10;--panel:#141a22;--line:#526174;--text:#edf3fa;--muted:#a7b2c0;--yellow:#ffd84d;--green:#46e08b;--red:#ff626b;--blue:#73c5ff;--accent:#53d6c8}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1000px 700px at 50% 0,#1b2738,#0b0d10 68%);color:var(--text);font:15px Calibri,"Segoe UI",sans-serif;min-height:100vh}
+header{padding:16px 22px 10px;text-align:center}
+h1{margin:0 0 5px;font-size:24px}header p{margin:0;color:var(--muted)}
+main{display:grid;grid-template-columns:minmax(420px,1fr) 370px;gap:16px;padding:10px 18px 18px;max-width:1500px;margin:auto}
+.panel{background:rgba(20,26,34,.94);border:1px solid #2a3544;border-radius:14px;padding:16px;min-width:0}
+.canvas-panel{display:flex;align-items:center;justify-content:center;min-height:600px;position:relative}
+svg{width:min(100%,680px);height:auto;max-height:75vh;overflow:visible;touch-action:none}
+.controls{display:flex;flex-direction:column;gap:13px}
+label,.label{font-weight:700;color:#dce6f2;display:block;margin-bottom:6px}
+select,input[type=range]{width:100%}
+select{background:#0b1119;color:var(--text);border:1px solid #465569;border-radius:8px;padding:9px;font:inherit}
+input[type=range]{accent-color:var(--accent)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{background:#1a3c3b;color:#dffffa;border:1px solid #4bbeb3;border-radius:8px;padding:9px 10px;font:inherit;font-weight:700;cursor:pointer}
+button:hover{background:#245451}
+.angle-number{font-size:20px;color:var(--yellow);font-weight:800;text-align:center}
+.hint{font-size:12px;color:var(--muted);line-height:1.4}
+.result{background:#0d131b;border:1px solid #354354;border-radius:11px;padding:13px;line-height:1.65}
+.result .formula{font-size:21px;font-weight:800;color:white;margin:5px 0}
+.result .verdict{padding:8px 10px;border-radius:8px;background:#18232c;margin-top:8px}
+.pill{display:inline-block;border-radius:6px;padding:2px 7px;font-weight:800}
+.good{color:var(--green);background:#123323}.bad{color:var(--yellow);background:#342d12}
+@media(max-width:900px){main{grid-template-columns:1fr;padding:8px}.canvas-panel{min-height:unset}svg{max-height:none}header h1{font-size:20px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Формулы приведения</h1>
+<p>Любой угол · выбираем пару функций и вид добавки · видим только актуальную формулу</p>
+</header>
+<main>
+<section class="panel canvas-panel">
+<svg id="circle" viewBox="0 0 640 640" role="img" aria-label="Единичная окружность и значения функций"></svg>
+</section>
+<section class="panel controls">
+<div>
+<label for="angle">Угол на окружности</label>
+<input id="angle" type="range" min="0" max="360" step="1" value="0">
+<div class="angle-number" id="angleText">150°</div>
+<div class="hint">Передвигайте ползунок или тяните точку на окружности. На дуге используются обозначения через α, без вычисления угла слева.</div>
+</div>
+<div class="row">
+<div><label for="pair">Пара функций</label><select id="pair"><option value="sc">sin и cos</option><option value="tc">tg и ctg</option></select></div>
+<div><label for="method">Вид добавки</label><select id="method"><option value="whole">Через целые π: 180°</option><option value="half">Через половинки: 90°</option></select></div>
+</div>
+<div class="result" id="result" aria-live="polite"></div>
+<div class="hint"><b>Метод «лошадиной головы»:</b> мысленно покачайте головой горизонтально — функция не меняется; вертикально — функция меняется на дополнительную. Знак определяется четвертью.</div>
+<button id="reset">Сбросить</button>
+</section>
+</main>
+<script>
+const NS='http://www.w3.org/2000/svg';
+const svg=document.querySelector('#circle'), angleSlider=document.querySelector('#angle');
+const pairSelect=document.querySelector('#pair'), methodSelect=document.querySelector('#method');
+const result=document.querySelector('#result'), angleText=document.querySelector('#angleText');
+let angle=0, dragging=false;
+const C=320,R=218;
+function el(tag,attrs={},parent=svg,text=''){const n=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);if(text!=='')n.textContent=text;parent.appendChild(n);return n}
+function line(x1,y1,x2,y2,color,width=3,dash=''){return el('line',{x1,y1,x2,y2,stroke:color,'stroke-width':width,'stroke-linecap':'round',...(dash?{'stroke-dasharray':dash}:{})})}
+function text(x,y,t,color='#fff',size=17,anchor='middle',weight=700){return el('text',{x,y,fill:color,'font-size':size,'font-family':'Calibri, Segoe UI, sans-serif','font-weight':weight,'text-anchor':anchor},svg,t)}
+function fmtDeg(a){return Math.round(a*100)/100}
+function render(){
+ angle=+angleSlider.value;angleText.textContent=angle+'°';
+ svg.replaceChildren();
+ // Стрелки на концах дуг углов
+ const defs=el('defs');
+ const marker=el('marker',{id:'angleArrow',markerWidth:8,markerHeight:8,refX:6,refY:3,orient:'auto',markerUnits:'strokeWidth'},defs);
+ el('path',{d:'M0,0 L6,3 L0,6 Z',fill:'#73c5ff'},marker);
+ // axes and circle
+ line(52,C,588,C,'#657487',1.5);line(C,52,C,588,'#657487',1.5);
+ el('circle',{cx:C,cy:C,r:R,fill:'none',stroke:'#657487','stroke-width':2});
+ text(590,C-10,'x','#9eacbc',15,'end',500);text(C+12,48,'y','#9eacbc',15,'start',500);
+ const rad=angle*Math.PI/180, x=C+R*Math.cos(rad), y=C-R*Math.sin(rad);
+ const norm=((angle%360)+360)%360;
+ // reference angle and expression
+ let ref, expr;
+ if(methodSelect.value==='half'){
+   if(norm<=90){ref=90-norm;expr='90° − α'}
+   else if(norm<=180){ref=norm-90;expr='90° + α'}
+   else if(norm<=270){ref=270-norm;expr='270° − α'}
+   else {ref=norm-270;expr='270° + α'}
+ } else {
+   if(norm<=90){ref=norm;expr='α'}
+   else if(norm<=180){ref=180-norm;expr='180° − α'}
+   else if(norm<=270){ref=norm-180;expr='180° + α'}
+   else {ref=360-norm;expr='360° − α'}
+ }
+ // Тонкая голубая дуга исходного угла; подпись ставим рядом с его точкой.
+ const arcR=R*.48;
+ const start={x:C+arcR,y:C};
+ const arcEnd={x:C+arcR*Math.cos(rad),y:C-arcR*Math.sin(rad)};
+ const large=norm>180?1:0;
+ el('path',{d:`M ${start.x} ${start.y} A ${arcR} ${arcR} 0 ${large} 0 ${arcEnd.x} ${arcEnd.y}`,fill:'none',stroke:'#73c5ff','stroke-width':1.45,'stroke-dasharray':'4 5','marker-end':'url(#angleArrow)'});
+ // Радиус и точка исходного угла
+ if(pairSelect.value==='tc') line(C,C,x,y,'#8995a4',2,'4 5');
+ else line(C,C,x,y,'#ff626b',3.2);
+ el('circle',{cx:x,cy:y,r:8,fill:pairSelect.value==='tc'?'#8995a4':'#ff626b',stroke:'#fff','stroke-width':2});
+ const angleLabel=expr;
+ let labelX=x+(x<C?-14:14), labelY=y+(y<C?-13:20), anchor=x<C?'end':'start';
+ if(norm>165&&norm<205){labelX=x-12;labelY=y-17;anchor='end'}
+ // Подпись исходного угла ставим выше точки, не на проекционных отрезках.
+ labelX=x+(x<C?-4:4); labelY=y-17; anchor=x<C?'end':'start';
+ text(labelX,labelY,angleLabel,'#a9ddff',18,anchor,800);
+ // Отрезки исходного угла: толстые пунктирные красный и голубой.
+ // sin — вертикальный отрезок; cos — горизонтальный.
+ if(pairSelect.value==='tc'){
+   line(C,y,x,y,'#8995a4',1.5,'4 5');
+   line(x,C,x,y,'#8995a4',1.5,'4 5');
+ } else {
+   line(C,y,x,y,'#ff626b',3,'4 4');
+   line(x,C,x,y,'#73c5ff',3,'4 4');
+   text((C+x)/2,y-10,'cos','#ff626b',16);
+   text(x+(x<C?-10:10),(C+y)/2,'sin','#73c5ff',16,x<C?'end':'start');
+ }
+ // Угол α в I квадранте: отдельная тонкая пунктирная голубая дуга и подпись у точки.
+ const rr=ref*Math.PI/180, ax=C+R*Math.cos(rr), ay=C-R*Math.sin(rr);
+ const refArcR=R*.32;
+ const refStart={x:C+refArcR,y:C}, refEnd={x:C+refArcR*Math.cos(rr),y:C-refArcR*Math.sin(rr)};
+ el('path',{d:`M ${refStart.x} ${refStart.y} A ${refArcR} ${refArcR} 0 0 0 ${refEnd.x} ${refEnd.y}`,fill:'none',stroke:'#73c5ff','stroke-width':1.35,'stroke-dasharray':'4 5','marker-end':'url(#angleArrow)'});
+ line(C,C,ax,ay,'#73c5ff',1.8,'5 5');
+ el('circle',{cx:ax,cy:ay,r:6.5,fill:'#46e08b',stroke:'#fff','stroke-width':1.4});
+ // Подпись α — над точкой на дуге, чтобы отрезки не проходили под текстом.
+ text(ax+8,ay-18,'α','#a9ddff',18,'start',800);
+ // Значения для α: тонкие пунктирные отрезки, зелёный и жёлтый.
+ line(C,ay,ax,ay,'#46e08b',3,'5 4');
+ line(ax,C,ax,ay,'#ffd84d',3,'5 4');
+ text((C+ax)/2,ay-9,'cos α','#46e08b',15);
+ text(ax+8,(C+ay)/2,'sin α','#ffd84d',15,'start');
+ // Для tg и ctg дополнительно показываем их касательные оси и отрезки.
+ if(pairSelect.value==='tc'){
+   const tx=C+R, ty=C-R;
+   line(tx,C-R*1.12,tx,C+R*1.12,'#ff7fa8',1.5,'5 5');
+   line(C-R*1.12,ty,C+R*1.12,ty,'#73c5ff',1.5,'5 5');
+   text(tx+8,C-R*1.12+12,'ось tg','#ff7fa8',13,'start');
+   text(C+R*1.12-4,ty-9,'ось ctg','#73c5ff',13,'end');
+   const drawTan=(a,col,w)=>{const t=Math.tan(a);if(Number.isFinite(t)&&Math.abs(t)<1.7){const yy=C-R*t;
+     // Серый радиус/секущая; цветом выделен только отрезок на оси tg.
+     line(C,C,tx,yy,'#8995a4',1.5,'4 5'); line(tx,C,tx,yy,col,w,'4 5');
+   }};
+   const drawCot=(a,col,w)=>{const sn=Math.sin(a);const v=Math.abs(sn)<1e-8?NaN:1/Math.tan(a);if(Number.isFinite(v)&&Math.abs(v)<1.7){const xx=C+R*v;
+     // Серый радиус/секущая; цветом выделен только отрезок на оси ctg.
+     line(C,C,xx,ty,'#8995a4',1.5,'4 5'); line(C,ty,xx,ty,col,w,'4 5');
+   }};
+   drawTan(rad,'#ff626b',2.5); drawCot(rad,'#73c5ff',2.5);
+   drawTan(rr,'#46e08b',1.6); drawCot(rr,'#ffd84d',1.6);
+   text(tx+8,C-R*Math.tan(rad)-8,'tg','#ff7fa8',14,'start');
+   text(C+R/Math.tan(rad)+5,ty-8,'ctg','#73c5ff',14,'start');
+ }
+ // display only relevant identity based on angle quadrant and method, plus verdict
+ const pair=pairSelect.value, method=methodSelect.value;
+ const funcs=pair==='sc'?['sin','cos']:['tg','ctg'];
+ const fnLabel={sin:'sin',cos:'cos',tg:'tg',ctg:'ctg'};
+ let add, change;
+ if(method==='whole'){
+   if(norm<90 || norm===0){add='α';}
+   else if(norm<180){add='180° − α';}
+   else if(norm<270){add='180° + α';}
+   else if(norm<360){add='360° − α';}
+   else add='α';
+   // Whole-pi forms preserve the function for 180 +/- alpha; 360-alpha also preserves sin/cos identity by direct symmetry.
+   change=false;
+ }else{
+   // use nearest 90-degree decomposition; the function switches for odd multiples of 90°
+   if(norm<=90){add=norm<=45?'90° − α':'90° − α';}
+   else if(norm<=180){add='90° + α';}
+   else if(norm<=270){add='270° − α';}
+   else add='270° + α';
+   change=true;
+ }
+ // More precise pedagogical relation: whole-pi method uses the α reference angle and canonical quadrant formula.
+ const q=norm===0||norm===360?'I':norm<90?'I':norm===90?'граница I/II':norm<180?'II':norm===180?'граница II/III':norm<270?'III':norm===270?'граница III/IV':'IV';
+ const signs={
+  sin:['+','+','−','−'],cos:['+','−','−','+'],tg:['+','−','+','−'],ctg:['+','−','+','−']
+ };
+ const qi=norm<90?0:norm<180?1:norm<270?2:3;
+ const actualName=funcs;
+ const identity=(f)=>{
+   let mapped=f, sign=signs[f][qi];
+   if(method==='half'){
+     mapped=({sin:'cos',cos:'sin',tg:'ctg',ctg:'tg'})[f];
+     // Standard cofunction identities for 90° +/- alpha and signs by quadrant.
+     if(norm<90){sign=f==='sin'?'+':f==='cos'?'+':f==='tg'?'+':'+';}
+     else if(norm<180){sign=f==='sin'?'+':f==='cos'?'−':f==='tg'?'−':'−';}
+     else if(norm<270){sign=f==='sin'?'−':f==='cos'?'−':f==='tg'?'+':'+';}
+     else {sign=f==='sin'?'−':f==='cos'?'+':f==='tg'?'−':'−';}
+   }
+   if(method==='whole') mapped=f;
+   return {mapped,sign};
+ };
+ const angleForm=method==='whole'?(norm<90?'α':norm<180?'180° − α':norm<270?'180° + α':'360° − α'):(norm<90?'90° − α':norm<180?'90° + α':norm<270?'270° − α':'270° + α');
+ // Only one actual, relevant identity per selected pair, matching the selected add-on type.
+ const makeFormula=f=>{
+   const id=identity(f);
+   const sign=id.sign==='+'?'+':'−';
+   return `${f}(${angleForm}) = ${sign==='+'?'':sign}${id.mapped} α`;
+ };
+ let verdictText, verdictClass;
+ if(method==='whole'){
+   verdictText='Функцию не меняем: горизонтальный кивок.';
+   verdictClass='good';
+ }else{
+   verdictText='Функцию меняем на дополнительную: вертикальный кивок.';
+   verdictClass='bad';
+ }
+ // Special exact boundary reminder
+ const boundary=(Math.abs(norm-90)<1e-8||Math.abs(norm-270)<1e-8);
+ result.innerHTML=`<div class="hint">Четверть: <b>${q}</b></div>
+ <div class="formula">${makeFormula(funcs[0])}</div>
+ <div class="formula">${makeFormula(funcs[1])}</div>
+ <div class="verdict" style="border:1px solid #46e08b;background:#10291f">
+ <div style="color:#46e08b;font-weight:800;padding:3px 0">Функцию ${method==='whole'?'НЕ меняем':'меняем'}</div>
+ <div style="color:#46e08b;font-weight:800;padding:3px 0">Знак: <span style="font-size:20px">${identity(funcs[0]).sign==='+'?'+':'−'}</span></div>
+ <div style="margin-top:6px">${verdictText}</div>
+ <div style="margin-top:4px">Знак выбираем по четверти: <b>${q}</b>.</div>
+</div>
+ ${boundary?'<div class="hint" style="margin-top:8px;color:#ffd84d">Угол лежит на оси: формула приведения к острому α в этой точке вырождается.</div>':''}`;
+}
+angleSlider.addEventListener('input',render);
+pairSelect.addEventListener('change',render);methodSelect.addEventListener('change',render);
+document.querySelector('#reset').addEventListener('click',()=>{angleSlider.value=0;pairSelect.value='sc';methodSelect.value='whole';render()});
+function pointerAngle(e){
+ const r=svg.getBoundingClientRect(), sx=640/r.width, sy=640/r.height;
+ const x=(e.clientX-r.left)*sx,y=(e.clientY-r.top)*sy;
+ let d=(Math.atan2(C-y,x-C)*180/Math.PI+360)%360;
+ angleSlider.value=Math.round(d);render();
+}
+svg.addEventListener('pointerdown',e=>{dragging=true;svg.setPointerCapture(e.pointerId);pointerAngle(e)});
+svg.addEventListener('pointermove',e=>{if(dragging)pointerAngle(e)});
+svg.addEventListener('pointerup',()=>dragging=false);svg.addEventListener('pointercancel',()=>dragging=false);
+render();
+</script>
+</body>
+</html>
