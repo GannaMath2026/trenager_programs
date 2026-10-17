@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Диаграмма игры в кучки</title>
+<style>
+  :root{--ink:#1f2440;--muted:#6b7394;--line:#dcd8f0;--bg:#f6f4ff;--panel:#fff}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);font:14px/1.45 system-ui,Segoe UI,Arial,sans-serif;color:var(--ink)}
+  header{padding:14px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+  h1{margin:0;font-size:18px}
+  main{padding:16px;max-width:1400px;margin:0 auto}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+  .field{display:flex;flex-direction:column;gap:4px;min-width:120px}
+  label{font-size:12px;color:var(--muted);font-weight:600}
+  input,select{padding:8px 10px;border:1px solid var(--line);border-radius:9px;font:inherit;background:#fff;color:var(--ink)}
+  input[type=number]{width:110px}
+  button{padding:9px 14px;border:0;border-radius:10px;background:linear-gradient(120deg,#6c55ed,#8a5bea);color:#fff;font-weight:700;cursor:pointer}
+  button.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .moves{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .move{border:1px solid var(--line);border-radius:10px;padding:8px;background:#faf9ff}
+  .move .row{gap:6px}
+  .move select,.move input{width:100%}
+  .status{margin-top:8px;color:var(--muted);font-size:13px}
+  #treeWrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff;padding:8px}
+  svg{display:block}
+  .node circle{stroke-width:2}
+  .node.win circle{fill:#bff0cf;stroke:#2e7d32}
+  .node.lose circle{fill:#ffcdd2;stroke:#c62828}
+  .node.unknown circle{fill:#fff3b0;stroke:#f9a825}
+  .node text{font:700 12px system-ui,Arial;fill:#1b1e36;text-anchor:middle;dominant-baseline:middle}
+  .edge{stroke:#9aa1bd;stroke-width:1.4;fill:none}
+  .edge-label{font:11px system-ui,Arial;fill:#6b7394;text-anchor:middle}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:2px solid}
+  .dot.win{background:#bff0cf;border-color:#2e7d32}
+  .dot.lose{background:#ffcdd2;border-color:#c62828}
+  .dot.unknown{background:#fff3b0;border-color:#f9a825}
+  @media(max-width:700px){.moves{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><h1>🌳 Диаграмма игры «в кучки»</h1></header>
+<main>
+  <section class="panel">
+    <div class="row">
+      <div class="field"><label>Старт (камней)</label><input id="start" type="number" value="10" min="0"></div>
+      <div class="field"><label>Порог (выигрыш, если &gt;)</label><input id="threshold" type="number" value="50" min="0"></div>
+      <div class="field"><label>Глубина (ходов)</label><input id="depth" type="number" value="4" min="1" max="6"></div>
+      <button id="build">Построить</button>
+      <button id="reset" class="secondary">Сбросить ходы</button>
+    </div>
+    <div class="status" id="status"></div>
+  </section>
+
+  <section class="panel">
+    <label style="margin-bottom:8px;display:block">Ходы (до 4-х)</label>
+    <div class="moves" id="moves"></div>
+  </section>
+
+  <section class="panel" id="treePanel" hidden>
+    <div class="legend">
+      <span><i class="dot win"></i> выигрыш (стало &gt; порога)</span>
+      <span><i class="dot lose"></i> проигрыш (ходов больше нет, порог не достигнут)</span>
+      <span><i class="dot unknown"></i> неопределено (глубина кончилась, порог не достигнут)</span>
+    </div>
+    <div id="treeWrap" style="margin-top:10px"></div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+
+// ---------- Конфигурация ходов ----------
+const DEFAULT_MOVES = [
+  {op:'+', val:2, on:true},
+  {op:'*', val:2, on:true},
+  {op:'+', val:0, on:false},
+  {op:'*', val:0, on:false}
+];
+
+function renderMoves(){
+  const wrap = $('moves');
+  wrap.innerHTML = '';
+  DEFAULT_MOVES.forEach((m,i)=>{
+    const div = document.createElement('div');
+    div.className = 'move';
+    div.innerHTML = `
+      <div class="row">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px">
+          <input type="checkbox" data-on="${i}" ${m.on?'checked':''}> Ход ${i+1}
+        </label>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <select data-op="${i}">
+          <option value="+" ${m.op==='+'?'selected':''}>+</option>
+          <option value="-" ${m.op==='-'?'selected':''}>−</option>
+          <option value="*" ${m.op==='*'?'selected':''}>×</option>
+          <option value="/" ${m.op==='/'?'selected':''}>÷</option>
+        </select>
+        <input type="number" data-val="${i}" value="${m.val}" step="any" min="0">
+      </div>`;
+    wrap.appendChild(div);
+  });
+  wrap.querySelectorAll('[data-on]').forEach(cb=>cb.addEventListener('change',e=>{
+    DEFAULT_MOVES[+e.target.dataset.on].on = e.target.checked;
+  }));
+  wrap.querySelectorAll('[data-op]').forEach(sel=>sel.addEventListener('change',e=>{
+    DEFAULT_MOVES[+e.target.dataset.op].op = e.target.value;
+  }));
+  wrap.querySelectorAll('[data-val]').forEach(inp=>inp.addEventListener('input',e=>{
+    DEFAULT_MOVES[+e.target.dataset.val].val = Number(e.target.value)||0;
+  }));
+}
+
+// ---------- Вычисление значения ----------
+function applyMove(x, m){
+  const v = Number(m.val)||0;
+  switch(m.op){
+    case '+': return x + v;
+    case '-': return x - v;
+    case '*': return x * v;
+    case '/': return v===0 ? NaN : x / v;
+    default: return x;
+  }
+}
+function fmt(x){
+  if(!isFinite(x)) return '∞';
+  const r = Math.round(x*1000)/1000;
+  return String(r);
+}
+
+// ---------- Построение дерева ----------
+function buildTree(start, threshold, depth, moves){
+  const active = moves.filter(m=>m.on && (m.op!=='*' && m.op!=='/' || Number(m.val)!==0));
+  const root = {val:start, depth:0, children:[], state:null, moveLabel:null};
+  function rec(node){
+    // Если уже больше порога — сразу выигрыш (дальше не идём)
+    if(node.val > threshold){ node.state='win'; return; }
+    // Если ходов больше нет
+    if(node.depth >= depth){ node.state='unknown'; return; }
+    // Строим детей
+    node.children = active.map(m=>{
+      const child = {
+        val: applyMove(node.val, m),
+        depth: node.depth+1,
+        children: [],
+        state: null,
+        moveLabel: `${m.op==='*'?'×':m.op==='/'?'÷':m.op}${fmt(Number(m.val))}`
+      };
+      rec(child);
+      return child;
+    });
+    // Если хотя бы один ребёнок выигрышный — можно считать узел выигрышным (по желанию)
+    // Здесь оставляем нейтрально, чтобы диаграмма отражала все ветки.
+  }
+  rec(root);
+  return root;
+}
+
+// ---------- Рисование SVG (компактное по ширине) ----------
+function drawTree(root){
+  const wrap = $('treeWrap');
+  wrap.innerHTML = '';
+
+  // Собираем листья для определения ширины
+  const leaves = [];
+  (function collect(n){ n.children.length ? n.children.forEach(collect) : leaves.push(n); })(root);
+
+  // Компактные размеры
+  const NODE_R = 16;
+  const H_GAP = 18;   // горизонтальный зазор между листьями
+  const V_GAP = 60;   // вертикальный шаг между уровнями
+  const PAD = 16;
+
+  // X-координаты листьев
+  let x = PAD + NODE_R;
+  const positions = new Map();
+  leaves.forEach(leaf=>{
+    positions.set(leaf, x);
+    x += 2*NODE_R + H_GAP;
+  });
+  const width = Math.max(x - H_GAP + PAD, 2*PAD + 2*NODE_R);
+
+  // Рекурсивно размещаем родителей по центру детей
+  function place(node){
+    if(node.children.length){
+      node.children.forEach(place);
+      const xs = node.children.map(c=>positions.get(c));
+      positions.set(node, (Math.min(...xs)+Math.max(...xs))/2);
+    }
+  }
+  place(root);
+
+  // Определяем высоту
+  const maxDepth = (function d(n){ return n.children.length ? 1+Math.max(...n.children.map(d)) : 0; })(root);
+  const height = PAD*2 + NODE_R*2 + maxDepth*V_GAP;
+
+  // Создаём SVG
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS,'svg');
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+  // Рёбра
+  function drawEdges(node){
+    node.children.forEach(child=>{
+      const x1 = positions.get(node), y1 = PAD + NODE_R + node.depth*V_GAP;
+      const x2 = positions.get(child), y2 = PAD + NODE_R + child.depth*V_GAP;
+      const path = document.createElementNS(svgNS,'path');
+      path.setAttribute('class','edge');
+      path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${y1+30}, ${x2} ${y2-30}, ${x2} ${y2}`);
+      svg.appendChild(path);
+      // Подпись хода
+      const label = document.createElementNS(svgNS,'text');
+      label.setAttribute('class','edge-label');
+      label.setAttribute('x', (x1+x2)/2);
+      label.setAttribute('y', (y1+y2)/2 - 2);
+      label.textContent = child.moveLabel;
+      svg.appendChild(label);
+      drawEdges(child);
+    });
+  }
+  drawEdges(root);
+
+  // Узлы
+  function drawNodes(node){
+    const cx = positions.get(node), cy = PAD + NODE_R + node.depth*V_GAP;
+    const g = document.createElementNS(svgNS,'g');
+    g.setAttribute('class', `node ${node.state || 'unknown'}`);
+    const circle = document.createElementNS(svgNS,'circle');
+    circle.setAttribute('cx', cx); circle.setAttribute('cy', cy);
+    circle.setAttribute('r', NODE_R);
+    g.appendChild(circle);
+    const text = document.createElementNS(svgNS,'text');
+    text.setAttribute('x', cx); text.setAttribute('y', cy);
+    text.textContent = fmt(node.val);
+    g.appendChild(text);
+    svg.appendChild(g);
+    node.children.forEach(drawNodes);
+  }
+  drawNodes(root);
+
+  wrap.appendChild(svg);
+  $('treePanel').hidden = false;
+}
+
+// ---------- Основная логика ----------
+function build(){
+  const start = Number($('start').value)||0;
+  const threshold = Number($('threshold').value)||0;
+  const depth = Math.max(1, Math.min(6, Number($('depth').value)||4));
+  const moves = DEFAULT_MOVES.slice(0,4);
+  const active = moves.filter(m=>m.on);
+  if(!active.length){ $('status').textContent = 'Включи хотя бы один ход.'; return; }
+  $('status').textContent = `Старт: ${start}, порог: >${threshold}, глубина: ${depth}, ходов: ${active.length}.`;
+  const root = buildTree(start, threshold, depth, moves);
+  drawTree(root);
+}
+
+// ---------- Инициализация ----------
+renderMoves();
+$('build').addEventListener('click', build);
+$('reset').addEventListener('click', ()=>{
+  DEFAULT_MOVES[0] = {op:'+', val:2, on:true};
+  DEFAULT_MOVES[1] = {op:'*', val:2, on:true};
+  DEFAULT_MOVES[2] = {op:'+', val:0, on:false};
+  DEFAULT_MOVES[3] = {op:'*', val:0, on:false};
+  renderMoves();
+  build();
+});
+build();
+</script>
+</body>
+</html>
