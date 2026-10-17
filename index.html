@@ -1,625 +1,734 @@
 <!doctype html>
-
-<!--
-ПРОМПТ ДЛЯ CHATGPT — ПРОВЕРКА ЭТОГО ПРИЛОЖЕНИЯ
-Когда пользователь загружает этот HTML-файл и просит проверить его, сначала изучи весь файл и дай краткий вердикт на русском языке:
-1) Работает ли сценарий ученика: список заданий → снимок только через камеру → несколько фото на задание → один общий отчёт.
-2) Сохраняется ли отчёт в самостоятельный файл, включающий задания и все фотографии.
-3) Удобно ли отправить файл учителю через обычный Telegram-чат.
-4) Безопасность фотографий и разрешений: камера запускается только после нажатия пользователем кнопки; выбора фото из галереи нет. Не заявляй, что фото загружаются на сервер, если этого нет в коде.
-5) В отчёте порядок для каждого задания: УСЛОВИЕ → ПРАВИЛЬНЫЙ ОТВЕТ (ТОЛЬКО ДЛЯ УЧИТЕЛЯ) → ФОТО РЕШЕНИЯ УЧЕНИКА → следующее задание.
-6) Отдельно укажи критические ошибки, риски приватности и функции, которые не работают. Не додумывай отсутствующие возможности.
-Формат ответа: «Вердикт: ГОТОВО / ЧАСТИЧНО ГОТОВО / НЕ ГОТОВО», затем не более 5 коротких пунктов: что работает, что не работает, риск безопасности, что исправить в первую очередь. Не переписывай всё приложение и не давай длинных объяснений без прямого запроса.
-ВАЖНО: если правильный ответ включён в ученический HTML/JavaScript, он технически не является секретом — ученик может изучить исходный код. Для настоящей конфиденциальности ключ ответов должен храниться отдельно и быть доступен только учителю/серверу.
--->
-
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Уравнения в тетради — отчёт учителю</title>
-<script>window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Геометрия — тест по темам и работа над ошибками</title>
 <style>
-:root{--ink:#20284b;--muted:#697397;--purple:#6c55ed;--line:#e4defa;--bg:#f5f2ff;--pink:#ffeaf2;--green:#e1faef}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#eeeaff,#fff2f7);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
-header{padding:22px max(18px,calc((100vw - 1080px)/2));background:#fffdfefa;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-.brand{font-weight:800;font-size:20px}.subtitle{color:var(--muted);font-size:13px;margin-top:5px}
-main{max-width:1080px;margin:24px auto;padding:0 16px 44px}.panel{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;margin-bottom:18px;box-shadow:0 12px 36px #4b36840c}
-h1{font-size:clamp(25px,4vw,34px);margin:0 0 8px}h2{font-size:21px;margin:0 0 14px}p{line-height:1.5}.muted{color:var(--muted);font-size:13px}
-label{font-weight:700;font-size:14px;display:block;margin:0 0 7px}input[type=text],textarea{font:inherit;border:1px solid #dcd5f6;border-radius:12px;padding:12px;width:100%;color:var(--ink);background:#fff}textarea{min-height:115px;resize:vertical}
-.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.field{margin:14px 0}
-button,.button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:11px 15px;border-radius:12px;font-weight:700;cursor:pointer;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px}
-button.primary{background:linear-gradient(120deg,#6c55ed,#8a5bea);color:white;border:0;box-shadow:0 6px 14px #6c55ed30}button.danger{color:#b4233a;background:#fff1f3;border-color:#ffcbd3}button:disabled{opacity:.45;cursor:not-allowed}
-.task{border:1px solid var(--line);border-radius:12px;margin:0;overflow:hidden;background:#fff;min-width:0;box-shadow:0 2px 8px #4b36840a;transition:box-shadow .15s,border-radius .15s}.task-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}.task-image{display:block;width:90px;height:90px;max-width:90px;max-height:90px;object-fit:cover;border:1px solid var(--line);border-radius:8px;margin:8px 0;cursor:zoom-in}.teacher-fields{padding:12px 0 0;border-top:1px dashed var(--line);margin-top:12px}.teacher-fields input{margin-bottom:8px}.modebar{display:flex;gap:8px;flex-wrap:wrap}.modebar button.active{background:#272344;color:#fff;border-color:#272344}.task-body .equation{font-size:20px}.task-body{min-width:0;overflow-wrap:anywhere}
-.task-head{padding:9px 12px;background:linear-gradient(110deg,#f0ecff,#fff0f5);display:flex;align-items:flex-start;gap:8px;justify-content:space-between;cursor:zoom-in}.task-head>div{width:100%;min-width:0}.task-head .equation{font-size:clamp(15px,2vw,19px);font-weight:650;line-height:1.35;white-space:normal;overflow-wrap:anywhere;word-break:normal}.task-head .task-title{font-size:10px;margin-bottom:4px}.task-head .task-image{width:64px;height:64px;max-width:64px;max-height:64px;margin:5px 0}.task.expanded{position:fixed;inset:10px;z-index:1000;overflow:auto;border-radius:14px;box-shadow:0 0 0 100vmax #17142caa,0 18px 60px #17142c55;background:#fff}.task.expanded .task-head{padding:18px 20px;cursor:zoom-out}.task.expanded .task-head .equation{font-size:clamp(22px,3vw,32px);line-height:1.5}.task.expanded .task-head .task-title{font-size:12px;margin-bottom:8px}.task.expanded .task-head .task-image{width:auto;height:auto;max-width:100%;max-height:none;object-fit:contain}.task.expanded .task-body,.task.expanded .teacher-fields{padding:18px 20px}.task.expanded .task-body .equation{font-size:clamp(22px,3vw,32px)}.task:not(.expanded) .task-head .muted{flex:0 0 auto}.expanded-nav{display:none}.task.expanded .expanded-nav{display:flex;position:sticky;bottom:0;z-index:5;gap:8px;justify-content:space-between;padding:10px;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 12px #27234412}.expanded-nav button{flex:1}.expanded-nav button:focus-visible{outline:3px solid #8a5bea;outline-offset:2px}.expanded-nav .collapse-task{background:#272344;color:#fff;border-color:#272344}.task.expanded .task-body{padding-bottom:16px}
-.task-title{font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:800;color:#5b49c8;margin-bottom:8px}
-.equation{font-size:clamp(22px,3vw,30px);font-weight:750;line-height:1.4;overflow-wrap:anywhere}
-.task-body{padding:10px 12px}.task-body label{font-size:12px;margin-bottom:5px}.task-body input[type=text]{padding:9px 10px;font-size:14px}.task-body button{padding:9px 11px}.photo-grid{display:flex;flex-wrap:wrap;align-items:flex-start;gap:7px;margin-top:10px}
-.photo{position:relative;width:auto;height:auto;max-width:160px;max-height:130px;border:1px solid var(--line);border-radius:7px;padding:2px;background:#faf9ff;overflow:hidden}.photo img{display:block;width:auto;height:auto;max-width:154px;max-height:124px;object-fit:contain;border-radius:4px;background:#f2f2f5}.photo small{display:none}.photo small{display:block;padding:2px;color:var(--muted);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.photo button{padding:0 4px;font-size:12px;position:absolute;right:1px;top:1px;background:#fff0f3;color:#b4233a}
-.camera-box{position:fixed;inset:0;background:#101323eF;z-index:99;display:flex;align-items:center;justify-content:center;padding:14px}.camera-card{background:white;border-radius:18px;padding:16px;width:min(600px,100%)}.camera-card video{display:block;width:100%;max-height:65vh;background:#111;border-radius:12px;object-fit:contain}.camera-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.camera-actions button{flex:1}
-.paste-zone{border:2px dashed #9d8de9;border-radius:14px;background:#f8f6ff;padding:15px;text-align:center;color:#5140bd;font-weight:700;outline:none;cursor:text}.paste-zone:focus{border-color:#6c55ed;box-shadow:0 0 0 3px #6c55ed22}.paste-preview{display:flex;align-items:center;gap:10px;margin-top:8px}.paste-preview img{width:54px;height:54px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff}.upload{display:inline-flex;align-items:center;gap:8px;border:1px dashed #9d8de9;border-radius:12px;background:#f7f4ff;padding:11px 14px;color:#5140bd;font-weight:700;cursor:pointer}.upload input{display:none}
-.status{border-radius:14px;padding:12px 14px;background:#f4f1ff;color:#5140bd;font-size:14px;margin-top:12px}.status.ok{background:var(--green);color:#146548}.status.warn{background:#fff3df;color:#87520c}
-.progress{height:8px;background:#eeeaf9;border-radius:9px;overflow:hidden;margin:12px 0}.progress span{display:block;height:100%;background:linear-gradient(90deg,#6c55ed,#ff78a4);width:0}
-.report-preview{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}.report-task{padding:14px 0;border-bottom:1px solid #ddd6f7}.report-task:last-child{border-bottom:0}.report-task h3{margin:0 0 8px}.report-task p{margin:0 0 10px}
-footer{text-align:center;color:var(--muted);font-size:12px;padding:16px}
-@media(max-width:650px){header{padding:16px}main{margin-top:14px}.panel{padding:16px}.task-grid{grid-template-columns:minmax(0,1fr)}.task-head{flex-direction:column;gap:4px}.task-head .equation{font-size:15px}.task.expanded{inset:5px}.task.expanded .task-head{flex-direction:column}.row>*{flex-basis:100%}}
-@media print{body{background:#fff}.noprint,header,.panel.setup{display:none!important}main{max-width:none;margin:0;padding:0}.panel{border:0;box-shadow:none;padding:0}.report-preview{border:0;padding:0}.report-task{break-inside:avoid}.report-task img{max-width:100%;max-height:75vh;object-fit:contain}.report-photo{display:block;max-width:100%;max-height:75vh;margin:8px 0 14px;page-break-inside:avoid}}
-.personal-steps{line-height:1.8;font-weight:750;color:#34275e}.save-panel{background:linear-gradient(110deg,#fff2a8,#ffd66b)!important;border:2px solid #f2b900!important;box-shadow:0 5px 20px #f0b80035!important}.save-panel h2{color:#684500}.save-reminder-pop{position:fixed;z-index:2000;top:18px;left:50%;transform:translateX(-50%);width:min(92vw,620px);background:#ffdb65;color:#573900;border:2px solid #d79b00;border-radius:16px;padding:16px 20px;box-shadow:0 12px 40px #0003;font-weight:800;text-align:center;animation:reminderFade 9s forwards}@keyframes reminderFade{0%,75%{opacity:1}100%{opacity:0;visibility:hidden}}.answer-access{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 12px}.answer-access button{background:linear-gradient(120deg,#ffcc33,#ff9f1c)!important;color:#452b00!important;border:2px solid #d88700!important;box-shadow:0 5px 16px #e89b003d!important;font-weight:900}.task-body [data-show-answer]{background:linear-gradient(120deg,#ffdb57,#ffad33);color:#563800;border:2px solid #e49b00;box-shadow:0 3px 12px #f0b80040;font-weight:900}.task-body [data-show-answer]:disabled{opacity:.62;filter:saturate(.7)}.correct-answer{margin-top:8px;padding:10px 12px;background:#e7f8ed;border:1px solid #8dd4a5;border-radius:10px;color:#145b2e;font-weight:700}.answer-feedback{min-height:22px;margin:8px 0;font-weight:800}.answer-feedback.correct{color:#137547}.answer-feedback.incorrect{color:#b4233a}[data-student-photos]{display:block;width:100%;margin:8px 0;padding:10px;border:1px solid var(--line);border-radius:10px;background:#faf9ff}
+:root{--bg:#f4f2ff;--card:#ffffff;--ink:#202544;--muted:#747995;--line:#e5e2f4;--blue:#6557e8;--blue2:#f0edff;--green:#16845d;--red:#d44762;--gold:#e5a52d;--pink:#ff7ba8;--cyan:#58c6d8}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 12% 5%,#e5e0ff 0,transparent 30%),radial-gradient(circle at 90% 20%,#ffe4ef 0,transparent 25%),var(--bg);color:var(--ink);font:16px/1.55 Calibri,Arial,sans-serif;min-height:100vh}
+header{background:#ffffffd9;backdrop-filter:blur(12px);border-bottom:1px solid #ffffff;padding:17px 24px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;box-shadow:0 8px 30px #40358b0b}
+.brand{font-size:22px;font-weight:800;letter-spacing:-.03em;background:linear-gradient(90deg,#6254e7,#e25d9b);-webkit-background-clip:text;background-clip:text;color:transparent}.small{font-size:13px;color:var(--muted)}
+main{max-width:980px;margin:22px auto;padding:0 16px}
+.panel{background:#ffffffed;border:1px solid #ffffff;border-radius:24px;padding:26px;box-shadow:0 18px 55px #483a8d12;backdrop-filter:blur(12px)}
+.hidden{display:none!important}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+button,select{font:inherit;border-radius:13px;border:1px solid var(--line);padding:11px 16px;background:#fff;color:var(--ink);cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s}button:hover:not(:disabled),select:hover{transform:translateY(-1px);box-shadow:0 7px 18px #5143b51c;border-color:#c9c1ff}
+button.primary{background:linear-gradient(135deg,#6c5ce7,#8d61e9);color:#fff;border-color:transparent;font-weight:700;box-shadow:0 7px 16px #6557e833}
+button:disabled{opacity:.45;cursor:not-allowed}.choice{min-width:130px;font-weight:700;padding:14px 24px;font-size:18px}.choice.yes{background:linear-gradient(135deg,#e5fff2,#c8f7e2);border-color:#a9e4c8;color:#126b49}.choice.no{background:linear-gradient(135deg,#fff0f3,#ffe0e8);border-color:#f2b9bd;color:#a62934}
+.topline{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:14px}
+.progress{height:9px;background:#eeecf8;border-radius:99px;overflow:hidden;margin:15px 0 25px}.progress span{display:block;height:100%;background:linear-gradient(90deg,#6254e7,#ff7ba8);width:0;transition:width .2s;border-radius:99px}
+.question-wrap{min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:15px 6px}
+.topic{color:var(--blue);font-size:clamp(18px,2.8vw,24px);font-weight:900;text-transform:none;letter-spacing:0;margin-bottom:18px;background:#f0edff;border-radius:14px;padding:10px 16px}
+.question{font-size:clamp(24px,3.5vw,34px);line-height:1.38;max-width:760px;font-weight:700;letter-spacing:-.025em}
+.hint{color:var(--muted);margin-top:14px;font-size:14px}
+.controls{display:flex;justify-content:center;gap:14px;margin:15px 0 5px;flex-wrap:wrap}
+.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}
+.stat{background:linear-gradient(145deg,#fbfaff,#f5f2ff);border:1px solid var(--line);border-radius:17px;padding:17px}.stat b{display:block;font-size:29px;color:var(--blue)}
+.result-list{padding-left:22px}.result-list li{margin:9px 0}.statement{font-weight:600}.tag{display:inline-block;font-size:12px;background:var(--blue2);color:#244fa8;border-radius:99px;padding:3px 9px;margin-right:7px}
+input[type="text"]{max-width:100%} textarea{width:100%;min-height:170px;border:1px solid var(--line);border-radius:12px;padding:12px;font:14px/1.5 Consolas,monospace;color:var(--ink);background:#fbfcff;resize:vertical}
+.options{display:flex;gap:18px;flex-wrap:wrap;margin-top:16px}
+#topicSelect{font-weight:700;color:#4b35d1;border:2px solid #9d8cff;background:linear-gradient(135deg,#fff,#f0eaff);min-width:240px}
+#topicOptions label{font-weight:800;color:#4c35d4;font-size:17px}
+#topicOptions{padding:12px 14px;background:linear-gradient(110deg,#f0eaff,#ffe8f2);border:1px solid #c9baff;border-radius:16px}
+.topic{color:#4931d2;background:linear-gradient(110deg,#e5ddff,#ffe0ef);border:1px solid #b9aaff;font-size:clamp(18px,2.8vw,24px)}.options label{display:flex;align-items:center;gap:7px}
+.feedback{min-height:24px;text-align:center;font-weight:700;margin-top:12px}.good{color:var(--green)}.bad{color:var(--red)}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+@media(max-width:600px){.panel{padding:16px}.question-wrap{min-height:250px}.choice{flex:1;min-width:110px}}
+
+.statement-card{background:linear-gradient(135deg,#f0ebff,#ffeaf2);border:1px solid #c8b5ff;border-radius:16px;padding:18px 22px;margin:14px 0 12px;font-weight:700;color:#20284b;line-height:1.55;box-shadow:0 5px 18px rgba(98,76,180,.09)}
+.comment-title{display:inline-block;background:#e8f8f0;color:#126b4c;border:1px solid #b7e8d1;border-radius:10px;padding:7px 12px;margin:12px 0 8px;font-weight:700}
+.comment{white-space:pre-line;line-height:1.65;background:#f8f9ff;border-left:4px solid #8d7af6;border-radius:0 12px 12px 0;padding:14px 16px;margin:0 0 16px}
+#report,#reviewReport{white-space:pre-wrap;overflow-wrap:anywhere;font-family:Arial,sans-serif;line-height:1.65}
+
+.theory{margin:18px 0 24px;padding:18px;background:#fff;border:1px solid #e3defb;border-radius:18px;box-shadow:0 8px 24px rgba(62,48,130,.08)}
+.theory .tag{display:inline-block;background:#ece7ff;color:#5140bd;border:1px solid #c9bdff;border-radius:999px;padding:7px 12px;font-size:.84rem;font-weight:700}
+.statement-card{display:block;background:linear-gradient(120deg,#eeeaff 0%,#ffeaf2 100%);border:1px solid #bdaeff;border-radius:16px;padding:20px 22px;margin:16px 0;color:#20284b;font-size:1.13rem;font-weight:750;line-height:1.55;box-shadow:0 5px 16px rgba(95,71,180,.1)}
+.answer-line{display:flex;align-items:center;gap:9px;margin:10px 0 4px;color:#333b5d}
+.answer-badge{display:inline-block;border-radius:999px;padding:5px 13px;font-weight:800}
+.answer-badge.yes{background:#d9f8e9;color:#08724e;border:1px solid #9be4c2}
+.answer-badge.no{background:#ffe2e8;color:#b4233a;border:1px solid #ffb0be}
+#feedback{font-size:18px;min-height:30px}.question-navigation button{touch-action:manipulation}
+.comment-title{display:inline-block;background:#e5f7ef;color:#116a4b;border:1px solid #b4e7d0;border-radius:10px;padding:8px 13px;margin:12px 0 8px;font-weight:750}
+.comment{white-space:normal;line-height:1.75;background:#f7f8ff;border-left:4px solid #8d7af6;border-radius:0 12px 12px 0;padding:15px 17px;margin:0;color:#343b59;font-size:15.5px}
+#report,#reviewReport{white-space:pre-wrap;overflow-wrap:anywhere;font-family:Arial,sans-serif;line-height:1.65}
+
+/* Стартовый экран */
+#setup{padding:clamp(22px,4vw,42px);overflow:hidden;position:relative}
+#setup:before{content:"";position:absolute;right:-55px;top:-90px;width:250px;height:250px;border-radius:50%;background:linear-gradient(135deg,#ded7ff99,#ffd9e899);pointer-events:none}
+.welcome{position:relative;margin:0 0 25px;padding:2px 0 8px}
+.welcome-kicker{display:inline-flex;align-items:center;border-radius:999px;padding:6px 12px;background:#eee9ff;color:#5c49d8;font-size:12px;font-weight:800;letter-spacing:.12em}
+.welcome h1{font-size:clamp(30px,5vw,43px);line-height:1.12;margin:14px 0 7px;letter-spacing:-.04em}
+.welcome p{margin:0;color:#76799a;font-size:18px}
+#studentName{border:1px solid #dcd5ff!important;border-radius:14px!important;min-height:48px;outline:none}
+#studentName:focus{border-color:#8e7af5!important;box-shadow:0 0 0 4px #8e7af51c}
+.options{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;margin:18px 0}
+.mode-card{display:flex;align-items:center;gap:12px;flex:1 1 260px;min-width:240px;padding:16px;border:1px solid #e2ddfa;border-radius:17px;background:linear-gradient(145deg,#fff,#f7f4ff);cursor:pointer;transition:.16s}
+.mode-card:has(input:checked){border-color:#8d79f2;background:linear-gradient(135deg,#f0ecff,#ffeaf3);box-shadow:0 7px 20px #6952d51b}
+.mode-card input{accent-color:#6957e8;width:18px;height:18px;flex-shrink:0}
+.mode-icon{font-size:27px}
+.mode-card b,.mode-card small{display:block}
+.mode-card b{font-size:17px}
+.mode-card small{font-size:13px;color:#747995;margin-top:2px}
+#topicOptions{background:#f8f6ff;border:1px solid #e4defb;border-radius:16px;padding:15px}
+#topicSelect{margin-left:8px;min-width:220px;background:#fff;border-color:#d6ceff}
+#topicRemainingBox,#setup .stat{border-radius:17px!important;border:1px solid #e2ddfb;background:linear-gradient(135deg,#f9f7ff,#f2efff);padding:17px 19px!important}
+#topicRemaining{font-size:22px;color:#6755e9}
+#setup .row button{min-height:47px}
+#setup .row .primary{padding-inline:23px}
+#setup .small{line-height:1.65}
+
+.mood-banner{display:flex;align-items:center;gap:14px;padding:14px 18px;margin:10px 0 18px;border-radius:18px;background:linear-gradient(120deg,#fff0f2,#f2edff);border:1px solid #e3c9ff;color:#424064;font-weight:700}
+.mood-banner span{font-size:42px;line-height:1}
+
+/* Новая компоновка: имя запрашивается один раз, темы — отдельными плитками. */
+header{justify-content:flex-start;gap:14px;padding-left:132px}header>.row:last-child{margin-left:auto}.header-left{gap:12px}#backToMenu{position:fixed;left:12px;top:12px;z-index:11001;box-shadow:0 5px 18px #40358b2b;background:#fff;border:2px solid #c9c1ff;font-weight:800;white-space:nowrap}#backToMenu:hover{background:#f4efff}
+.student-badge{background:#f0edff;color:#5140bd;border-radius:999px;padding:7px 11px;font-weight:800}
+.name-gate{position:fixed;inset:0;z-index:10000;background:rgba(24,20,60,.68);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:18px}
+.name-gate[hidden]{display:none!important}.name-gate-card{width:min(460px,100%);background:#fff;border-radius:24px;padding:clamp(22px,5vw,34px);box-shadow:0 24px 80px #21184e55}
+.name-gate-card h2{font-size:30px;margin:15px 0 7px}.name-gate-card p{color:var(--muted);margin:0 0 18px}.name-gate-card label{display:block;font-weight:800;margin-bottom:6px}.name-gate-card input{display:block;width:100%;padding:13px;border:1px solid #dcd5ff;border-radius:12px;font:inherit;margin-bottom:14px}
+.topic-picker-title{margin:0 0 12px}.topic-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 18px}
+.topic-tile{border:2px solid #e2ddfa;border-radius:17px;padding:14px 10px;background:linear-gradient(145deg,#fff,#f8f5ff);text-align:left;min-width:0;display:flex;flex-direction:column;gap:7px;align-items:flex-start;box-shadow:0 3px 12px #5143b508}
+.topic-tile.active{border-color:#7664ec;background:linear-gradient(135deg,#eeeaff,#ffeaf3);box-shadow:0 0 0 2px #7766eb20}.topic-tile.fully-mastered,.topic-tile.fully-mastered.active{border:2px solid #16a34a!important;box-shadow:0 0 0 2px #16a34a22,0 5px 18px #16a34a16!important;background:linear-gradient(135deg,#f0fff5,#e5f9ec)!important}.topic-tile .tile-check{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:99px;background:#dcfce7;color:#166534;font-size:10px;font-weight:900}.topic-tile .tile-icon{font-size:27px;line-height:1}.topic-tile .tile-name{font-size:15px;font-weight:800;line-height:1.25}.topic-tile .tile-progress{font-size:12px;color:#6254b4;font-weight:800}.topic-tile .tile-count{font-size:11px;color:var(--muted)}
+.overall-stat{margin:8px 0 12px}.overall-stat b{font-size:22px!important}.overall-stat .small{display:block;margin-top:5px}
+.menu-actions{position:fixed;z-index:1000;bottom:0;left:0;right:0;background:#ffffffed;backdrop-filter:blur(14px);border-top:1px solid #e5e2f4;box-shadow:0 -8px 28px #40358b12;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;align-items:center;padding:10px 14px calc(10px + env(safe-area-inset-bottom));}
+.menu-actions.hidden{display:none!important}.menu-actions button{font-weight:800;min-height:48px;white-space:normal;line-height:1.25;padding:9px 12px}.menu-actions .danger{border-color:#f3b3bf;color:#b4233a;background:#fff5f6}
+body{padding-bottom:76px}footer{padding-bottom:96px}
+.choice.selected{box-shadow:0 0 0 3px var(--blue);transform:translateY(-2px);outline:2px solid #fff;outline-offset:-5px}.choice.selected.yes{background:#b2f0d0}.choice.selected.no{background:#ffc6d2}
+.question-navigation button{min-width:112px}.question-navigation .small{flex:1;text-align:center}
+
+/* Мгновенный разбор после неверного ответа */
+.instant-feedback{margin:18px auto 0;max-width:780px;text-align:left;animation:fbIn .25s ease}
+@keyframes fbIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.instant-feedback .fb-answer{display:flex;align-items:center;gap:10px;justify-content:center;font-size:19px;font-weight:800;margin-bottom:14px;flex-wrap:wrap}
+.instant-feedback .fb-answer .answer-badge{font-size:17px;padding:6px 16px}
+.instant-feedback .theory{margin:0}
+.next-btn{margin:6px auto 0;display:block;padding:13px 28px;font-size:17px}
+
+/* Счётчик серии в работе над ошибками */
+.streak-badge{display:inline-flex;align-items:center;gap:6px;background:#f0edff;color:#5140bd;border-radius:999px;padding:7px 14px;font-weight:800;font-size:14px;margin-top:10px}
+.streak-badge .dots{display:inline-flex;gap:4px}
+.streak-badge .dot{width:13px;height:13px;border-radius:50%;background:#d8d2f5;display:inline-block}
+.streak-badge .dot.on{background:linear-gradient(135deg,#6c5ce7,#8d61e9);box-shadow:0 0 0 2px #fff inset}
+
+@media(max-width:760px){.topic-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.topic-tile{padding:12px}.menu-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:8px 10px calc(8px + env(safe-area-inset-bottom))}.menu-actions button{min-width:0;padding:9px 7px;font-size:14px}body{padding-bottom:140px}footer{padding-bottom:160px}header{padding:12px;padding-top:64px;padding-left:12px}.header-left{align-items:flex-start}#backToMenu{padding:9px 10px;left:10px;top:10px}}
+@media(max-width:380px){header{padding-top:62px;padding-left:8px}#backToMenu{left:8px;top:8px;font-size:14px}.topic-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.topic-tile .tile-name{font-size:14px}.tile-progress{overflow-wrap:anywhere}.menu-actions button{font-size:13px;padding:8px 5px}.question-navigation{gap:6px}.question-navigation button{min-width:auto;padding:9px 11px}.question-navigation .small{font-size:11px}}
+
 </style>
 </head>
 <body>
-<header><div><div class="brand">✦ Уравнения в тетради</div></div><button id="clearAll" class="danger noprint">Очистить текущую работу</button></header>
+<header><div class="row header-left"><button id="backToMenu" type="button">← В меню</button><div><div class="brand">Геометрия · тестовик</div><div class="small">Ответь «Да» или «Нет» — потом закрепи ошибки</div></div></div><div class="row"><span id="studentBadge" class="small student-badge"></span></div></header>
+<div id="nameGate" class="name-gate" hidden><form id="nameGateForm" class="name-gate-card"><div class="welcome-kicker">ОГЭ · МАТЕМАТИКА</div><h2>Как тебя зовут?</h2><p>Если имя уже сохранялось, оно появится в поле автоматически. Проверь его и нажми «Продолжить».</p><label for="nameGateInput">Имя ученика</label><input id="nameGateInput" type="text" autocomplete="name" maxlength="80" placeholder="Например, Маша Иванова" required><button type="submit" class="primary">Продолжить</button><div id="nameGateError" class="feedback bad"></div></form></div>
 <main>
-<div class="modebar" style="margin:14px 0 18px"><button id="teacherMode">✏️ Учитель</button><button id="personalMode" class="active">🎯 ДЗ персонально</button><button id="studentMode">📚 ДЗ группе</button></div>
-<div class="panel noprint save-panel"><h2>💾 Сохранить работу</h2><div class="row"><button class="primary" id="saveWork">⬇️ Сохранить работу в файл</button><label class="upload" for="loadWorkFile">📂 Открыть сохранённую работу<input id="loadWorkFile" type="file" accept=".json,application/json"></label></div></div>
-<div class="panel" style="padding:14px 18px"><div class="field"><label for="student">Имя для отчёта</label><input id="student" type="text" value="ИВАН ИВАНОВИЧ ИВАНОВ" placeholder="ИВАН ИВАНОВИЧ ИВАНОВ"></div></div>
-<section class="panel setup" id="personalHomeworkPanel">
-<h2>ДЗ персонально</h2>
-<ol class="personal-steps"><li>Выбери себя в списке</li><li>Выбери раздел</li><li>Выбери режим формирования ДЗ</li><li>Выбери файлы для поиска ДЗ</li><li>Выбери флаг</li></ol>
-<div class="field"><label for="personalStudentSelect">Ученик</label><select id="personalStudentSelect" style="width:100%;padding:12px;border:1px solid #dcd5f6;border-radius:12px;font:inherit"><option value="">Загрузка списка учеников…</option></select></div>
-<div class="field"><label for="personalSubjectSelect">1. Выбери раздел</label><select id="personalSubjectSelect" style="width:100%;padding:12px;border:1px solid #dcd5f6;border-radius:12px;font:inherit"><option value="ege-math">ЕГЭ математика (ege-…)</option><option value="ege-inf">ЕГЭ информатика (informatika…)</option><option value="oge-math">ОГЭ математика (oge-…)</option><option value="oge-inf">ОГЭ информатика (INF_OGE_…)</option></select></div>
-<div class="field"><label for="personalBuildMode">2. Как сформировать ДЗ?</label><select id="personalBuildMode" style="width:100%;padding:12px;border:1px solid #dcd5f6;border-radius:12px;font:inherit"><option value="one" selected>Только из одного выбранного JSON-файла</option><option value="all">Все задания с выбранными метками во всех JSON-файлах раздела</option></select><p class="muted">Можно собрать все задания ученика с нужными метками по всему выбранному разделу или выбрать конкретный файл (например, ege-13.json).</p></div>
-<div class="field" id="personalFileField"><label for="personalFileSelect">Выбери один файл с заданиями</label><select id="personalFileSelect" style="width:100%;padding:12px;border:1px solid #dcd5f6;border-radius:12px;font:inherit"><option value="">Сначала загрузи список файлов…</option></select><p class="muted">В этом режиме загружается только выбранный JSON-файл.</p></div>
-<div class="field"><label>3. Включить задания с метками</label><div class="row"><label><input id="personalAllOnly" type="checkbox"> Все задания</label><label><input id="personalFavoritesOnly" type="checkbox" checked> Избранное</label><label><input id="personalSolvedOnly" type="checkbox"> Решено</label></div><p class="muted">«Все задания» игнорирует метки прогресса. Если выбраны «Избранное» и «Решено», попадут задания с любой из этих меток.</p></div>
-<div class="row"><button class="primary" id="createPersonalHomework">Сформировать персональное ДЗ</button></div>
-<div class="muted" id="personalInfo" style="margin-top:8px">Загружаю progress.json…</div>
+<section id="setup" class="panel">
+<div class="welcome"><div class="welcome-kicker">ОГЭ · МАТЕМАТИКА</div><h1>Проверь себя!</h1><p>Задание 19 · Геометрия</p></div>
+<h2 class="topic-picker-title">Выбери тему</h2>
+<div id="topicTiles" class="topic-tiles" aria-label="Темы геометрии"></div>
+<div class="stat overall-stat"><span>Общий прогресс по всем темам</span><b id="overallStats">Освоено 0 из 62</b><span id="savedStatsText" class="small">Пока нет ответов.</span></div>
+<div id="setupMessage" class="feedback"></div>
 </section>
-<section class="panel setup" id="homeworkLibraryPanel">
-<h2>Домашнее задание</h2>
-<div class="field"><label for="homeworkSelect">Выбери ДЗ</label><select id="homeworkSelect" style="width:100%;padding:12px;border:1px solid #dcd5f6;border-radius:12px;font:inherit"></select></div>
-<div class="row"><button class="primary" id="loadHomework">Загрузить выбранное ДЗ</button><button id="refreshHomeworkList">Подгрузить актуальные ДЗ</button></div>
+<section id="quiz" class="panel hidden">
+<div class="topline"><span id="modeLabel">Основной тест</span><span id="counter"></span></div>
+<div class="progress"><span id="bar"></span></div>
+<div class="question-wrap"><div class="topic" id="topic"></div><div class="question" id="question"></div><div class="hint" id="subhint">Верно ли утверждение?</div><div id="streakBox"></div></div>
+<div class="controls"><button class="choice yes" id="yes">Да</button><button class="choice no" id="no">Нет</button></div>
+<div class="feedback" id="feedback"></div>
+<div id="instantFeedback" class="instant-feedback hidden"></div>
+<div class="controls"><button id="nextQuestion" class="primary next-btn hidden" type="button">Дальше →</button></div>
+<div class="row" style="justify-content:flex-end;margin-top:16px"><button id="quit" type="button">Завершить тест сейчас</button></div>
 </section>
-<section class="panel setup teacher-only" id="favoritesHomeworkPanel" hidden>
-<h2>Создать ДЗ из избранного</h2>
-<p class="muted">Загрузи локально файл с заданиями и актуальный progress. Выбери одного ученика или несколько учеников/группу. В ДЗ попадут задания, которые есть в «Избранном» у выбранных учеников.</p>
-<div class="field"><label for="sourceTasksFile">Файл с заданиями (JSON)</label><input id="sourceTasksFile" type="file" accept=".json,application/json"></div>
-<div class="field"><label for="progressFile">Файл progress (JSON)</label><input id="progressFile" type="file" accept=".json,application/json"></div>
-<div class="field"><label for="favoritesStudents">Ученик или группа учеников (можно выбрать несколько: Ctrl/Shift)</label><select id="favoritesStudents" multiple size="5" style="width:100%;padding:10px;border:1px solid #dcd5f6;border-radius:12px;font:inherit"></select></div>
-<div class="row"><button id="prepareFavoritesStudents">Прочитать progress и показать учеников</button><button class="primary" id="createFavoritesHomework">Создать ДЗ из избранного</button></div>
-<div class="muted" id="favoritesInfo" style="margin-top:8px">Сначала выбери оба JSON-файла.</div>
+<section id="result" class="panel hidden">
+<div class="mood-banner"><span id="resultMood" aria-label="Настроение результата">😔</span><div id="resultMoodText">Каждая попытка помогает учиться.</div></div><h2 id="resultTitle">Результат</h2><div class="result-grid" id="stats"></div>
+<h3>Разбор ошибок: теория</h3><div id="theoryBlocks"></div>
+<h3>Отчёт учителю</h3><p class="small">Отчёт показывает ответы с первой попытки, результат работы над ошибками, пропуски и текст утверждений, которые не были решены сразу.</p><textarea id="report" readonly style="min-height:360px;font-family:Consolas,monospace;line-height:1.55;white-space:pre-wrap"></textarea>
+<div class="row" style="margin-top:12px"><button class="primary" id="copyReport">Скопировать результат</button><button id="mistakes" class="primary">Работа над ошибками</button><button id="again">Пройти тест ещё раз</button></div>
+<div class="feedback" id="copyFeedback"></div>
 </section>
-<section class="panel setup" id="teacherPanel" hidden>
-<h1>Редактор заданий</h1>
-<div class="field" style="background:#fff7d6;border:1px solid #f0d477;border-radius:14px;padding:14px">
-<label for="answerPasswordSetting">Пароль для просмотра правильных ответов учениками</label>
-<div class="row"><input id="answerPasswordSetting" type="password" autocomplete="new-password" placeholder="Задай пароль для ответов"><button class="primary" id="saveAnswerPassword" type="button">Сохранить пароль</button></div>
-<div class="muted" id="answerPasswordSettingStatus" style="margin-top:7px">Пароль по умолчанию: 1. Учитель может изменить его; новое значение будет использоваться дальше и сохранится в этом браузере.</div>
-</div>
-<p class="muted">В режиме «Учитель» добавляй текстовые задания или условия-картинки. Они появляются ниже отдельными карточками. Переключись в режим «Ученик», чтобы решать и фотографировать работу. Ученик вводит ответ для мгновенной проверки и может прикрепить фото решения из галереи.</p>
-
-
-<div class="field"><label for="newTaskText">Текст задания (необязательно, если условие — картинка)</label><textarea id="newTaskText" placeholder="Введи условие или короткое название задания"></textarea></div>
-<div class="field"><label>Условие-картинка</label><div id="newImagePasteZone" class="paste-zone" tabindex="0">Нажми сюда и вставь картинку из буфера обмена (Ctrl+V)</div><div class="muted">Можно скопировать картинку и вставить сюда. На телефоне нажми и удерживай эту область, затем выбери «Вставить», если клавиатура поддерживает вставку изображения.</div><div id="newImagePreview" class="paste-preview" hidden></div><div style="margin-top:8px"><label for="newTaskImage">Или выбрать изображение из файлов</label><input id="newTaskImage" type="file" accept="image/*"></div></div>
-<div class="field"><label for="newTaskAnswer">Правильный ответ (виден только в режиме учителя)</label><input id="newTaskAnswer" type="text" placeholder="Ответ для проверки"></div>
-<div class="row"><button class="primary" id="addTask">+ Добавить задание снизу</button><button id="clearNewTask">Очистить поля</button></div>
+<section id="reviewDone" class="panel hidden">
+<h2>Работа над ошибками завершена!</h2><div class="result-grid" id="reviewStats"></div>
+<p>Каждое утверждение набрало 3 верных ответа и убрано из очереди. Можно снова запустить работу над ошибками или вернуться к тесту.</p>
+<h3>Итог для учителя</h3><p class="small">Имя, вопросы, которые были закреплены, и итог работы над ошибками.</p><textarea id="reviewReport" readonly style="min-height:300px;font-family:Consolas,monospace;line-height:1.55;white-space:pre-wrap"></textarea>
+<div class="row" style="margin-top:12px"><button class="primary" id="copyReview">Скопировать результат</button><button id="repeatReview" class="primary">Повторить работу над ошибками</button><button id="toTest">Вернуться к тесту</button></div>
+<div class="feedback" id="reviewCopyFeedback"></div>
 </section>
-<section class="panel">
-<div class="answer-access noprint"><button id="unlockAnswers">🔒 Ввести пароль для просмотра ответов</button><span id="answerAccessStatus" class="muted">Ответы закрыты</span></div><div class="row" style="justify-content:space-between"><div><h2>Домашнее задание</h2><div class="muted" id="countLabel">Заданий: 0 · фото: 0</div></div></div>
-<div class="progress"><span id="progressBar"></span></div>
-<div id="tasks" class="task-grid"></div>
-<div id="status" class="status">Сначала укажи имя и добавь задания. Затем прикрепи фотографии.</div>
-<div class="row noprint" style="margin-top:16px"><button class="primary" id="buildReport">Сформировать и скачать отчёт</button></div>
-</section>
-
-<footer>Автоматического сохранения нет. Перед отчётом сохрани работу в JSON-файл. При следующем открытии загрузи самый свежий файл через «Открыть сохранённую работу»: в нём будут ответы и прикрепления, сохранённые на момент последнего сохранения. Изменения после сохранения в файл не попадут.</footer>
 </main>
+<nav id="menuActions" class="menu-actions" aria-label="Действия меню"><button id="start" class="primary" type="button">▶ Начать тест</button><button id="resumeTest" type="button">↪ Продолжить тест</button><button id="workMistakes" type="button">🧩 Работа над ошибками</button><button id="resetProgress" class="danger" type="button">↻ Сбросить прогресс</button></nav>
+<footer>Прогресс и имя сохраняются в этом браузере на этом устройстве. Чтобы отправить результат учителю, скопируй отчёт и вставь в Telegram.</footer>
 <script>
+const BANK = [
+["Треугольники",1,"Сумма углов прямоугольного треугольника равна 90 градусам.",false],
+["Треугольники",2,"Любые два равносторонних треугольника подобны.",true],
+["Треугольники",3,"Если две стороны одного треугольника соответственно равны двум сторонам другого треугольника, то такие треугольники равны.",false],
+["Треугольники",4,"Площадь треугольника меньше произведения двух его сторон.",true],
+["Треугольники",5,"В любом тупоугольном треугольнике есть острый угол.",true],
+["Треугольники",6,"Всякий равносторонний треугольник является остроугольным.",true],
+["Треугольники",7,"Длина гипотенузы прямоугольного треугольника меньше суммы длин его катетов.",true],
+["Треугольники",8,"Центры вписанной и описанной окружностей равностороннего треугольника совпадают.",true],
+["Треугольники",9,"Один из углов треугольника всегда не превышает 60 градусов.",true],
+["Треугольники",10,"Всякий равносторонний треугольник является равнобедренным.",true],
+["Треугольники",11,"Все высоты равностороннего треугольника равны.",true],
+["Треугольники",12,"Если два угла одного треугольника равны двум углам другого треугольника, то такие треугольники подобны.",true],
+["Треугольники",13,"Треугольника со сторонами 1, 2, 4 не существует.",true],
+["Треугольники",14,"В прямоугольном треугольнике квадрат гипотенузы равен разности квадратов катетов.",false],
+["Треугольники",15,"Внешний угол треугольника больше не смежного с ним внутреннего угла.",true],
+["Треугольники",16,"Серединные перпендикуляры к сторонам треугольника пересекаются в точке, являющейся центром описанной около треугольника окружности.",true],
+["Треугольники",17,"Косинус острого угла прямоугольного треугольника равен отношению гипотенузы к прилежащему к этому углу катету.",false],
+["Треугольники",18,"В прямоугольном треугольнике гипотенуза равна сумме катетов.",false],
+["Треугольники",19,"Если три угла одного треугольника равны соответственно трём углам другого треугольника, то такие треугольники равны.",false],
+["Треугольники",20,"Медиана треугольника делит пополам угол, из вершины которого проведена.",false],
+["Окружности",1,"Все диаметры окружности равны между собой.",true],
+["Окружности",2,"Расстояние от точки, лежащей на окружности, до центра окружности равно радиусу.",true],
+["Окружности",3,"Касательная к окружности параллельна радиусу, проведённому в точку касания.",false],
+["Окружности",4,"Угол, вписанный в окружность, равен соответствующему центральному углу, опирающемуся на ту же дугу.",false],
+["Окружности",5,"Касательная к окружности перпендикулярна радиусу, проведённому в точку касания.",true],
+["Окружности",6,"Любые два диаметра окружности пересекаются.",true],
+["Окружности",7,"Если точка лежит на биссектрисе угла, то она равноудалена от сторон этого угла.",true],
+["Окружности",8,"Все хорды одной окружности равны между собой.",false],
+["Окружности",9,"Вписанный угол, опирающийся на диаметр окружности, — прямой.",true],
+["Четырёхугольники",1,"Диагонали ромба точкой пересечения делятся пополам.",true],
+["Четырёхугольники",2,"Если диагонали параллелограмма равны, то этот параллелограмм является ромбом.",false],
+["Четырёхугольники",3,"Диагонали ромба перпендикулярны.",true],
+["Четырёхугольники",4,"Любой квадрат является прямоугольником.",true],
+["Четырёхугольники",5,"Если в параллелограмме две соседние стороны равны, то это ромб.",true],
+["Четырёхугольники",6,"Диагонали трапеции пересекаются и делятся точкой пересечения пополам.",false],
+["Четырёхугольники",7,"В параллелограмме есть два равных угла.",true],
+["Четырёхугольники",8,"Средняя линия трапеции равна сумме её оснований.",false],
+["Четырёхугольники",9,"В любой прямоугольной трапеции есть два равных угла.",true],
+["Четырёхугольники",10,"Все углы ромба равны.",false],
+["Четырёхугольники",11,"Площадь квадрата равна произведению двух его смежных сторон.",true],
+["Четырёхугольники",12,"Площадь ромба равна произведению его стороны на высоту, проведённую к этой стороне.",true],
+["Четырёхугольники",13,"В любом прямоугольнике диагонали взаимно перпендикулярны.",false],
+["Четырёхугольники",14,"Основания любой трапеции параллельны.",true],
+["Четырёхугольники",15,"Боковые стороны любой трапеции равны.",false],
+["Четырёхугольники",16,"Если в ромбе один из углов равен 90 градусам, то этот ромб является квадратом.",true],
+["Четырёхугольники",17,"Существует прямоугольник, диагонали которого взаимно перпендикулярны.",true],
+["Четырёхугольники",18,"Площадь ромба равна произведению двух его смежных сторон на синус угла между ними.",true],
+["Четырёхугольники",19,"Если диагонали параллелограмма равны, то это прямоугольник.",true],
+["Четырёхугольники",20,"Диагонали прямоугольника точкой пересечения делятся пополам.",true],
+["Четырёхугольники",21,"Существует квадрат, который не является прямоугольником.",false],
+["Четырёхугольники",22,"Средняя линия трапеции параллельна её основаниям.",true],
+["Четырёхугольники",23,"В любой ромб можно вписать окружность.",true],
+["Четырёхугольники",24,"Любой прямоугольник можно вписать в окружность.",true],
+["Четырёхугольники",25,"Средняя линия трапеции равна полусумме её оснований.",true],
+["Четырёхугольники",26,"Площадь трапеции равна произведению основания трапеции на высоту.",false],
+["Четырёхугольники",27,"Диагональ параллелограмма делит его на два равных треугольника.",true],
+["Прямые и углы",1,"Существуют три прямые, которые проходят через одну точку.",true],
+["Прямые и углы",2,"Две прямые, перпендикулярные третьей прямой, перпендикулярны.",false],
+["Прямые и углы",3,"Смежные углы всегда равны.",false],
+["Прямые и углы",4,"Через точку, не лежащую на данной прямой, можно провести прямую, параллельную данной.",true],
+["Прямые и углы",5,"Через заданную точку плоскости можно провести только одну прямую.",false],
+["Прямые и углы",6,"Две прямые, параллельные третьей прямой, перпендикулярны.",false]
+];
+
+/* ===== Понятные «детские» разборы. Без канцелярита. ===== */
+const EXPLANATIONS = {
+"Треугольники|1":"Смотри: в прямоугольном треугольнике уже есть один прямой угол — 90°. А все три угла вместе всегда дают 180°. Значит, два оставшихся острых угла в сумме дают ровно 90°, а не все три угла. Утверждение путает «сумму двух острых» и «сумму всех трёх».",
+"Треугольники|2":"У равностороннего треугольника все углы по 60° — и у большого, и у маленького. А если углы одинаковые, треугольники подобны (одинаковая форма, разный размер). Так что да, любые два равносторонних — подобны.",
+"Треугольники|3":"Двух сторон мало! Вот пример: возьми две палочки и попробуй сложить из них треугольник — не выйдет, нужен ещё угол между ними (или третья сторона). Поэтому равенства только двух сторон недостаточно.",
+"Треугольники|4":"Площадь треугольника = ½ · a · b · sin(угла между ними). Синус не больше 1, значит площадь не больше ½·a·b, то есть точно меньше, чем a·b. Верно!",
+"Треугольники|5":"В тупоугольном треугольнике один угол тупой (больше 90°). Сумма всех трёх — 180°, значит два оставшихся точно острые. Без острого угла никак.",
+"Треугольники|6":"У равностороннего все углы по 60°. 60° < 90°, значит все углы острые. Такой треугольник и называется остроугольным.",
+"Треугольники|7":"В любом треугольнике каждая сторона меньше суммы двух других. Гипотенуза — сторона, значит она меньше суммы катетов. Всегда.",
+"Треугольники|8":"В равностороннем треугольнике всё «совпадает»: медианы, биссектрисы, высоты и серединные перпендикуляры. Поэтому и центры вписанной и описанной окружностей — одна и та же точка.",
+"Треугольники|9":"Если бы все три угла были больше 60°, их сумма была бы больше 180° — а так нельзя. Значит, хотя бы один угол не больше 60°. Всегда.",
+"Треугольники|10":"Равнобедренный — это когда хотя бы две стороны равны. У равностороннего все три равны, значит и две тоже. Подходит.",
+"Треугольники|11":"В равностороннем треугольнике все стороны одинаковые, значит и высоты, опущенные на них, одинаковые. Логично.",
+"Треугольники|12":"Если два угла совпали, то и третий совпадёт автоматически (ведь сумма 180°). А по двум равным углам треугольники подобны. Это признак подобия.",
+"Треугольники|13":"Проверь неравенство треугольника: 1 + 2 = 3, а это меньше 4. Значит, две короткие стороны не дотянутся до длинной — треугольник не сложить.",
+"Треугольники|14":"Теорема Пифагора: c² = a² + b², то есть квадрат гипотенузы равен СУММЕ квадратов катетов. А в утверждении — «разности». Ошибка.",
+"Треугольники|15":"Внешний угол = сумма двух внутренних, не смежных с ним. Сумма двух положительных углов всегда больше каждого из них по отдельности. Значит, внешний больше любого «чужого» внутреннего.",
+"Треугольники|16":"Серединные перпендикуляры пересекаются в точке, одинаково удалённой от всех вершин. А это и есть центр описанной окружности. Всё сходится.",
+"Треугольники|17":"Косинус — это ПРИЛЕЖАЩИЙ катет делить на гипотенузу. А в утверждении наоборот — гипотенуза на катет. Перепутано.",
+"Треугольники|18":"Гипотенуза точно меньше суммы катетов (это неравенство треугольника). А ещё она равна корню из суммы квадратов катетов. «Равна сумме» — неверно.",
+"Треугольники|19":"Одинаковые углы — это про форму (подобие), но не про размер. Один треугольник может быть в 2 раза больше другого, а углы те же. Значит, равными они не обязаны быть.",
+"Треугольники|20":"Медиана делит ПОПОЛАМ противоположную сторону, а не угол. Угол она делит пополам только в особых случаях (например, в равнобедренном из вершины напротив основания). В общем — нет.",
+"Окружности|1":"Диаметр — это два радиуса. А все радиусы одной окружности равны. Значит, и все диаметры равны.",
+"Окружности|2":"Так окружность и устроена: все её точки находятся на одинаковом расстоянии от центра. Это расстояние и есть радиус.",
+"Окружности|3":"Касательная не параллельна радиусу, а перпендикулярна ему — угол 90° в точке касания. Это свойство касательной.",
+"Окружности|4":"Вписанный угол равен ПОЛОВИНЕ центрального, если они опираются на одну дугу. А в утверждении — «равен». Ошибка в два раза.",
+"Окружности|5":"Да, это свойство касательной: радиус, проведённый в точку касания, перпендикулярен касательной.",
+"Окружности|6":"Любой диаметр проходит через центр. Значит, любые два диаметра пересекаются ровно в центре.",
+"Окружности|7":"Это свойство биссектрисы: любая её точка одинаково далеко от сторон угла. Поэтому расстояния равны.",
+"Окружности|8":"Хорды могут быть разной длины. Самая длинная — диаметр, а короткие хорды ближе к краю. Так что не все хорды равны.",
+"Окружности|9":"Вписанный угол, опирающийся на диаметр, равен половине развёрнутого (180°), то есть 90°. Прямой!",
+"Четырёхугольники|1":"Ромб — это параллелограмм. А у параллелограмма диагонали всегда делятся пополам в точке пересечения. Значит, и у ромба тоже.",
+"Четырёхугольники|2":"Равные диагонали — это признак ПРЯМОУГОЛЬНИКА, а не ромба. Ромбом параллелограмм станет, только если у него равны соседние стороны.",
+"Четырёхугольники|3":"Да, это свойство ромба: его диагонали пересекаются под прямым углом.",
+"Четырёхугольники|4":"У квадрата все углы прямые — а это и есть определение прямоугольника. Значит, любой квадрат — прямоугольник.",
+"Четырёхугольники|5":"Если у параллелограмма равны две соседние стороны, то и остальные равны (противоположные ведь тоже равны). Значит, все четыре равны — это ромб.",
+"Четырёхугольники|6":"У трапеции диагонали в общем случае НЕ делятся пополам. Делятся пополам только у параллелограмма. Не путай.",
+"Четырёхугольники|7":"В параллелограмме противоположные углы равны. Значит, есть как минимум пара равных углов. Всегда.",
+"Четырёхугольники|8":"Средняя линия трапеции = ПОЛУсумма оснований: (a+b)/2. А в утверждении — «сумма». Значит, вдвое больше нужного.",
+"Четырёхугольники|9":"В прямоугольной трапеции два угла прямые (по 90°) — они при одной боковой стороне. Значит, есть два равных угла. Да.",
+"Четырёхугольники|10":"У ромба равны СТОРОНЫ, а углы могут быть разными (например, 60° и 120°). Все углы равны только у квадрата.",
+"Четырёхугольники|11":"Смежные стороны квадрата — это две его стороны, и они равны стороне квадрата. Площадь = сторона · сторона. Всё верно.",
+"Четырёхугольники|12":"Ромб — это параллелограмм. А площадь параллелограмма = сторона · высота к ней. Значит, для ромба тоже работает.",
+"Четырёхугольники|13":"У прямоугольника диагонали равны и делятся пополам, но перпендикулярны они только у квадрата. В общем случае — нет.",
+"Четырёхугольники|14":"Это просто определение трапеции: у неё два основания, и они параллельны. Всегда.",
+"Четырёхугольники|15":"Боковые стороны равны только у равнобедренной трапеции. У обычной они могут быть разной длины. Значит, «любой» — неверно.",
+"Четырёхугольники|16":"Если в ромбе один угол прямой, то и остальные прямые (противоположный равен, соседний дополняет до 180°). Плюс все стороны равны — значит, это квадрат. Да.",
+"Четырёхугольники|17":"Квадрат — это прямоугольник, и у него диагонали перпендикулярны. Значит, такой прямоугольник существует.",
+"Четырёхугольники|18":"Площадь параллелограмма (и ромба) = a·b·sin(угла между ними). Для ромба a=b, получаем a²·sin α. Формула верная.",
+"Четырёхугольники|19":"Если у параллелограмма диагонали равны — это признак прямоугольника. Да.",
+"Четырёхугольники|20":"Прямоугольник — это параллелограмм, а у параллелограмма диагонали делятся пополам. Значит, и у прямоугольника тоже.",
+"Четырёхугольники|21":"Квадрат — это прямоугольник по определению (все углы прямые). Так что «квадрат, который не прямоугольник» — невозможно.",
+"Четырёхугольники|22":"Средняя линия трапеции параллельна обоим основаниям. Это её свойство.",
+"Четырёхугольники|23":"В ромб можно вписать окружность, потому что суммы противоположных сторон равны (все стороны равны). Это условие вписывания.",
+"Четырёхугольники|24":"У прямоугольника противоположные углы по 90°, их сумма 180°. Это условие описанной окружности. Значит, любой прямоугольник можно вписать.",
+"Четырёхугольники|25":"Формула средней линии трапеции: (a+b)/2, то есть полусумма оснований. Верно.",
+"Четырёхугольники|26":"Площадь трапеции = высота · (a+b)/2. А в утверждении — «основание · высота». Это формула параллелограмма, не трапеции.",
+"Четырёхугольники|27":"Диагональ параллелограмма делит его на два треугольника. У них все три стороны попарно равны (противоположные стороны параллелограмма и общая диагональ). Значит, треугольники равны.",
+"Прямые и углы|1":"Через одну точку можно провести сколько угодно прямых — хоть три, хоть десять. Никаких ограничений.",
+"Прямые и углы|2":"Две прямые, перпендикулярные одной и той же прямой, на плоскости ПАРАЛЛЕЛЬНЫ друг другу, а не перпендикулярны. Ошибка.",
+"Прямые и углы|3":"Смежные углы в сумме дают 180°, но не обязаны быть равными. Равны они только когда оба по 90°. В общем — нет.",
+"Прямые и углы|4":"Это аксиома: через точку вне прямой проходит ровно одна прямая, параллельная данной. Так что можно.",
+"Прямые и углы|5":"Через одну точку можно провести бесконечно много прямых. Ограничение «только одна» относится к параллельной прямой через точку ВНЕ данной прямой.",
+"Прямые и углы|6":"Две прямые, параллельные третьей, параллельны друг другу, а не перпендикулярны. Ошибка."
+};
+
 const $=id=>document.getElementById(id);
-let tasks=[], reportText="", currentMode="student", pendingNewImage="", reportAnswersAuthorized=false;
-const TEACHER_PASSWORD="баб";
-let ANSWER_PASSWORD="1";
-try { ANSWER_PASSWORD=localStorage.getItem("answerPasswordForSession")||"1"; } catch(e) { try { ANSWER_PASSWORD=sessionStorage.getItem("answerPasswordForSession")||"1"; } catch(_) {} }
-let answersUnlocked=false;
-if($("student") && !$("student").value.trim()) $("student").value="ИВАН ИВАНОВИЧ ИВАНОВ";
-const GITHUB_REPO="gannamath2026/trenager_programs";
-const GITHUB_PAGES_ROOT="https://gannamath2026.github.io/trenager_programs/json_files";
-const GITHUB_RAW_ROOT="https://raw.githubusercontent.com/gannamath2026/trenager_programs/main/json_files";
-const PROGRESS_URLS=[GITHUB_PAGES_ROOT+"/progress.json",GITHUB_RAW_ROOT+"/progress.json"];
-let remoteProgress=null, repositoryJsonFiles=[];
-const GITHUB_FOLDER="json_files/СТРУКТУРА ОГЭ МАТЕМАТИКА/ДЗ";
-const GITHUB_HOMEWORK_BASE="https://gannamath2026.github.io/trenager_programs/json_files/СТРУКТУРА ОГЭ МАТЕМАТИКА/ДЗ";
-let availableHomeworkFiles=[];
-async function updateHomeworkList(){
- // Ищем все файлы, имя которых соответствует шаблону «ДЗ*.json».
- // Сначала пытаемся получить содержимое папки через GitHub API; если API недоступен,
- // используем резервную проверку типовых имён «ДЗ 1.json» ... «ДЗ 200.json».
- const sel=$("homeworkSelect"), old=sel.value, btn=$("refreshHomeworkList");
- btn.disabled=true; sel.innerHTML=""; availableHomeworkFiles=[];
- const placeholder=document.createElement("option"); placeholder.value=""; placeholder.textContent="Ищу файлы ДЗ*.json на GitHub…"; sel.appendChild(placeholder);
- setStatus("Ищу все файлы ДЗ*.json в папке GitHub…");
- try{
-  let candidates=[];
-  const apiUrl="https://api.github.com/repos/"+GITHUB_REPO+"/contents/"+GITHUB_FOLDER.split("/").map(encodeURIComponent).join("/");
-  try{
-   const r=await fetch(apiUrl,{headers:{"Accept":"application/vnd.github+json"},cache:"no-store"});
-   if(r.ok){
-    const listing=await r.json();
-    if(Array.isArray(listing)) candidates=listing.filter(x=>x&&x.type==="file"&&/^ДЗ.*\.json$/i.test(x.name)).map(x=>x.name);
+const TOPICS=["Прямые и углы","Окружности","Треугольники","Четырёхугольники"];
+const TOPIC_ICONS={"Прямые и углы":"📐","Окружности":"🔵","Треугольники":"🔺","Четырёхугольники":"🟪"};
+let selectedTopic="Прямые и углы";
+let mode="test", questions=[], idx=0, answers=[], wrongOriginal=[], reviewState={}, reviewQueue=[], reviewSeen=0, testResult=null, finishing=false;
+let correctedAfterReview=new Set();
+let autoAdvanceTimer=null;
+let reviewRoundQuestionIds=[];
+const REVIEW_TARGET=3; // сколько верных ответов нужно набрать на вопрос
+const NAME_KEY="geometryQuizStudentNameV1";
+let savedStudentName="";
+try{savedStudentName=(localStorage.getItem(NAME_KEY)||"").trim()}catch(e){}
+function studentName(){return savedStudentName||"Имя не указано";}
+function updateStudentBadge(){const el=$("studentBadge");if(el)el.textContent=savedStudentName?"Ученик: "+savedStudentName:"";}
+function setStudentName(name){savedStudentName=String(name||"").trim();if(!savedStudentName)return false;try{localStorage.setItem(NAME_KEY,savedStudentName)}catch(e){}updateStudentBadge();$("nameGate").hidden=true;return true;}
+function showNameGate(){const input=$("nameGateInput");if(input)input.value=savedStudentName||input.value||"";const gate=$("nameGate");if(gate)gate.hidden=false;setTimeout(()=>{if(input&&!input.value)input.focus();},0)}
+$("nameGateForm").addEventListener("submit",ev=>{ev.preventDefault();const val=$("nameGateInput").value.trim();if(!val){$("nameGateError").textContent="Укажи имя, чтобы продолжить.";return;}if(setStudentName(val)){$("nameGateError").textContent="";}});
+updateStudentBadge();
+const TEST_KEY="geometryQuizActiveTestV1";
+const REVIEW_KEY="geometryQuizActiveReviewV1";
+const STATS_KEY="geometryQuizUnmasteredStatsV1";
+const PENDING_KEY="geometryQuizPendingMistakesV1";
+const HISTORY_KEY="geometryQuizMistakeHistoryV1";
+const REPORT_SESSION_KEY="geometryQuizCumulativeReportV1";
+let reportSession=null;
+try{reportSession=JSON.parse(localStorage.getItem(REPORT_SESSION_KEY)||"null")}catch(e){reportSession=null}
+function saveReportSession(){try{localStorage.setItem(REPORT_SESSION_KEY,JSON.stringify(reportSession))}catch(e){}}
+let mistakeHistory={};
+try{mistakeHistory=JSON.parse(localStorage.getItem(HISTORY_KEY)||"{}")}catch(e){mistakeHistory={}}
+function saveMistakeHistory(){try{localStorage.setItem(HISTORY_KEY,JSON.stringify(mistakeHistory))}catch(e){}}
+let pendingMistakes={};
+try{pendingMistakes=JSON.parse(localStorage.getItem(PENDING_KEY)||"{}")}catch(e){pendingMistakes={}}
+function savePending(){try{localStorage.setItem(PENDING_KEY,JSON.stringify(pendingMistakes))}catch(e){}}
+let persistentStats={};
+try{persistentStats=JSON.parse(localStorage.getItem(STATS_KEY)||"{}")}catch(e){persistentStats={}}
+function saveStats(){try{localStorage.setItem(STATS_KEY,JSON.stringify(persistentStats))}catch(e){};renderSavedStats();updateTopicRemaining()}
+function isPendingQuestion(id){
+ const n=Number(id);
+ return Object.values(pendingMistakes||{}).some(list=>Array.isArray(list)&&list.some(x=>Number(x)===n));
+}
+function isCountedAsCompleted(id){
+ const st=persistentStats[id];
+ if(!st || isPendingQuestion(id)) return false;
+ if(typeof st.correctInTest === "boolean") return st.correctInTest || !!st.mastered;
+ const history=mistakeHistory[id];
+ return !!st.mastered || (!history?.everWrong && (st.correct||0)>0);
+}
+function renderSavedStats(){
+ const attempted=Object.values(persistentStats).filter(v=>(v.seen||0)>0);
+ const completed=BANK.reduce((n,b,i)=>n+(isCountedAsCompleted(i)?1:0),0);
+ const mastered= BANK.reduce((n,b,i)=>n+(persistentStats[i]&&persistentStats[i].mastered&&!isPendingQuestion(i)?1:0),0);
+ const seen=attempted.reduce((a,v)=>a+(v.seen||0),0);
+ const wrong=attempted.reduce((a,v)=>a+(v.wrong||0),0);
+ const el=$("savedStatsText");if(el)el.textContent=attempted.length?`Решено в тесте или отработано: ${completed} из ${BANK.length} утверждений · закреплено: ${mastered} · попыток: ${seen} · неверных ответов: ${wrong}.`:"Попыток пока нет. Прогресс будет сохраняться автоматически.";
+}
+function trackAnswer(id,correct,source=mode){
+ const key=Number(id);if(!Number.isInteger(key)||!BANK[key])return;
+ const v=persistentStats[key]||(persistentStats[key]={seen:0,wrong:0,correct:0,mastered:false,correctInTest:false});
+ v.seen++;
+ if(correct){
+   v.correct++;
+   if(source==="test")v.correctInTest=true;
+ }else{
+   v.wrong++;const b=BANK[key];if(b){mistakeHistory[key]={id:key,topic:b[0],number:b[1],text:b[2],everWrong:true};saveMistakeHistory();}
+ }
+ try{localStorage.setItem(STATS_KEY,JSON.stringify(persistentStats))}catch(e){}
+ renderSavedStats();updateTopicRemaining();
+}
+function answeredOrMasteredCount(topic){
+ return BANK.reduce((n,b,i)=>n+(b[0]===topic&&isCountedAsCompleted(i)?1:0),0);
+}
+function masteredCount(topic){
+ return BANK.reduce((n,b,i)=>n+(b[0]===topic&&persistentStats[i]&&persistentStats[i].mastered&&!isPendingQuestion(i)?1:0),0);
+}
+function topicFullyCompleted(topic){
+ const ids=BANK.map((b,i)=>({b,id:i})).filter(x=>x.b[0]===topic);
+ return ids.length>0&&ids.every(x=>isCountedAsCompleted(x.id));
+}
+function renderTopicTiles(){
+ const host=$("topicTiles");if(!host)return;
+ host.innerHTML=TOPICS.map(topic=>{
+   const total=BANK.filter(b=>b[0]===topic).length;
+   const counted=answeredOrMasteredCount(topic), mastered=masteredCount(topic), complete=topicFullyCompleted(topic);
+   return `<button type="button" class="topic-tile ${selectedTopic===topic?"active ":""}${complete?"fully-mastered":""}" data-topic="${esc(topic)}" aria-pressed="${selectedTopic===topic}"><span class="tile-icon">${TOPIC_ICONS[topic]}</span><span class="tile-name">${esc(topic)}${complete?" ✅":""}</span>${complete?'<span class="tile-check">✅ ТЕМА ОСВОЕНА</span>':""}<span class="tile-progress">Решено в тесте / отработано: ${counted} из ${total}</span><span class="tile-count">Закреплено: ${mastered} из ${total} · всего ${total} утверждений</span></button>`;
+ }).join("");
+ const totalCounted=TOPICS.reduce((sum,topic)=>sum+answeredOrMasteredCount(topic),0);
+ const totalMastered=TOPICS.reduce((sum,topic)=>sum+masteredCount(topic),0);
+ const totalComplete=TOPICS.filter(topic=>topicFullyCompleted(topic)).length;
+ const overall=$("overallStats");if(overall)overall.textContent=`Решено в тесте или отработано: ${totalCounted} из ${BANK.length} · закреплено: ${totalMastered} · полностью освоено тем: ${totalComplete} из ${TOPICS.length}`;
+ host.querySelectorAll("[data-topic]").forEach(btn=>btn.addEventListener("click",()=>{selectedTopic=btn.dataset.topic;try{localStorage.setItem("geometryQuizSelectedTopicV1",selectedTopic)}catch(e){};renderTopicTiles();}));
+}
+function updateTopicRemaining(){renderTopicTiles();}
+function updateRemainingInfo(){renderTopicTiles();}
+function saveActiveTest(){
+ if(mode!=="test"||!questions.length||finishing)return;
+ const payload={topic:selectedTopic,questionIds:questions.map(q=>q.id),answers:questions.map((q,i)=>answers[i]||null),idx,studentName:savedStudentName};
+ try{localStorage.setItem(TEST_KEY,JSON.stringify(payload))}catch(e){}
+ updateResumeButton();
+}
+function loadActiveTest(){try{const raw=localStorage.getItem(TEST_KEY);if(!raw)return null;const d=JSON.parse(raw);if(!d||!Array.isArray(d.questionIds)||!d.questionIds.length)return null;if(d.questionIds.some(id=>!Number.isInteger(id)||!BANK[id]))return null;return d}catch(e){return null}}
+function updateResumeButton(){const btn=$("resumeTest");if(btn)btn.disabled=!loadActiveTest();}
+function show(id){["setup","quiz","result","reviewDone"].forEach(x=>$(x).classList.toggle("hidden",x!==id));const dock=$("menuActions");if(dock)dock.classList.toggle("hidden",id!=="setup");updateStudentBadge();if(id==="setup"){renderTopicTiles();updateResumeButton();}}
+function goToMenu(){if(mode==="test"&&!finishing)saveActiveTest();show("setup");}
+function aggregatePending(){const ids=[];Object.values(pendingMistakes||{}).forEach(list=>{if(Array.isArray(list))list.forEach(id=>{const n=Number(id);if(Number.isInteger(n)&&BANK[n]&&!ids.includes(n))ids.push(n);});});return ids;}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const MASTERY_KEY="geometryQuizMasteredV1";
+function getMastered(){try{return JSON.parse(localStorage.getItem(MASTERY_KEY)||"[]")}catch(e){return []}}
+function setMastered(ids){try{localStorage.setItem(MASTERY_KEY,JSON.stringify([...new Set(ids)]))}catch(e){}}
+function startTest(){
+ if(!savedStudentName){showNameGate();return;}
+ finishing=false;if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null;}hideInstantFeedback();mode="test";const msg=$("setupMessage");msg.textContent="";
+ questions=BANK.map((b,id)=>({b,id})).filter(x=>x.b[0]===selectedTopic);
+ idx=0;answers=Array(questions.length).fill(null);wrongOriginal=[];testResult=null;correctedAfterReview=new Set();
+ reportSession={topic:selectedTopic,studentName:studentName(),original:null,rounds:[]};saveReportSession();
+ if(!questions.length){msg.textContent="В этой теме пока нет утверждений.";return;}
+ try{localStorage.removeItem(REVIEW_KEY)}catch(e){}
+ saveActiveTest();show("quiz");$("modeLabel").textContent=`Тема: ${selectedTopic}`;renderQuestion();
+}
+function resumeTest(){
+ if(!savedStudentName){showNameGate();return;}
+ const d=loadActiveTest();if(!d){$("setupMessage").textContent="Нет сохранённого теста для продолжения. Нажми «Начать тест».";return;}
+ if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null;}
+ hideInstantFeedback();
+ selectedTopic=TOPICS.includes(d.topic)?d.topic:(BANK[d.questionIds[0]]||[])[0]||TOPICS[0];
+ questions=d.questionIds.map(id=>({id,b:BANK[id]}));answers=questions.map((q,i)=>d.answers&&d.answers[i]?d.answers[i]:null);idx=Math.max(0,Math.min(Number(d.idx)||0,questions.length-1));while(idx<questions.length&&answers[idx])idx++;mode="test";finishing=false;wrongOriginal=[];testResult=null;correctedAfterReview=new Set();
+ if(idx>=questions.length){finishTest();return;}
+ show("quiz");$("modeLabel").textContent=`Продолжение теста · ${selectedTopic}`;renderQuestion();
+}
+
+function renderStreakBox(id){
+ const box=$("streakBox");
+ if(!box)return;
+ if(mode!=="review"||!reviewState[id]){box.innerHTML="";return;}
+ const st=reviewState[id];
+ const dots=Array.from({length:REVIEW_TARGET},(_,i)=>`<span class="dot ${i<(st.correct||0)?"on":""}"></span>`).join("");
+ box.innerHTML=`<div class="streak-badge">Серия верных ответов: <span class="dots">${dots}</span> ${st.correct||0}/${REVIEW_TARGET}</div>`;
+}
+
+function renderQuestion(){
+ const item=questions[idx];if(!item){if(mode==="test")finishTest();return;}
+ hideInstantFeedback();
+ if(!item.b){$("feedback").textContent="Не удалось найти данные вопроса. Вернись в меню и начни тест заново.";$("feedback").className="feedback bad";console.error("Некорректный вопрос в пуле",item,idx);return;}
+ $("topic").textContent="Тема: "+item.b[0]+" · утверждение №"+item.b[1];
+ $("question").textContent=item.b[2];$("counter").textContent=`Вопрос ${idx+1} из ${questions.length}`;
+ $("bar").style.width=((idx+1)/questions.length*100)+"%";
+ $("yes").classList.toggle("selected",!!(mode==="test"&&answers[idx]&&answers[idx].given===true));
+ $("no").classList.toggle("selected",!!(mode==="test"&&answers[idx]&&answers[idx].given===false));
+ $("yes").disabled=!!(mode==="test"&&answers[idx]);$("no").disabled=!!(mode==="test"&&answers[idx]);
+ $("quit").textContent=mode==="review"?"Завершить работу над ошибками":"Завершить тест сейчас";
+ if(mode==="test"&&!answers[idx]){$("yes").disabled=false;$("no").disabled=false;}
+ $("feedback").textContent="";$("feedback").className="feedback";
+ renderStreakBox(item.id);
+ if(mode==="review"&&reviewState[item.id]){
+   const st=reviewState[item.id];
+   $("subhint").textContent=`Нужно набрать ${REVIEW_TARGET} верных ответа. Можно не подряд — главное, чтобы суммарно было ${REVIEW_TARGET}.`;
+   $("counter").textContent=`Осталось утверждений: ${reviewQueue.length} · ответов в работе: ${reviewSeen}`;
+ }else{
+   if(answers[idx]){$("feedback").textContent=(answers[idx].correct?"✅ Верно. ":"❌ Неверно. ")+`Выбран ответ: ${answers[idx].given?"Да":"Нет"}.`;$("feedback").className="feedback "+(answers[idx].correct?"good":"bad");}
+ }
+}
+
+/* ===== Мгновенный разбор после неверного ответа ===== */
+function showInstantFeedback(item, given){
+ const b=item.b;
+ const box=$("instantFeedback");
+ box.innerHTML=`
+   <div class="fb-answer">
+     <span>Правильный ответ:</span>
+     <span class="answer-badge ${b[3]?"yes":"no"}">${b[3]?"Да":"Нет"}</span>
+   </div>
+   <article class="theory">
+     <span class="tag">${esc(b[0])} · утверждение №${b[1]}</span>
+     <div class="statement-card">${esc(b[2])}</div>
+     <div class="answer-line"><b>Твой ответ:</b>
+       <span class="answer-badge ${given?"yes":"no"}">${given?"Да":"Нет"}</span>
+     </div>
+     <div class="comment-title">Объяснение по-простому</div>
+     <div class="comment">${esc(theoryText(b)).replace(/\n/g,"<br>")}</div>
+   </article>`;
+ box.classList.remove("hidden");
+ const btn=$("nextQuestion");
+ btn.classList.remove("hidden");
+ btn.textContent="Дальше →";
+ btn.onclick=()=>{
+   hideInstantFeedback();
+   if(mode==="test"){
+     if(idx<questions.length-1){idx++;saveActiveTest();renderQuestion();}
+     else finishTest();
+   }else{
+     idx++;nextReviewItem();
    }
-  }catch(e){/* резервный поиск ниже */}
-  if(!candidates.length){
-   const names=[];
-   for(let i=1;i<=200;i++) names.push(`ДЗ ${i}.json`);
-   // Известные варианты-копии тоже проверяем, но только если совпадают с шаблоном ДЗ*.json.
-   names.push("ДЗ 1 — копия.json","ДЗ 1 - копия.json","ДЗ 1 (копия).json");
-   const results=await Promise.all(names.map(async file=>{
-    try{const r=await fetch(githubFileUrl(GITHUB_HOMEWORK_BASE,file),{cache:"no-store"});if(!r.ok)return null;const txt=await r.text();JSON.parse(txt);return file;}catch(e){return null;}
-   }));
-   candidates=results.filter(Boolean);
-  }else{
-   // Проверяем, что файлы действительно доступны и содержат корректный JSON.
-   const results=await Promise.all(candidates.map(async file=>{
-    try{const r=await fetch(githubFileUrl(GITHUB_HOMEWORK_BASE,file),{cache:"no-store"});if(!r.ok)return null;JSON.parse(await r.text());return file;}catch(e){return null;}
-   }));
-   candidates=results.filter(Boolean);
-  }
-  availableHomeworkFiles=[...new Set(candidates)].sort((a,b)=>a.localeCompare(b,"ru",{numeric:true,sensitivity:"base"}));
-  sel.innerHTML="";
-  if(!availableHomeworkFiles.length){const o=document.createElement("option");o.value="";o.textContent="Файлы ДЗ*.json не найдены — проверь адрес и доступ к GitHub";sel.appendChild(o)}
-  else availableHomeworkFiles.forEach(file=>{const o=document.createElement("option");o.value=file;o.textContent=file.replace(/\.json$/i,"");sel.appendChild(o)});
-  if([...sel.options].some(o=>o.value===old))sel.value=old;
-  setStatus(availableHomeworkFiles.length?`Найдено файлов ДЗ*.json: ${availableHomeworkFiles.length}. Выбери нужное ДЗ.`:"Не удалось найти доступные файлы ДЗ*.json.",availableHomeworkFiles.length?"ok":"warn");
- }finally{btn.disabled=false;}
+ };
+ setTimeout(()=>btn.focus(),50);
 }
-function githubFileUrl(base,file){
- const clean=String(base||"").trim().replace(/\/+$/g,"");
- // Кодируем каждый сегмент пути отдельно: кириллица и пробелы должны быть URL-encoded,
- // а разделители между папками остаются обычными слешами.
- const encoded=String(file).split("/").map(part=>encodeURIComponent(part)).join("/");
- return clean+"/"+encoded;
-}
-function findTaskArray(data){
- if(Array.isArray(data)) return data;
- if(!data || typeof data!=="object") return null;
- const keys=["tasks","задания","Задания","questions","problems","items","data","упражнения","задачи"];
- for(const key of keys) if(Array.isArray(data[key])) return data[key];
- for(const key of ["homework","дз","ДЗ","content","result","payload","worksheet"]){
-  const nested=data[key];
-  if(Array.isArray(nested)) return nested;
-  if(nested && typeof nested==="object") { const found=findTaskArray(nested); if(found) return found; }
- }
- const vals=Object.values(data);
- if(vals.length && vals.every(v=>v && typeof v==="object" && !Array.isArray(v)) && vals.some(v=>["text","condition","task","условие","question","задание"].some(k=>k in v))) return vals;
- return null;
-}
-function mapHomeworkTask(t,index){
- if(typeof t==="string") return {id:uid(),text:t,answer:"",studentAnswer:"",checked:false,isCorrect:false,image:"",photos:[]};
- t=t && typeof t==="object" ? t : {};
- const pick=(...keys)=>{for(const k of keys) if(t[k]!==undefined && t[k]!==null && t[k]!=="") return t[k]; return ""};
- let text=pick("text","condition","task","question","statement","title","условие","задание","текст","условие задачи","name","content");
- let image=pick("image","img","picture","imageUrl","image_url","условиеКартинка","картинка");
- if(text && typeof text==="object") { image=image||text.image||text.img||""; text=text.text||text.content||text.value||text.condition||text.question||""; }
- if(Array.isArray(text)) text=text.join("\n");
- if(typeof image!=="string") image="";
- const answer=pick("answerText","answer","correctAnswer","correct_answer","answerJSON","solution","ответ","правильный ответ","верныйОтвет","result");
- const urlFrom=(...keys)=>{for(const k of keys){const v=t[k];if(typeof v==="string"&&/^https?:\/\//i.test(v.trim()))return v.trim();if(v&&typeof v==="object"){const u=v.url??v.href??v.link;if(typeof u==="string"&&/^https?:\/\//i.test(u.trim()))return u.trim();}}return ""};
- return {id:uid(),text:String(text||(!image?`Задание ${index+1}`:"")),answer:String(answer||""),studentAnswer:"",checked:false,isCorrect:false,image,photos:[],solutionLink:urlFrom("solutionLink","solutionUrl","solutionURL","linkSolution","linkToSolution","solution_link","solution_url","ссылкаНаРешение","ссылка на решение"),videoLink:urlFrom("videoLink","videoUrl","videoURL","videoSolution","videoReview","videoAnalysis","linkVideo","linkToVideo","video_link","video_url","ссылкаНаВидео","ссылкаНаВидеоразбор","ссылка на видеоразбор")};
+function hideInstantFeedback(){
+ const box=$("instantFeedback");
+ if(box){box.classList.add("hidden");box.innerHTML="";}
+ const btn=$("nextQuestion");
+ if(btn){btn.classList.add("hidden");btn.onclick=null;}
 }
 
-let sourceTaskRecords=[];
-let progressRecords=null;
-let selectedStudentNames=[];
-function readJsonFile(file){
- return new Promise((resolve,reject)=>{
-  if(!file){reject(new Error("Выбери файл."));return}
-  const r=new FileReader();
-  r.onload=()=>{try{resolve(JSON.parse(String(r.result)))}catch(e){reject(new Error(`Файл «${file.name}» не является корректным JSON.`))}};
-  r.onerror=()=>reject(new Error(`Не удалось прочитать файл «${file.name}».`));
-  r.readAsText(file,"UTF-8");
- });
-}
-function getSourceTaskArray(data){
- if(Array.isArray(data)) return data;
- const found=findTaskArray(data);
- return Array.isArray(found)?found:[];
-}
-function getTaskId(task){return String(task?.id ?? task?.taskId ?? task?.uid ?? "");}
-function getStudentFavorites(student){
- const fav=student && student.favorites;
- if(!fav || typeof fav!=="object") return [];
- return Object.entries(fav).filter(([id,value])=>value===true || value===1 || value==="true").map(([id])=>String(id));
-}
-async function prepareFavoritesStudents(){
- const tasksFile=$("sourceTasksFile").files?.[0], progFile=$("progressFile").files?.[0];
- const btn=$("prepareFavoritesStudents");btn.disabled=true;
- try{
-  if(!tasksFile||!progFile)throw new Error("Нужно выбрать оба файла: задания и progress.");
-  const [taskData,progData]=await Promise.all([readJsonFile(tasksFile),readJsonFile(progFile)]);
-  sourceTaskRecords=getSourceTaskArray(taskData);
-  if(!sourceTaskRecords.length)throw new Error("В файле заданий не найден массив задач.");
-  progressRecords=progData;
-  const students=progData?.students;
-  if(!students||typeof students!=="object")throw new Error("В progress не найден раздел students.");
-  const select=$("favoritesStudents");select.innerHTML="";
-  Object.entries(students).forEach(([key,student])=>{
-   const option=document.createElement("option");
-   option.value=key;
-   const name=String(student?.name||key);
-   const count=getStudentFavorites(student).length;
-   option.textContent=`${name} — избранных: ${count}`;
-   select.appendChild(option);
-  });
-  if(!select.options.length)throw new Error("В progress нет учеников для выбора.");
-  $("favoritesInfo").textContent=`Загружено заданий: ${sourceTaskRecords.length}. Найдено учеников/профилей: ${select.options.length}.`;
-  setStatus("Файлы прочитаны. Выбери ученика или группу и нажми «Создать ДЗ из избранного».","ok");
- }catch(e){
-  sourceTaskRecords=[];progressRecords=null;
-  $("favoritesInfo").textContent=e.message||String(e);
-  setStatus(e.message||String(e),"warn");
- }finally{btn.disabled=false}
-}
-function createFavoritesHomework(){
- try{
-  if(!sourceTaskRecords.length||!progressRecords)throw new Error("Сначала загрузи оба файла и нажми «Прочитать progress и показать учеников».");
-  const select=$("favoritesStudents");
-  const selected=[...select.selectedOptions].map(o=>o.value);
-  if(!selected.length)throw new Error("Выбери хотя бы одного ученика. Для группы выбери нескольких.");
-  const students=progressRecords.students||{};
-  const favoriteIds=new Set();
-  const labels=[];
-  selected.forEach(key=>{
-   const student=students[key];if(!student)return;
-   labels.push(String(student.name||key));
-   getStudentFavorites(student).forEach(id=>favoriteIds.add(id));
-  });
-  const matching=sourceTaskRecords.filter(t=>favoriteIds.has(getTaskId(t)));
-  if(!matching.length)throw new Error("Среди выбранных учеников нет избранных заданий, совпадающих с ID в файле заданий.");
-  tasks=matching.map((t,index)=>{
-   const text=String(t.taskText??t.text??t.condition??t.title??"");
-   const image=String(t.taskImage??t.image??t.imageUrl??"");
-   const answer=String(t.answerText??t.answer??t.correctAnswer??"");
-   return {id:uid(),text:text||(!image?`Задание ${index+1}`:""),answer,studentAnswer:"",checked:false,isCorrect:false,image,photos:[],sourceId:getTaskId(t),sourceTitle:String(t.title||"")};
-  }).filter(t=>t.text||t.image);
-  if(!tasks.length)throw new Error("Найденные задания не содержат распознаваемых условий.");
-  $("student").value=labels.join(", ");
-  selectedStudentNames=labels;
-  reportAnswersAuthorized=false;render();
-  $("favoritesInfo").textContent=`Создано ДЗ: ${tasks.length}. Выбрано: ${labels.join(", ")}. Совпавших избранных ID: ${matching.length}.`;
-  setStatus(`ДЗ создано из избранного: ${tasks.length} заданий для ${labels.join(", ")}.`,"ok");
- }catch(e){setStatus(e.message||String(e),"warn");$("favoritesInfo").textContent=e.message||String(e)}
-}
-function studentRecordMap(data){return data&&data.students&&typeof data.students==="object"?data.students:null;}
-async function fetchJsonFromUrls(urls){let lastError=null;for(const url of urls){try{const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error(`HTTP ${r.status} (${url})`);return await r.json();}catch(e){lastError=e;}}throw lastError||new Error("Не удалось загрузить JSON");}
-async function loadRemoteProgress(){
- const info=$("personalInfo"), select=$("personalStudentSelect");info.textContent="Загружаю progress.json с GitHub…";
- try{const data=await fetchJsonFromUrls(PROGRESS_URLS);const students=studentRecordMap(data);if(!students)throw new Error("В progress.json нет раздела students.");remoteProgress=data;select.innerHTML="";
-  Object.entries(students).sort((a,b)=>String(a[1]?.name||a[0]).localeCompare(String(b[1]?.name||b[0]),"ru")).forEach(([id,st])=>{const o=document.createElement("option");o.value=id;o.textContent=String(st?.name||id);select.appendChild(o)});
-  if(!select.options.length)throw new Error("Список учеников пуст.");
-  info.textContent=`progress.json загружен. Профилей: ${select.options.length}.`;
-  if(!$("student").value)$("student").value=select.selectedOptions[0]?.textContent||"";
-  return data;
- }catch(e){info.textContent=`Не удалось загрузить progress.json: ${e.message}. Проверь, что файл лежит в json_files/progress.json и доступен публично.`;return null;}
-}
-async function getRepositoryJsonFiles(){
- if(repositoryJsonFiles.length)return repositoryJsonFiles;
- const branches=["main","master"];
- // 1) GitHub API: только JSON непосредственно в корне json_files (без подпапок).
- for(const branch of branches){try{const url=`https://api.github.com/repos/${GITHUB_REPO}/git/trees/${branch}?recursive=1`;const r=await fetch(url,{headers:{Accept:"application/vnd.github+json"},cache:"no-store"});if(!r.ok)continue;const data=await r.json();if(Array.isArray(data.tree)){repositoryJsonFiles=data.tree.filter(x=>x.type==="blob"&&/^json_files\/[^/]+\.json$/i.test(x.path)).map(x=>x.path.replace(/^json_files\//i,""));if(repositoryJsonFiles.length)return repositoryJsonFiles;}}catch(e){}}
- // 2) Запасной каталог jsDelivr: работает независимо от лимита GitHub API.
- for(const branch of branches){try{const url=`https://data.jsdelivr.com/v1/package/gh/${GITHUB_REPO}@${branch}/flat`;const r=await fetch(url,{cache:"no-store"});if(!r.ok)continue;const data=await r.json();if(Array.isArray(data.files)){repositoryJsonFiles=data.files.map(x=>String(x.name||"").replace(/^\//,"" )).filter(path=>/^json_files\/[^/]+\.json$/i.test(path)).map(path=>path.replace(/^json_files\//i,""));if(repositoryJsonFiles.length)return repositoryJsonFiles;}}catch(e){}}
- // 3) Старый встроенный список — только если оба онлайн-каталога недоступны.
- const knownFiles=["ege-1-планик.json","ege-2-вектора.json","ege-3-стерео.json","ege-4-вер1.json","ege-5-вер2.json","ege-6-матстатистика.json","ege-7-уравнения.json","ege-8-вычисления.json","ege-9-производная.json","ege-10-формулы.json","ege-11-задачи.json","ege-12-графики.json","ege-13-СТАРЫЕ ПРОИЗВОДНЫЕ.json","ege-13-финансы.json","ege-14-уравнения.json","ege-15-стерео.json","ege-16-неравенства.json","ege-17-оптимальность.json","ege-18-планик.json","ege-19-ДЕЛИМОСТЬ.JSON","ege-19-параметры.json","ege-20-теория чисел.json","INF_OGE_1_ОБЪЕМ_СООБЩЕНИЯ.json","INF_OGE_2_ШИФРОВКИ.json","INF_OGE_3_ВЫСКАЗЫВАНИЯ.json","INF_OGE_4_ГРАФЫ_КРАТЧАЙШИЙ.json","INF_OGE_5_КОМАНДЫ_ИСПОЛНИТЕЛЯ.json","INF_OGE_6_ПАРЫ_ЧИСЕЛ_НА_ВХОД.json","INF_OGE_7_АДРЕСАЦИЯ.json","INF_OGE_8_ЭЙЛЕР.json","INF_OGE_9_ГРАФЫ_СКОЛЬКО_ПУТЕЙ.json","INF_OGE_10_CC.json","INF_OGE_11_ПОИСК-В-ТЕКСТЕ.json","INF_OGE_12_КОЛИЧЕСТВО-ФАЙЛОВ.json","INF_OGE_13_ОФОРМЛЕНИЕ-В-ВОРДЕ.json","INF_OGE_14_ТАБЛИЦЫ-В-ЭКСЕЛЕ.json","INF_OGE_15_РОБОТ.json","INF_OGE_16_ПРОГРАММИРОВАНИЕ.json","informatika_ЕГЭ_ВСЯ ТЕОРИЯ.json","informatika1.json","informatika2.json","informatika3.json","informatika5.json","informatika6.json","informatika7.json","informatika9.json","informatika13.json","informatika15.json","informatika17.json","informatika19-21.json","informatika23.json","informatika24.json","informatika24bc - проверить.json","informatika24bc.json","informatika24r.json","informatika25_делители.json","informatika25_маски.json","informatika25_простые_множители.json","информатика_4_фано.json","информатика_4_фано_.json","oge-6-ВЫЧИСЛЕНИЯ.json","oge-7-ЛУЧИ.json","oge-8-СТЕПЕНИ-И-КОРНИ.json","oge-9-УРАВНЕНИЯ.json","oge-10-ВЕРОЯТНОСТЬ.json","oge-11-ГРАФИКИ.json","oge-12-ФОРМУЛЫ.json","oge-13_НЕРАВЕНСТВА.json","oge-14-ПРОГРЕССИИ.json","oge-15-ТРЕУГОЛЬНИКИ.json","oge-16-ОКРУЖНОСТЬ.json","oge-17-ЧЕТЫРЕХУГОЛЬНИКИ.json","oge-18-РЕШЕТКА.json","oge-19-ВЫСКАЗЫВАНИЯ.json","oge-20-УРАВНЕНИЯ.json","oge-21-ЗАДАЧИ.json","oge-22-ГРАФИКИ.json","oge-23-ГЕОМЕТРИЯ-1.json","oge-24-ГЕОМЕТРИЯ-2.json","oge-25-ГЕОМЕТРИЯ-3.json","огэ_1-5.json","огэ_1-5-.json"];
- if(knownFiles.length){repositoryJsonFiles=knownFiles.filter(f=>!f.includes("/") && /\.json$/i.test(f));return repositoryJsonFiles;}
- throw new Error("Не удалось получить каталог файлов GitHub.");
-}
-function categoryMatch(path,category){const name=path.split("/").pop();if(category==="ege-math")return /^ege-/i.test(name);if(category==="oge-math")return /^oge-/i.test(name);if(category==="oge-inf")return /^INF_OGE_/i.test(name);if(category==="ege-inf")return /^informatika/i.test(name);return false;}
-function recordIdsForTag(student,tag){const val=student?.[tag];if(Array.isArray(val))return new Set(val.map(x=>String(x?.id??x)).filter(Boolean));if(!val||typeof val!=="object")return new Set();return new Set(Object.entries(val).filter(([id,v])=>v===true||v===1||v==="true").map(([id])=>String(id)));}
-async function refreshPersonalFileList(){
- const sel=$("personalFileSelect"),info=$("personalInfo");sel.innerHTML="";const loading=document.createElement("option");loading.value="";loading.textContent="Загружаю список файлов…";sel.appendChild(loading);
- try{const allFiles=await getRepositoryJsonFiles();const category=$("personalSubjectSelect").value;const files=allFiles.filter(f=>!f.includes("/")&&categoryMatch(f,category)&&!/^progress\.json$/i.test(f.split("/").pop()));
-  sel.innerHTML="";if(!files.length){const o=document.createElement("option");o.value="";o.textContent="В этом разделе файлов не найдено";sel.appendChild(o);info.textContent="Для выбранного раздела файлы не найдены.";return;}
-  files.sort((a,b)=>a.localeCompare(b,"ru",{numeric:true,sensitivity:"base"}));const first=document.createElement("option");first.value="";first.textContent="— выбери один JSON-файл —";sel.appendChild(first);
-  files.forEach(file=>{const o=document.createElement("option");o.value=file;o.textContent=file.split("/").pop();o.title=file;sel.appendChild(o)});
-  info.textContent=`Раздел содержит файлов: ${files.length}. Выбери один файл, затем метки и нажми «Сформировать персональное ДЗ».`;
- }catch(e){sel.innerHTML="";const o=document.createElement("option");o.value="";o.textContent="Не удалось получить список файлов";sel.appendChild(o);info.textContent=`Не удалось получить список JSON-файлов: ${e.message}`;}
-}
-async function createPersonalHomework(){
- const btn=$("createPersonalHomework"), info=$("personalInfo");btn.disabled=true;
- try{
-  if(!remoteProgress)await loadRemoteProgress();if(!remoteProgress)throw new Error("Не удалось загрузить progress.json.");
-  const studentId=$("personalStudentSelect").value, student=remoteProgress.students?.[studentId];if(!student)throw new Error("Выбери ученика из списка.");
-  const category=$("personalSubjectSelect").value, mode=$("personalBuildMode").value, oneFile=$("personalFileSelect").value;
-  if(mode==="one"&&(!oneFile||oneFile.includes("/")||!categoryMatch(oneFile,category)))throw new Error("Выбери один JSON-файл внутри выбранного раздела.");
-  const useAll=$("personalAllOnly").checked,useFav=$("personalFavoritesOnly").checked,useSolved=$("personalSolvedOnly").checked;
-  if(!useAll&&!useFav&&!useSolved)throw new Error("Выбери метку: «Все задания», «Избранное» или «Решено».");
-  const tagged=new Set();if(useFav)recordIdsForTag(student,"favorites").forEach(id=>tagged.add(id));if(useSolved)recordIdsForTag(student,"solved").forEach(id=>tagged.add(id));
-  if(!useAll&&!tagged.size)throw new Error("У выбранного ученика нет заданий с выбранными метками.");
-  const allFiles=await getRepositoryJsonFiles();let files=mode==="one"?[oneFile]:allFiles.filter(f=>!f.includes("/")&&categoryMatch(f,category)&&!/^progress\.json$/i.test(f.split("/").pop()));
-  if(!files.length)throw new Error("В выбранном разделе не найдено JSON-файлов.");
-  files.sort((a,b)=>a.localeCompare(b,"ru",{numeric:true,sensitivity:"base"}));const matched=[],seen=new Set(),failed=[];
-  for(let fi=0;fi<files.length;fi++){
-   const file=files[fi];info.textContent=`Ищу задания с метками: файл ${fi+1} из ${files.length} — ${file.split("/").pop()}…`;
-   try{const encoded=file.split("/").map(encodeURIComponent).join("/");const data=await fetchJsonFromUrls([GITHUB_PAGES_ROOT+"/"+encoded,GITHUB_RAW_ROOT+"/"+encoded]);const records=getSourceTaskArray(data);
-    for(const rec of records){const id=getTaskId(rec);if((useAll||(id&&tagged.has(id)))&&(!id||!seen.has(id))){if(id)seen.add(id);matched.push({rec,file});}}
-   }catch(e){failed.push(file.split("/").pop());}
-  }
-  if(!matched.length)throw new Error(`Не найдено заданий с выбранными метками в ${mode==="one"?"выбранном файле":"файлах раздела"}. Проверь ID в progress.json.${failed.length?" Не удалось загрузить: "+failed.slice(0,5).join(", "):""}`);
-  tasks=matched.map(({rec,file},i)=>{const text=String(rec.taskText??rec.text??rec.condition??rec.task??rec.question??rec.title??rec.statement??"");const image=String(rec.taskImage??rec.image??rec.imageUrl??rec.image_url??rec.picture??"");const answer=String(rec.answerText??rec.answer??rec.correctAnswer??rec.correct_answer??"");const findUrl=(keys)=>{for(const k of keys){const v=rec[k];if(typeof v==="string"&&/^https?:\/\//i.test(v.trim()))return v.trim();if(v&&typeof v==="object"){const u=v.url??v.href??v.link;if(typeof u==="string"&&/^https?:\/\//i.test(u.trim()))return u.trim();}}return ""};const solutionLink=findUrl(["solutionLink","solutionUrl","solutionURL","linkSolution","linkToSolution","solution_link","solution_url","solutionTextLink","решениеСсылка","ссылкаНаРешение","ссылка на решение","ссылкаРешение","решениеURL"]);const videoLink=findUrl(["videoLink","videoUrl","videoURL","videoSolution","videoReview","videoAnalysis","linkVideo","linkToVideo","video_link","video_url","videoReviewLink","видеоразбор","ссылкаНаВидео","ссылкаНаВидеоразбор","ссылка на видеоразбор","видеоСсылка"]);const isEge=/^(ege-|informatika)/i.test(file.split("/").pop());return {id:uid(),text:text||(!image?`Задание ${i+1}`:""),answer,studentAnswer:"",checked:false,isCorrect:false,image,photos:[],sourceId:getTaskId(rec),sourceTitle:String(rec.title||""),sourceFile:file,solutionLink:isEge?solutionLink:"",videoLink:isEge?videoLink:""};}).filter(t=>t.text||t.image);
-  if(!tasks.length)throw new Error("Найденные записи не содержат условий заданий.");
-  if(!$("student").value.trim()) $("student").value="ИВАН ИВАНОВИЧ ИВАНОВ";reportAnswersAuthorized=false;render();
-  info.textContent=`Сформировано ${tasks.length} заданий для ${student.name||studentId}. ${mode==="one"?"Источник: "+oneFile:"Проверено файлов раздела: "+files.length}.`+(failed.length?` Не удалось прочитать файлов: ${failed.length}.`:"")+" Сохрани работу локально.";
-  setStatus(`Персональное ДЗ сформировано: ${tasks.length} заданий. Не забудь сохранить работу в файл.`,"ok");
- }catch(e){info.textContent=e.message||String(e);setStatus(e.message||String(e),"warn");}finally{btn.disabled=false;}
-}
-function startSaveReminder(){setInterval(()=>{if(tasks.length){const old=document.querySelector(".save-reminder-pop");if(old)old.remove();const n=document.createElement("div");n.className="save-reminder-pop";const msg=document.createElement("div");msg.textContent="💾 Пора сохранить ДЗ! Сохрани файл, чтобы не потерять ответы и фотографии.";const btn=document.createElement("button");btn.type="button";btn.textContent="Сохранить сейчас";btn.style.cssText="margin:10px 6px 0;background:#fff;color:#573900;border:1px solid #b87e00;padding:8px 14px;border-radius:10px;font-weight:900";btn.addEventListener("click",()=>{n.remove();$("saveWork").click()});const close=document.createElement("button");close.type="button";close.textContent="Позже";close.style.cssText=btn.style.cssText;close.addEventListener("click",()=>n.remove());n.append(msg,btn,close);document.body.appendChild(n);setTimeout(()=>n.remove(),15000);}},5*60*1000);}
+function answer(v){
+ if(finishing)return;
+ const item=questions[idx];if(!item||!item.b||typeof item.id!=="number"||!BANK[item.id]||$("quiz").classList.contains("hidden"))return;
+ if(mode!=="test"&&mode!=="review")return;
 
-async function loadHomework(){
- const file=$("homeworkSelect").value;
- if(!file){setStatus("Сначала нажми «Подгрузить актуальные ДЗ» и выбери файл из найденного списка.","warn");return}
- const url=githubFileUrl(GITHUB_HOMEWORK_BASE,file);
- const button=$("loadHomework"); button.disabled=true;
- setStatus(`Загружаю ${file}…`);
- try{
-  let response;
-  try{response=await fetch(url,{cache:"no-store"});}
-  catch(netErr){throw new Error("Браузер не смог получить файл с GitHub. Проверь интернет и доступность GitHub Pages; если HTML открыт как локальный файл, возможна блокировка CORS.");}
-  if(!response.ok) throw new Error(`GitHub вернул ошибку HTTP ${response.status}. Проверь, что файл «${file}» существует.`);
-  const raw=await response.text();
-  let data;
-  try{data=JSON.parse(raw);}catch(parseErr){throw new Error("По адресу получен не корректный JSON.");}
-  const list=findTaskArray(data);
-  if(!list || !list.length) throw new Error("Файл загружен, но список заданий не найден или пуст. Нужна структура JSON с массивом заданий.");
-  const mapped=list.map(mapHomeworkTask).map(t=>({...t,sourceFile:file})).filter(t=>t.text || t.image);
-  if(!mapped.length) throw new Error("Массив найден, но условия заданий не распознаны.");
-  tasks=mapped; reportAnswersAuthorized=false; render();
-  setStatus(`ДЗ загружено: ${tasks.length} заданий.`,"ok");
- }catch(e){setStatus(`Не удалось загрузить ${file}: ${e.message}`,"warn");}
- finally{button.disabled=false;}
-}
-function uid(){return "t"+Math.random().toString(36).slice(2,10)}
-function normalizeAnswer(value){return String(value??"").normalize("NFKC").toLocaleLowerCase("ru-RU").replace(/ё/g,"е").replace(/[\s]+/g,"").replace(/,/g,".").replace(/[−–—]/g,"-").replace(/\u00a0/g,"").trim()}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function normalizeMathDelimiters(value){return String(value??"");}
-function renderRichText(value){
- let raw=String(value??"");
- const anchors=[];
- raw=raw.replace(/<a\b([^>]*)>([\s\S]*?)<\/\s*a\s*>/gi,(whole,attrs,label)=>{
-   let m=attrs.match(/href\s*=\s*(?:["']\s*)?(https?:\/\/[^"'\s>]+)(?:\s*["'])?/i);
-   if(!m){const encoded=attrs.match(/href\s*=\s*&quot;\s*(https?:\/\/[^&\s]+)\s*&quot;/i);if(encoded)m=encoded;}
-   const url=m?m[1].trim().replace(/&amp;/g,"&"):"";
-   const cleanLabel=String(label).replace(/<[^>]*>/g,"").replace(/&nbsp;/gi," ").replace(/&amp;/g,"&").replace(/&quot;/g,'"').trim();
-   if(!url)return cleanLabel||"";
-   const key=`__LINK_${anchors.length}__`;
-   anchors.push(`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(cleanLabel||url)}</a>`);
-   return key;
- });
- raw=raw.replace(/<\/?(?:a|span|div|p|br|strong|b|i|em)[^>]*>/gi,match=>/^<br\b/i.test(match)?"\n":"");
- let out=esc(raw).replace(/(https?:\/\/[^\s<>&"']+)/g,url=>`<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
- anchors.forEach((a,i)=>{out=out.replace(`__LINK_${i}__`,a)});
- return out.replace(/\n/g,"<br>");
-}
+ if(mode==="test"){
+   if(answers[idx])return;
+   if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null;}
+   const answeredIndex=idx;
+   const isCorrect=v===item.b[3];
+   answers[idx]={id:item.id,given:v,correct:isCorrect,tracked:true};
+   trackAnswer(item.id,isCorrect,"test");
+   saveActiveTest();
+   $("yes").classList.toggle("selected",v===true);$("no").classList.toggle("selected",v===false);
+   $("yes").disabled=true;$("no").disabled=true;
 
-function photoCount(){return tasks.reduce((n,t)=>n+t.photos.length,0)}
-function setStatus(msg,kind=""){const el=$("status");el.textContent=msg;el.className="status "+kind}
-async function renderEquationsAsImages(root){
- // MathJax рендерит формулы прямо в карточках заданий (не только в отчёте).
- try{
-  let tries=0;
-  while(!window.MathJax?.typesetPromise && tries++<100) await new Promise(resolve=>setTimeout(resolve,100));
-  if(!window.MathJax?.typesetPromise) return;
-  const blocks=[...root.querySelectorAll('.equation')];
-  if(blocks.length) await MathJax.typesetPromise(blocks);
- }catch(e){console.warn("Не удалось отрисовать формулы в заданиях:",e)}
-}
-function setMode(mode){
-  if(mode==="teacher"){
-    const entered=prompt("Пароль учителя:");
-    if(entered===null)return;
-    if(entered.trim().toLocaleLowerCase("ru-RU")!==TEACHER_PASSWORD){alert("Неверный пароль. Для режима учителя нужен пароль.");return;}
-  }
-  currentMode=mode;
-  const teacher=mode==="teacher", personal=mode==="personal";
-  $("teacherMode").classList.toggle("active",teacher);
-  $("personalMode").classList.toggle("active",personal);
-  $("studentMode").classList.toggle("active",mode==="group");
-  $("teacherPanel").hidden=!teacher;
-  $("homeworkLibraryPanel").hidden=teacher||personal;
-  $("personalHomeworkPanel").hidden=teacher||!personal;
-  document.querySelectorAll(".teacher-only").forEach(e=>e.hidden=!teacher);
-  render();
-  setStatus(teacher?"Режим учителя: можно добавлять и редактировать задания.":personal?"Режим ДЗ персонально.":"Режим ДЗ группе: выбери готовый файл ДЗ.","ok");
-}
-
-function render(){
- const root=$("tasks");
- try{if(window.MathJax?.typesetClear) MathJax.typesetClear([root]);}catch(e){}
- root.innerHTML="";
- tasks.forEach((t,i)=>{
-  const el=document.createElement("article");el.className="task";
-  const condition=t.image?`<img class="task-image" src="${t.image}" alt="Условие задания ${i+1}">`:"";
-  const text=t.text?`<div class="equation">${renderRichText(normalizeMathDelimiters(t.text))}</div>`:"";
-  const resourceLinks=(t.sourceFile&&/^(ege-|informatika)/i.test(String(t.sourceFile).split("/").pop()))?`<div class="task-resources" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px">${t.solutionLink?`<a href="${esc(t.solutionLink)}" target="_blank" rel="noopener noreferrer" title="Откроется в новой вкладке — вернись в эту вкладку, чтобы продолжить">📘 Решение</a>`:""}${t.videoLink?`<a href="${esc(t.videoLink)}" target="_blank" rel="noopener noreferrer" title="Откроется в новой вкладке — вернись в эту вкладку, чтобы продолжить">▶ Видеоразбор</a>`:""}</div>`:"";
-  const teacherFields=currentMode==="teacher"?`<div class="teacher-fields">${t.studentAnswer!==undefined?`<p><b>Ответ ученика:</b> ${esc(t.studentAnswer||"не введён")}<br><b>Результат:</b> ${t.checked?(t.isCorrect?"Верно":"Неверно"):"ещё не проверен"}</p>`:""}<label>Редактировать условие</label><textarea data-edit-text="${t.id}" rows="3">${esc(normalizeMathDelimiters(t.text))}</textarea><label>Правильный ответ — только для учителя</label><input type="text" data-edit-answer="${t.id}" value="${esc(t.answer)}" placeholder="Правильный ответ"><label>Заменить картинку условия</label><div class="paste-zone" tabindex="0" data-paste-edit="${t.id}">Нажми сюда и вставь картинку из буфера (Ctrl+V)</div><input style="margin-top:7px" type="file" accept="image/*" data-edit-image="${t.id}"><div class="row"><button class="danger" data-remove-task="${t.id}">Удалить задание</button></div></div>`:"";
-  const studentFields=currentMode!=="teacher"?`<div class="task-body"><label>Твой ответ</label><div class="row"><input type="text" data-student-answer="${t.id}" value="${esc(t.studentAnswer||"")}" placeholder="Введи ответ"><button class="primary" data-check-answer="${t.id}">Проверить</button></div><div class="answer-feedback ${t.checked?(t.isCorrect?"correct":"incorrect"):""}" data-feedback="${t.id}" aria-live="polite">${t.checked?(t.isCorrect?"Верно!":"Неверно. Попробуй ещё раз."):""}</div><button type="button" class="noprint" data-show-answer="${t.id}" ${answersUnlocked?"":"disabled"}>Показать правильный ответ</button><div class="correct-answer equation" data-correct-answer="${t.id}" hidden>${renderRichText(normalizeMathDelimiters(t.answer||"Правильный ответ не задан"))}</div><label style="margin-top:14px">Прикрепить файл с решением</label><input type="file" accept="image/*" multiple data-student-photos="${t.id}"><div class="muted" style="margin-top:6px">Выбери один или несколько снимков тетради.</div><div class="photo-grid">${t.photos.map((ph,j)=>`<div class="photo"><img src="${ph.url||ph.data}" alt="Фото решения задания ${i+1}"><small>Фото ${j+1}</small><button class="noprint" data-remove-photo="${t.id}" data-photo-index="${j}" aria-label="Удалить фото">×</button></div>`).join("")}</div></div>`:"";
-  el.innerHTML=`<div class="task-head"><div style="min-width:0"><div class="task-title">Задание ${i+1}</div>${text}${condition}${resourceLinks}</div>${currentMode==="teacher"?"":`<span class="muted">Фото: ${t.photos.length}</span>`}</div>${studentFields}${teacherFields}<div class="expanded-nav noprint"><button type="button" data-prev-task="${t.id}" ${i===0?"disabled":""}>← Назад</button><button type="button" class="collapse-task" data-collapse-task="${t.id}">Свернуть</button><button type="button" data-next-task="${t.id}" ${i===tasks.length-1?"disabled":""}>Далее →</button></div>`;root.appendChild(el);
- });
- root.querySelectorAll(".task").forEach(card=>card.addEventListener("click",event=>{
-  if(event.target.closest("button,input,textarea,select,label,a,[data-student-photos],[data-student-answer],[data-check-answer],[data-remove-photo],[data-remove-task],[data-edit-text],[data-edit-answer],[data-edit-image]"))return;
-  if(event.target.closest("img"))return;
-  const wasExpanded=card.classList.contains("expanded");
-  root.querySelectorAll(".task.expanded").forEach(open=>open.classList.remove("expanded"));
-  if(!wasExpanded)card.classList.add("expanded");
- }));
- root.querySelectorAll("[data-prev-task],[data-next-task]").forEach(btn=>btn.addEventListener("click",()=>{const idx=tasks.findIndex(x=>x.id===btn.dataset.prevTask||x.id===btn.dataset.nextTask);const delta=btn.hasAttribute("data-prev-task")?-1:1;const next=idx+delta;if(next<0||next>=tasks.length)return;const cards=root.querySelectorAll(".task");root.querySelectorAll(".task.expanded").forEach(c=>c.classList.remove("expanded"));const target=cards[next];if(target){target.classList.add("expanded");target.scrollTop=0;target.scrollIntoView({block:"nearest",behavior:"smooth"});}}));
- root.querySelectorAll("[data-collapse-task]").forEach(btn=>btn.addEventListener("click",()=>btn.closest(".task")?.classList.remove("expanded")));
- root.querySelectorAll("[data-student-photos]").forEach(input=>input.addEventListener("change",()=>{const t=tasks.find(x=>x.id===input.dataset.studentPhotos);if(!t)return;const files=Array.from(input.files||[]);let pending=files.length;if(!pending)return;files.forEach(file=>readImage(file,data=>{t.photos.push({name:file.name||`Фото ${t.photos.length+1}`,data,url:data});pending--;if(!pending){render();setStatus("Фотографии добавлены к заданию.","ok")}}));input.value=""}));
- root.querySelectorAll("[data-student-answer]").forEach(input=>input.addEventListener("input",()=>{const t=tasks.find(x=>x.id===input.dataset.studentAnswer);if(t){t.studentAnswer=input.value;t.checked=false;t.isCorrect=false;const fb=root.querySelector(`[data-feedback="${t.id}"]`);if(fb){fb.textContent="";fb.className="answer-feedback"}}}));
- root.querySelectorAll("[data-check-answer]").forEach(b=>b.addEventListener("click",()=>{const t=tasks.find(x=>x.id===b.dataset.checkAnswer);if(!t)return;t.studentAnswer=root.querySelector(`[data-student-answer="${t.id}"]`)?.value||"";t.checked=true;t.isCorrect=normalizeAnswer(t.studentAnswer)!==""&&normalizeAnswer(t.studentAnswer)===normalizeAnswer(t.answer);const fb=root.querySelector(`[data-feedback="${t.id}"]`);if(fb){fb.textContent=t.isCorrect?"Верно!":"Неверно. Попробуй ещё раз.";fb.className="answer-feedback "+(t.isCorrect?"correct":"incorrect")} }));
- root.querySelectorAll("[data-student-answer]").forEach(input=>input.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();root.querySelector(`[data-check-answer="${input.dataset.studentAnswer}"]`)?.click();}}));
- root.querySelectorAll("[data-show-answer]").forEach(b=>b.addEventListener("click",async()=>{if(!answersUnlocked)return;const box=root.querySelector(`[data-correct-answer="${b.dataset.showAnswer}"]`);if(box){box.hidden=!box.hidden;if(!box.hidden){try{let tries=0;while(!window.MathJax?.typesetPromise&&tries++<100)await new Promise(resolve=>setTimeout(resolve,100));if(window.MathJax?.typesetPromise)await MathJax.typesetPromise([box]);}catch(e){console.warn("Не удалось отрендерить ответ",e)}}}b.textContent=box&&!box.hidden?"Скрыть ответ":"Показать правильный ответ";}));
- root.querySelectorAll("[data-remove-task]").forEach(b=>b.addEventListener("click",()=>{tasks=tasks.filter(t=>t.id!==b.dataset.removeTask);render()}));
- root.querySelectorAll("[data-remove-photo]").forEach(b=>b.addEventListener("click",()=>{const t=tasks.find(x=>x.id===b.dataset.removePhoto);if(t)t.photos.splice(Number(b.dataset.photoIndex),1);render()}));
- root.querySelectorAll("[data-edit-text]").forEach(e=>e.addEventListener("change",()=>{const t=tasks.find(x=>x.id===e.dataset.editText);if(t)t.text=e.value.trim();}));
- root.querySelectorAll("[data-edit-answer]").forEach(e=>e.addEventListener("change",()=>{const t=tasks.find(x=>x.id===e.dataset.editAnswer);if(t)t.answer=e.value.trim();}));
- root.querySelectorAll("[data-edit-image]").forEach(e=>e.addEventListener("change",()=>{const file=e.files&&e.files[0],t=tasks.find(x=>x.id===e.dataset.editImage);if(!file||!t)return;readImage(file,data=>{t.image=data;render()})}));
- $("countLabel").textContent=`Заданий: ${tasks.length} · фото решений: ${photoCount()}`;
- const attached=tasks.filter(t=>t.photos.length).length;$("progressBar").style.width=(tasks.length?attached/tasks.length*100:0)+"%";
- renderEquationsAsImages(root);
-}
-function readImage(file,done){if(!file||!file.type||!file.type.startsWith("image/")){setStatus("В буфере нет картинки. Скопируй именно изображение и попробуй снова.","warn");return}const r=new FileReader();r.onload=()=>done(String(r.result));r.onerror=()=>setStatus("Не удалось прочитать картинку.","warn");r.readAsDataURL(file)}
-function showNewImage(data){pendingNewImage=data;const preview=$("newImagePreview");preview.hidden=!data;preview.innerHTML=data?`<img src="${data}" alt="Предпросмотр условия"><span>Картинка условия добавлена</span><button type="button" id="removePendingImage">Убрать</button>`:"";const b=$("removePendingImage");if(b)b.onclick=()=>showNewImage("");}
-function handleClipboardImage(event){if(currentMode!=="teacher")return;const items=event.clipboardData&&event.clipboardData.items;if(!items)return;for(const item of items){if(item.type&&item.type.startsWith("image/")){const file=item.getAsFile();if(!file)continue;event.preventDefault();const target=document.activeElement;const editId=target&&target.dataset?target.dataset.pasteEdit:"";readImage(file,data=>{if(editId){const t=tasks.find(x=>x.id===editId);if(t){t.image=data;render();setStatus("Картинка условия заменена.","ok")}}else{showNewImage(data);setStatus("Картинка из буфера добавлена. Нажми «Добавить задание снизу».","ok")}});return}}}
-document.addEventListener("paste",handleClipboardImage);
-async function addTask(){
- const text=$("newTaskText").value.trim(),file=$("newTaskImage").files[0],answer=$("newTaskAnswer").value.trim();
- if(!text&&!pendingNewImage&&!file){setStatus("Вставь картинку из буфера или введи текст задания.","warn");return}
- const create=image=>{tasks.push({id:uid(),text,answer,image:image||"",photos:[],studentAnswer:"",checked:false,isCorrect:false});$("newTaskText").value="";$("newTaskImage").value="";$("newTaskAnswer").value="";showNewImage("");render();setStatus("Задание добавлено отдельной карточкой внизу.","ok")};
- if(pendingNewImage){create(pendingNewImage)}else if(file){readImage(file,create)}else create("");
-}
-function taskResult(t){
- const answer=String(t.studentAnswer||"").trim(), expected=String(t.answer||"").trim();
- if(answer){
-  if(expected && normalizeAnswer(answer)===normalizeAnswer(expected)) return {emoji:"✅",solved:true,correct:true,label:"Верно"};
-  return {emoji:"❌",solved:true,correct:false,label:expected?"Неверно":"Ответ введён, правильный ответ не задан"};
- }
- if(t.photos&&t.photos.length) return {emoji:"🤔",solved:true,correct:false,label:"Фото приложено, ответ не проверен"};
- return {emoji:"🤔",solved:false,correct:false,label:"Нет ответа и фото"};
-}
-function reportStats(){
- const results=tasks.map(taskResult), solved=results.filter(r=>r.solved).length, correct=results.filter(r=>r.solved&&r.correct).length;
- return {results,solved,correct,total:tasks.length};
-}
-function summary(){const name=$("student").value.trim()||"Не указано",dt=new Date().toLocaleString("ru-RU"),st=reportStats();return `ОТЧЁТ УЧИТЕЛЮ\nУченик: ${name}\nДата: ${dt}\nРешено: ${st.solved} из ${st.total} (введён ответ или приложено фото)\nВерно: ${st.correct} из ${st.solved} решённых\nПрикреплено фотографий: ${photoCount()}\n\n`+tasks.map((t,i)=>{const r=st.results[i];return `${r.emoji} Задание ${i+1}: ${t.text||"условие-картинка"}\nСтатус: ${r.label}\nОтвет: ${String(t.studentAnswer||"").trim()||"не введён"}\nФотографий: ${t.photos.length}`}).join("\n\n")}
-let cameraStream=null, cameraTaskId=null;
-function openCamera(taskId){
- cameraTaskId=taskId;
- // В локальном HTML на телефоне getUserMedia часто недоступен. В таком случае
- // используем системный захват изображения с камеры через input capture.
- if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.isSecureContext){
-  openNativeCamera(taskId); return;
- }
- const box=document.createElement("div");box.className="camera-box";box.id="cameraBox";
- box.innerHTML='<div class="camera-card"><h2>Камера</h2><video id="cameraVideo" autoplay playsinline></video><div class="camera-actions"><button class="primary" id="takePhoto">Сделать снимок</button><button class="danger" id="closeCamera">Закрыть</button></div><p class="muted">Если браузер спросит разрешение, разреши доступ к камере. Если камера не откроется, приложение предложит открыть камеру телефона.</p></div>';
- document.body.appendChild(box);
- $("closeCamera").addEventListener("click",closeCamera);
- $("takePhoto").addEventListener("click",capturePhoto);
- box.dataset.facing="environment";startCamera("environment",true);
-}
-function openNativeCamera(taskId){
- cameraTaskId=taskId;
- const input=document.createElement("input");
- input.type="file";input.accept="image/*";input.setAttribute("capture","environment");
- input.setAttribute("aria-label","Сфотографировать решение камерой");
- input.style.position="fixed";input.style.left="-10000px";document.body.appendChild(input);
- input.addEventListener("change",()=>{
-  const file=input.files&&input.files[0];
-  if(file){
-   if(!file.type.startsWith("image/")){setStatus("Камера не вернула изображение. Попробуй ещё раз.","warn");input.remove();return}
-   const reader=new FileReader();
-   reader.onload=()=>{const t=tasks.find(x=>x.id===taskId);if(t){const data=String(reader.result);t.photos.push({name:`Снимок ${t.photos.length+1}.jpg`,data,url:data});render();setStatus("Снимок с камеры добавлен к заданию. Можно сделать ещё фотографии.","ok")}input.remove()};
-   reader.onerror=()=>{setStatus("Не удалось прочитать снимок. Попробуй ещё раз.","warn");input.remove()};
-   reader.readAsDataURL(file);
-  } else {setStatus("Снимок не сделан. Нажми кнопку камеры и разреши доступ.","warn");input.remove()}
- });
- setStatus("Открываем камеру телефона… Если браузер спросит разрешение, разреши доступ к камере.");
- input.click();
-}
-async function startCamera(facing,allowFallback=false){
- try{
-  if(cameraStream)cameraStream.getTracks().forEach(t=>t.stop());
-  cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}},audio:false});
-  const video=$("cameraVideo");if(video){video.srcObject=cameraStream;await video.play().catch(()=>{})}
- }catch(e){
-  const fallbackTaskId=cameraTaskId;
-  closeCamera();
-  if(allowFallback){openNativeCamera(fallbackTaskId)}
-  else setStatus("Не удалось открыть камеру. Проверь разрешение камеры для браузера.","warn");
- }
-}
-function closeCamera(){if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null}const box=$("cameraBox");if(box)box.remove();cameraTaskId=null}
-function capturePhoto(){
- const video=$("cameraVideo");if(!video||!video.videoWidth){setStatus("Камера ещё не готова. Подожди секунду и попробуй снова.","warn");return}
- const canvas=document.createElement("canvas");const scale=Math.min(1,1600/video.videoWidth);canvas.width=Math.round(video.videoWidth*scale);canvas.height=Math.round(video.videoHeight*scale);
- canvas.getContext("2d").drawImage(video,0,0,canvas.width,canvas.height);
- const data=canvas.toDataURL("image/jpeg",0.86);const t=tasks.find(x=>x.id===cameraTaskId);
- if(t){t.photos.push({name:`Снимок ${t.photos.length+1}.jpg`,data,url:data});render();setStatus("Снимок добавлен к заданию. Можно сделать ещё фотографии.","ok")}
- closeCamera();
-}
-function setStatus(msg,kind=""){const el=$("status");el.textContent=msg;el.className="status "+kind}
-
-function summary(){
- const name=$("student").value.trim()||"Не указано";
- const title="Отчёт ученика";
- const dt=new Date().toLocaleString("ru-RU");
- return `ОТЧЁТ УЧИТЕЛЮ\n${title}\nУченик: ${name}\nДата: ${dt}\nЗаданий: ${tasks.length}\nПрикреплено фотографий: ${photoCount()}\n\n`+tasks.map((t,i)=>`Задание ${i+1}: ${t.text}\nФотографий: ${t.photos.length}`).join("\n\n");
-}
-function buildReport(){
- if(!tasks.length){setStatus("Сначала загрузи или добавь задания.","warn");return}
- if(!tasks.some(t=>t.photos.length) && !tasks.some(t=>String(t.studentAnswer||"").trim())){setStatus("Сначала введи ответы ученика или прикрепи фотографии решения.","warn");return}
- if(!confirm("Перед формированием отчёта сохрани текущую работу кнопкой «Сохранить работу в файл». Если ты уже сохранила актуальную версию, нажми ОК.")){setStatus("Сначала сохрани работу в файл, затем снова нажми «Сформировать и скачать отчёт».","warn");return}
- const name=$("student").value.trim()||"Не указано", title="Отчёт ученика", date=new Date().toLocaleString("ru-RU");
- // Решение — это введённый ответ ИЛИ хотя бы одно фото. Верность автоматически оценивается только по введённому ответу.
- const stats=reportStats();
- const includeCorrectAnswers=currentMode==="teacher";
- let html=`<h1>${esc(title)}</h1><p><b>Ученик:</b> ${esc(name)}<br><b>Дата:</b> ${esc(date)}<br><b>Решено:</b> ${stats.solved} из ${stats.total} (ответ или фото)<br><b>Верно:</b> ${stats.correct} из ${stats.solved} решённых<br><b>Фотографий:</b> ${photoCount()}</p>`;
- tasks.forEach((t,i)=>{
-   const result=stats.results[i];
-   html+=`<section class="report-task"><h2>${result.emoji} Задание ${i+1}</h2>`;
-   if(t.text) html+=`<p class="condition">${esc(t.text).replace(/\n/g,"<br>")}</p>`;
-   if(t.image) html+=`<p><b>Условие:</b></p><img class="report-photo" src="${t.image}" alt="Условие задания ${i+1}">`;
-   const enteredAnswer=String(t.studentAnswer||"").trim();
-   if(enteredAnswer && String(t.answer||"").trim()){
-     t.checked=true; t.isCorrect=normalizeAnswer(enteredAnswer)===normalizeAnswer(t.answer);
+   if(isCorrect){
+     $("feedback").textContent="✅ Верно! Следующий вопрос…";
+     $("feedback").className="feedback good";
+     hideInstantFeedback();
+     const answeredId=item.id;
+     autoAdvanceTimer=setTimeout(()=>{
+       autoAdvanceTimer=null;
+       if(mode==="test"&&!finishing&&idx===answeredIndex&&questions[idx]&&questions[idx].id===answeredId){
+         if(idx<questions.length-1){idx++;saveActiveTest();renderQuestion();}
+         else finishTest();
+       }
+     },650);
+   }else{
+     $("feedback").textContent="❌ Неверно. Ниже — объяснение, потом жми «Дальше».";
+     $("feedback").className="feedback bad";
+     showInstantFeedback(item, v);
    }
-   html+=`<p><b>Ответ ученика:</b> ${esc(enteredAnswer||"не введён")}<br><b>Статус:</b> ${result.emoji} ${esc(result.label)}</p>`;
-   if(includeCorrectAnswers) html+=`<p><b>Правильный ответ:</b> ${esc(t.answer||"не задан")}</p>`;
-   if(!t.photos.length) html+='<p>Фото решения не прикреплено.</p>';
-   t.photos.forEach((ph,j)=>{html+=`<p><b>Фото решения ${j+1}:</b></p><img class="report-photo" src="${ph.data||ph.url}" alt="Фото решения задания ${i+1}">`});
-   html+='</section>';
- });
- const full=`<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} — отчёт</title><script>window.MathJax={tex:{inlineMath:[['\\\\(','\\\\)'],['$','$']],displayMath:[['\\\\[','\\\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};<\/script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"><\/script><style>body{font:16px Arial,sans-serif;max-width:900px;margin:25px auto;padding:0 16px;color:#20284b;line-height:1.5}h1{font-size:26px}.report-task{padding:14px 0 20px;border-bottom:1px solid #ddd;break-inside:avoid}h2{font-size:20px;margin:0 0 8px}.condition{white-space:normal}img{display:block;max-width:100%;height:auto;object-fit:contain;margin:10px 0 18px;break-inside:avoid;page-break-inside:avoid}@media print{body{margin:0;max-width:none}.report-task{break-inside:avoid}}</style></head><body>${html}<script>window.addEventListener('load',async()=>{try{let tries=0;while(!window.MathJax?.typesetPromise&&tries++<60)await new Promise(r=>setTimeout(r,100));if(window.MathJax?.typesetPromise)await MathJax.typesetPromise([...document.querySelectorAll('.condition')]);await Promise.all([...document.images].map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.onload=resolve;img.onerror=resolve})));
-// Дайте браузеру завершить раскладку уже отрендеренных формул и фото перед печатью.
-await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));if(document.fonts?.ready)await document.fonts.ready;}catch(e){console.error('Не удалось отрисовать формулы:',e)}window.focus();setTimeout(()=>window.print(),150)});<\/script></body></html>`;
- const w=window.open("","_blank");
- if(!w){setStatus("Браузер заблокировал окно печати. Разреши всплывающие окна и повтори.","warn");return;}
- w.document.open();w.document.write(full);w.document.close();
- // Условия остаются текстом, формулы отрисованы MathJax прямо в HTML. Исходная работа остаётся открытой.
- setStatus("Открылось окно печати. Выбери «Сохранить как PDF». После сохранения вернись в эту вкладку — работа и все данные останутся на месте.","ok");
+   return;
+ }
+
+ /* ===== Работа над ошибками ===== */
+ const st=reviewState[item.id];if(!st||st.done)return;
+ reviewSeen++;
+ trackAnswer(item.id,v===item.b[3],"review");
+ if(v===item.b[3]){
+   st.correct=(st.correct||0)+1;
+   if(st.correct>=REVIEW_TARGET){
+     st.done=true;
+     reviewQueue=reviewQueue.filter(x=>x!==item.id);
+     correctedAfterReview.add(item.id);
+     if(testResult)testResult.correctedAfterReview=[...correctedAfterReview];
+     const topic=item.b[0];
+     pendingMistakes[topic]=(pendingMistakes[topic]||[]).filter(id=>Number(id)!==item.id);savePending();
+     const ps=persistentStats[item.id]||(persistentStats[item.id]={seen:0,wrong:0,correct:0,mastered:false,correctInTest:false});
+     ps.mastered=true;saveStats();
+     $("feedback").textContent=`🎉 Готово! Ты набрал ${REVIEW_TARGET} верных ответа — вопрос закреплён и убран из работы над ошибками.`;
+     $("feedback").className="feedback good";
+     hideInstantFeedback();
+     renderStreakBox(item.id);
+     idx++;setTimeout(()=>nextReviewItem(),600);
+     return;
+   }
+   $("feedback").textContent=`✅ Верно! Теперь у тебя ${st.correct} из ${REVIEW_TARGET} верных ответов на этот вопрос.`;
+   $("feedback").className="feedback good";
+   hideInstantFeedback();
+   renderStreakBox(item.id);
+ }else{
+   $("feedback").textContent=`❌ Неверно. Ниже — объяснение. Счётчик верных ответов по этому вопросу: ${st.correct||0}/${REVIEW_TARGET}.`;
+   $("feedback").className="feedback bad";
+   showInstantFeedback(item, v);
+   renderStreakBox(item.id);
+ }
+ try{localStorage.setItem(REVIEW_KEY,JSON.stringify({topic:selectedTopic,queue:reviewQueue,state:reviewState,seen:reviewSeen,idx}))}catch(e){}
+ // В работе над ошибками после каждого ответа уходим к следующему случайному вопросу.
+ if(!st.done){
+   idx++;setTimeout(()=>nextReviewItem(),v===item.b[3]?450:0);
+ }
 }
 
-function saveWork(){
- const payload={format:"equations-notebook-work-v1",savedAt:new Date().toISOString(),student:$("student").value,tasks:tasks.map(t=>({id:t.id,text:t.text,answer:t.answer,image:t.image,studentAnswer:t.studentAnswer||"",checked:!!t.checked,isCorrect:!!t.isCorrect,photos:t.photos.map(ph=>({name:ph.name,data:ph.data||ph.url}))}))};
- const blob=new Blob([JSON.stringify(payload)],{type:"application/json;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="работа_с_заданиями_и_фото.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);setStatus("Работа сохранена в файл. На телефоне ищи его в папке «Загрузки».","ok");
+function finishTest(){
+ if(mode!=="test")return;finishing=true;
+ hideInstantFeedback();
+ const total=questions.length;
+ const actualAnswers=answers.filter(a=>a&&Number.isInteger(a.id)&&BANK[a.id]);
+ const answeredIds=new Set(actualAnswers.map(a=>a.id));
+ const wrongIds=actualAnswers.filter(a=>!a.correct).map(a=>a.id);
+ const unansweredIds=questions.filter(q=>!answeredIds.has(q.id)).map(q=>q.id);
+ wrongOriginal=[...new Set([...wrongIds,...unansweredIds])];
+ const correct=actualAnswers.filter(a=>a.correct).length,answered=actualAnswers.length,unanswered=unansweredIds.length;
+ actualAnswers.forEach(a=>{if(!a.tracked){trackAnswer(a.id,a.correct,"test");a.tracked=true;}});
+ unansweredIds.forEach(id=>{const b=BANK[id];if(b)mistakeHistory[id]={id,topic:b[0],number:b[1],text:b[2],everWrong:true,unanswered:true};});
+ if(unansweredIds.length)saveMistakeHistory();
+ testResult={topic:selectedTopic,total,answers:actualAnswers.slice(),wrongIds:wrongIds.slice(),unansweredIds:unansweredIds.slice(),questionIds:questions.map(q=>q.id),correctedAfterReview:[...correctedAfterReview]};
+ reportSession=reportSession||{topic:selectedTopic,studentName:studentName(),rounds:[]};
+ reportSession.topic=selectedTopic;reportSession.studentName=studentName();reportSession.original={topic:selectedTopic,questionIds:questions.map(q=>q.id),answers:questions.map((q,i)=>answers[i]||null),total,wrongIds:wrongIds.slice(),unansweredIds:unansweredIds.slice(),completedAt:new Date().toISOString()};reportSession.rounds=Array.isArray(reportSession.rounds)?reportSession.rounds:[];saveReportSession();
+ const previous=(pendingMistakes[selectedTopic]||[]).map(Number).filter(id=>!questions.some(q=>q.id===id));
+ pendingMistakes[selectedTopic]=[...new Set([...previous,...wrongOriginal])];savePending();
+ const pct=total?Math.round(correct/total*100):0;
+ $("resultTitle").textContent=answered===0?"Тест завершён без ответов":(unanswered>0?"Тест завершён досрочно":(pct===100?"Отлично! Все ответы верны!":"Результат теста"));
+ $("stats").innerHTML=`<div class="stat"><span>🟢 Верно с первой попытки</span><b>${correct} из ${total}</b></div><div class="stat"><span>🔴 Неверно с первой попытки</span><b>${wrongIds.length}</b></div><div class="stat"><span>🤔 Без ответа</span><b>${unanswered}</b></div><div class="stat"><span>📊 Общий результат</span><b>${correct} из ${total} · ${pct}%</b></div>`;
+ $("theoryBlocks").innerHTML=(wrongIds.length?wrongIds.map(id=>theoryBlock(BANK[id])).join(""):"<div class='stat'><b>Ошибочных ответов нет.</b></div>")+(unanswered?`<div class="stat"><b>🤔 Без ответа (${unanswered})</b><ul>${unansweredIds.map(id=>`<li>№${BANK[id][1]} — ${esc(BANK[id][2])}</li>`).join("")}</ul></div>`:"");
+ $("resultMood").textContent=(pct===100&&unanswered===0)?"😊":"🧩";
+ $("resultMoodText").textContent=(pct===100&&unanswered===0)?"Отлично! Все утверждения решены верно.":"Ошибки и пропуски сохранены для повторения.";
+ $("report").value=buildCumulativeReport();
+ $("mistakes").disabled=wrongOriginal.length===0;$("mistakes").textContent=wrongOriginal.length?"🧩 Работа над ошибками ("+wrongOriginal.length+")":"Нет заданий для повторения";
+ try{localStorage.removeItem(TEST_KEY);localStorage.removeItem(REVIEW_KEY)}catch(e){}
+ updateResumeButton();renderSavedStats();renderTopicTiles();show("result");if(total>0&&answered===total&&pct===100)celebrate();
 }
-function loadWorkFile(file){if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(String(reader.result));if(data.format!=="equations-notebook-work-v1"||!Array.isArray(data.tasks))throw new Error("wrong format");tasks=data.tasks.map(t=>({id:t.id||uid(),text:String(t.text||""),answer:String(t.answer||""),studentAnswer:String(t.studentAnswer||""),checked:!!t.checked,isCorrect:!!t.isCorrect,image:String(t.image||""),photos:Array.isArray(t.photos)?t.photos.map(ph=>({name:ph.name||"Снимок.jpg",data:ph.data||ph.url||"",url:ph.data||ph.url||""})).filter(ph=>ph.data):[]}));$("student").value=data.student||"";render();updateHomeworkList();setMode("group");setStatus("Работа загружена из файла. Для редактирования заданий перейди в режим учителя и введи пароль.","ok")}catch(e){alert("Не удалось открыть файл работы. Выбери JSON-файл, сохранённый этим приложением.")}};reader.readAsText(file)}
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){const opened=document.querySelector(".task.expanded");if(opened){opened.classList.remove("expanded");e.preventDefault();}}});
-$("prepareFavoritesStudents").addEventListener("click",prepareFavoritesStudents);
-$("createPersonalHomework").addEventListener("click",createPersonalHomework);
-$("reloadProgress")?.addEventListener("click",loadRemoteProgress);
-$("saveAnswerPassword").addEventListener("click",()=>{
- if(currentMode!=="teacher"){alert("Задать пароль можно только в режиме учителя.");return;}
- const value=$("answerPasswordSetting").value;
- if(!value.trim()){alert("Введи непустой пароль.");return;}
- ANSWER_PASSWORD=value;
- try{localStorage.setItem("answerPasswordForSession",value);}catch(e){try{sessionStorage.setItem("answerPasswordForSession",value);}catch(_){}}
- $("answerPasswordSetting").value="";
- $("answerPasswordSettingStatus").textContent="Пароль сохранён в этом браузере. Именно это значение будет проверяться у учеников; передай его нужным ученикам отдельно.";
- setStatus("Пароль для просмотра ответов задан.","ok");
-});
-$("unlockAnswers").addEventListener("click",()=>{if(answersUnlocked){setStatus("Доступ к ответам уже открыт до закрытия страницы.","ok");return;}if(!ANSWER_PASSWORD){alert("Учитель ещё не задал пароль для просмотра ответов.");return;}const p=prompt("Введи пароль для просмотра правильных ответов:");if(p===null)return;if(p===ANSWER_PASSWORD){answersUnlocked=true;$("answerAccessStatus").textContent="Ответы доступны до закрытия страницы";$("unlockAnswers").textContent="🔓 Доступ к ответам открыт";$("tasks").querySelectorAll("[data-show-answer]").forEach(b=>b.disabled=false);setStatus("Доступ к ответам открыт до закрытия страницы. Нажимай «Показать правильный ответ» у нужного задания.","ok");}else alert("Неверный пароль.");});
-$("personalStudentSelect").addEventListener("change",()=>{ /* Имя в отчёте не подменяем реальным именем из progress.json. */ if(!$("student").value.trim()) $("student").value="ИВАН ИВАНОВИЧ ИВАНОВ"; });
-$("personalAllOnly").addEventListener("change",()=>{if($("personalAllOnly").checked){$("personalFavoritesOnly").checked=false;$("personalSolvedOnly").checked=false;}});
-["personalFavoritesOnly","personalSolvedOnly"].forEach(id=>$(id).addEventListener("change",()=>{if($(id).checked)$("personalAllOnly").checked=false;}));
-$("personalSubjectSelect").addEventListener("change",refreshPersonalFileList);
-$("personalBuildMode").addEventListener("change",()=>{$("personalFileField").hidden=$("personalBuildMode").value!=="one";});
-$("personalFileField").hidden=false;
-$("createFavoritesHomework").addEventListener("click",createFavoritesHomework);
-$("refreshHomeworkList").addEventListener("click",updateHomeworkList);$("loadHomework").addEventListener("click",loadHomework);
-$("saveWork").addEventListener("click",saveWork);
-$("loadWorkFile").addEventListener("change",e=>{loadWorkFile(e.target.files&&e.target.files[0]);e.target.value=""});
-$("teacherMode").addEventListener("click",()=>setMode("teacher"));
-$("studentMode").addEventListener("click",()=>setMode("group"));
-$("personalMode").addEventListener("click",()=>setMode("personal"));
-$("newImagePasteZone").addEventListener("click",()=>{$("newImagePasteZone").focus();setStatus("Теперь вставь картинку из буфера обмена сочетанием Ctrl+V.")});
-$("clearNewTask").addEventListener("click",()=>{$("newTaskText").value="";$("newTaskImage").value="";$("newTaskAnswer").value="";showNewImage("")});
-$("addTask").addEventListener("click",addTask);
-$("buildReport").addEventListener("click",buildReport);
-$("clearAll").addEventListener("click",()=>{if(!confirm("Очистить задания и фотографии в текущей работе? Это нельзя отменить."))return;tasks=[];render();setStatus("Текущая работа очищена.")});
-updateHomeworkList();loadRemoteProgress();
-refreshPersonalFileList();startSaveReminder();$("teacherPanel").hidden=true;$("homeworkLibraryPanel").hidden=false;document.querySelectorAll(".teacher-only").forEach(e=>e.hidden=true);render();setMode("personal");
-window.addEventListener("load",()=>renderEquationsAsImages(document.getElementById("tasks")));
+function makeTeacherReport(){return buildCumulativeReport();}
+function buildCumulativeReport(){
+ const sess=reportSession;
+ if(!sess||!sess.original)return `Ученик: ${sess&&sess.studentName?sess.studentName:studentName()}\n\nОтчёт появится после завершения основного теста.`;
+ const orig=sess.original;
+ const ans=Array.isArray(orig.answers)?orig.answers:[];
+ const needs=[...new Set([
+   ...(Array.isArray(orig.wrongIds)?orig.wrongIds:[]),
+   ...(Array.isArray(orig.unansweredIds)?orig.unansweredIds:[])
+ ].map(Number).filter(id=>Number.isInteger(id)&&BANK[id]))];
+ const worked=new Set();
+ (Array.isArray(sess.rounds)?sess.rounds:[]).forEach(round=>{
+   (Array.isArray(round.results)?round.results:[]).forEach(result=>{
+     if(result&&result.done)worked.add(Number(result.id));
+   });
+ });
+ const out=[
+   `Ученик: ${sess.studentName||studentName()}`,
+   '',
+   `Заданий, не решённых с первой попытки: ${needs.length}`,
+   ''
+ ];
+ if(!needs.length){
+   out.push('✅ Все задания решены верно с первой попытки.');
+ }else{
+   needs.forEach((id,index)=>{
+     const b=BANK[id];
+     if(!b)return;
+     out.push(`${index+1}. ${b[0]} · №${b[1]}`);
+     out.push(b[2]);
+     out.push(`Статус: ${worked.has(id)?'✅ Отработано':'❗ Не отработано'}`);
+     out.push('');
+   });
+ }
+ return out.join('\n').trim();
+}
+function saveReportAfterReview(){const combined=buildCumulativeReport();$("report").value=combined;$("reviewReport").value=combined;saveReportSession();}
+
+function theoryText(b){
+ const exact=EXPLANATIONS[`${b[0]}|${b[1]}`];
+ if(exact)return exact;
+ return "Разбор для этого утверждения пока не написан, но правильный ответ указан выше.";
+}
+function theoryBlock(b){
+ const explanation=theoryText(b);
+ return `<article class="theory">
+   <span class="tag">${esc(b[0])} · утверждение №${b[1]}</span>
+   <div class="statement-card">${esc(b[2])}</div>
+   <div class="answer-line"><b>Правильный ответ:</b> <span class="answer-badge ${b[3]?"yes":"no"}">${b[3]?"Да":"Нет"}</span></div>
+   <div class="comment-title">Объяснение по-простому</div>
+   <div class="comment">${esc(explanation).replace(/\n/g,"<br>")}</div>
+ </article>`;
+}
+
+/* ===== Работа над ошибками: случайное чередование и счёт верных ответов ===== */
+function startReview(idsToReview=null){
+ const ids=Array.isArray(idsToReview)?idsToReview.slice():wrongOriginal.slice();
+ const unique=[...new Set(ids.map(Number).filter(id=>Number.isInteger(id)&&BANK[id]))];
+ if(!unique.length){$("setupMessage").textContent="Пока нет заданий для работы над ошибками. Сначала пройди тест.";show("setup");return;}
+ finishing=false;if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null;}hideInstantFeedback();
+ mode="review";reviewState={};unique.forEach(id=>reviewState[id]={correct:0,done:false});reviewQueue=shuffle(unique.slice());reviewSeen=0;reviewRoundQuestionIds=unique.slice();
+ questions=unique.map(id=>({b:BANK[id],id}));idx=0;show("quiz");$("modeLabel").textContent=`Работа над ошибками · нужно ${REVIEW_TARGET} верных ответа на вопрос`;
+ // Случайный порядок: сразу показываем первый из перемешанной очереди.
+ const firstId=reviewQueue[0];
+ const qIndex=questions.findIndex(q=>q.id===firstId);
+ idx=qIndex>=0?qIndex:0;
+ nextReviewItem(true);
+}
+
+function startReviewFromMenu(){const ids=aggregatePending();if(!ids.length){$("setupMessage").textContent="Пока нет заданий для работы над ошибками. Сначала пройди тест.";$("setupMessage").className="feedback";return;}wrongOriginal=ids.slice();startReview(ids);}
+
+/* Рендер следующего вопроса из случайно перемешанной очереди */
+function nextReviewItem(forceRender=false){
+ if(!reviewQueue.length){finishReview();return;}
+ // Перемешиваем очередь каждый раз, чтобы вопрос не повторялся подряд.
+ const shuffled=shuffle(reviewQueue.slice());
+ reviewQueue=shuffled;
+ const nextId=reviewQueue[0];
+ // Находим индекс этого вопроса в массиве questions (для отображения)
+ let qIndex=questions.findIndex(q=>q.id===nextId);
+ if(qIndex<0)qIndex=0;
+ idx=qIndex;
+ if(forceRender||true){
+   renderQuestion();
+   const st=reviewState[nextId];
+   if(st){
+     $("subhint").textContent=`Нужно набрать ${REVIEW_TARGET} верных ответа. Можно не подряд — считаем сумму верных.`;
+     $("counter").textContent=`Осталось утверждений: ${reviewQueue.length} · ответов в работе: ${reviewSeen}`;
+   }
+ }
+ // Прогресс: доля вопросов, уже закрытых по 3 верным ответам
+ const totalQ=Object.keys(reviewState).length||1;
+ const doneQ=Object.values(reviewState).filter(s=>s.done).length;
+ $("bar").style.width=(doneQ/totalQ*100)+"%";
+}
+
+function finishReview(){
+ mode="reviewDone";hideInstantFeedback();
+ const vals=Object.values(reviewState),done=vals.filter(st=>st.done).length;
+ $("reviewStats").innerHTML=`<div class="stat"><span>✅ Закреплено</span><b>${done}</b></div><div class="stat"><span>✍️ Ответов дано</span><b>${reviewSeen}</b></div><div class="stat"><span>📚 Утверждений</span><b>${vals.length}</b></div>`;
+ if(reportSession&&reportSession.original){
+   const ids=reviewRoundQuestionIds.length?reviewRoundQuestionIds:Object.keys(reviewState).map(Number);
+   const round={questionIds:ids.slice(),seen:reviewSeen,completedAt:new Date().toISOString(),results:ids.map(id=>({id:Number(id),done:!!(reviewState[id]&&reviewState[id].done),correct:(reviewState[id]&&reviewState[id].correct)||0}))};
+   if(!Array.isArray(reportSession.rounds))reportSession.rounds=[];
+   reportSession.rounds.push(round);saveReportSession();
+ }
+ savePending();saveReportAfterReview();show("reviewDone");renderTopicTiles();updateResumeButton();celebrate();
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function copy(id,feedbackId){const el=$(id);el.select();el.setSelectionRange(0,el.value.length);let ok=false;try{ok=document.execCommand("copy")}catch(e){};$(feedbackId).textContent=ok?"Скопировано! Теперь вставь текст в Telegram.":"Не удалось скопировать автоматически — выдели текст вручную.";$(feedbackId).className="feedback "+(ok?"good":"bad")}
+function celebrate(){
+ try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const ctx=new C();const now=ctx.currentTime;
+ for(let i=0;i<18;i++){const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.value=900+Math.random()*1500;g.gain.setValueAtTime(.0001,now+i*.045);g.gain.exponentialRampToValueAtTime(.045,now+i*.045+.01);g.gain.exponentialRampToValueAtTime(.0001,now+i*.045+.18);o.connect(g);g.connect(ctx.destination);o.start(now+i*.045);o.stop(now+i*.045+.2)}
+ setTimeout(()=>ctx.close(),1500)}catch(e){}
+}
+try{selectedTopic=localStorage.getItem("geometryQuizSelectedTopicV1")||"Прямые и углы"}catch(e){};
+if(!TOPICS.includes(selectedTopic))selectedTopic=TOPICS[0];
+let clearedFalseMastery=false;
+Object.values(pendingMistakes||{}).forEach(list=>{if(Array.isArray(list))list.forEach(id=>{const st=persistentStats[Number(id)];if(st&&st.mastered){st.mastered=false;clearedFalseMastery=true;}})});
+if(clearedFalseMastery){try{localStorage.setItem(STATS_KEY,JSON.stringify(persistentStats))}catch(e){}}
+renderSavedStats();renderTopicTiles();updateResumeButton();
+$("start").type="button";$("resumeTest").type="button";$("workMistakes").type="button";$("resetProgress").type="button";
+$("start").onclick=startTest;
+$("resumeTest").onclick=resumeTest;
+$("workMistakes").onclick=startReviewFromMenu;
+$("backToMenu").onclick=()=>{if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null;}hideInstantFeedback();if(mode==="test"&&!finishing)saveActiveTest();show("setup");};
+$("resetProgress").onclick=()=>{
+ if(!confirm("Удалить весь прогресс, историю ответов, сохранённый тест и работу над ошибками на этом устройстве?"))return;
+ try{localStorage.removeItem(STATS_KEY);localStorage.removeItem(MASTERY_KEY);localStorage.removeItem(PENDING_KEY);localStorage.removeItem(HISTORY_KEY);localStorage.removeItem(TEST_KEY);localStorage.removeItem(REVIEW_KEY);localStorage.removeItem(REPORT_SESSION_KEY)}catch(e){}
+ reportSession=null;persistentStats={};pendingMistakes={};mistakeHistory={};answers=[];wrongOriginal=[];testResult=null;correctedAfterReview=new Set();renderSavedStats();renderTopicTiles();updateResumeButton();$("setupMessage").textContent="Прогресс сброшен.";$("setupMessage").className="feedback good";
+};
+$("yes").type="button";$("no").type="button";$("quit").type="button";
+$("yes").addEventListener("click",ev=>{ev.preventDefault();try{answer(true)}catch(err){console.error("Ошибка ответа:",err);$("feedback").textContent="Ошибка обработки ответа: "+(err&&err.message?err.message:"неизвестная ошибка");$("feedback").className="feedback bad"}});
+$("no").addEventListener("click",ev=>{ev.preventDefault();try{answer(false)}catch(err){console.error("Ошибка ответа:",err);$("feedback").textContent="Ошибка обработки ответа: "+(err&&err.message?err.message:"неизвестная ошибка");$("feedback").className="feedback bad"}});
+$("quit").onclick=()=>{if(mode==="test")finishTest();else if(mode==="review")finishReview()};
+$("mistakes").onclick=()=>startReview(wrongOriginal);$("again").onclick=()=>{show("setup");renderTopicTiles();};
+$("copyReport").onclick=()=>copy("report","copyFeedback");$("copyReview").onclick=()=>copy("reviewReport","reviewCopyFeedback");
+$("repeatReview").onclick=()=>startReview(aggregatePending().length?aggregatePending():wrongOriginal);$("toTest").onclick=()=>show("result");
+updateStudentBadge();showNameGate();
 </script>
-</body>
-</html>
+</body></html>
