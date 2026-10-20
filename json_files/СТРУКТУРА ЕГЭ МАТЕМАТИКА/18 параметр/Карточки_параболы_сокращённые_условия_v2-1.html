@@ -23,10 +23,10 @@
 <div class="split"><div class="field"><label for="signB">Знак b</label><select id="signB"><option value="+" selected>b &gt; 0</option><option value="-">b &lt; 0</option><option value="0">b = 0</option><option value="all">Все знаки</option></select></div><div class="field"><label for="signC">Знак c</label><select id="signC"><option value="+" selected>c &gt; 0</option><option value="-">c &lt; 0</option><option value="0">c = 0</option><option value="all">Все знаки</option></select></div></div>
 <div class="btnrow"><button class="btn primary" id="generateBtn">Показать варианты</button><button class="btn" id="resetBtn">Сбросить</button></div>
 <div class="btnrow"><button class="btn" id="toggleConditions">Скрыть условия</button></div>
-<div class="hint"><b>Важно.</b> На карточках только буквенная функция и схематичный график. Красная штриховка показывает область вне промежутка; синие точки показывают корни. Условия на концах используются в первую очередь; D и вершина добавляются только когда одних знаков на концах недостаточно.</div>
+<div class="hint"><b>Условия.</b> Знаки коэффициентов указаны над графиком. Ниже оставлены только ограничения, необходимые для данного расположения.</div>
 <div class="noteend">«Один набор знаков» показывает все разные расположения для одного выбранного набора знаков a, b, c. «Все сочетания» — отдельный режим: каждая комбинация выводится собственной группой. Вершина на Ox (D = 0) включена отдельно; при a = 0 рассматривается прямая.</div>
 </aside>
-<section class="results"><div class="resultbar"><h2 id="resultTitle">Все схемы для 1 корня</h2><div class="count" id="resultCount">— карточек</div></div><div class="cards" id="cards"></div><div class="footer-note">Обозначения концов промежутка: k₁ — левый, k₂ — правый; для лучей используется k. Знаки на концах — основные условия; вершина и D указаны только в неоднозначных случаях. Корни относительно границ отдельно не перечисляются.</div></section></div></div>
+<section class="results"><div class="resultbar"><h2 id="resultTitle">Все схемы для 1 корня</h2><div class="count" id="resultCount">— карточек</div></div><div class="cards" id="cards"></div><div class="footer-note">k₁ — левый конец, k₂ — правый конец промежутка.</div></section></div></div>
 <script>
 (()=>{
 const $=id=>document.getElementById(id);
@@ -157,22 +157,35 @@ function conditionLines(card){
   if(d.finiteL) endpointSigns.push(fSignAt(d.L+(m.shift||0),card));
   if(d.finiteR) endpointSigns.push(fSignAt(d.R+(m.shift||0),card));
   const endpointsDecisive=d.finiteL&&d.finiteR&&endpointSigns[0]!=='0'&&endpointSigns[1]!=='0'&&endpointSigns[0]!==endpointSigns[1];
+  // Координаты промежутков заданы так, что одна из конечных границ равна 0.
+  // Поэтому f(0)=c заменяет отдельное условие на этой границе. Знаки a,b
+  // также определяют сторону нуля, на которой находится вершина x₀=-b/(2a).
+  const leftAtZero=d.finiteL&&Math.abs(d.L)<1e-8;
+  const rightAtZero=d.finiteR&&Math.abs(d.R)<1e-8;
+  const zeroEndpoint=leftAtZero||rightAtZero;
+  const cKnown=m.cVal&&m.cVal!=='?'&&m.cVal!=='all';
   if(!endpointsDecisive){
    if(v.kind==='none'){
-    lines.push('D < 0');
-    lines.push(condSign('f(x₀)',m.A));
+    // При c≠0 знак c задаёт сторону графика в x=0; D нужно лишь
+    // когда это не следует из уже известных условий на концах.
+    lines.push('D < 0');lines.push(condSign('f(x₀)',m.A));
    }else if(v.kind==='tangent'){
-    lines.push('D = 0');
-    lines.push('f(x₀) = 0 — касание оси Ox');
+    lines.push('f(x₀) = 0');
    }else{
+    const vertexSideKnown=(m.bVal==='0')||(m.A==='+'&&m.bVal==='-')||(m.A==='-'&&m.bVal==='+')||(m.A==='+'&&m.bVal==='+')||(m.A==='-'&&m.bVal==='-');
+    // Не повторяем положение вершины, если его сторона относительно 0 уже
+    // следует из знаков a и b, а 0 является границей промежутка.
     lines.push('D > 0');
-    lines.push(vertexPosition(vertexX(card),graphDomain(card)));
+    if(!(zeroEndpoint&&!(d.finiteL&&d.finiteR)&&vertexSideKnown))lines.push(vertexPosition(vertexX(card),graphDomain(card)));
     lines.push(condSign('f(x₀)',m.A==='+'?'-':'+'));
    }
   }
-  if(d.finiteL&&d.finiteR){lines.push(signCondition('f(k₁)',d.L+(m.shift||0)));lines.push(signCondition('f(k₂)',d.R+(m.shift||0)));}
-  else if(d.finiteL)lines.push(signCondition('f(k)',d.L+(m.shift||0)));
-  else if(d.finiteR)lines.push(signCondition('f(k)',d.R+(m.shift||0)));
+  if(d.finiteL&&d.finiteR){
+   if(!leftAtZero)lines.push(signCondition('f(k₁)',d.L+(m.shift||0)));
+   if(!rightAtZero)lines.push(signCondition('f(k₂)',d.R+(m.shift||0)));
+  }else if(d.finiteL){if(!leftAtZero)lines.push(signCondition('f(k)',d.L+(m.shift||0)));}
+  else if(d.finiteR){if(!rightAtZero)lines.push(signCondition('f(k)',d.R+(m.shift||0)));}
+  if(zeroEndpoint&&cKnown)lines.push(condSign('c',m.cVal));
  }
  return lines;
 }
@@ -240,7 +253,7 @@ function cardHTML(c,i,groupId){
  const cond=conditionLines(c).map(x=>`<div>${escapeHTML(x)}</div>`).join('');
  const countLabel=c.n==='0'?'0 корней':c.n==='1'?'1 корень':'2 корня';
  const pattern=c.mode==='line'?'ЛИНЕЙНАЯ ФУНКЦИЯ':c.variant.kind==='none'?'D < 0':c.variant.kind==='tangent'?'D = 0 · КАСАНИЕ':'D > 0';
- return `<article class="card"><div class="cardhead"><div class="cardtitle">Случай ${i+1} · ${countLabel} · ${escapeHTML(c.d.label)}</div><span class="badge">${pattern}</span></div><div class="signs">${signs}</div><div class="chart">${graphSVG(c,`${groupId}_${i}`)}</div><div class="condition"><h4>Условия этого расположения</h4><div class="system"><div class="brace">{</div><div class="conds">${cond}</div></div><div class="reason">Знаки a, b и c указаны над графиком. Условия сокращены: если знаки на концах противоположны, они уже гарантируют один переход через Ox. D и вершина добавляются только при необходимости. Корни относительно границ отдельно не перечисляются.</div></div></article>`;
+ return `<article class="card"><div class="cardhead"><div class="cardtitle">Случай ${i+1} · ${countLabel} · ${escapeHTML(c.d.label)}</div><span class="badge">${pattern}</span></div><div class="signs">${signs}</div><div class="chart">${graphSVG(c,`${groupId}_${i}`)}</div><div class="condition"><h4>Условия этого расположения</h4><div class="system"><div class="brace">{</div><div class="conds">${cond}</div></div></div></article>`;
 }
 function escapeHTML(s){return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');}
 function generate(){
