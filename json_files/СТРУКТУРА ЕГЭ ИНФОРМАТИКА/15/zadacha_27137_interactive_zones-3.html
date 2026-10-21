@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Задача 27137 — интерактивные зоны</title>
+<style>
+  :root { color-scheme: dark; --bg:#0b0d10; --panel:#15191f; --line:#303843; --text:#eef2f7; --muted:#aab4c0; --accent:#ff4b4b; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 Calibri, Arial, sans-serif; }
+  main { max-width:1180px; margin:0 auto; padding:24px; }
+  h1 { margin:0 0 16px; font-size:25px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; margin:14px 0; }
+  .formula { font-size:20px; font-weight:700; overflow-wrap:anywhere; }
+  .note { color:var(--muted); font-size:14px; }
+  .controls { display:grid; grid-template-columns:minmax(250px,1fr) auto; gap:18px; align-items:center; }
+  input[type=range] { width:100%; accent-color:var(--accent); }
+  input[type=number] { width:130px; background:#0d1117; color:var(--text); border:1px solid #46515f; padding:9px; border-radius:8px; font-size:16px; }
+  .legend { display:flex; flex-wrap:wrap; gap:10px 18px; margin-top:12px; }
+  .legend span { display:inline-flex; align-items:center; gap:7px; color:#dbe2eb; font-size:14px; }
+  .swatch { width:13px; height:13px; border-radius:3px; display:inline-block; }
+  canvas { width:100%; height:600px; display:block; background:#0d1117; border:1px solid #303843; border-radius:10px; touch-action:pan-y; }
+  .actions { display:flex; flex-wrap:wrap; gap:8px; }
+  button { cursor:pointer; color:var(--text); background:#222a34; border:1px solid #46515f; border-radius:8px; padding:9px 13px; font-size:14px; }
+  button:hover { background:#303b49; }
+  .status { font-weight:700; }
+  @media(max-width:700px) { main{padding:12px} .controls{grid-template-columns:1fr} canvas{height:460px} .formula{font-size:17px} }
+</style>
+</head>
+<body>
+<main>
+  <h1>Задача № 27137 — зоны неравенств и ползунок A</h1>
+  <section class="card">
+    <div>Для какого наименьшего целого неотрицательного числа <b>A</b> выражение истинно при любых целых положительных <b>x, y</b>?</div>
+    <p class="formula">(1241651 ≠ 5x + y) ∧ (413184 ≠ x + 2y) ∨ (A &gt; x) ∨ (A &gt; y)</p>
+    <div class="note">На плоскости показаны отдельные зоны каждого условия. Цвета накладываются полупрозрачно, поэтому видно и каждую зону, и их пересечения. График — схема для анализа областей; проверка ответа остаётся точной алгебраической задачей.</div>
+  </section>
+  <section class="card">
+    <div class="controls">
+      <div>
+        <label for="aRange"><b>Значение A:</b> <span id="aReadout" class="status">206942</span></label>
+        <input id="aRange" type="range" min="0" max="1300000" step="1" value="0">
+        <div class="note">Шаг 1. Диапазон A: от 0 до верхней границы осей (1 300 000). Начальное значение не подсказывает ответ.</div>
+      </div>
+      <div>
+        <label for="aNumber">Ввести A</label><br>
+        <input id="aNumber" type="number" min="0" max="1300000" step="1" value="0">
+      </div>
+    </div>
+    <div class="actions" style="margin-top:14px">
+      <button id="fitBtn">Показать весь диапазон</button>
+      <button id="zoomBtn">Приблизить критическую область</button>
+      <button id="resetBtn">Сбросить A к 0</button>
+    </div>
+    <label style="display:inline-flex;align-items:center;gap:8px;margin-top:14px"><input id="showYX" type="checkbox"> <b>Показать прямую y = x</b></label>\n    <div class="legend">
+      <span><i class="swatch" style="background:#3a86ff"></i> x &lt; A</span>
+      <span><i class="swatch" style="background:#ffbe0b"></i> y &lt; A</span>
+      <span><i class="swatch" style="background:#ff4b4b"></i> 5x + y &lt; 1241651</span>
+      <span><i class="swatch" style="background:#06d6a0"></i> 5x + y &gt; 1241651</span>
+      <span><i class="swatch" style="background:#b388ff"></i> x + 2y &lt; 413184</span>
+      <span><i class="swatch" style="background:#f15bb5"></i> x + 2y &gt; 413184</span>
+      <span><i class="swatch" style="background:#eef2f7"></i> равенство (исключённая граница)</span>
+    </div>
+  </section>
+  <section class="card">
+    <canvas id="plot" aria-label="Интерактивный график областей"></canvas>
+    <p id="viewInfo" class="note">Диапазон осей: положительные x и y; автоматический масштаб.</p>
+  </section>
+</main>
+<script>
+(() => {
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+  const range = document.getElementById('aRange');
+  const number = document.getElementById('aNumber');
+  const readout = document.getElementById('aReadout');
+  const viewInfo = document.getElementById('viewInfo');
+  const showYX = document.getElementById('showYX');
+  const MAX_A = 1300000;
+  let view = { xmin: 0, xmax: 1300000, ymin: 0, ymax: 1300000 };
+  let drawPending = false;
+
+  function requestDraw() {
+    if (drawPending) return;
+    drawPending = true;
+    requestAnimationFrame(() => { drawPending = false; draw(); });
+  }
+  function setA(value) {
+    let a = Number(value);
+    if (!Number.isFinite(a)) a = 0;
+    a = Math.max(0, Math.min(MAX_A, Math.round(a)));
+    range.value = String(a);
+    number.value = String(a);
+    readout.textContent = a.toLocaleString('ru-RU');
+    requestDraw();
+  }
+  function niceStep(v) {
+    const p = Math.pow(10, Math.floor(Math.log10(Math.max(1, v))));
+    const n = v / p;
+    return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p;
+  }
+  function fmt(v) {
+    return Math.round(v).toLocaleString('ru-RU');
+  }
+  function draw() {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width < 20 || rect.height < 20) return;
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const bw = Math.round(rect.width * dpr), bh = Math.round(rect.height * dpr);
+    if (canvas.width !== bw || canvas.height !== bh) {
+      canvas.width = bw; canvas.height = bh;
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const W = rect.width, H = rect.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
+    const p = { l: 76, r: 24, t: 28, b: 58 };
+    p.w = W - p.l - p.r; p.h = H - p.t - p.b;
+    if (p.w <= 0 || p.h <= 0) return;
+    const X = x => p.l + (x - view.xmin) / (view.xmax - view.xmin) * p.w;
+    const Y = y => p.t + p.h - (y - view.ymin) / (view.ymax - view.ymin) * p.h;
+    const A = Number(range.value);
+    const xspan = view.xmax - view.xmin, yspan = view.ymax - view.ymin;
+    const step = niceStep(Math.max(xspan, yspan) / 8);
+
+    // Grid and labels
+    ctx.font = '11px Arial'; ctx.lineWidth = 1; ctx.strokeStyle = '#242c36';
+    for (let x = Math.ceil(view.xmin / step) * step; x <= view.xmax; x += step) {
+      const xx = X(x); ctx.beginPath(); ctx.moveTo(xx, p.t); ctx.lineTo(xx, p.t + p.h); ctx.stroke();
+      ctx.fillStyle = '#aab4c0'; ctx.textAlign = 'center'; ctx.fillText(fmt(x), xx, p.t + p.h + 19);
+    }
+    for (let y = Math.ceil(view.ymin / step) * step; y <= view.ymax; y += step) {
+      const yy = Y(y); ctx.beginPath(); ctx.moveTo(p.l, yy); ctx.lineTo(p.l + p.w, yy); ctx.stroke();
+      ctx.fillStyle = '#aab4c0'; ctx.textAlign = 'right'; ctx.fillText(fmt(y), p.l - 8, yy + 4);
+    }
+
+    // Each condition is shown as its own semi-transparent half-plane.
+    function halfPlane(a, b, c, sign, color) {
+      const corners = [
+        {x:view.xmin,y:view.ymin},{x:view.xmax,y:view.ymin},
+        {x:view.xmax,y:view.ymax},{x:view.xmin,y:view.ymax}
+      ];
+      const result = [];
+      for (let i=0;i<corners.length;i++) {
+        const P=corners[i], Q=corners[(i+1)%corners.length];
+        const fP=sign*(a*P.x+b*P.y-c), fQ=sign*(a*Q.x+b*Q.y-c);
+        if (fP >= 0) result.push(P);
+        if ((fP < 0 && fQ > 0) || (fP > 0 && fQ < 0)) {
+          const t=fP/(fP-fQ);
+          result.push({x:P.x+t*(Q.x-P.x), y:P.y+t*(Q.y-P.y)});
+        }
+      }
+      if (result.length < 3) return;
+      ctx.beginPath();
+      result.forEach((pt,i) => i ? ctx.lineTo(X(pt.x),Y(pt.y)) : ctx.moveTo(X(pt.x),Y(pt.y)));
+      ctx.closePath(); ctx.fillStyle=color; ctx.fill();
+    }
+    halfPlane(1,0,A,-1,'rgba(58,134,255,.20)'); // x < A
+    halfPlane(0,1,A,-1,'rgba(255,190,11,.18)'); // y < A
+    halfPlane(5,1,1241651,-1,'rgba(255,75,75,.15)');
+    halfPlane(5,1,1241651,1,'rgba(6,214,160,.12)');
+    halfPlane(1,2,413184,-1,'rgba(179,136,255,.15)');
+    halfPlane(1,2,413184,1,'rgba(241,91,181,.12)');
+
+    function drawLine(a,b,c,color,width=2,dash=[]) {
+      const pts=[];
+      function add(x,y) {
+        if (x >= view.xmin-1e-6 && x <= view.xmax+1e-6 && y >= view.ymin-1e-6 && y <= view.ymax+1e-6 &&
+            !pts.some(q=>Math.abs(q.x-x)<1e-5 && Math.abs(q.y-y)<1e-5)) pts.push({x,y});
+      }
+      if (Math.abs(b)>1e-12) { add(view.xmin,(c-a*view.xmin)/b); add(view.xmax,(c-a*view.xmax)/b); }
+      if (Math.abs(a)>1e-12) { add((c-b*view.ymin)/a,view.ymin); add((c-b*view.ymax)/a,view.ymax); }
+      if (pts.length < 2) return;
+      ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=width; ctx.setLineDash(dash);
+      ctx.beginPath(); ctx.moveTo(X(pts[0].x),Y(pts[0].y)); ctx.lineTo(X(pts[1].x),Y(pts[1].y)); ctx.stroke(); ctx.restore();
+    }
+    drawLine(1,0,A,'#3a86ff',2.5,[7,5]);
+    drawLine(0,1,A,'#ffbe0b',2.5,[7,5]);
+    drawLine(5,1,1241651,'#ff7777',2.5);
+    drawLine(1,2,413184,'#d2b6ff',2.5);
+    if (showYX.checked) drawLine(1,-1,0,'#ffffff',2,[4,5]);
+
+    ctx.strokeStyle='#eef2f7'; ctx.lineWidth=1.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(X(0),p.t); ctx.lineTo(X(0),p.t+p.h); ctx.lineTo(p.l+p.w,Y(0)); ctx.stroke();
+    ctx.fillStyle='#eef2f7'; ctx.font='bold 14px Arial'; ctx.textAlign='center';
+    ctx.fillText('x',p.l+p.w+12,Y(0)+22); ctx.fillText('y',X(0)-18,p.t-8);
+    ctx.font='bold 12px Arial'; ctx.textAlign='left';
+    if (A >= view.xmin && A <= view.xmax) { ctx.fillStyle='#73a7ff'; ctx.fillText('x = A ('+fmt(A)+')',X(A)+5,p.t+15); }
+    if (A >= view.ymin && A <= view.ymax) { ctx.fillStyle='#ffd45c'; ctx.fillText('y = A ('+fmt(A)+')',p.l+8,Y(A)-7); }
+    viewInfo.textContent = `A = ${fmt(A)}. x: [${fmt(view.xmin)}, ${fmt(view.xmax)}], y: [${fmt(view.ymin)}, ${fmt(view.ymax)}]. Цветные заливки показывают отдельные зоны условий.`;
+  }
+
+  range.addEventListener('input', () => setA(range.value));
+  number.addEventListener('change', () => setA(number.value));
+  number.addEventListener('keydown', e => { if (e.key === 'Enter') { setA(number.value); number.blur(); } });
+  showYX.addEventListener('change', requestDraw);
+  document.getElementById('fitBtn').addEventListener('click', () => {
+    view={xmin:0,xmax:1300000,ymin:0,ymax:1300000}; requestDraw();
+  });
+  document.getElementById('zoomBtn').addEventListener('click', () => {
+    const A=Number(range.value), pad=100000;
+    view={xmin:Math.max(0,A-pad),xmax:A+pad,ymin:Math.max(0,A-pad),ymax:A+pad}; requestDraw();
+  });
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    view={xmin:0,xmax:1300000,ymin:0,ymax:1300000}; setA(0);
+  });
+  window.addEventListener('resize', requestDraw);
+  // Explicit initial render after layout has settled.
+  window.addEventListener('load', requestDraw);
+  requestDraw();
+})();
+</script>
+</body>
+</html>
