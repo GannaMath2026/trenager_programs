@@ -1,0 +1,147 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Сечение пирамиды DABC</title><style>
+:root{color-scheme:dark;--bg:#0b0d10;--panel:#151a21;--line:#303b49;--text:#eef4ff;--muted:#aebbd0;--accent:#54d6d0}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,"Segoe UI",sans-serif}header{padding:16px 20px;border-bottom:1px solid var(--line);background:#10141a}h1{font-size:20px;margin:0 0 5px}header p{margin:0;color:var(--muted);font-size:13px}.app{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:14px;padding:14px;max-width:1500px;margin:auto}.stage{position:relative;min-height:520px;height:calc(100vh - 115px);max-height:900px;background:radial-gradient(ellipse at 50% 35%,#1b2430,#0e1218 70%);border:1px solid var(--line);border-radius:14px;overflow:hidden}canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}.overlay{position:absolute;left:12px;top:12px;padding:8px 10px;background:#0b0d10c9;border:1px solid #354150;border-radius:9px;font-size:12px;color:var(--muted);pointer-events:none}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;align-self:start}.panel h2{font-size:15px;margin:0 0 10px}.group{padding:10px 0;border-top:1px solid var(--line)}.group:first-of-type{border-top:0;padding-top:0}label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}input[type=range]{width:100%;accent-color:var(--accent)}button{font:inherit;color:var(--text);background:#222c38;border:1px solid #445368;border-radius:8px;padding:8px 10px;cursor:pointer}button:hover{border-color:var(--accent)}.primary{background:#174b4c;border-color:#267d7c}.buttons{display:flex;gap:7px;flex-wrap:wrap}.status{padding:10px;border-radius:9px;background:#0e1319;border:1px solid var(--line);font-size:13px}.steps{font-size:13px;color:#d6e0ed}.steps ol{padding-left:19px;margin:7px 0}.steps li{margin:6px 0}.legend{display:none}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.hint{font-size:12px;color:var(--muted);margin:7px 0 0}@media(max-width:900px){.app{grid-template-columns:1fr}.stage{height:60vh;min-height:400px}}
+</style></head><body><header><h1 id="appTitle">Интерактивное сечение пирамиды</h1><p>Выбери тип пирамиды. Перетаскивай точки E, F и G; вращай левой кнопкой, перемещай сцену правой кнопкой или Ctrl + левая кнопка.</p></header><div class="group" style="padding:12px 16px 0;max-width:1500px;margin:auto"><div class="buttons" id="modelChoice"><button class="primary" data-model="tri">Треугольная пирамида DABC</button><button data-model="quad">Четырёхугольная пирамида SABCD</button></div></div><div class="app"><section class="stage" id="stage"><canvas id="scene" aria-label="Интерактивная 3D-модель пирамиды"></canvas><div class="overlay">Вращение: левая кнопка · Перемещение: правая кнопка или Ctrl + левая · Точки: E, F, G</div></section><aside class="panel"><h2>Управление сценой</h2><div class="group"><label for="zoom">Масштаб сцены <b id="zoomVal">100%</b></label><input id="zoom" type="range" min="60" max="170" value="100"></div><div class="group"><h2>Положение камеры</h2><div class="buttons" id="faceViews"><button data-face="ABC">Основание ABC</button><button data-face="DAB">Грань DAB</button><button data-face="DBC">Грань DBC</button><button data-face="DCA">Грань DCA</button></div><p class="hint">Нажмите на название грани, чтобы расположить её горизонтально внизу сцены.</p></div><div class="group"><label for="ePos">Положение E на DA <b id="eVal">35%</b></label><input id="ePos" type="range" min="8" max="92" value="35"></div><div class="group"><label for="fPos">Положение F на DB <b id="fVal">42%</b></label><input id="fPos" type="range" min="8" max="92" value="42"></div><div class="group"><label for="gPos">Положение G на AC <b id="gVal">45%</b></label><input id="gPos" type="range" min="8" max="92" value="45"></div><div class="group"><div class="buttons"><button class="primary" id="forceParallel">Поставить EF ∥ AB</button><button id="quadShowSBD" style="display:none">Показать сечение SBD</button><button id="quadSplit" style="display:none">Разделить пирамиду по SBD</button><button id="quadApart" style="display:none">Отодвинуть части в стороны</button><button id="quadDissolve" style="display:none">Скрыть голубую пирамиду</button><button id="reset">Сбросить сцену</button><button id="toggleSection">Скрыть сечение</button></div><div class="group"><div class="status" id="status"></div><div class="steps" id="steps"></div></div></aside></div>
+<script>
+(()=>{'use strict';const canvas=document.getElementById('scene'),ctx=canvas.getContext('2d'),stage=document.getElementById('stage');let model='tri';let V={A:[-1.25,-.85,-.9],B:[1.25,-.85,-.9],C:[0,1.25,-.9],D:[0,-.05,1.45]};let yaw=-.55,pitch=0,zoom=1,panX=0,panY=0,showSection=true,drag=null,last=null,quadSplit=false,quadApart=false,quadDissolved=false,showSBD=false,points={E:.35,F:.42,G:.45};let edges=[['D','A'],['D','B'],['D','C'],['A','B'],['B','C'],['C','A']];const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t),sub=(a,b)=>a.map((v,i)=>v-b[i]),add=(a,b)=>a.map((v,i)=>v+b[i]),mul=(a,s)=>a.map(v=>v*s),dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0),cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm=a=>Math.sqrt(dot(a,a)),unit=a=>mul(a,1/(norm(a)||1));function pts(){if(model==='quad')return {...V,E:mix(V.S,V.A,points.E),F:mix(V.S,V.B,points.F),G:mix(V.A,V.D,points.G)};return {...V,E:mix(V.D,V.A,points.E),F:mix(V.D,V.B,points.F),G:mix(V.A,V.C,points.G)}}function camera(p){let[x,y,z]=p,cy=Math.cos(yaw),sy=Math.sin(yaw),x1=cy*x+sy*y,y1=-sy*x+cy*y,cp=Math.cos(pitch),sp=Math.sin(pitch),y2=y1*cp-z*sp,z2=y1*sp+z*cp;return[x1,y2,z2]}function project(p){let c=camera(p),w=canvas.clientWidth,h=canvas.clientHeight,scale=Math.min(w/4.6,h/4.2)*zoom;/* perspective-like orthographic projection: pitch tilts the scene vertically */return{x:w/2+c[0]*scale+panX,y:h/2-c[2]*scale+panY,z:c[2]}}function plane(P){let n=cross(sub(P.F,P.E),sub(P.G,P.E));return{n,d:dot(n,P.E)}}function segmentHit(p,q,n,d){let den=dot(n,sub(q,p));if(Math.abs(den)<1e-8)return null;let t=(d-dot(n,p))/den;if(t< -1e-6||t>1+1e-6)return null;return mix(p,q,Math.max(0,Math.min(1,t)))}function section(P){let{n,d}=plane(P),arr=[];for(const[a,b]of edges){let p=segmentHit(P[a],P[b],n,d);if(p&&!arr.some(x=>norm(sub(x.p,p))<1e-5))arr.push({p,edge:a+b})}if(arr.length<3)return arr;let center=mul(arr.reduce((s,x)=>add(s,x.p),[0,0,0]),1/arr.length),nn=unit(n),u=unit(sub(arr[0].p,center)),v=cross(nn,u);arr.sort((x,y)=>Math.atan2(dot(sub(x.p,center),v),dot(sub(x.p,center),u))-Math.atan2(dot(sub(y.p,center),v),dot(sub(y.p,center),u)));return arr}function line(a,b,color,width=2,dash=[]){let p=project(a),q=project(b);ctx.beginPath();ctx.setLineDash(dash);ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();ctx.setLineDash([])}function label(t,p,color='#f4f7ff',size=20,dx=8,dy=-8){let q=project(p);ctx.font=`700 ${size}px system-ui`;ctx.lineWidth=4;ctx.strokeStyle='#0b0d10';ctx.strokeText(t,q.x+dx,q.y+dy);ctx.fillStyle=color;ctx.fillText(t,q.x+dx,q.y+dy)}function ball(t,p,color){let q=project(p);ctx.beginPath();ctx.arc(q.x,q.y,6.5,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.3;ctx.stroke();label(t,p,color,17,9,-9)}function polygon3(points,fill,stroke,alpha=1){if(points.length<3)return;ctx.save();ctx.globalAlpha=alpha;ctx.beginPath();points.forEach((p,i)=>{let q=project(p);i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)});ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1.6;ctx.stroke()}ctx.restore()}function dashed(a,b,color='#62e6ff',width=2){line(a,b,color,width,[7,5])}function lineIntersection3D(p1,p2,q1,q2){const u=sub(p2,p1),v=sub(q2,q1),w=sub(p1,q1),uv=dot(u,v),uu=dot(u,u),vv=dot(v,v),uw=dot(u,w),vw=dot(v,w),den=uu*vv-uv*uv;if(Math.abs(den)<1e-9)return null;const t=(uv*vw-vv*uw)/den,s=(uu*vw-uv*uw)/den;return add(p1,mul(u,t))}
+function construction(P){
+ const e=points.E,f=points.F,g=points.G;
+ const parallel=Math.abs(e-f)<0.012;
+ // EF intersects the full line AB at K. This construction is only needed when EF is not parallel to AB.
+ if(parallel){
+   const H=mix(P.B,P.C,g); // GH || AB, H belongs to BC
+   return {K:null,H,k:null,parallel:true};
+ }
+ const den=f-e;
+ if(Math.abs(den)<1e-9)return {K:null,H:null,k:null,parallel:true};
+ // On DA and DB, E and F have affine parameters e and f from D.
+ // In triangle DAB, line EF meets AB at parameter k=e/(e-f) from A to B.
+ const k=f*(1-e)/(f-e), K=mix(P.A,P.B,k);
+ // H is intersection KG with the full line BC, computed in the base plane ABC.
+ // K=(1-k)A+kB; G=(1-g)A+gC; H=B+u(C-B).
+ const denH=(g-k);
+ if(Math.abs(denH)<1e-9)return {K,H:null,k,parallel:false};
+ const t=(1-k)/(g-k),u=g*t,H=mix(P.B,P.C,u);
+ return {K,H,k,parallel:false};
+}
+function drawSubPyramids(P,sec){
+ const con=construction(P); if(!con)return;
+ const {K,H,parallel}=con;
+ if(parallel){
+   // Parallel case: large FABGH is blue; small FEGA is yellow.
+   const h=H||mix(P.B,P.C,points.G);
+   const blueBase=[P.A,P.B,h,P.G];
+   polygon3(blueBase,'rgba(91,190,255,.27)','#69c7ff',.98);
+   for(const face of [[P.F,P.A,P.B],[P.F,P.B,h],[P.F,h,P.G],[P.F,P.G,P.A]])
+     polygon3(face,'rgba(91,190,255,.17)','#69c7ff',.88);
+   for(const q of blueBase)dashed(P.F,q,'#69c7ff',2);
+   for(let i=0;i<blueBase.length;i++)line(blueBase[i],blueBase[(i+1)%blueBase.length],'#69c7ff',2.5);
+   polygon3([P.E,P.G,P.A],'rgba(255,207,88,.42)','#ffcf58',.98);
+   for(const face of [[P.F,P.E,P.G],[P.F,P.G,P.A],[P.F,P.A,P.E]])
+     polygon3(face,'rgba(255,207,88,.24)','#ffcf58',.9);
+   for(const q of [P.E,P.G,P.A])dashed(P.F,q,'#ffcf58',2);
+   label('H',h,'#62e6ff',18,8,-9);
+   return;
+ }
+ if(!K||!H)return;
+ // For nonparallel EF and AB, show the requested two sets of faces only when F is higher than E.
+ const fHigher=points.F<points.E;
+ line(P.E,K,'#ffcf58',2,[7,5]);
+ line(P.F,K,'#ffcf58',2,[7,5]);
+ line(K,H,'#62e6ff',2,[7,5]);
+ label('K',K,'#ffcf58',17,8,-9);
+ label('H',H,'#62e6ff',18,8,-9);
+ if(fHigher){
+   // Yellow solid: faces FHB, FHK, FBK and the brighter quadrilateral FHBK.
+   for(const [face,fill,stroke,alpha] of [
+     [[P.F,H,P.B],'rgba(255,207,88,.20)','#ffcf58',.92],
+     [[P.F,H,K],'rgba(255,207,88,.20)','#ffcf58',.92],
+     [[P.F,P.B,K],'rgba(255,207,88,.20)','#ffcf58',.92],
+     [[P.F,H,P.B,K],'rgba(255,207,88,.38)','#ffcf58',.98]
+   ]) polygon3(face,fill,stroke,alpha);
+   // Blue solid: faces EGA, EGK, EAK and highlighted base AGK.
+   for(const [face,fill,stroke,alpha] of [
+     [[P.E,P.G,P.A],'rgba(91,190,255,.19)','#69c7ff',.9],
+     [[P.E,P.G,K],'rgba(91,190,255,.19)','#69c7ff',.9],
+     [[P.E,P.A,K],'rgba(91,190,255,.19)','#69c7ff',.9],
+     [[P.A,P.G,K],'rgba(91,190,255,.36)','#69c7ff',.98]
+   ]) polygon3(face,fill,stroke,alpha);
+   for(const [a,b] of [[P.F,P.B],[P.F,H],[P.F,K],[P.E,P.G],[P.E,P.A],[P.E,K]]) line(a,b,'#ffcf58',2.2);
+   for(const [a,b] of [[P.E,P.G],[P.E,P.A],[P.E,K],[P.A,P.G],[P.G,K],[P.A,K]]) dashed(a,b,'#69c7ff',1.8);
+ }else{
+   // Симметричный случай: E выше F. Жёлтая пирамида с вершиной E,
+   // голубая — с вершиной F; используем те же грани, что и в обратном случае,
+   // поменяв E/F и соответствующие наборы граней местами.
+   // Жёлтая: грани EGA, EGK, EAK и яркое основание AGK.
+   for(const [face,fill,stroke,alpha] of [
+     [[P.E,P.G,P.A],'rgba(255,207,88,.20)','#ffcf58',.92],
+     [[P.E,P.G,K],'rgba(255,207,88,.20)','#ffcf58',.92],
+     [[P.E,P.A,K],'rgba(255,207,88,.20)','#ffcf58',.92],
+     [[P.A,P.G,K],'rgba(255,207,88,.40)','#ffcf58',.98]
+   ]) polygon3(face,fill,stroke,alpha);
+   // Голубая: грани FHB, FHK, FBK и яркое основание BHK.
+   for(const [face,fill,stroke,alpha] of [
+     [[P.F,H,P.B],'rgba(91,190,255,.20)','#69c7ff',.92],
+     [[P.F,H,K],'rgba(91,190,255,.20)','#69c7ff',.92],
+     [[P.F,P.B,K],'rgba(91,190,255,.20)','#69c7ff',.92],
+     [[P.B,H,K],'rgba(91,190,255,.40)','#69c7ff',.98]
+   ]) polygon3(face,fill,stroke,alpha);
+   for(const [a,b] of [[P.E,P.G],[P.E,P.A],[P.E,K]]) line(a,b,'#ffcf58',2.2);
+   for(const [a,b] of [[P.A,P.G],[P.G,K],[P.A,K]]) dashed(a,b,'#ffcf58',1.8);
+   for(const [a,b] of [[P.F,P.B],[P.F,H],[P.F,K]]) line(a,b,'#69c7ff',2.2);
+   for(const [a,b] of [[P.B,H],[H,K],[P.B,K]]) dashed(a,b,'#69c7ff',1.8);
+ }
+}
+ function drawQuadConstruction(P,sec){
+ const h=sec.find(x=>x.edge==='BC')?.p || mix(P.B,P.C,points.G);
+ // The original pyramid is shown without the diagonal BD unless SBD is requested.
+ const center1=mul(add(add(P.S,P.A),add(P.B,P.D)),.25);
+ const center2=mul(add(add(P.S,P.B),add(P.C,P.D)),.25);
+ let direction=unit(sub(center2,center1));
+ const distance=quadSplit?(quadApart?.9:.18):0;
+ const shift=mul(direction,distance);
+ const Q={...P};
+ if(quadSplit) for(const k of ['S','B','C','D']) Q[k]=add(P[k],shift);
+ // Draw the intact pyramid using its four side faces and one quadrilateral base: no BD diagonal.
+ if(!quadSplit){
+   for(const face of [[P.S,P.A,P.B],[P.S,P.B,P.C],[P.S,P.C,P.D],[P.S,P.D,P.A]]) polygon3(face,'rgba(139,181,255,.08)','#8bb5ff',.65);
+   polygon3([P.A,P.B,P.C,P.D],'rgba(139,181,255,.055)','#8bb5ff',.55);
+ } else {
+   // Once split, show both tetrahedra. The shared SBD face is visible only on request.
+   for(const face of [[P.S,P.A,P.B],[P.S,P.A,P.D],[P.A,P.B,P.D]]) polygon3(face,'rgba(139,181,255,.10)','#8bb5ff',.72);
+   if(!quadDissolved){
+     polygon3([Q.S,Q.B,Q.C],'rgba(139,181,255,.10)','#8bb5ff',.75);
+     polygon3([Q.S,Q.C,Q.D],'rgba(139,181,255,.10)','#8bb5ff',.75);
+     polygon3([Q.B,Q.C,Q.D],'rgba(139,181,255,.07)','#8bb5ff',.72);
+   }
+   if(showSBD) polygon3([P.S,P.B,P.D],'rgba(112,226,164,.24)','#82e6a5',.98);
+   if(quadApart) for(const k of ['S','B','D']) dashed(P[k],Q[k],'#82e6a5',1.5);
+ }
+ if(showSBD && !quadSplit) polygon3([P.S,P.B,P.D],'rgba(112,226,164,.24)','#82e6a5',.98);
+ // The unwanted blue pyramid with base ABHG is intentionally omitted; keep only yellow FEGA in the parallel case.
+ const parallel=Math.abs(points.E-points.F)<.012;
+ if(!quadDissolved){
+   polygon3([P.E,P.G,P.A],'rgba(255,207,88,.40)','#ffcf58',.98);
+   for(const face of [[P.F,P.E,P.G],[P.F,P.G,P.A],[P.F,P.A,P.E]]) polygon3(face,'rgba(255,207,88,.19)','#ffcf58',.88);
+   for(const q of [P.E,P.G,P.A]) dashed(P.F,q,'#ffcf58',1.8);
+ }
+ if(!parallel){
+   // Method of traces: extend EF to K on line AB, then join KG to find H on line BC.
+   const con=construction(P),K=con.K,H=con.H;
+   if(K){
+     dashed(P.E,K,'#ffcf58',2); dashed(P.F,K,'#ffcf58',2); label('K',K,'#ffcf58',18,8,-9);
+   }
+   if(K&&H){
+     dashed(K,P.G,'#62e6ff',2); label('H',H,'#62e6ff',18,8,-9);
+     // On the separated part, mirror the triangular-pyramid method-of-traces faces.
+     const fHigher=points.F<points.E;
+     const apex=fHigher?P.F:P.E;
+     const base1=fHigher?P.B:H, base2=fHigher?H:P.B;
+     polygon3([apex,base1,base2],'rgba(255,207,88,.22)','#ffcf58',.86);
+     line(apex,base1,'#ffcf58',2); line(apex,base2,'#ffcf58',2);
+   }
+ }
+ label('H',h,'#62e6ff',18,8,-9);
+}
+function draw(){let w=canvas.clientWidth,h=canvas.clientHeight,dpr=devicePixelRatio||1;if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr)}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);ctx.strokeStyle='#202a36';ctx.lineWidth=1;for(let x=25;x<w;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}for(let y=25;y<h;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}let P=pts(),sec=section(P);for(let[a,b]of edges)line(P[a],P[b],'#8bb5ff',2);if(showSection&&sec.length>=3){ctx.beginPath();sec.forEach((s,i)=>{let q=project(s.p);i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)});ctx.closePath();ctx.fillStyle='rgba(255,202,82,.2)';ctx.fill();ctx.strokeStyle='#ffcf58';ctx.lineWidth=3;ctx.stroke();sec.forEach(s=>{let q=project(s.p);ctx.beginPath();ctx.arc(q.x,q.y,3.5,0,2*Math.PI);ctx.fillStyle='#ffcf58';ctx.fill()})}if(model==='tri')drawSubPyramids(P,sec);else drawQuadConstruction(P,sec);for(let[a,b]of edges)line(P[a],P[b],'#8bb5ff',1.8);for(let k of (model==='tri'?['A','B','C','D']:['A','B','C','D','S']))label(k,P[k],'#fff',22,8,-10);ball('E',P.E,'#ff6f91');ball('F',P.F,'#ff6f91');ball('G',P.G,'#ff6f91');sec.forEach(s=>{if(model==='quad'&&s.edge==='BC'){label('H',s.p,'#62e6ff',19,8,-8)}else if(!['E','F','G'].some(k=>norm(sub(P[k],s.p))<1e-5)&&s.edge!=='BC'){ let q=project(s.p);ctx.font='bold 12px system-ui';ctx.fillStyle='#ffdf88';ctx.fillText(s.edge,q.x+5,q.y+15)}});status(P,sec)}function status(P,sec){let ef=sub(P.F,P.E),ab=sub(P.B,P.A),parallel=norm(cross(ef,ab))/(norm(ef)*norm(ab)||1)<.035,el=document.getElementById('status'),st=document.getElementById('steps');if(model==='quad'){let h=sec.find(x=>x.edge==='BC');el.innerHTML='<b>Четырёхугольная пирамида SABCD.</b> Сечение EFGH; H лежит на BC.'+(Math.abs(points.E-points.F)<.012?' EF ∥ AB.':' EF не параллельна AB.');st.innerHTML='<ol><li>E лежит на SA, F — на SB, G — на AD.</li><li>Диагональ BD и зелёное сечение SBD появляются только по кнопке.</li><li>В параллельном случае оставлена жёлтая пирамида FEGA; голубая пирамида ABHG не рисуется.</li><li>В непараллельном случае EF продолжается до K на AB, затем KG даёт H на BC.</li><li>После разделения можно отодвинуть часть SBDC и растворить её отдельно.</li></ol>';return}if(parallel){el.innerHTML='<b>EF ∥ AB.</b> Построены голубая пирамида FABGH и розовая пирамида FEGA.';st.innerHTML='<ol><li>EF параллельна AB.</li><li>Через G проходит GH ∥ AB, точка H лежит на ребре BC.</li><li>Голубая пирамида: вершина F, основание ABHG.</li><li>Розовая пирамида: вершина F, основание EGA.</li></ol>'}else{el.innerHTML='<b>EF не параллельна AB.</b> Сечение найдено по пересечениям плоскости EFG с рёбрами.';st.innerHTML='<ol><li>Продлеваем прямую EF пунктиром до пересечения с прямой AB — получаем K.</li><li>Соединяем K с G. Пересечение прямой KG с ребром BC — точка H.</li><li>Если E выше F, вершина пирамиды — E, основание — треугольник BKH.</li><li>Если F выше E, вершина — F, основание — треугольник BKG.</li></ol>'}if(sec.length<3)el.textContent='Вырожденное положение: плоскость не образует обычного многоугольного сечения.'}function pos(e){let r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}function nearest(p){let P=pts(),best=null,bd=22;for(let k of ['E','F','G']){let q=project(P[k]),d=Math.hypot(q.x-p.x,q.y-p.y);if(d<bd){best=k;bd=d}}return best}function closest(a,b,p){let q=project(a),r=project(b),dx=r.x-q.x,dy=r.y-q.y;return Math.max(.08,Math.min(.92,((p.x-q.x)*dx+(p.y-q.y)*dy)/(dx*dx+dy*dy||1)))}function setFaceAsBottom(face){const names=face.split(''),P=V;let a=P[names[0]],b=P[names[1]],c=P[P[names[2]]?names[2]:names[0]],opposite=Object.keys(P).find(k=>!names.includes(k));if(face==='ABCD'){a=P.A;b=P.B;c=P.C;}let n=unit(cross(sub(b,a),sub(c,a)));if(dot(sub(P[opposite],a),n)<0)n=mul(n,-1);n=unit(n);pitch=Math.acos(Math.max(-1,Math.min(1,n[2])));yaw=Math.atan2(-n[0],n[1]);panX=0;panY=0;draw()}function setFaceButtons(){const box=document.getElementById('faceViews');box.innerHTML=model==='tri'?'<button data-face="ABC">Основание ABC</button><button data-face="DAB">Грань DAB</button><button data-face="DBC">Грань DBC</button><button data-face="DCA">Грань DCA</button>':'<button data-face="ABCD">Основание ABCD</button><button data-face="SAB">Грань SAB</button><button data-face="SBC">Грань SBC</button><button data-face="SCD">Грань SCD</button><button data-face="SDA">Грань SDA</button>';box.querySelectorAll('[data-face]').forEach(btn=>btn.addEventListener('click',()=>setFaceAsBottom(btn.dataset.face)))}setFaceButtons();canvas.addEventListener('contextmenu',e=>e.preventDefault());canvas.addEventListener('pointerdown',e=>{let p=pos(e),panMode=e.button===2||(e.button===0&&e.ctrlKey),k=(!panMode&&e.button===0)?nearest(p):null;canvas.setPointerCapture(e.pointerId);drag=k?{type:'point',key:k}:panMode?{type:'pan'}:{type:'camera'};last=p});canvas.addEventListener('pointermove',e=>{if(!drag)return;let p=pos(e),dx=p.x-last.x,dy=p.y-last.y;if(drag.type==='pan'){panX+=dx;panY+=dy}else if(drag.type==='camera'){yaw+=dx*.008;pitch-=dy*.008}else{let P=pts(),k=drag.key,edge=model==='quad'?(k==='E'?['S','A']:k==='F'?['S','B']:['A','D']):(k==='E'?['D','A']:k==='F'?['D','B']:['A','C']);points[k]=closest(P[edge[0]],P[edge[1]],p);let input=document.getElementById(k.toLowerCase()+'Pos');input.value=Math.round(points[k]*100);document.getElementById(k.toLowerCase()+'Val').textContent=input.value+'%'}last=p;draw()});canvas.addEventListener('pointerup',()=>drag=null);canvas.addEventListener('pointercancel',()=>drag=null);canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.6,Math.min(1.7,zoom*(e.deltaY<0?1.06:.94)));document.getElementById('zoom').value=Math.round(zoom*100);document.getElementById('zoomVal').textContent=Math.round(zoom*100)+'%';draw()},{passive:false});for(let k of ['E','F','G'])document.getElementById(k.toLowerCase()+'Pos').addEventListener('input',e=>{points[k]=Number(e.target.value)/100;document.getElementById(k.toLowerCase()+'Val').textContent=e.target.value+'%';draw()});document.getElementById('zoom').addEventListener('input',e=>{zoom=Number(e.target.value)/100;document.getElementById('zoomVal').textContent=e.target.value+'%';draw()});document.getElementById('toggleSection').addEventListener('click',e=>{showSection=!showSection;e.currentTarget.textContent=showSection?'Скрыть сечение':'Показать сечение';draw()});document.getElementById('forceParallel').addEventListener('click',()=>{const t=(points.E+points.F)/2;points.E=t;points.F=t;for(const k of ['E','F']){document.getElementById(k.toLowerCase()+'Pos').value=Math.round(t*100);document.getElementById(k.toLowerCase()+'Val').textContent=Math.round(t*100)+'%'}draw()});document.querySelectorAll('[data-model]').forEach(btn=>btn.addEventListener('click',()=>{model=btn.dataset.model;document.querySelectorAll('[data-model]').forEach(b=>b.classList.toggle('primary',b===btn));const title=document.getElementById('appTitle');if(model==='quad'){V={A:[-1.2,-1,-.9],B:[1.2,-1,-.9],C:[1.2,1,-.9],D:[-1.2,1,-.9],S:[0,0,1.55]};edges=[['S','A'],['S','B'],['S','C'],['S','D'],['A','B'],['B','C'],['C','D'],['D','A']];title.textContent='Интерактивное сечение четырёхугольной пирамиды SABCD';document.getElementById('ePos').parentElement.querySelector('label').innerHTML='Положение E на SA <b id="eVal">'+Math.round(points.E*100)+'%</b>';document.getElementById('fPos').parentElement.querySelector('label').innerHTML='Положение F на SB <b id="fVal">'+Math.round(points.F*100)+'%</b>';document.getElementById('gPos').parentElement.querySelector('label').innerHTML='Положение G на AD <b id="gVal">'+Math.round(points.G*100)+'%</b>';document.getElementById('forceParallel').style.display='';document.getElementById('toggleSection').style.display='';document.getElementById('quadSplit').style.display='';document.getElementById('quadApart').style.display='';document.getElementById('quadShowSBD').style.display='';document.getElementById('quadDissolve').style.display='';quadSplit=false;quadApart=false;quadDissolved=false;showSBD=false;document.getElementById('quadSplit').textContent='Разделить пирамиду по SBD';document.getElementById('quadApart').textContent='Отодвинуть части в стороны';document.getElementById('quadShowSBD').textContent='Показать сечение SBD';document.getElementById('quadDissolve').textContent='Скрыть голубую пирамиду';yaw=0;pitch=0;panX=0;panY=0;}else{V={A:[-1.25,-.85,-.9],B:[1.25,-.85,-.9],C:[0,1.25,-.9],D:[0,-.05,1.45]};edges=[['D','A'],['D','B'],['D','C'],['A','B'],['B','C'],['C','A']];title.textContent='Интерактивное сечение пирамиды DABC';document.getElementById('ePos').parentElement.querySelector('label').innerHTML='Положение E на DA <b id="eVal">'+Math.round(points.E*100)+'%</b>';document.getElementById('fPos').parentElement.querySelector('label').innerHTML='Положение F на DB <b id="fVal">'+Math.round(points.F*100)+'%</b>';document.getElementById('gPos').parentElement.querySelector('label').innerHTML='Положение G на AC <b id="gVal">'+Math.round(points.G*100)+'%</b>';document.getElementById('forceParallel').style.display='';document.getElementById('toggleSection').style.display='';document.getElementById('quadSplit').style.display='none';document.getElementById('quadApart').style.display='none';document.getElementById('quadShowSBD').style.display='none';document.getElementById('quadDissolve').style.display='none';document.getElementById('quadApart').disabled=true;quadSplit=false;quadApart=false;quadDissolved=false;showSBD=false;yaw=0;pitch=0;panX=0;panY=0;}setFaceButtons();draw()}));
+document.getElementById('quadShowSBD').addEventListener('click',e=>{showSBD=!showSBD;e.currentTarget.textContent=showSBD?'Скрыть сечение SBD':'Показать сечение SBD';draw()});document.getElementById('quadSplit').addEventListener('click',e=>{quadSplit=!quadSplit;if(!quadSplit)quadApart=false;e.currentTarget.textContent=quadSplit?'Соединить части':'Разделить пирамиду по SBD';document.getElementById('quadApart').disabled=!quadSplit;draw()});document.getElementById('quadApart').addEventListener('click',e=>{if(!quadSplit)return;quadApart=!quadApart;e.currentTarget.textContent=quadApart?'Сблизить части':'Отодвинуть части в стороны';draw()});document.getElementById('quadDissolve').addEventListener('click',e=>{quadDissolved=!quadDissolved;e.currentTarget.textContent=quadDissolved?'Вернуть голубую пирамиду':'Скрыть голубую пирамиду';draw()});document.getElementById('reset').addEventListener('click',()=>{yaw=0;pitch=0;quadSplit=false;quadApart=false;quadDissolved=false;showSBD=false;document.getElementById('quadSplit').textContent='Разделить пирамиду по SBD';document.getElementById('quadApart').textContent='Отодвинуть части в стороны';document.getElementById('quadApart').disabled=true;document.getElementById('quadShowSBD').textContent='Показать сечение SBD';document.getElementById('quadDissolve').textContent='Скрыть голубую пирамиду';zoom=1;panX=0;panY=0;points={E:.35,F:.42,G:.45};for(let k of ['E','F','G']){document.getElementById(k.toLowerCase()+'Pos').value=Math.round(points[k]*100);document.getElementById(k.toLowerCase()+'Val').textContent=Math.round(points[k]*100)+'%'}document.getElementById('zoom').value=100;document.getElementById('zoomVal').textContent='100%';draw()});new ResizeObserver(draw).observe(stage);draw()})();
+</script></body></html>
