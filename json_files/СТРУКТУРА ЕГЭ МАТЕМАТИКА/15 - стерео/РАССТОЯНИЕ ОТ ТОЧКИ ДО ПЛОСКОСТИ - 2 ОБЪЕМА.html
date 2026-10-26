@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Тренажёр: расстояние от точки до плоскости</title>
+<style>
+:root{--bg:#0b0d10;--panel:#151a22;--panel2:#1c2330;--line:#303a4b;--text:#edf2fa;--muted:#a8b4c8;--red:#ff4b4b;--yellow:#ffd43b;--blue:#4287ff;--green:#2dd4a0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,Segoe UI,Arial,sans-serif}
+header{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h1{font-size:18px;margin:0;font-weight:750}.sub{color:var(--muted);font-size:12px}
+.layout{display:grid;grid-template-columns:310px minmax(0,1fr);min-height:calc(100vh - 62px)}
+aside{padding:14px;border-right:1px solid var(--line);background:#10141b;overflow:auto;max-height:calc(100vh - 62px)}
+main{min-width:0;padding:12px;display:flex;flex-direction:column;gap:10px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h2{font-size:13px;margin:0 0 9px;color:#dbe6f7}
+label{display:block;color:var(--muted);font-size:12px;margin:9px 0 4px}
+select,button{font:inherit;border-radius:8px;border:1px solid #3a465a;padding:8px 10px;background:#202938;color:var(--text)}
+select{width:100%}button{cursor:pointer}button:hover{border-color:#7894c4}button:disabled{opacity:.45;cursor:not-allowed}
+.btnrow{display:flex;gap:6px;flex-wrap:wrap}.primary{background:#293a59;border-color:#5277b6}.danger{border-color:#784044}
+.step{display:flex;gap:8px;align-items:flex-start;margin:8px 0;color:#d5deeb}.num{flex:0 0 22px;height:22px;border-radius:50%;background:#2b3850;display:grid;place-items:center;font-weight:700}
+#scene{width:100%;height:min(68vh,720px);min-height:400px;display:block;background:#0e131b;border:1px solid var(--line);border-radius:12px;touch-action:none}
+.status{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:#d8e4f5}
+.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
+.list{display:grid;gap:7px}.check{display:flex;gap:8px;align-items:center;color:var(--text);margin:5px 0;font-size:13px}.check input{accent-color:#8caeff}
+.small{font-size:12px;color:var(--muted)}.metric{font-variant-numeric:tabular-nums;font-weight:700}
+#baseControls{display:grid;gap:8px}.basecard{border:1px solid var(--line);border-radius:9px;padding:8px}.basecard.active{border-color:#8caeff;background:#202d41;box-shadow:0 0 0 1px #8caeff55 inset}.basecard button.active{background:#354c70;border-color:#9dbbff}.basehead{display:flex;align-items:center;gap:8px;font-weight:700}.swatch{width:10px;height:10px;border-radius:3px}
+footer{font-size:11px;color:#8290a5}
+@media(max-width:850px){.layout{grid-template-columns:1fr}aside{max-height:none;border-right:0;border-bottom:1px solid var(--line)}#scene{height:55vh;min-height:340px}}
+</style>
+</head>
+<body>
+<header><div><h1>Тренажёр «Расстояние от точки до плоскости»</h1><div class="sub">Выбери тело, задай секущую плоскость и сравни высоты трёх пирамид</div></div></header>
+<div class="layout">
+<aside>
+ <div class="panel">
+  <h2>1. Выбор тела</h2>
+  <label for="solid">Многогранник</label>
+  <select id="solid"><option value="prism3">Треугольная призма</option><option value="prism4">Четырёхугольная призма</option><option value="pyramid3">Треугольная пирамида</option><option value="pyramid4">Четырёхугольная пирамида</option></select>
+  <label for="view">Ракурс</label><div class="btnrow"><button id="resetView">Сбросить ракурс</button><button id="random">Новый пример</button></div>
+ </div>
+ <div class="panel">
+  <h2>2. Задай секущую плоскость</h2>
+  <div class="step"><span class="num">1</span><span>Выбери три точки на рёбрах или вершинах тела. После выбора их можно перетаскивать мышью вдоль рёбер.</span></div>
+  <div class="small" id="sectionPickState">Выбрано точек: 0 из 3</div>
+  <div class="btnrow" style="margin-top:8px"><button id="clearSection">Очистить выбор</button></div>
+ </div>
+ <div class="panel">
+  <h2>3. Точка, расстояние до которой ищем</h2>
+  <div class="step"><span class="num">2</span><span>Выбери точку P на вершине или ребре. После выбора её тоже можно перетаскивать вдоль рёбер.</span></div>
+  <div class="small" id="apexState">Точка не выбрана</div>
+  <button id="clearApex" style="margin-top:8px">Сбросить точку</button>
+ </div>
+ <div class="panel">
+  <h2>4. Три основания в сечении</h2>
+  <div class="small">После выбора P выбери активное основание. При перетаскивании определяющих точек сечение перестраивается; основания потребуется выбрать заново. Четыре треугольных основания: Четыре треугольных основания: 123 — жёлтое, 234 — синее, 341 — зелёное, 412 — фиолетовое. Высота каждого цвета совпадает с цветом основания.</div>
+  <div id="baseControls" style="margin-top:8px"></div>
+  <div class="btnrow" style="margin-top:8px"><button id="clearBases">Очистить основания</button></div>
+ </div>
+ <div class="panel">
+  <h2>Слои отображения</h2>
+  <label class="check"><input type="checkbox" id="showSolid" checked> Рёбра тела</label>
+  <label class="check"><input type="checkbox" id="showSection" checked> Сечение</label>
+  <label class="check"><input type="checkbox" id="showPyramids" checked> Три пирамиды</label>
+  <label class="check"><input type="checkbox" id="showHeights" checked> Перпендикуляры и основания</label>
+  <label class="check"><input type="checkbox" id="showLabels" checked> Подписи точек</label>
+ </div>
+ <div class="panel">
+  <h2>Управление моделью</h2><div class="small">Перетаскивай выбранную точку — она перемещается вдоль ближайшего ребра. Чтобы вращать модель, тяни за свободное место. Колесо мыши — масштаб.</div>
+ </div>
+</aside>
+<main>
+ <canvas id="scene"></canvas>
+ <div class="status" id="status">Шаг 1: выбери три вершины тела для задания секущей плоскости.</div>
+ <div class="legend"><span><i class="dot" style="background:var(--yellow)"></i>Основание/высота 1</span><span><i class="dot" style="background:var(--blue)"></i>Основание/высота 2</span><span><i class="dot" style="background:var(--green)"></i>Основание/высота 3</span><span><i class="dot" style="background:#c084fc"></i>Основание/высота 4</span><span><i class="dot" style="background:#ff5555"></i>Секущая плоскость</span></div>
+ <div class="panel"><h2>Расстояния</h2><div id="metrics" class="small">После выбора основания здесь появятся длины перпендикуляров.</div></div>
+ <footer>Учебная модель: координаты условные. Для точного результата используются координаты 3D-модели.</footer>
+</main>
+</div>
+<script>
+(()=>{
+const canvas=document.getElementById('scene'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id);
+const COLORS=['#ffd43b','#4287ff','#2dd4a0','#c084fc'];
+let vertices=[],edges=[],faces=[],labels=[],sectionSel=[],sectionPts=[],sectionPoly=[],apex=null,apexLabel='P',bases=[[0,1,2],[1,2,3],[2,3,0],[3,0,1]],activeBase=0,chosenPoints=[];
+let yaw=-0.65,pitch=0.35,zoom=1,drag=null,last=null,viewW=800,viewH=600,scale=120,origin={x:400,y:300};
+const V=(x,y,z)=>({x,y,z});
+const add=(a,b)=>edges.push([a,b]);
+function makeSolid(kind){
+ vertices=[];edges=[];faces=[];labels=[];sectionSel=[];sectionPts=[];sectionPoly=[];apex=null;apexLabel='P';bases=[[0,1,2],[1,2,3],[2,3,0],[3,0,1]];activeBase=0;chosenPoints=[];
+ if(kind.startsWith('prism')){
+  const n=kind==='prism3'?3:4,r=1.45;
+  for(let layer=0;layer<2;layer++)for(let i=0;i<n;i++){
+   let ang=2*Math.PI*i/n+Math.PI/4;
+   vertices.push(V(r*Math.cos(ang),layer===0?-1:1,r*Math.sin(ang)));
+  }
+  for(let i=0;i<n;i++){add(i,(i+1)%n);add(n+i,n+(i+1)%n);add(i,n+i)}
+  faces.push(Array.from({length:n},(_,i)=>i),Array.from({length:n},(_,i)=>n+i));
+ }else{
+  const n=kind==='pyramid3'?3:4,r=1.45;
+  for(let i=0;i<n;i++){let ang=2*Math.PI*i/n+Math.PI/4;vertices.push(V(r*Math.cos(ang),-1,r*Math.sin(ang)))}
+  vertices.push(V(0,1.35,0));
+  for(let i=0;i<n;i++){add(i,(i+1)%n);add(i,n)}
+  faces.push(Array.from({length:n},(_,i)=>i));
+ }
+ labels=vertices.map((_,i)=>String.fromCharCode(65+i));
+ renderBaseControls();draw();
+}
+function renderBaseControls(){
+ const box=$('baseControls');box.innerHTML='';
+ for(let i=0;i<4;i++){
+  const d=document.createElement('div');d.className='basecard'+(i===activeBase?' active':'');
+  d.innerHTML=`<div class="basehead"><i class="swatch" style="background:${COLORS[i]}"></i>Основание ${i+1} · точки ${[[1,2,3],[2,3,4],[3,4,1],[4,1,2]][i].join('')}</div><div class="small" id="baseState${i}">Три выбранные вами точки</div><button data-base="${i}" style="margin-top:6px">Выбрать основание</button>`;
+  box.appendChild(d);
+ }
+ box.querySelectorAll('button').forEach(b=>b.onclick=()=>{activeBase=+b.dataset.base;updateBaseUI();status(`Выбрано основание ${activeBase+1}. Вершина пирамиды — точка ${[4,1,2,3][activeBase]}.`);draw()});
+ updateBaseUI();
+}
+function updateBaseUI(){
+ for(let i=0;i<4;i++){
+  const e=$('baseState'+i);if(e)e.textContent=`Точки ${[[1,2,3],[2,3,4],[3,4,1],[4,1,2]][i].join(', ')}${i===activeBase?' · АКТИВНО':''}`;
+  const card=e?.closest('.basecard');if(card)card.classList.toggle('active',i===activeBase);
+  const btn=card?.querySelector('button');if(btn){btn.classList.toggle('active',i===activeBase);btn.textContent=i===activeBase?'Выбирается это основание':'Выбирать это основание'}
+ }
+}
+function status(msg){$('status').textContent=msg}
+function dot(a,b){return a.x*b.x+a.y*b.y+a.z*b.z}
+function sub(a,b){return V(a.x-b.x,a.y-b.y,a.z-b.z)}
+function addv(a,b){return V(a.x+b.x,a.y+b.y,a.z+b.z)}
+function mul(a,k){return V(a.x*k,a.y*k,a.z*k)}
+function cross(a,b){return V(a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.x)}
+function norm(a){return Math.sqrt(dot(a,a))}
+function unit(a){let n=norm(a)||1;return mul(a,1/n)}
+function dist(a,b){return norm(sub(a,b))}
+function planeFrom3(a,b,c){const n=cross(sub(b,a),sub(c,a));if(norm(n)<1e-7)return null;return {p:a,n:unit(n)}}
+function signedDistance(p,pl){return dot(sub(p,pl.p),pl.n)}
+function projectPlane(p,pl){return sub(p,mul(pl.n,signedDistance(p,pl)))}
+function mix(a,b,t){return addv(a,mul(sub(b,a),t))}
+function resize(){
+ const r=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+ canvas.width=Math.max(1,Math.floor(r.width*dpr));canvas.height=Math.max(1,Math.floor(r.height*dpr));
+ ctx.setTransform(dpr,0,0,dpr,0,0);viewW=r.width;viewH=r.height;origin={x:viewW/2,y:viewH/2};
+ draw();
+}
+function rotate(p){
+ const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
+ const x=cy*p.x+sy*p.z,z=-sy*p.x+cy*p.z,y=cp*p.y-sp*z,zz=sp*p.y+cp*z;
+ return {x,y,z:zz};
+}
+function project(p){
+ const q=rotate(p);return {x:origin.x+q.x*scale,y:origin.y-q.y*scale,z:q.z};
+}
+function fitScale(){scale=Math.min(viewW,viewH)*.23*zoom}
+function line(a,b,color,width=1.5,dash=[]){
+ ctx.beginPath();ctx.setLineDash(dash);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);
+}
+function polyline(points,color,width=2,close=true,dash=[]){
+ if(points.length<2)return;ctx.beginPath();ctx.setLineDash(dash);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.moveTo(points[0].x,points[0].y);for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);if(close)ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+}
+function fillPoly(points,color,alpha=.18){
+ if(points.length<3)return;ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(points[0].x,points[0].y);for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);ctx.closePath();ctx.fill();ctx.restore();
+}
+function planeIntersections(pl){
+ let pts=[];
+ for(const [i,j] of edges){
+  const a=vertices[i],b=vertices[j],da=signedDistance(a,pl),db=signedDistance(b,pl);
+  if(Math.abs(da)<1e-7)pts.push({p:a,key:'v'+i});
+  if(da*db< -1e-10){const t=da/(da-db);pts.push({p:mix(a,b,t),key:`e${Math.min(i,j)}-${Math.max(i,j)}`})}
+ }
+ const uniq=[];for(const q of pts)if(!uniq.some(u=>dist(u.p,q.p)<1e-5))uniq.push(q);
+ if(uniq.length<3)return uniq;
+ const center=uniq.reduce((s,q)=>addv(s,q.p),V(0,0,0));const c=mul(center,1/uniq.length);
+ const n=pl.n,u=unit(sub(uniq[0].p,c)),v=cross(n,u);
+ uniq.sort((a,b)=>Math.atan2(dot(sub(a.p,c),v),dot(sub(a.p,c),u))-Math.atan2(dot(sub(b.p,c),v),dot(sub(b.p,c),u)));
+ return uniq;
+}
+function pointSegmentDistance(px,py,a,b){
+ const dx=b.x-a.x,dy=b.y-a.y,den=dx*dx+dy*dy||1;
+ const t=Math.max(0,Math.min(1,((px-a.x)*dx+(py-a.y)*dy)/den));
+ return {d:Math.hypot(px-(a.x+t*dx),py-(a.y+t*dy)),t};
+}
+function nearestPoint(x,y,stage='section'){
+ let best=null,bd=19;
+ // During base selection, section points have priority over coincident body vertices.
+ if(stage==='base'){
+  sectionPts.forEach((q,i)=>{const sc=project(q.p),d=Math.hypot(sc.x-x,sc.y-y);if(d<bd){best={p:q.p,kind:'section',idx:i,screen:sc,label:q.key||('S'+(i+1))};bd=d}});
+  return best;
+ }
+ // Vertices first, then any point along a visible body edge.
+ vertices.forEach((p,i)=>{const sc=project(p),d=Math.hypot(sc.x-x,sc.y-y);if(d<bd){best={p,kind:'vertex',idx:i,screen:sc,label:labels[i]};bd=d}});
+ const projected=vertices.map(project);
+ for(const [i,j] of edges){
+  const q=pointSegmentDistance(x,y,projected[i],projected[j]);
+  if(q.d<bd){
+   best={p:mix(vertices[i],vertices[j],q.t),kind:'edge',idx:null,screen:{x:projected[i].x+(projected[j].x-projected[i].x)*q.t,y:projected[i].y+(projected[j].y-projected[i].y)*q.t},label:`${labels[i]}${labels[j]} (${Math.round(q.t*100)}%)`};
+   bd=q.d;
+  }
+ }
+ return best;
+}
+function draw(){
+ if(!ctx||!viewW)return;fitScale();ctx.clearRect(0,0,viewW,viewH);
+ ctx.fillStyle='#0e131b';ctx.fillRect(0,0,viewW,viewH);
+ // faint floor grid
+ ctx.strokeStyle='#1a2230';ctx.lineWidth=1;
+ for(let x=origin.x%28;x<viewW;x+=28){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,viewH);ctx.stroke()}
+ for(let y=origin.y%28;y<viewH;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(viewW,y);ctx.stroke()}
+ const pr=vertices.map(project);
+ if($('showSolid').checked){
+  for(const f of faces){const pp=f.map(i=>pr[i]);fillPoly(pp,'#526783',.1);polyline(pp,'#b6c6dd',1.5,true)}
+  for(const [i,j] of edges)line(pr[i],pr[j],'#d6e0ef',1.6);
+ }
+ if(sectionPoly.length&&$('showSection').checked){
+  const pp=sectionPoly.map(q=>project(q.p));fillPoly(pp,'#ff5555',.24);polyline(pp,'#ff5b5b',2.6,true);
+  sectionPoly.forEach((q,i)=>{const p=project(q.p);ctx.beginPath();ctx.fillStyle='#ff7777';ctx.arc(p.x,p.y,6,0,Math.PI*2);ctx.fill();if($('showLabels').checked){ctx.fillStyle='#ffd5d5';ctx.font='bold 16px system-ui';ctx.fillText('S'+(i+1),p.x+6,p.y-7)}});
+ }
+ // Four points explicitly clicked by the learner; section-generated intersections are never candidates.
+ if(chosenPoints.length){
+  chosenPoints.forEach((o,k)=>{const p=project(o.p);ctx.beginPath();ctx.fillStyle='#ff5555';ctx.arc(p.x,p.y,6,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 16px system-ui';ctx.fillText(''+(k+1),p.x+7,p.y-7)});
+  if(chosenPoints.length===4){const apexIndex=[3,0,1,2][activeBase],p=project(chosenPoints[apexIndex].p);ctx.beginPath();ctx.fillStyle=COLORS[activeBase];ctx.arc(p.x,p.y,7,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 17px system-ui';ctx.fillText('P',p.x+8,p.y-8)}
+ }else{
+  sectionSel.forEach((o,k)=>{const p=project(o.p);ctx.beginPath();ctx.fillStyle='#ff5555';ctx.arc(p.x,p.y,6,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 16px system-ui';ctx.fillText(''+(k+1),p.x+7,p.y-7)});
+  if(apex!==null){const p=project(apex);ctx.beginPath();ctx.fillStyle='#fff';ctx.arc(p.x,p.y,6.5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 17px system-ui';ctx.fillText('P',p.x+8,p.y-8)}
+ }
+ if($('showPyramids').checked&&apex!==null){
+  for(let bi=0;bi<4;bi++){
+   if(bi!==activeBase)continue; // Показываем только выбранное основание
+   if(chosenPoints.length!==4)continue;
+   const ids=bases[bi],col=COLORS[bi];
+   const ps=ids.map(i=>chosenPoints[i].p),pp=ps.map(project),apexP=project(chosenPoints[[3,0,1,2][bi]].p);
+   // Единый цвет для всех четырёх граней выбранной пирамиды.
+   const faceAlpha=.24;
+   for(let k=0;k<3;k++){
+    const face=[apexP,pp[k],pp[(k+1)%3]];
+    fillPoly(face,col,faceAlpha);
+    polyline(face,col,2.6,true);
+   }
+   fillPoly(pp,col,.32);polyline(pp,col,3.2,true);
+   for(const b of pp)line(apexP,b,col,2.8);
+  }
+ }
+ if($('showHeights').checked&&apex!==null){
+  for(let bi=0;bi<4;bi++){
+   if(bi!==activeBase)continue; // Высота предыдущего основания больше не актуальна
+   if(chosenPoints.length!==4)continue;
+   const ps=bases[bi].map(i=>chosenPoints[i].p),pl=planeFrom3(ps[0],ps[1],ps[2]);if(!pl)continue;
+   const P=chosenPoints[[3,0,1,2][bi]].p;
+   const foot=projectPlane(P,pl),col=COLORS[bi];
+   polyline(ps.map(project),col,2.5,true);line(project(P),project(foot),col,3,[6,4]);
+   const fp=project(foot);ctx.beginPath();ctx.fillStyle=col;ctx.arc(fp.x,fp.y,4.5,0,Math.PI*2);ctx.fill();
+  }
+ }
+ // vertices last so they remain clickable-looking
+ vertices.forEach((p,i)=>{const q=project(p);ctx.beginPath();ctx.fillStyle=sectionSel.includes(i)?'#ff5555':(apex===i?'#fff':'#eaf1fb');ctx.strokeStyle='#0e131b';ctx.lineWidth=1.5;ctx.arc(q.x,q.y,5.5,0,Math.PI*2);ctx.fill();ctx.stroke();if($('showLabels').checked){ctx.fillStyle='#f5f8ff';ctx.font='bold 16px system-ui';ctx.fillText(labels[i],q.x+6,q.y+4)}});
+}
+function closestEdgePoint(x,y){
+ let best=null,bd=Infinity;const projected=vertices.map(project);
+ for(const [i,j] of edges){const q=pointSegmentDistance(x,y,projected[i],projected[j]);if(q.d<bd){bd=q.d;best={p:mix(vertices[i],vertices[j],q.t),label:`${labels[i]}${labels[j]} (${Math.round(q.t*100)}%)`}}}
+ return best;
+}
+function rebuildAfterDefiningPointMove(){
+ if(sectionSel.length===3){
+  const pl=planeFrom3(sectionSel[0].p,sectionSel[1].p,sectionSel[2].p);
+  if(pl){sectionPoly=planeIntersections(pl);sectionPts=sectionPoly.map(q=>({p:q.p,key:q.key}));}
+  else {sectionPoly=[];sectionPts=[];}
+  // The pyramid is built from the four points chosen by the user, not generated section intersections.
+  $('metrics').textContent='Точка перемещена: основание и высота пересчитаны.';
+ }
+}
+function resetSection(){sectionSel=[];sectionPts=[];sectionPoly=[];apex=null;apexLabel='P';bases=[[0,1,2],[1,2,3],[2,3,0],[3,0,1]];activeBase=0;chosenPoints=[];updateBaseUI();$('sectionPickState').textContent='Выбрано точек: 0 из 3';$('apexState').textContent='Точка не выбрана';$('metrics').textContent='После выбора основания здесь появятся длины перпендикуляров.';status('Шаг 1: выбери три вершины тела для задания секущей плоскости.');draw()}
+function handlePick(x,y){
+ const stage=sectionSel.length<3?'section':(apex===null?'apex':'base');
+ const o=nearestPoint(x,y,stage);
+ if(!o)return;
+ if(sectionSel.length<3){
+  if(sectionSel.some(q=>dist(q.p,o.p)<1e-5))return;
+  sectionSel.push({p:o.p,label:o.label});
+  $('sectionPickState').textContent=`Выбрано точек: ${sectionSel.length} из 3`;
+  if(sectionSel.length===3){
+   const pl=planeFrom3(sectionSel[0].p,sectionSel[1].p,sectionSel[2].p);
+   if(!pl){sectionSel.pop();$('sectionPickState').textContent='Точки лежат на одной прямой — выбери третью точку ещё раз.';draw();return}
+   sectionPoly=planeIntersections(pl);sectionPts=sectionPoly.map(q=>({p:q.p,key:q.key}));
+   // Keep the three explicitly clicked points as points 1–3. Intersections generated by the section are never used as pyramid vertices.
+   chosenPoints=sectionSel.map((q,k)=>({p:q.p,label:q.label,number:k}));
+   updateBaseUI();
+   if(sectionPts.length<3){status('Эти три точки не образуют сечение тела. Очисти выбор и попробуй другую тройку.');sectionSel=[];sectionPts=[];sectionPoly=[]}
+   else status(`Сечение построено: ${sectionPts.length} точек. Теперь выбери точку P на вершине или ребре тела.`);
+  }else status(`Точка ${sectionSel.length} выбрана (${o.label}). Можно выбирать вершины и точки на рёбрах.`);
+  draw();return;
+ }
+ if(apex===null){
+  apex=o.p;apexLabel=o.label||'P';chosenPoints=[...sectionSel.map((q,k)=>({p:q.p,label:q.label,number:k})),{p:apex,label:apexLabel,number:3}];$('apexState').textContent='Точка 4 = '+apexLabel;
+  status('Выбраны 4 точки. По умолчанию основание 123, вершина — точка 4. Переключай основания кнопками; используются только эти четыре точки.');draw();return;
+ }
+ status('Все четыре точки уже заданы. Меняй основание кнопками слева; для изменения точки перетащи её вдоль ребра.');
+}
+canvas.addEventListener('pointerdown',e=>{
+ const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+ let target=null,bd=18;
+ sectionSel.forEach((o,i)=>{const q=project(o.p),d=Math.hypot(q.x-x,q.y-y);if(d<bd){bd=d;target={type:'section',index:i}}});
+ if(apex!==null){const q=project(apex),d=Math.hypot(q.x-x,q.y-y);if(d<bd){bd=d;target={type:'apex'}}}
+ drag={x:e.clientX,y:e.clientY,moved:false,target};last={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove',e=>{
+ if(!drag)return;const dx=e.clientX-last.x,dy=e.clientY-last.y;
+ if(Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)>4)drag.moved=true;
+ if(drag.target&&drag.moved){
+  const r=canvas.getBoundingClientRect(),q=closestEdgePoint(e.clientX-r.left,e.clientY-r.top);
+  if(q){if(drag.target.type==='section'){sectionSel[drag.target.index].p=q.p;sectionSel[drag.target.index].label=q.label;if(chosenPoints[drag.target.index]){chosenPoints[drag.target.index].p=q.p;chosenPoints[drag.target.index].label=q.label;}rebuildAfterDefiningPointMove();$('sectionPickState').textContent='Выбрано точек: 3 из 3 · точки можно двигать';}
+   else {apex=q.p;apexLabel=q.label;if(chosenPoints[3]){chosenPoints[3].p=q.p;chosenPoints[3].label=q.label;}$('apexState').textContent='Точка 4 = '+apexLabel;}
+   draw();
+  }
+ }else if(drag.moved&&!drag.target){yaw+=dx*.008;pitch=Math.max(-1.3,Math.min(1.3,pitch+dy*.008));draw()}
+ last={x:e.clientX,y:e.clientY};
+});
+canvas.addEventListener('pointerup',e=>{if(drag&&!drag.moved){const r=canvas.getBoundingClientRect();handlePick(e.clientX-r.left,e.clientY-r.top)}drag=null;last=null});
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.55,Math.min(1.8,zoom*(e.deltaY<0?1.08:.92)));draw()},{passive:false});
+$('solid').addEventListener('change',e=>makeSolid(e.target.value));
+$('resetView').onclick=()=>{yaw=-.65;pitch=.35;zoom=1;draw()};
+$('random').onclick=()=>{const opts=['prism3','prism4','pyramid3','pyramid4'];$('solid').value=opts[Math.floor(Math.random()*opts.length)];makeSolid($('solid').value);status('Новый пример: выбери три неколлинеарные вершины для плоскости.')};
+$('clearSection').onclick=resetSection;$('clearApex').onclick=()=>{apex=null;bases=[[0,1,2],[1,2,3],[2,3,0],[3,0,1]];chosenPoints=sectionSel.map((q,k)=>({p:q.p,label:q.label,number:k}));updateBaseUI();$('apexState').textContent='Точка не выбрана';$('metrics').textContent='После выбора основания здесь появятся длины перпендикуляров.';status('Выбери вершину P.');draw()};
+$('clearBases').onclick=()=>{bases=[[0,1,2],[1,2,3],[2,3,0],[3,0,1]];activeBase=0;updateBaseUI();$('metrics').textContent='Выбери основание кнопкой слева.';status('Основания строятся только из четырёх точек, выбранных тобой.');draw()};
+['showSolid','showSection','showPyramids','showHeights','showLabels'].forEach(id=>$(id).addEventListener('change',draw));
+function updateMetrics(){
+ const P=chosenPoints.length===4?chosenPoints[[3,0,1,2][activeBase]].p:null,items=[];
+ if(P){const i=activeBase;
+  const ps=bases[i].map(j=>chosenPoints[j].p),pl=planeFrom3(...ps);if(!pl){$('metrics').textContent='Выбранное основание вырождено.';return;}
+  const h=Math.abs(signedDistance(P,pl)),foot=projectPlane(P,pl);
+  items.push(`<div style="margin:5px 0"><span style="color:${COLORS[i]}">● Основание ${i+1}:</span> расстояние <b>${h.toFixed(3)}</b></div>`);
+ }
+ $('metrics').innerHTML=items.length?items.join(''):'После выбора вершины P и трёх точек основания появятся длины перпендикуляров.';
+}
+const oldDraw=draw;
+draw=function(){oldDraw();updateMetrics()};
+makeSolid($('solid').value);
+window.addEventListener('resize',resize);resize();
+})();
+</script>
+</body>
+</html>

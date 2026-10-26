@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Карточки: расположение параболы на промежутке — исправленная версия</title>
+<style>
+:root{--ink:#15233c;--muted:#60708a;--paper:#fff;--bg:#f1f3f7;--border:#d6dce6;--red:#ef3020;--blue:#356aff;--purple:#6b4be8;--green:#e1f8e8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Arial,Helvetica,sans-serif}.app{max-width:1680px;margin:auto;padding:14px}.header{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.header h1{font-size:clamp(21px,2.4vw,31px);margin:0 0 5px}.formula{font-size:clamp(23px,2.6vw,34px);font-weight:700;color:#172b4d}.sub{color:var(--muted);margin-top:3px}.main{display:grid;grid-template-columns:305px minmax(0,1fr);gap:13px;align-items:start}.controls{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto}.controls h2{margin:0 0 12px;font-size:17px}.field{margin-bottom:12px}.field label{display:block;font-size:12px;font-weight:800;color:#53627a;margin-bottom:5px}.field select{width:100%;padding:9px 10px;border:1px solid #bfc9d9;border-radius:8px;background:#fff;color:var(--ink);font:inherit}
+.sign-picks{display:grid;grid-template-columns:1fr;gap:4px}
+.check-options{display:flex;flex-wrap:wrap;gap:6px}
+.check-options label{display:flex;align-items:center;gap:5px;border:1px solid #d6dce6;border-radius:8px;padding:6px 8px;background:#f8faff;font-size:13px;color:#253651;cursor:pointer}
+.check-options input{accent-color:#6b4be8}
+.choice-group{display:flex;flex-wrap:wrap;gap:6px}
+.choice-group label{white-space:nowrap}
+.choice-group input[type=checkbox]{margin:0}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:8px}.btnrow{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.btn{border:1px solid #c5cddd;border-radius:9px;background:#fff;color:var(--ink);padding:9px 11px;font-weight:800;cursor:pointer}.btn:hover{background:#f6f7fa}.btn.primary{background:var(--purple);border-color:var(--purple);color:white}.btn.soft{background:#fff2ef;border-color:#ffb9af;color:#a61e13}.hint{border-left:3px solid var(--red);padding:8px 10px;background:#fff5f4;border-radius:0 8px 8px 0;color:#743129;font-size:12px;margin:10px 0}.results{min-width:0}.resultbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 10px}.resultbar h2{font-size:18px;margin:0}.count{padding:6px 10px;border:1px solid var(--border);background:#fff;border-radius:999px;font-size:12px;font-weight:800}.cards{display:flex;flex-flow:row nowrap;align-items:stretch;gap:12px;overflow-x:auto;padding:4px 2px 12px;scroll-snap-type:x proximity}.combo-group{display:block;width:100%;margin:0 0 22px;padding:12px;background:#e9edf5;border:1px solid #d3dbe8;border-radius:13px;clear:both}.combo-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 10px;padding:2px 2px 8px;border-bottom:2px solid #c6cede;font-weight:900;font-size:16px}.combo-heading small{font-weight:700;color:#61708a;font-size:12px}.card{background:#fff;border:1px solid #cfd6e1;border-radius:13px;overflow:hidden;break-inside:avoid;box-shadow:0 2px 5px #13233b08;flex:0 0 285px;max-width:285px;cursor:pointer;scroll-snap-align:start;transition:box-shadow .15s,transform .15s}.cardhead{padding:11px 13px 4px;display:flex;gap:8px;align-items:center;justify-content:space-between}.cardtitle{font-size:14px;font-weight:900}.badge{font-size:11px;font-weight:800;border:1px solid #d7deea;border-radius:999px;padding:4px 7px;white-space:nowrap;background:#f7f9fc}.signs{display:flex;gap:5px;flex-wrap:wrap;padding:4px 13px 8px}.signs .badge.a{background:#f0ecff;border-color:#d2c8ff;color:#4b32ad}.signs .badge.b{background:#eaf2ff;border-color:#c5d8ff;color:#1d4ed8}.signs .badge.c{background:#fff0ed;border-color:#ffc8bd;color:#ad2b1c}.chart{padding:0 8px}.chart svg{width:100%;height:auto;display:block;background:#fff;border:1px solid #e6e9ef;border-radius:8px}.condition{padding:11px 13px 13px}.condition h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#65738a}.system{display:grid;grid-template-columns:17px 1fr;gap:3px;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.35}.brace{font-size:35px;line-height:1;align-self:stretch;display:flex;align-items:center;justify-content:center;color:#2c65e8;transform:scaleY(var(--brace-scale,1));transform-origin:center}.conds{min-width:0}.conds div{overflow-wrap:anywhere}.reason{margin-top:7px;font-size:12px;color:#5e6b80}.empty{background:#fff;border:1px dashed #bdc7d7;border-radius:13px;padding:28px;text-align:center;color:#65738a}.noteend{font-size:12px;color:#68778e;margin-top:10px}.hide-conditions .condition{display:none}.card.hide-one-condition .condition{display:none}.footer-note{font-size:12px;color:#64738b;padding:9px 2px}.printOnly{display:none}
+.card-modal{position:fixed;inset:0;z-index:9999;background:rgba(8,13,25,.78);display:none;align-items:center;justify-content:center;padding:18px}
+.card-modal.open{display:flex}
+.card-modal-panel{width:min(1100px,96vw);max-height:94vh;overflow:auto;background:#fff;border-radius:16px;box-shadow:0 20px 70px #0006;position:relative;padding:18px}
+.card-modal-close{position:sticky;top:0;float:right;z-index:2;border:0;border-radius:9px;padding:9px 13px;background:#15233c;color:white;font-weight:800;cursor:pointer}
+.card-modal .card{max-width:none;width:100%;flex:none;cursor:default;box-shadow:none;border:0}
+.card-modal .chart svg{max-height:62vh}
+.card-modal .cardhead{font-size:18px}
+.card-modal .cardtitle{font-size:18px}
+.card-modal .condition{padding:16px}
+.card-modal .system{font-size:22px}
+.card-modal .brace{font-size:46px}
+.card-modal .signs .badge{font-size:14px;padding:6px 10px}
+@media(max-width:900px){.main{grid-template-columns:1fr}.controls{position:static;max-height:none}.cards{display:flex;flex-flow:row nowrap;overflow-x:auto}.card{flex-basis:260px;max-width:260px}}
+@media print{body{background:#fff}.app{max-width:none;padding:0}.header{border:0;margin:0 0 8px;padding:5px}.main{display:block}.controls,.resultbar .btnrow,.footer-note{display:none!important}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;overflow:visible}.combo-group{padding:7px;margin-bottom:10px;border:1px solid #bbb}.combo-heading{font-size:12px;margin-bottom:5px;padding-bottom:4px}.card{box-shadow:none;border-color:#aaa}.cardhead{padding:6px 8px 2px}.signs{padding:2px 8px 5px}.chart{padding:0 5px}.condition{padding:6px 8px 8px}.formula{font-size:24px}.sub{font-size:11px}.badge{font-size:9px;padding:2px 5px}.system{font-size:12px}.brace{font-size:27px}.resultbar{margin:0 0 5px}.resultbar h2{font-size:14px}.cardtitle{font-size:11px}@page{size:A4 landscape;margin:9mm}}
+
+.groups, .groups-container, #groupsContainer, .group-list{display:flex;flex-direction:column;align-items:stretch;gap:16px}
+.group-block, .sign-group, .group-section{display:block;width:100%;min-width:0}
+.group-block .cards, .sign-group .cards, .group-section .cards,
+.group-block .card-row, .sign-group .card-row, .group-section .card-row{display:flex;flex-flow:row nowrap;align-items:stretch;gap:12px;overflow-x:auto}
+
+#cardsRoot, #results, .results, .groups, .groups-container, #groupsContainer, .group-list{display:flex;flex-direction:column;align-items:stretch;gap:16px}
+.group-block, .sign-group, .group-section, .combo-group{display:block;width:100%;min-width:0}
+.group-block .cards, .sign-group .cards, .group-section .cards, .combo-group .cards{display:flex;flex-direction:row;flex-wrap:nowrap;gap:12px;overflow-x:auto;align-items:stretch}
+
+#cards{display:flex !important;flex-direction:column !important;align-items:stretch !important;gap:16px !important;min-width:0}
+#cards > .combo-group{display:block !important;width:100% !important;min-width:0;margin:0 !important;clear:both}
+#cards > .combo-group > .cards{display:flex !important;flex-flow:row nowrap !important;align-items:stretch !important;gap:12px !important;overflow-x:auto !important;width:100%}
+#cards > .combo-group > .cards > .card{flex:0 0 228px !important;width:228px !important;max-width:228px !important}
+
+#cards.cards{display:flex !important;flex-direction:column !important;flex-wrap:nowrap !important;align-items:stretch !important;gap:16px !important;overflow:visible !important;width:100% !important;min-width:0 !important}
+#cards.cards > .combo-group{display:block !important;flex:0 0 auto !important;width:100% !important;max-width:none !important;min-width:0 !important;box-sizing:border-box !important;margin:0 !important}
+#cards.cards > .combo-group > .cards{display:flex !important;flex-direction:row !important;flex-wrap:nowrap !important;width:100% !important;overflow-x:auto !important;overflow-y:hidden !important;gap:12px !important}
+#cards.cards > .combo-group > .cards > .card{flex:0 0 228px !important;width:228px !important;max-width:228px !important}
+</style>
+</head>
+<body><div class="app" id="app">
+<header class="header"><div><h1>Карточки: расположение параболы на промежутке</h1><div class="formula">y = f(x) = ax² + bx + c</div><div class="sub">Задайте число корней и знаки коэффициентов. В режиме «один набор» будут показаны все расположения только для выбранных знаков; режим «все наборы» выведет отдельные группы друг под другом.</div></div><button class="btn" id="printBtn">🖨 Печать карточек / PDF</button></header>
+<div class="main"><aside class="controls"><h2>Параметры карточек</h2>
+<div class="field"><label>Какие наборы знаков показывать?</label><div class="check-options choice-group" id="comboModeChecks">
+<label><input type="checkbox" data-select="comboMode" value="selected" checked> Только отмеченные наборы</label>
+<label><input type="checkbox" data-select="comboMode" value="all"> Все наборы знаков</label>
+</div></div>
+<div class="field"><label>Сколько корней на промежутке?</label><div class="check-options choice-group" id="rootCountChecks">
+<label><input type="checkbox" data-select="rootCount" value="0"> 0 корней</label>
+<label><input type="checkbox" data-select="rootCount" value="1" checked> 1 корень</label>
+<label><input type="checkbox" data-select="rootCount" value="2"> 2 корня</label></div></div>
+<div class="field"><label>Где расположен ноль относительно границ промежутка?</label><div class="check-options choice-group" id="zeroPositionChecks">
+<label><input type="checkbox" data-select="zeroPosition" value="left"> k₁ &gt; 0</label>
+<label><input type="checkbox" data-select="zeroPosition" value="inside" checked> k₁ &lt; 0 &lt; k₂</label>
+<label><input type="checkbox" data-select="zeroPosition" value="right"> k₂ &lt; 0</label></div></div>
+<div class="field"><label>Вид промежутка</label><div class="check-options choice-group" id="intervalChecks">
+<label><input type="checkbox" data-select="interval" value="oo" checked> (k₁; k₂)</label>
+<label><input type="checkbox" data-select="interval" value="cc"> [k₁; k₂]</label>
+<label><input type="checkbox" data-select="interval" value="co"> [k₁; k₂)</label>
+<label><input type="checkbox" data-select="interval" value="oc"> (k₁; k₂]</label>
+<label><input type="checkbox" data-select="interval" value="rightOpen"> (k; +∞)</label>
+<label><input type="checkbox" data-select="interval" value="rightClosed"> [k; +∞)</label>
+<label><input type="checkbox" data-select="interval" value="leftOpen"> (−∞; k)</label>
+<label><input type="checkbox" data-select="interval" value="leftClosed"> (−∞; k]</label></div></div>
+
+<div class="sign-picks">
+ <div class="field"><label>1. Направление ветвей</label><div class="check-options">
+  <label><input type="checkbox" data-select="signA" value="+" id="aUp" checked> Вверх (a &gt; 0)</label>
+  <label><input type="checkbox" data-select="signA" value="-" id="aDown"> Вниз (a &lt; 0)</label>
+  <label><input type="checkbox" data-select="signA" value="all" id="aUnknown"> Направление неизвестно</label>
+ </div></div>
+ <div class="field"><label>2. Знак c</label><div class="check-options">
+  <label><input type="checkbox" data-select="signC" value="+" id="cPos" checked> c &gt; 0</label>
+  <label><input type="checkbox" data-select="signC" value="-" id="cNeg"> c &lt; 0</label>
+  <label><input type="checkbox" data-select="signC" value="0" id="cZero"> c = 0</label>
+  <label><input type="checkbox" data-select="signC" value="all" id="cUnknown"> Знак c неизвестен</label>
+ </div></div>
+ <div class="field"><label>3. Знак b</label><div class="check-options">
+  <label><input type="checkbox" data-select="signB" value="+" id="bPos" checked> b &gt; 0</label>
+  <label><input type="checkbox" data-select="signB" value="-" id="bNeg"> b &lt; 0</label>
+  <label><input type="checkbox" data-select="signB" value="0" id="bZero"> b = 0</label>
+  <label><input type="checkbox" data-select="signB" value="all" id="bUnknown"> Знак b неизвестен</label>
+ </div></div>
+</div>
+
+<select id="comboMode" style="display:none" aria-hidden="true" tabindex="-1"><option value="selected" selected>selected</option><option value="all">all</option></select>
+<select id="rootCount" class="logic-select" aria-hidden="true" tabindex="-1" style="display:none"><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option></select>
+<select id="zeroPosition" class="logic-select" aria-hidden="true" tabindex="-1" style="display:none"><option value="left">left</option><option value="inside" selected>inside</option><option value="right">right</option></select>
+<select id="interval" class="logic-select" aria-hidden="true" tabindex="-1" style="display:none"><option value="oo" selected>oo</option><option value="cc">cc</option><option value="co">co</option><option value="oc">oc</option><option value="rightOpen">rightOpen</option><option value="rightClosed">rightClosed</option><option value="leftOpen">leftOpen</option><option value="leftClosed">leftClosed</option></select>
+<select id="signA" style="display:none" aria-hidden="true" tabindex="-1"><option value="+" selected>+</option><option value="-">-</option><option value="all">all</option></select>
+<select id="signB" style="display:none" aria-hidden="true" tabindex="-1"><option value="+">+</option><option value="-">-</option><option value="0">0</option><option value="all">all</option></select>
+<select id="signC" style="display:none" aria-hidden="true" tabindex="-1"><option value="+">+</option><option value="-">-</option><option value="0">0</option><option value="all">all</option></select>
+
+<div class="btnrow"><button class="btn primary" id="generateBtn">Показать варианты</button><button class="btn" id="resetBtn">Сбросить</button></div>
+<div class="btnrow"><button class="btn" id="toggleConditions">Скрыть условия</button></div>
+</aside>
+<section class="results"><div class="resultbar"><h2 id="resultTitle">Все схемы для 1 корня</h2><div class="count" id="resultCount">— карточек</div></div><div class="cards" id="cards"></div><div class="footer-note">k₁ — левый конец, k₂ — правый конец промежутка.</div></section></div></div>
+<div class="card-modal" id="cardModal" role="dialog" aria-modal="true" aria-label="Карточка на весь экран">
+ <div class="card-modal-panel"><button class="card-modal-close" id="closeCardModal" type="button">Закрыть ✕</button><div id="cardModalContent"></div></div>
+</div>
+<script>
+(()=>{
+const $ = id => document.getElementById(id);
+const modal = $('cardModal'), modalContent = $('cardModalContent');
+
+function openCard(card){
+  modalContent.innerHTML = card.outerHTML;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeCard(){
+  modal.classList.remove('open');
+  modalContent.innerHTML = '';
+  document.body.style.overflow = '';
+}
+$('closeCardModal').addEventListener('click', closeCard);
+modal.addEventListener('click', e => { if (e.target === modal) closeCard(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCard(); });
+
+const SIGNS = ['+', '-', '0'];
+const signOf = v => Math.abs(v) < 1e-8 ? '0' : (v > 0 ? '+' : '-');
+
+// ---------- Domain ----------
+function domainConfig(type, zeroPos) {
+  const closedL = ['cc','co','rightClosed'].includes(type);
+  const closedR = ['cc','oc','leftClosed'].includes(type);
+  let d;
+  if (['oo','cc','co','oc'].includes(type)) {
+    d = { type, L:0, R:4, finiteL:true, finiteR:true, closedL, closedR,
+          label: ({ oo:'(k₁; k₂)', cc:'[k₁; k₂]', co:'[k₁; k₂)', oc:'(k₁; k₂]' })[type] };
+  } else if (type === 'rightOpen' || type === 'rightClosed') {
+    d = { type, L:0, R:Infinity, finiteL:true, finiteR:false,
+          closedL: type === 'rightClosed', closedR:false,
+          label: type === 'rightOpen' ? '(k; +∞)' : '[k; +∞)' };
+  } else {
+    d = { type, L:-Infinity, R:0, finiteL:false, finiteR:true,
+          closedL:false, closedR: type === 'leftClosed',
+          label: type === 'leftOpen' ? '(−∞; k)' : '(−∞; k]' };
+  }
+  if (d.finiteL && d.finiteR) {
+    if (zeroPos === 'left')       { d.L = 1;  d.R = 5; }
+    else if (zeroPos === 'right') { d.L = -5; d.R = -1; }
+    else                          { d.L = -2; d.R = 2; }
+  } else if (d.finiteL) {
+    d.L = zeroPos === 'left' ? 1 : -1;
+  } else {
+    d.R = zeroPos === 'right' ? -1 : 1;
+  }
+  d.zeroPosition = zeroPos;
+  return d;
+}
+
+// ---------- Geometry / interval helpers ----------
+function within(x, d) {
+  if (d.finiteL && (x < d.L - 1e-8 || (!d.closedL && Math.abs(x - d.L) < 1e-8))) return false;
+  if (d.finiteR && (x > d.R + 1e-8 || (!d.closedR && Math.abs(x - d.R) < 1e-8))) return false;
+  return true;
+}
+function isOnExcludedBoundary(x, d) {
+  return (d.finiteL && !d.closedL && Math.abs(x - d.L) < 1e-8) ||
+         (d.finiteR && !d.closedR && Math.abs(x - d.R) < 1e-8);
+}
+function category(x, d) {
+  if (d.finiteL && Math.abs(x - d.L) < 1e-8) return d.closedL ? 'левая граница (включена)' : 'левая граница (исключена)';
+  if (d.finiteR && Math.abs(x - d.R) < 1e-8) return d.closedR ? 'правая граница (включена)' : 'правая граница (исключена)';
+  if (d.finiteL && x < d.L) return 'левее промежутка';
+  if (d.finiteR && x > d.R) return 'правее промежутка';
+  return 'внутри промежутка';
+}
+function countRoots(roots, d) {
+  return roots.filter((r, i) => (i === 0 || Math.abs(r - roots[i-1]) > 1e-8) && within(r, d)).length;
+}
+
+// ---------- Candidate generation (base positions) ----------
+function baseCandidates(d, n) {
+  const points = (d.finiteL && d.finiteR)
+    ? [-4,-2,-1,0,.5,1,1.5,2,2.5,3,3.5,4,5,6,8]
+    : d.finiteL
+      ? [-5,-3,-2,-1,0,.5,1,2,3,4,6,8]
+      : [-8,-6,-4,-3,-2,-1,0,.5,1,2,3,5];
+  const variants = new Map();
+  for (let i = 0; i < points.length; i++) {
+    for (let j = i; j < points.length; j++) {
+      const roots = [points[i], points[j]];
+      const cnt = countRoots(roots, d);
+      if (String(cnt) !== String(n)) continue;
+      const same = Math.abs(roots[1] - roots[0]) < 1e-8;
+      const eps = 1e-8;
+      const hasExcludedBoundary = roots.some(r =>
+        (d.finiteL && !d.closedL && Math.abs(r - d.L) < eps) ||
+        (d.finiteR && !d.closedR && Math.abs(r - d.R) < eps));
+      const hasInside = roots.some(r => within(r, d));
+      if (!same && hasExcludedBoundary && hasInside) continue;
+      const cats = roots.map(r => category(r, d));
+      const key = (same ? 'double:' : 'distinct:') + cats.join('|');
+      if (!variants.has(key)) {
+        variants.set(key, { key, roots, same, cats, n: cnt, kind: same ? 'tangent' : 'two' });
+      }
+    }
+  }
+  if (String(n) === '0') {
+    variants.set('no-real-roots', { key:'no-real-roots', roots:[], same:false, cats:[], n:0, kind:'none' });
+  }
+  return [...variants.values()];
+}
+
+// ---------- Shift solvers (preserve root count) ----------
+function solveShift(roots, d, aSign, bSign, cSign, requiredN) {
+  if (!roots.length) return null;
+  const baseVals = [];
+  for (let s = -12; s <= 12; s += 0.25) baseVals.push(Math.round(s * 4) / 4);
+  baseVals.push(-roots[0], -roots[1], -(roots[0] + roots[1]) / 2);
+  const shifts = [...new Set(baseVals)].sort((a, b) => Math.abs(a) - Math.abs(b));
+  const aVals = aSign === 'all' ? ['+', '-'] : [aSign];
+  for (const A of aVals) {
+    const aval = A === '+' ? 1 : -1;
+    for (const shift of shifts) {
+      const shifted = roots.map(x => x + shift);
+      if (countRoots(shifted, d) !== requiredN) continue;
+      if (shifted.some(x => isOnExcludedBoundary(x, d))) continue;
+      const bVal = signOf(-aval * (shifted[0] + shifted[1]));
+      const cVal = signOf(aval * shifted[0] * shifted[1]);
+      if (bSign !== 'all' && bVal !== bSign) continue;
+      if (cSign !== 'all' && cVal !== cSign) continue;
+      return { A, shift, roots: shifted, bVal, cVal };
+    }
+  }
+  return null;
+}
+function noRootModel(A, bSign, cSign) {
+  const aval = A === '+' ? 1 : -1;
+  if (cSign !== 'all' && cSign !== A) return null;
+  if (bSign === '0') return { A, roots: [], shift: 0, h: 0, m: aval * 0.7, bVal: '0', cVal: A, none: true };
+  const h = (bSign === '+' ? -aval : bSign === '-' ? aval : 0) * 1.3;
+  const bVal = signOf(-2 * aval * h);
+  if (bSign !== 'all' && bVal !== bSign) return null;
+  return { A, roots: [], shift: 0, h, m: aval * 0.7, bVal, cVal: A, none: true };
+}
+function lineShift(root, d, bSign, cSign, requiredN) {
+  const bVals = bSign === 'all' ? ['+', '-', '0'] : [bSign];
+  if (root === null) {
+    if (requiredN !== 0) return null;
+    for (const B of bVals) {
+      if (B !== '0') continue;
+      for (const C of (cSign === 'all' ? ['+', '-'] : [cSign])) {
+        if (C !== '0') return { B, C, root: null, shift: 0, constant: true };
+      }
+    }
+    return null;
+  }
+  const baseInside = within(root, d);
+  for (const B of bVals) {
+    if (B === '0') continue;
+    for (let shift = -12; shift <= 12; shift += 0.25) {
+      const rr = root + shift;
+      if (within(rr, d) !== baseInside) continue;
+      if (isOnExcludedBoundary(rr, d)) continue;
+      const C = signOf(-(B === '+' ? 1 : -1) * rr);
+      if (cSign !== 'all' && C !== cSign) continue;
+      return { B, C, root: rr, shift, constant: false };
+    }
+  }
+  return null;
+}
+function lineVariants(d, n) {
+  if (String(n) === '2') return [];
+  const points = (d.finiteL && d.finiteR)
+    ? [-4,-2,-1,0,.5,1,2,3,4,5,6,8]
+    : d.finiteL
+      ? [-5,-3,-2,-1,0,.5,1,2,3,5,7]
+      : [-7,-5,-3,-2,-1,0,1,2,3,5];
+  const out = new Map();
+  for (const r of points) {
+    const cnt = within(r, d) ? 1 : 0;
+    if (String(cnt) !== String(n)) continue;
+    const key = 'line-root:' + category(r, d);
+    if (!out.has(key)) out.set(key, { key, root: r });
+  }
+  if (String(n) === '0') out.set('constant-no-root', { key:'constant-no-root', root:null });
+  return [...out.values()];
+}
+
+// ---------- Card assembly ----------
+function makeVariantCards(aFilter, bFilter, cFilter) {
+  const d = domainConfig($('interval').value, $('zeroPosition').value);
+  const n = $('rootCount').value;
+  const expand = v => v === 'all' ? SIGNS : [v];
+  const AValues = expand(aFilter), BValues = expand(bFilter), CValues = expand(cFilter);
+  const cards = [];
+  for (const A of AValues) {
+    if (A === '0') {
+      for (const v of lineVariants(d, n)) {
+        for (const B of BValues) for (const C of CValues) {
+          const model = lineShift(v.root, d, B, C, Number(n));
+          if (!model) continue;
+          cards.push({ mode:'line', variant:v, model, d, n, signs:{ a:'0', b:model.B, c:model.C } });
+        }
+      }
+    } else {
+      for (const v of baseCandidates(d, n)) {
+        for (const B of BValues) for (const C of CValues) {
+          let model;
+          if (v.kind === 'none') {
+            model = noRootModel(A, B, C);
+          } else {
+            const found = solveShift(v.roots, d, A, B, C, Number(n));
+            model = found ? { ...found, none:false } : null;
+          }
+          if (!model) continue;
+          cards.push({ mode:'quad', variant:v, model, d, n, signs:{ a:model.A, b:model.bVal, c:model.cVal } });
+        }
+      }
+    }
+  }
+  const seen = new Set();
+  return cards.filter(card => {
+    const sig = [card.signs.a, card.signs.b, card.signs.c, conditionLines(card).join('|')].join('::');
+    if (seen.has(sig)) return false;
+    seen.add(sig);
+    return true;
+  });
+}
+
+// ---------- Vertex / value helpers ----------
+function vertexX(card) {
+  const m = card.model;
+  if (card.mode === 'line') return null;
+  if (m.none) return m.h;
+  return (m.roots[0] + m.roots[1]) / 2;
+}
+function fSignAt(x, card) {
+  const m = card.model, A = m.A === '+' ? 1 : -1;
+  if (card.mode === 'line') {
+    if (m.constant) return m.C === '+' ? '+' : '-';
+    return signOf((m.B === '+' ? 1 : -1) * (x - m.root));
+  }
+  if (m.none) {
+    const val = A * ((x - m.h) ** 2) + m.m;
+    return signOf(val);
+  }
+  return signOf(A * (x - m.roots[0]) * (x - m.roots[1]));
+}
+function vertexPosition(x, d) {
+  const eps = 1e-7;
+  if (d.finiteL && d.finiteR) {
+    if (x < d.L - eps) return 'x₀ < k₁';
+    if (Math.abs(x - d.L) <= eps) return `x₀ = k₁ (${d.closedL ? 'граница включена' : 'граница исключена'})`;
+    if (x < d.R - eps) return 'k₁ < x₀ < k₂';
+    if (Math.abs(x - d.R) <= eps) return `x₀ = k₂ (${d.closedR ? 'граница включена' : 'граница исключена'})`;
+    return 'x₀ > k₂';
+  }
+  if (d.finiteL) {
+    if (x < d.L - eps) return 'x₀ < k';
+    if (Math.abs(x - d.L) <= eps) return `x₀ = k (${d.closedL ? 'граница включена' : 'граница исключена'})`;
+    return 'x₀ > k';
+  }
+  if (d.finiteR) {
+    if (x < d.R - eps) return 'x₀ < k';
+    if (Math.abs(x - d.R) <= eps) return `x₀ = k (${d.closedR ? 'граница включена' : 'граница исключена'})`;
+    return 'x₀ > k';
+  }
+  return 'вершина на оси Ox';
+}
+function condSign(label, s) {
+  return `${label} ${s === '+' ? '> 0' : s === '-' ? '< 0' : '= 0'}`;
+}
+
+// ---------- Conditions shown on a card ----------
+function conditionLines(card) {
+  const { d, variant: v, model: m, mode, n } = card;
+  const lines = [];
+  if (mode === 'line') {
+    lines.push('a = 0');
+    if (m.constant) {
+      lines.push('b = 0');
+      lines.push(condSign('c', m.C));
+      lines.push('y(x) = c — постоянная функция');
+    } else {
+      lines.push(condSign('b', m.B));
+      lines.push(condSign('c', m.C));
+      lines.push('линейная функция');
+    }
+    return lines;
+  }
+
+  const bothRootsInside = d.finiteL && d.finiteR &&
+                          countRoots(m.roots, d) === 2 &&
+                          m.roots.every(r => category(r, d) === 'внутри промежутка');
+  if (bothRootsInside) {
+    lines.push('x₀ ∈ (k₁; k₂)');
+    lines.push('D > 0');
+    lines.push(condSign('y(x₀)', m.A === '+' ? '-' : '+'));
+    lines.push(m.A === '+' ? 'y(k₁) > 0' : 'y(k₁) < 0');
+    lines.push(m.A === '+' ? 'y(k₂) > 0' : 'y(k₂) < 0');
+    return lines;
+  }
+
+  const endpointSigns = [];
+  if (d.finiteL) endpointSigns.push(fSignAt(d.L, card));
+  if (d.finiteR) endpointSigns.push(fSignAt(d.R, card));
+  const endpointsDecisive = d.finiteL && d.finiteR &&
+    endpointSigns[0] !== '0' && endpointSigns[1] !== '0' &&
+    endpointSigns[0] !== endpointSigns[1];
+
+  if (n === '1' && endpointsDecisive && v.kind === 'two') {
+    lines.push(condSign('y(k₁)', endpointSigns[0]));
+    lines.push(condSign('y(k₂)', endpointSigns[1]));
+    return lines;
+  }
+
+  if (v.kind === 'none') {
+    lines.push('D < 0');
+    lines.push(condSign('y(x₀)', m.A));
+  } else if (v.kind === 'tangent') {
+    lines.push('y(x₀) = 0');
+    lines.push(vertexPosition(vertexX(card), d));
+  } else {
+    lines.push('D > 0');
+    lines.push(vertexPosition(vertexX(card), d));
+    lines.push(condSign('y(x₀)', m.A === '+' ? '-' : '+'));
+  }
+
+  if (d.finiteL) lines.push(condSign('y(k₁)', endpointSigns[0]));
+  if (d.finiteR) lines.push(condSign('y(k₂)', endpointSigns[d.finiteL ? 1 : 0]));
+  return lines;
+}
+
+// ---------- SVG rendering ----------
+function graphSVG(card, idx) {
+  const W = 470, H = 330, ml = 24, mr = 22, mt = 14, mb = 24;
+  const innerW = W - ml - mr, innerH = H - mt - mb;
+  const d = card.d, m = card.model;
+  let roots = [];
+  if (card.mode === 'quad' && !m.none) roots = m.roots.slice();
+  else if (card.mode === 'line' && !m.constant) roots = [m.root];
+  const shift = m.shift || 0;
+
+  const finite = [0, ...roots, ...(d.finiteL ? [d.L] : []), ...(d.finiteR ? [d.R] : []),
+                  ...(card.mode === 'quad' && m.none ? [m.h + shift] : [])];
+  let xmin = Math.min(...finite, 0) - 0.9;
+  let xmax = Math.max(...finite, 0) + 0.9;
+  if (d.finiteL && !d.finiteR) xmax = Math.max(xmin + 7, d.L + 5, 2);
+  if (!d.finiteL && d.finiteR) {
+    xmin = Math.min(xmax - 7, d.R - 5, -2);
+    xmin = Math.min(xmin, d.R - 7);
+  }
+  if (d.finiteL) xmin = Math.min(xmin, d.L - 0.8);
+  if (d.finiteR) xmax = Math.max(xmax, d.R + 0.8);
+  const zeroPos = d.zeroPosition || 'inside';
+  if (zeroPos === 'left' && d.finiteL) {
+    xmin = Math.min(xmin, -2);
+    xmax = Math.max(xmax, d.L + 1, d.R + 0.5);
+  }
+  if (zeroPos === 'right' && d.finiteR) {
+    xmax = Math.max(xmax, 2);
+    xmin = Math.min(xmin, d.R - 7, d.L - 0.5);
+  }
+  xmin = Math.min(xmin, -0.8); xmax = Math.max(xmax, 0.8);
+  xmin = Math.max(-20, xmin); xmax = Math.min(20, xmax);
+  if (xmax - xmin < 5) { xmin -= 2.5; xmax += 2.5; }
+  const X = x => ml + (x - xmin) / (xmax - xmin) * innerW;
+  const Asign = m.A === '+' ? 1 : -1;
+  const zeroY = mt + innerH * (card.mode === 'quad' ? (Asign === 1 ? 0.31 : 0.48) : 0.48);
+  const leftX = d.finiteL ? X(d.L) : ml;
+  const rightX = d.finiteR ? X(d.R) : W - mr;
+  const lineRootX = card.mode === 'line' && !m.constant ? X(m.root) : null;
+  const rootPx = roots.map(X);
+  const Apx = Asign;
+
+  const curveY = (x) => {
+    const px = X(x);
+    if (card.mode === 'line') {
+      if (m.constant) return zeroY - (m.C === '+' ? -1 : 1) * 38;
+      const slope = m.B === '+' ? 1 : -1;
+      return zeroY - slope * 0.56 * (px - lineRootX);
+    }
+    if (m.none) {
+      const hx = X(m.h);
+      const curv = ((px - hx) / 95) ** 2;
+      // For a>0: vertex above axis (zeroY - 42), branches go up (subtract offset)
+      // For a<0: vertex below axis (zeroY + 42), branches go down (add offset)
+      return zeroY - Apx * 42 - Apx * Math.min(115, curv * 36);
+    }
+    if (roots.length === 2) {
+      const gap = Math.abs(rootPx[1] - rootPx[0]);
+      if (gap < 1.5) {
+        // Tangent case (D=0): vertex touches the axis
+        const vx = Math.max(ml + 42, Math.min(W - mr - 42, rootPx[0]));
+        return zeroY - Apx * 112 * ((px - vx) / 70) ** 2;
+      }
+      // Two distinct roots: standard parabola formula scaled for visibility
+      const k = 100 / ((gap / 2) ** 2);
+      return zeroY - Apx * k * (px - rootPx[0]) * (px - rootPx[1]);
+    }
+    return zeroY;
+  };
+
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Абстрактная схема расположения параболы на промежутке">`;
+  s += `<defs>
+    <pattern id="grid${idx}" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="#c9cdd4" stroke-width=".8"/></pattern>
+    <pattern id="hatch${idx}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="9" stroke="#ef3020" stroke-width="2" opacity=".68"/></pattern>
+  </defs>`;
+  s += `<rect x="0" y="0" width="${W}" height="${H}" fill="#fff"/>`;
+  s += `<rect x="${ml}" y="${mt}" width="${innerW}" height="${innerH}" fill="url(#grid${idx})"/>`;
+  if (d.finiteL) s += `<rect x="${ml}" y="${mt}" width="${Math.max(0, leftX - ml)}" height="${innerH}" fill="url(#hatch${idx})" opacity=".84"/>`;
+  if (d.finiteR) s += `<rect x="${Math.min(W - mr, rightX)}" y="${mt}" width="${Math.max(0, W - mr - rightX)}" height="${innerH}" fill="url(#hatch${idx})" opacity=".84"/>`;
+  s += `<line x1="${ml}" y1="${zeroY}" x2="${W - mr + 5}" y2="${zeroY}" stroke="#111" stroke-width="2"/>`;
+  s += `<path d="M ${W - mr + 5} ${zeroY} l -8 -4 l 0 8 z" fill="#111"/>`;
+  s += `<text x="${W - mr - 1}" y="${zeroY - 7}" font-size="12" font-style="italic" fill="#111">x</text>`;
+  const zeroX = X(0);
+  if (zeroX >= ml && zeroX <= W - mr) {
+    s += `<line x1="${zeroX}" y1="${H - mb + 4}" x2="${zeroX}" y2="${mt - 4}" stroke="#111" stroke-width="2"/>`;
+    s += `<path d="M ${zeroX} ${mt - 4} l -4 8 l 8 0 z" fill="#111"/>`;
+    s += `<text x="${zeroX + 5}" y="${mt + 9}" font-size="12" font-style="italic" fill="#111">y</text>`;
+  }
+  const drawBoundary = (xx, closed, label) => {
+    s += `<line x1="${xx}" y1="${mt + 3}" x2="${xx}" y2="${H - mb}" stroke="#ef3020" stroke-width="2.2"/>`;
+    s += `<circle cx="${xx}" cy="${zeroY}" r="5.3" fill="${closed ? '#ef3020' : '#fff'}" stroke="#ef3020" stroke-width="2.2"/>`;
+    s += `<text x="${xx}" y="${zeroY + 20}" text-anchor="middle" fill="#c82317" font-family="Georgia" font-size="14" font-style="italic">${label}</text>`;
+  };
+  if (d.finiteL) drawBoundary(leftX, d.closedL, d.finiteR ? 'k₁' : 'k');
+  if (d.finiteR) drawBoundary(rightX, d.closedR, d.finiteL ? 'k₂' : 'k');
+
+  const samples = 360;
+  let path = '';
+  for (let i = 0; i <= samples; i++) {
+    const x = xmin + (xmax - xmin) * i / samples;
+    const y = curveY(x);
+    path += `${i ? 'L' : 'M'} ${X(x).toFixed(2)} ${Math.max(mt - 4, Math.min(H - mb + 4, y)).toFixed(2)} `;
+  }
+  s += `<path d="${path}" fill="none" stroke="#356aff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>`;
+  for (const r of roots.filter((x, i, arr) => i === 0 || Math.abs(x - arr[i - 1]) > 1e-8)) {
+    s += `<circle cx="${X(r)}" cy="${zeroY}" r="5" fill="#356aff" stroke="#fff" stroke-width="1.4"/>`;
+  }
+  if (card.mode === 'quad' && !m.none && roots.length === 2) {
+    const vx = (roots[0] + roots[1]) / 2;
+    s += `<circle cx="${X(vx)}" cy="${curveY(vx)}" r="3.2" fill="#356aff" stroke="#fff" stroke-width="1"/>`;
+  }
+  if (card.mode === 'quad' && m.none) {
+    s += `<circle cx="${X(m.h)}" cy="${curveY(m.h)}" r="3.2" fill="#356aff" stroke="#fff" stroke-width="1"/>`;
+  }
+  s += `<text x="${ml + 4}" y="${H - 5}" font-size="10" fill="#5d6b7f">штриховка — вне промежутка</text></svg>`;
+  return s;
+}
+
+function escapeHTML(s) {
+  return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+}
+function cardHTML(c, i, groupId) {
+  const signLabel = v => v === '+' ? '> 0' : v === '-' ? '< 0' : '= 0';
+  const signs = `<span class="badge a">a ${signLabel(c.signs.a)}</span>` +
+                `<span class="badge b">b ${signLabel(c.signs.b)}</span>` +
+                `<span class="badge c">c ${signLabel(c.signs.c)}</span>`;
+  const conditionList = conditionLines(c);
+  const cond = conditionList.map(x => `<div>${escapeHTML(x)}</div>`).join('');
+  const braceScale = Math.max(1, conditionList.length * 0.82);
+  const countLabel = c.n === '0' ? '0 корней' : c.n === '1' ? '1 корень' : '2 корня';
+  const pattern = c.mode === 'line' ? 'ЛИНЕЙНАЯ ФУНКЦИЯ'
+                 : c.variant.kind === 'none' ? 'D < 0'
+                 : c.variant.kind === 'tangent' ? 'D = 0 · КАСАНИЕ'
+                 : 'D > 0';
+  return `<article class="card"><div class="cardhead"><div class="cardtitle">Случай ${i + 1} · ${countLabel} · ${escapeHTML(c.d.label)}</div><span class="badge">${pattern}</span></div><div class="signs">${signs}</div><div class="chart">${graphSVG(c, `${groupId}_${i}`)}</div><div class="condition"><h4>Условия этого расположения</h4><div class="system" style="--brace-scale:${braceScale}"><div class="brace">{</div><div class="conds">${cond}</div></div></div></article>`;
+}
+
+// ---------- Controller ----------
+function getCheckedValue(groupName) {
+  const box = document.querySelector(`[data-select="${groupName}"]:checked`);
+  return box ? box.value : 'all';
+}
+
+function generate() {
+  const n = $('rootCount').value;
+  const mode = $('comboMode').value;
+  
+  const aVal = getCheckedValue('signA');
+  const bVal = getCheckedValue('signB');
+  const cVal = getCheckedValue('signC');
+
+  const as = (mode === 'all' || aVal === 'all') ? ['+', '-'] : [aVal];
+  const bs = (mode === 'all' || bVal === 'all') ? ['+', '-', '0'] : [bVal];
+  const cs = (mode === 'all' || cVal === 'all') ? ['+', '-', '0'] : [cVal];
+  
+  const combos = [];
+  for (const a of as) for (const b of bs) for (const c of cs) combos.push({ a, b, c });
+
+  const groups = [];
+  for (const signs of combos) {
+    const cards = makeVariantCards(signs.a, signs.b, signs.c);
+    if (cards.length) groups.push({ signs, cards });
+  }
+  $('cards').innerHTML = '';
+  const rootText = n === '1' ? '1 корень' : n === '2' ? '2 корня' : '0 корней';
+  const dLabel = domainConfig($('interval').value, $('zeroPosition').value).label;
+  $('resultTitle').textContent = `Расположения параболы: ${rootText} · ${dLabel}`;
+  const total = groups.reduce((sum, g) => sum + g.cards.length, 0);
+  $('resultCount').textContent = `${total} карточек · ${groups.length} наборов`;
+  if (!groups.length) {
+    $('cards').innerHTML = '<div class="empty">Для отмеченных знаков нет подходящих схем. Отметьте другие варианты или выберите «Все сочетания знаков».</div>';
+    return;
+  }
+  $('cards').innerHTML = groups.map((g, gi) => {
+    const sl = v => v === '+' ? '> 0' : v === '-' ? '< 0' : '= 0';
+    const head = `a ${sl(g.signs.a)}, b ${sl(g.signs.b)}, c ${sl(g.signs.c)}`;
+    return `<section class="combo-group"><div class="combo-heading"><span>${head}</span><small>${g.cards.length} вариантов</small></div><div class="cards">${g.cards.map((c, i) => cardHTML(c, i, gi)).join('')}</div></section>`;
+  }).join('');
+}
+
+// ---------- UI bindings ----------
+// Unified listener for all mutually exclusive groups (including signs)
+document.querySelectorAll('[data-select]').forEach(box => {
+  box.addEventListener('change', () => {
+    const id = box.dataset.select;
+    if (box.checked) {
+      document.querySelectorAll(`[data-select="${id}"]`).forEach(other => {
+        if (other !== box) other.checked = false;
+      });
+    } else {
+      const group = [...document.querySelectorAll(`[data-select="${id}"]`)];
+      if (!group.some(x => x.checked)) box.checked = true;
+    }
+    const sel = $(id);
+    if (sel) sel.value = box.value;
+    generate();
+  });
+});
+
+$('generateBtn').addEventListener('click', generate);
+
+$('resetBtn').addEventListener('click', () => {
+  $('comboMode').value = 'selected';
+  $('rootCount').value = '1';
+  $('interval').value = 'oo';
+  $('zeroPosition').value = 'inside';
+  $('signA').value = '+';
+  $('signB').value = '+';
+  $('signC').value = '+';
+
+  ['comboMode', 'rootCount', 'interval', 'zeroPosition', 'signA', 'signB', 'signC'].forEach(id => {
+    const val = $(id).value;
+    document.querySelectorAll(`[data-select="${id}"]`).forEach(box => box.checked = box.value === val);
+  });
+
+  document.body.classList.remove('hide-conditions');
+  $('toggleConditions').textContent = 'Скрыть условия';
+  generate();
+});
+
+$('toggleConditions').addEventListener('click', () => {
+  document.body.classList.toggle('hide-conditions');
+  $('toggleConditions').textContent = document.body.classList.contains('hide-conditions') ? 'Показать условия' : 'Скрыть условия';
+});
+
+// Open modal only when clicking the chart or the card head (so conditions can be selected).
+document.addEventListener('click', e => {
+  if (e.target.closest('button') || e.target.closest('.card-modal')) return;
+  const card = e.target.closest('.card');
+  if (!card) return;
+  if (!e.target.closest('.chart') && !e.target.closest('.cardhead')) return;
+  openCard(card);
+});
+
+$('printBtn').addEventListener('click', () => window.print());
+
+generate();
+})();
+</script></body></html>

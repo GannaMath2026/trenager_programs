@@ -1,0 +1,1219 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Самоучитель «Производная» — v2</title>
+<style>
+:root{--bg:#0c1219;--panel:#151e27;--panel2:#101820;--line:#344555;--text:#edf2f6;--muted:#9eabb8;--yellow:#ffd84d;--blue:#55aaff;--red:#ff6262;--green:#65d59e}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+button,input,select{font:inherit}button{cursor:pointer}
+.app{max-width:1450px;margin:auto;padding:16px}
+.top{display:flex;gap:14px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.title{font-size:24px;font-weight:800}
+.sub{color:var(--muted);flex:1}
+.progressBox{display:flex;align-items:center;gap:8px;min-width:200px}
+.progressTrack{flex:1;height:8px;background:#1a2732;border-radius:999px;overflow:hidden;min-width:140px}
+.progressBar{height:100%;width:0;background:linear-gradient(90deg,#315d88,#6092bc);transition:width .25s}
+.progressText{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:56px;text-align:right}
+.layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px}
+.menu{position:sticky;top:12px;align-self:start;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;max-height:calc(100vh - 24px);overflow:auto}
+.menu h3{font-size:14px;margin:4px 8px 10px}
+.mitem{display:block;width:100%;text-align:left;border:0;background:transparent;color:#cdd7df;border-radius:8px;padding:9px 10px;margin:2px 0;font-size:14px}
+.mitem:hover{background:#1d2a36}
+.mitem.active{background:#263a4c;color:#fff;border-left:4px solid var(--yellow);padding-left:6px}
+.scene{display:none}.scene.active{display:block}
+.head,.stage,.card,.trainerbox,.chainWrap{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.head{padding:15px;margin-bottom:12px}
+.tag{display:inline-block;border:1px solid #566a7b;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;color:#d9e4ed}
+.head h1{font-size:21px;margin:8px 0}
+.theory{font-size:16px;line-height:1.5}
+.formula{font-size:21px;text-align:center;margin:10px 0}
+.note{color:var(--muted);line-height:1.45}
+.readmore{margin-top:10px;background:#111a23;border:1px solid #344655;border-radius:9px}
+.readmore summary{padding:9px 11px;cursor:pointer}
+.readmore div{padding:0 12px 12px;color:#b7c2cc;line-height:1.5}
+.stage{background:var(--panel2);padding:10px;overflow:hidden}
+.stage canvas{display:block;width:100%;height:400px;background:#091017;border-radius:8px}
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px}
+.controls button,.controls select,.controls input[type=number],.controls input[type=text]{background:#1a2732;color:#eef4f8;border:1px solid #405364;border-radius:7px;padding:8px 10px}
+.controls input[type=range]{min-width:160px}
+.controls label{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.primary{background:#315d88!important;border-color:#6092bc!important}
+button.play{background:#1e3a2e;border:1px solid #3d6b52;color:#bcebd2;min-width:40px;padding:8px 12px;font-weight:700}
+button.play:active{transform:scale(.96)}
+.presetRow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.presetRow button{background:#1b2935;color:#fff;border:1px solid #405364;border-radius:7px;padding:6px 10px;font-size:13px}
+.presetRow button.active{background:#2d4256;border-color:var(--yellow)}
+.nav{display:flex;justify-content:space-between;margin-top:12px;gap:8px}
+.nav button{background:#243544;color:#fff;border:1px solid #435668;border-radius:8px;padding:9px 14px}
+.nav button:disabled{opacity:.35}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{padding:12px}.card h3{margin:0 0 8px}
+.steps .step{padding:8px;border-radius:7px;background:#18242e;margin:5px 0}
+.step.done{border-left:3px solid var(--green)}
+.answer{padding:10px;border-radius:8px;background:#0f1a15;border:1px solid #28503f;color:#bcebd2;margin-top:9px}
+.wrong{background:#1c1313;border-color:#633333;color:#ffc1c1}
+.dual{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stage .dual canvas,.dual canvas{height:350px}
+.integral{display:grid;grid-template-columns:1fr 320px;gap:10px}
+.mathbox{background:#0e171f;border:1px solid #304252;border-radius:9px;padding:12px;font-size:18px;text-align:center}
+.formulaGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.formulaCard{cursor:pointer}.formulaCard.active{outline:2px solid var(--yellow)}
+.trainerbox{padding:12px}
+.trainer-top{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.expr{flex:1;min-width:320px;background:#0d151d;color:#fff;border:1px solid #425365;border-radius:8px;padding:11px;font-size:18px;font-family:monospace}
+.graph2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.graphpanel{background:#0d151d;border:1px solid #304252;border-radius:10px;padding:7px}
+.graphpanel b{display:block;padding:3px 5px 7px}
+.graphpanel canvas{width:100%;height:360px;display:block;background:#091017;border-radius:7px}
+.trainer-info{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.pill{background:#182633;border:1px solid #334756;border-radius:8px;padding:7px 10px}
+.error{color:#ff9999;min-height:20px;margin-top:7px}
+.presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.presets button{background:#1b2935;color:#fff;border:1px solid #405364;border-radius:7px;padding:6px 9px;font-size:13px}
+/* chain (сложная функция) */
+.chainWrap{padding:10px}
+.chain{display:grid;grid-template-columns:1fr 30px 1fr 30px 1fr;gap:8px;align-items:stretch}
+.chainPanel{background:#0d151d;border:1px solid #304252;border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.chainPanel b{font-size:13px;color:#cdd7df}
+.chainPanel canvas{width:100%;height:200px;display:block;background:#091017;border-radius:6px}
+.chainPanel .rate{font-size:13px;color:#9eabb8}
+.chainPanel .rate .val{font-weight:800;color:#fff;font-size:17px}
+.chainOp{align-self:center;font-size:26px;color:var(--yellow);font-weight:800;text-align:center}
+.conveyor{background:#0e171f;border:1px solid #304252;border-radius:9px;padding:12px;margin-top:10px;font-family:monospace;font-size:15px;line-height:1.9}
+.conveyor .k1{color:var(--blue);font-weight:700}
+.conveyor .k2{color:var(--yellow);font-weight:700}
+.conveyor .tot{color:var(--green);font-weight:800;font-size:20px}
+/* quiz */
+.quizOverlay{position:fixed;inset:0;background:rgba(5,10,15,.85);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;animation:fadein .2s}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.quizCard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;max-width:640px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.quizTag{display:inline-block;background:#2d4256;color:#d9e4ed;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;margin-bottom:10px;letter-spacing:.5px;text-transform:uppercase}
+.quizCard .q{font-size:18px;margin-bottom:14px;line-height:1.4}
+.quizOpts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.quizOpt{background:#1a2732;color:#eef4f8;border:1px solid #405364;border-radius:8px;padding:12px;font-size:15px;text-align:center}
+.quizOpt:hover{background:#22323f}
+.quizOpt.correct{background:#1b4230;border-color:var(--green);color:#bcebd2}
+.quizOpt.wrong{background:#3a1a1a;border-color:var(--red);color:#ffc1c1}
+.quizFb{margin-top:12px;min-height:22px;font-size:14px;line-height:1.4}
+@media(max-width:1000px){.chain{grid-template-columns:1fr}.chainOp{transform:rotate(90deg);padding:4px 0}}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.menu{position:static;max-height:none}.dual,.integral,.graph2,.grid2,.graph2{grid-template-columns:1fr}.formulaGrid{grid-template-columns:1fr 1fr}.stage canvas{height:340px}.graphpanel canvas{height:300px}.chainPanel canvas{height:170px}.quizOpts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="top">
+  <div class="title">Самоучитель «Производная»</div>
+  <div class="sub">от графика и геометрического смысла — к исследованию функции и тренажёру</div>
+  <div class="progressBox"><div class="progressTrack"><div class="progressBar" id="progressBar"></div></div><div class="progressText" id="progressText">1 / 16</div></div>
+</div>
+<div class="layout">
+<aside class="menu" id="menu"><h3>Маршрут</h3></aside>
+<main class="content">
+
+<section class="scene active" data-title="1. Что такое функция">
+<div class="head"><span class="tag">ФАКТ</span><h1>1. Что такое функция</h1><div class="theory">Функция ставит каждому допустимому значению аргумента <b>x</b> определённое значение <b>y=f(x)</b>.</div><div class="formula">y = f(x)</div><details class="readmore"><summary>Подробнее</summary><div>Точка движется по графику: меняется абсцисса x и вместе с ней ордината f(x).</div></details></div>
+<div class="stage"><canvas id="s1c"></canvas><div class="controls">x: <input id="s1r" type="range" min="-5" max="5" step="0.01" value="1.2"><span id="s1i"></span><button class="play" data-for="s1r">▶</button></div></div>
+</section>
+
+<section class="scene" data-title="2. Основные графики">
+<div class="head"><span class="tag">ФАКТ</span><h1>2. Основные функции</h1><div class="theory">Узнаём графики основных элементарных функций и видим, как меняется функция при движении по оси абсцисс.</div></div>
+<div class="stage"><canvas id="s2c"></canvas><div class="presetRow" id="s2buttons"></div><div class="controls">сдвиг по Ox: <input id="s2r" type="range" min="-5" max="5" step="0.1" value="0"><span id="s2i">0</span><button class="play" data-for="s2r">▶</button></div></div>
+</section>
+
+<section class="scene" data-title="3. От секущей к касательной">
+<div class="head"><span class="tag">СМЫСЛ</span><h1>3. От секущей к касательной</h1><div class="theory">Для двух точек графика разность ординат — Δy, разность абсцисс — Δx. Отношение задаёт угловой коэффициент секущей.</div><div class="formula">k = Δy / Δx</div></div>
+<div class="stage"><canvas id="s3c"></canvas><div class="presetRow" id="s3presets"></div><div class="controls">x₀ <input id="s3a" type="range" min="-3" max="3" step="0.01" value="-1"> x₁ <input id="s3b" type="range" min="-3" max="3" step="0.01" value="1"><span id="s3i"></span><button class="play" data-for="s3b">▶</button></div></div>
+</section>
+
+<section class="scene" data-title="4. Производная в точке">
+<div class="head"><span class="tag">ОПРЕДЕЛЕНИЕ</span><h1>4. Производная в точке</h1><div class="theory">Производная в точке — мгновенная скорость изменения функции и угловой коэффициент касательной.</div><div class="formula">f′(x₀) = tg(α)</div></div>
+<div class="stage"><canvas id="s4c"></canvas><div class="presetRow" id="s4presets"></div><div class="controls">x₀ <input id="s4r" type="range" min="-3.5" max="3.5" step="0.01" value="1"><span id="s4i"></span><button class="play" data-for="s4r">▶</button></div></div>
+</section>
+
+<section class="scene" data-title="5. Знак производной">
+<div class="head"><span class="tag">СЛЕДСТВИЕ</span><h1>5. Знак производной и монотонность</h1><div class="theory">Если f′(x)&gt;0 — функция возрастает. Если f′(x)&lt;0 — убывает.</div><div class="formula">f′(x) &gt; 0 ⇒ ↑; f′(x) &lt; 0 ⇒ ↓</div></div>
+<div class="stage"><canvas id="s5c"></canvas><div class="presetRow" id="s5presets"></div><div class="controls">x₀ <input id="s5r" type="range" min="-3.5" max="3.5" step="0.01" value="0.8"><span id="s5i"></span><button class="play" data-for="s5r">▶</button></div></div>
+</section>
+
+<section class="scene" data-title="6. Полный анализ графика">
+<div class="head"><span class="tag">АЛГОРИТМ</span><h1>6. Где функция возрастает, где убывает, где экстремумы</h1><div class="theory">Для f(x)=x³−3x производная f′(x)=3x²−3. Нули производной делят область на интервалы монотонности.</div></div>
+<div class="dual"><div class="stage"><b>f(x)</b><canvas id="s6f"></canvas></div><div class="stage"><b>f′(x)</b><canvas id="s6d"></canvas></div></div>
+<div class="controls">x₀ <input id="s6r" type="range" min="-3" max="3" step="0.01" value="0.7"><span id="s6i"></span><button class="play" data-for="s6r">▶</button></div>
+</section>
+
+<section class="scene" data-title="7. Алгоритм исследования">
+<div class="head"><span class="tag">АЛГОРИТМ</span><h1>7. Исследование функции по производной</h1><div class="theory">Последовательно находим производную, её нули, знаки — и по ним делаем выводы об экстремумах.</div></div>
+<div class="stage"><div class="steps" id="s7steps"></div><div class="controls"><button class="primary" id="s7next">Следующий шаг</button><button id="s7reset">Сначала</button></div></div>
+</section>
+
+<section class="scene" data-title="8. Правила дифференцирования">
+<div class="head"><span class="tag">ПРАВИЛО</span><h1>8. Основные правила дифференцирования</h1><div class="theory">Выберите правило. Формула появится внизу.</div></div>
+<div class="grid2" id="s8grid"></div><div class="mathbox" id="s8info">Выберите формулу.</div>
+</section>
+
+<section class="scene" data-title="9. Сложная функция">
+<div class="head"><span class="tag">ПРАВИЛО</span><h1>9. Производная сложной функции — «конвейер скоростей»</h1>
+<div class="theory">Идём от <b>x</b> к <b>y</b> в два шага. На каждом шаге своя скорость. Итоговая скорость — <b>произведение</b> скоростей каждого звена.</div>
+<div class="formula">(g(f(x)))′ = g′(f(x)) · f′(x)</div>
+<details class="readmore"><summary>Как это работает</summary><div>Если внутренняя функция растёт со скоростью 3, а внешняя усиливает сигнал в 2 раза — итоговая скорость 3 · 2 = 6. Смотрите на три панели ниже: на каждой видна своя касательная (своя скорость), а внизу — произведение.</div></details>
+</div>
+<div class="chainWrap">
+  <div class="controls" style="margin-bottom:10px">
+    <label>внешняя g: <select id="s9o"><option value="sq">u²</option><option value="sin">sin u</option><option value="exp">eᵘ</option><option value="sqrt">√u</option><option value="cos">cos u</option></select></label>
+    <label>внутренняя f: <select id="s9i"><option value="x2">x²</option><option value="lin">2x+1</option><option value="sin">sin x</option><option value="cube">x³</option></select></label>
+    <label>x₀ <input id="s9x" type="range" min="-2" max="2" step="0.01" value="0.7"><span id="s9xVal">0.7</span></label>
+    <button class="play" data-for="s9x">▶</button>
+  </div>
+  <div class="chain">
+    <div class="chainPanel"><b>1. Внутренняя: u = f(x)</b><canvas id="chainIn"></canvas><div class="rate">скорость f′(x₀) = <span class="val" id="chainInRate">—</span></div></div>
+    <div class="chainOp">×</div>
+    <div class="chainPanel"><b>2. Внешняя: y = g(u)</b><canvas id="chainOut"></canvas><div class="rate">скорость g′(u₀) = <span class="val" id="chainOutRate">—</span></div></div>
+    <div class="chainOp">=</div>
+    <div class="chainPanel"><b>3. Итог: y = g(f(x))</b><canvas id="chainFull"></canvas><div class="rate">скорость = <span class="val" id="chainTotalRate">—</span></div></div>
+  </div>
+  <div class="conveyor" id="s9chain"></div>
+</div>
+</section>
+
+<section class="scene" data-title="10. Касательная и нормаль">
+<div class="head"><span class="tag">ГЕОМЕТРИЧЕСКИЙ СМЫСЛ</span><h1>10. Касательная к графику</h1><div class="theory">В выбранной точке касательная имеет угловой коэффициент f′(x₀).</div></div>
+<div class="stage"><canvas id="s10c"></canvas><div class="presetRow" id="s10presets"></div><div class="controls">x₀ <input id="s10r" type="range" min="-3.5" max="3.5" step="0.01" value="1"><span id="s10i"></span><button class="play" data-for="s10r">▶</button></div></div>
+</section>
+
+<section class="scene" data-title="11. Тренировка знака">
+<div class="head"><span class="tag">ТРЕНАЖЁР</span><h1>11. Определи знак производной по касательной</h1><div class="theory">Смотрите на наклон касательной и выберите знак производной.</div></div>
+<div class="stage"><canvas id="s11c"></canvas><div class="controls"><button id="s11new">Другая функция</button><select id="s11ans"><option value="">Выберите</option><option value="+">+</option><option value="0">0</option><option value="-">−</option></select><button class="primary" id="s11check">Проверить</button></div><div id="s11res" class="answer" style="display:none"></div></div>
+</section>
+
+<section class="scene" data-title="12. Пошаговое исследование">
+<div class="head"><span class="tag">ТРЕНАЖЁР</span><h1>12. Пошаговое исследование f(x)=x³−3x</h1><div class="theory">Каждая кнопка добавляет следующий этап исследования прямо на страницу.</div></div>
+<div class="stage"><div class="steps" id="s12steps"></div><div class="controls"><button class="primary" id="s12next">Следующий шаг</button><button id="s12reset">Сбросить</button></div><canvas id="s12c"></canvas></div>
+</section>
+
+<section class="scene" data-title="13. Первообразная">
+<div class="head"><span class="tag">ОПРЕДЕЛЕНИЕ</span><h1>13. Первообразная</h1><div class="theory">F(x) — первообразная для f(x), если F′(x)=f(x). Все первообразные отличаются постоянной C.</div><div class="formula">F′(x)=f(x), F(x)+C</div></div>
+<div class="stage">
+  <div class="presetRow" id="s13presets"></div>
+  <div class="dual"><canvas id="s13f"></canvas><canvas id="s13F"></canvas></div>
+  <div class="controls">C <input id="s13r" type="range" min="-5" max="5" step="0.1" value="0"><span id="s13i"></span><button class="play" data-for="s13r">▶</button></div>
+</div>
+</section>
+
+<section class="scene" data-title="14. Интеграл через прямоугольники">
+<div class="head"><span class="tag">АЛГОРИТМ</span><h1>14. Определённый интеграл как предел сумм</h1><div class="theory">Площадь под графиком приближается суммой прямоугольников. Чем их больше — тем точнее.</div><div class="formula">S ≈ Σ f(xᵢ)·Δx</div></div>
+<div class="integral"><div class="stage"><canvas id="s14c"></canvas></div>
+<div class="card"><h3>Число прямоугольников</h3>
+<input id="s14r" type="range" min="2" max="80" step="1" value="8" style="width:100%">
+<label style="margin-top:10px;display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px">Режим:
+  <select id="s14mode"><option value="left">левые</option><option value="right">правые</option><option value="mid">средние</option><option value="trap">трапеции</option></select>
+</label>
+<div id="s14i" class="mathbox" style="margin-top:10px"></div>
+<div style="text-align:center;margin-top:8px"><button class="play" data-for="s14r">▶</button></div>
+</div></div>
+</section>
+
+<section class="scene" data-title="15. Формула Ньютона–Лейбница">
+<div class="head"><span class="tag">ТЕОРЕМА</span><h1>15. Связь интеграла и первообразной</h1><div class="theory">Если F′(x)=f(x), то определённый интеграл вычисляется разностью значений первообразной на концах отрезка.</div><div class="formula">∫ₐᵇ f(x) dx = F(b) − F(a)</div></div>
+<div class="stage"><canvas id="s15c"></canvas><div class="controls">a <input id="s15a" type="range" min="0" max="2.8" step="0.1" value="0.5"> b <input id="s15b" type="range" min="0.7" max="4" step="0.1" value="3"><span id="s15i"></span><button class="play" data-for="s15b">▶</button></div></div>
+</section>
+
+<section class="scene" data-title="16. Финальный тренажёр">
+<div class="head"><span class="tag">ФИНАЛЬНЫЙ ТРЕНАЖЁР</span><h1>16. Ввод любой функции: f(x) и f′(x)</h1><div class="theory">Введите функцию. Сверху — её график, снизу — производная. Красный = положительный наклон, синий = отрицательный.</div></div>
+<div class="trainerbox">
+<div class="trainer-top"><span>f(x) =</span><input class="expr" id="expr" value="x^3 - 3*x" autocomplete="off" spellcheck="false"><button class="primary" id="drawFinal">Построить</button><button id="resetFinal">Сброс</button></div>
+<div class="presets" id="finalPresets"></div>
+<div id="finalError" class="error"></div>
+<div class="graph2">
+  <div class="graphpanel"><b>f(x)</b><canvas id="finalF"></canvas></div>
+  <div class="graphpanel"><b>f′(x)</b><canvas id="finalD"></canvas></div>
+</div>
+<div class="trainer-info" id="finalInfo"></div>
+<div class="note" style="margin-top:8px">Наведите мышь на левый график: появятся точка, касательная, треугольник Δx–Δy и k = f′(x₀). На правом появится горизонтальная пунктирная линия y = f′(x₀).</div>
+</div>
+</section>
+
+<div class="nav"><button id="prev">← Назад</button><button id="next">Дальше →</button></div>
+</main></div></div>
+<div id="quizHost"></div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const scenes = [...document.querySelectorAll('.scene')];
+const menu = $('menu');
+let idx = 0;
+
+/* ===== меню ===== */
+scenes.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.className = 'mitem'; b.textContent = s.dataset.title;
+  b.onclick = () => show(i);
+  menu.appendChild(b);
+});
+const items = [...document.querySelectorAll('.mitem')];
+
+/* ===== общие хелперы ===== */
+function fit(c) {
+  const r = c.getBoundingClientRect();
+  const d = Math.max(1, devicePixelRatio || 1);
+  const w = Math.max(300, r.width || 300);
+  const h = Math.max(160, r.height || 200);
+  c.width = Math.round(w * d); c.height = Math.round(h * d);
+  const x = c.getContext('2d');
+  x.setTransform(d, 0, 0, d, 0, 0);
+  return [w, h, x];
+}
+function fmt(v) {
+  if (!Number.isFinite(v)) return '—';
+  if (Math.abs(v) < 1e-9) return '0';
+  const s = Number(v.toFixed(3));
+  return String(s);
+}
+function mapXY(w, h, xmin, xmax, ymin, ymax) {
+  return {
+    x: x => 48 + (x - xmin) / (xmax - xmin) * (w - 68),
+    y: y => h - 32 - (y - ymin) / (ymax - ymin) * (h - 48)
+  };
+}
+function axes(ctx, w, h, xmin, xmax, ymin, ymax) {
+  ctx.fillStyle = '#091017'; ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = '#22313d'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 10; i++) {
+    const x = xmin + (xmax - xmin) * i / 10;
+    const px = 48 + (x - xmin) / (xmax - xmin) * (w - 68);
+    ctx.beginPath(); ctx.moveTo(px, 10); ctx.lineTo(px, h - 32); ctx.stroke();
+    ctx.fillStyle = '#7e8c99'; ctx.font = '11px Arial';
+    ctx.fillText(fmt(x), px - 10, h - 12);
+  }
+  for (let i = 0; i <= 6; i++) {
+    const y = ymin + (ymax - ymin) * i / 6;
+    const py = h - 32 - (y - ymin) / (ymax - ymin) * (h - 48);
+    ctx.beginPath(); ctx.moveTo(48, py); ctx.lineTo(w - 20, py); ctx.stroke();
+    ctx.fillStyle = '#7e8c99'; ctx.font = '11px Arial';
+    ctx.fillText(fmt(y), 5, py + 4);
+  }
+  if (ymin < 0 && ymax > 0) {
+    const py = h - 32 - (-ymin) / (ymax - ymin) * (h - 48);
+    ctx.strokeStyle = '#71808c'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(48, py); ctx.lineTo(w - 20, py); ctx.stroke();
+  }
+  if (xmin < 0 && xmax > 0) {
+    const px = 48 + (0 - xmin) / (xmax - xmin) * (w - 68);
+    ctx.strokeStyle = '#71808c';
+    ctx.beginPath(); ctx.moveTo(px, 10); ctx.lineTo(px, h - 32); ctx.stroke();
+  }
+}
+function plot(c, fn, xmin, xmax, ymin, ymax, color = '#ffd84d') {
+  const [w, h, ctx] = fit(c);
+  axes(ctx, w, h, xmin, xmax, ymin, ymax);
+  const m = mapXY(w, h, xmin, xmax, ymin, ymax);
+  ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  let open = false;
+  for (let i = 0; i <= 900; i++) {
+    const x = xmin + (xmax - xmin) * i / 900;
+    let y; try { y = fn(x); } catch (e) { y = NaN; }
+    if (!Number.isFinite(y) || Math.abs(y) > 1e5) { open = false; continue; }
+    const px = m.x(x), py = m.y(y);
+    if (!open) { ctx.moveTo(px, py); open = true; } else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+  return { ctx, w, h, X: m.x, Y: m.y };
+}
+function line(ctx, X, Y, x1, y1, x2, y2, color = '#fff', width = 2, dash = []) {
+  ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(X(x1), Y(y1)); ctx.lineTo(X(x2), Y(y2)); ctx.stroke(); ctx.restore();
+}
+function derivative(fn, x) {
+  const h = 1e-4 * Math.max(1, Math.abs(x));
+  const a = fn(x - h), b = fn(x + h);
+  return Number.isFinite(a) && Number.isFinite(b) ? (b - a) / (2 * h) : NaN;
+}
+function autoYRange(fn, xmin, xmax) {
+  const ys = [];
+  for (let i = 0; i <= 300; i++) {
+    const x = xmin + (xmax - xmin) * i / 300;
+    try { const y = fn(x); if (Number.isFinite(y) && Math.abs(y) < 1e4) ys.push(y); } catch (e) {}
+  }
+  if (ys.length < 5) return [-5, 5];
+  ys.sort((a, b) => a - b);
+  const lo = ys[Math.floor(ys.length * 0.03)];
+  const hi = ys[Math.floor(ys.length * 0.97)];
+  const pad = Math.max(1, (hi - lo) * 0.15);
+  return [lo - pad, hi + pad];
+}
+function tangent(c, fn, x0, xmin, xmax, ymin, ymax, opts = {}) {
+  const p = plot(c, fn, xmin, xmax, ymin, ymax, opts.color || '#ffd84d');
+  const y0 = fn(x0);
+  if (!Number.isFinite(y0)) return { k: NaN, y: y0, p };
+  const k = derivative(fn, x0);
+  const len = (xmax - xmin) * 0.18;
+  line(p.ctx, p.X, p.Y, x0 - len, y0 - k * len, x0 + len, y0 + k * len,
+    k > 0 ? '#ff6262' : k < 0 ? '#55aaff' : '#fff', 3);
+  const dx = (xmax - xmin) * 0.09;
+  const dy = k * dx;
+  line(p.ctx, p.X, p.Y, x0, y0, x0 + dx, y0, '#fff', 2);
+  line(p.ctx, p.X, p.Y, x0 + dx, y0, x0 + dx, y0 + dy, '#fff', 2);
+  line(p.ctx, p.X, p.Y, x0, y0, x0 + dx, y0 + dy, '#fff', 1, [5, 5]);
+  p.ctx.fillStyle = '#fff';
+  p.ctx.beginPath(); p.ctx.arc(p.X(x0), p.Y(y0), 6, 0, Math.PI * 2); p.ctx.fill();
+  p.ctx.font = '13px Arial';
+  p.ctx.fillStyle = '#fff';
+  p.ctx.fillText('Δx=' + fmt(dx), p.X(x0 + dx / 2) - 18, p.Y(y0) - 8);
+  p.ctx.fillText('Δy=' + fmt(dy), p.X(x0 + dx) + 6, p.Y(y0 + dy / 2));
+  p.ctx.fillStyle = k > 0 ? '#ff6262' : k < 0 ? '#55aaff' : '#fff';
+  p.ctx.fillText('k=' + fmt(k), Math.min(p.X(x0) + 8, p.w - 80), Math.max(20, p.Y(y0) - 15));
+  return { k, y: y0, p };
+}
+
+/* ===== автопрокрутка слайдеров ===== */
+const autos = {};
+function makeAuto(sliderId, onChange, opts = {}) {
+  const el = $(sliderId);
+  if (!el) return { toggle: () => false, stop: () => {} };
+  const { period = 6, pingpong = true } = opts;
+  const min = +el.min, max = +el.max;
+  let raf = null, playing = false, startT = 0;
+  function tick(ts) {
+    if (!playing) return;
+    if (!startT) startT = ts;
+    const phase = ((ts - startT) / 1000) / period;
+    let t = phase % 1;
+    if (pingpong) t = t < 0.5 ? t * 2 : 2 - t * 2;
+    el.value = min + (max - min) * t;
+    onChange();
+    raf = requestAnimationFrame(tick);
+  }
+  return {
+    toggle() {
+      if (playing) { playing = false; cancelAnimationFrame(raf); startT = 0; }
+      else { playing = true; raf = requestAnimationFrame(tick); }
+      return playing;
+    },
+    stop() { playing = false; cancelAnimationFrame(raf); startT = 0; }
+  };
+}
+function bindAutos() {
+  document.querySelectorAll('button.play').forEach(btn => {
+    const sid = btn.dataset.for;
+    if (!autos[sid]) return;
+    btn.onclick = () => {
+      const wasPlaying = btn.textContent === '⏸';
+      Object.values(autos).forEach(x => x.stop());
+      document.querySelectorAll('button.play').forEach(b => b.textContent = '▶');
+      if (!wasPlaying) {
+        autos[sid].toggle();
+        btn.textContent = '⏸';
+      }
+    };
+  });
+}
+
+/* ===== мини-тесты ===== */
+const quizzes = {
+  0: { q: 'Что задаёт функция в каждой точке x?',
+       a: ['Одно значение y', 'Два значения y', 'Любое значение y', 'Ничего — это просто линия'],
+       ok: 0, why: 'Одна абсцисса → одна ордината. Это и есть определение функции.' },
+  2: { q: 'Если две точки графика сближать, секущая превращается в…',
+       a: ['Прямую', 'Касательную', 'Параболу', 'Ось Ox'],
+       ok: 1, why: 'Предельное положение секущей — касательная. Её угловой коэффициент = f′(x₀).' },
+  3: { q: 'Производная f′(x₀) — это…',
+       a: ['Значение функции', 'Угловой коэффициент касательной в x₀', 'Площадь под графиком', 'Корень уравнения'],
+       ok: 1, why: 'Геометрически это tg α — наклон касательной.' },
+  4: { q: 'Если f′(x) > 0 на интервале, функция там…',
+       a: ['Убывает', 'Возрастает', 'Постоянна', 'Имеет максимум'],
+       ok: 1, why: 'Положительная производная = положительный наклон = рост.' },
+  5: { q: 'Для f(x)=x³−3x максимум функции в точке…',
+       a: ['x = 0', 'x = −1', 'x = 1', 'x = √3'],
+       ok: 1, why: 'f′(x)=3x²−3=0 → x=±1; знак + → − → +, значит x=−1 — максимум.' },
+  7: { q: 'Чему равна производная (xⁿ)′?',
+       a: ['xⁿ⁻¹', 'n·xⁿ⁻¹', 'n·xⁿ', 'xⁿ/n'],
+       ok: 1, why: 'Степенное правило: показатель выносится множителем, степень уменьшается на 1.' },
+  8: { q: 'Чему равна производная сложной функции (g(f(x)))′?',
+       a: ['g′(f(x)) + f′(x)', 'g′(f(x)) · f′(x)', 'g(f′(x))', 'g′(x) · f′(x)'],
+       ok: 1, why: 'Скорости перемножаются: внутренняя даёт прирост, внешняя усиливает его в g′ раз.' },
+  13: { q: 'Определённый интеграл — это…',
+       a: ['Предел суммы площадей прямоугольников', 'Значение функции', 'Угловой коэффициент', 'Касательная'],
+       ok: 0, why: 'S ≈ Σ f(xᵢ)·Δx при Δx → 0.' },
+  14: { q: 'Если F′(x)=f(x), то ∫ₐᵇ f(x)dx = ?',
+       a: ['F(a) − F(b)', 'F(b) − F(a)', 'F(b) + F(a)', 'F(b)·F(a)'],
+       ok: 1, why: 'Формула Ньютона–Лейбница: значение первообразной на правом конце минус на левом.' }
+};
+function showQuiz(sceneIdx, onPass) {
+  const q = quizzes[sceneIdx];
+  if (!q) { onPass(); return; }
+  const host = $('quizHost');
+  host.innerHTML = `
+    <div class="quizOverlay">
+      <div class="quizCard">
+        <div class="quizTag">Мини-тест</div>
+        <div class="q">${q.q}</div>
+        <div class="quizOpts">
+          ${q.a.map((t, i) => `<button class="quizOpt" data-i="${i}">${t}</button>`).join('')}
+        </div>
+        <div class="quizFb"></div>
+      </div>
+    </div>`;
+  const fb = host.querySelector('.quizFb');
+  host.querySelectorAll('.quizOpt').forEach(b => {
+    b.onclick = () => {
+      const i = +b.dataset.i;
+      if (i === q.ok) {
+        b.classList.add('correct');
+        fb.textContent = '✓ ' + q.why;
+        fb.style.color = '#65d59e';
+        setTimeout(() => { host.innerHTML = ''; onPass(); }, 1000);
+      } else {
+        b.classList.add('wrong');
+        fb.textContent = '✗ Не совсем. Попробуйте ещё раз.';
+        fb.style.color = '#ff9999';
+      }
+    };
+  });
+}
+
+/* ===== навигация ===== */
+function show(i) {
+  Object.values(autos).forEach(a => a.stop());
+  document.querySelectorAll('button.play').forEach(b => b.textContent = '▶');
+  $('quizHost').innerHTML = '';
+  idx = Math.max(0, Math.min(scenes.length - 1, i));
+  scenes.forEach((s, j) => s.classList.toggle('active', j === idx));
+  items.forEach((b, j) => b.classList.toggle('active', j === idx));
+  $('prev').disabled = idx === 0;
+  $('next').disabled = idx === scenes.length - 1;
+  $('progressBar').style.width = ((idx + 1) / scenes.length * 100) + '%';
+  $('progressText').textContent = (idx + 1) + ' / ' + scenes.length;
+  requestAnimationFrame(drawCurrent);
+}
+$('prev').onclick = () => show(idx - 1);
+$('next').onclick = () => {
+  if (idx >= scenes.length - 1) return;
+  const nextIdx = idx + 1;
+  if (quizzes[idx]) showQuiz(idx, () => show(nextIdx));
+  else show(nextIdx);
+};
+document.addEventListener('keydown', e => {
+  if ($('quizHost').innerHTML) return;
+  if (e.key === 'ArrowRight') $('next').click();
+  if (e.key === 'ArrowLeft') $('prev').click();
+});
+
+/* ===== ПРЕСЕТЫ ФУНКЦИЙ ===== */
+const FUNC_PRESETS = {
+  quad:   { name: 'x²+1',        fn: x => x * x + 1,       dName: '2x' },
+  cubic:  { name: 'x³−3x',       fn: x => x * x * x - 3 * x, dName: '3x²−3' },
+  sin:    { name: 'sin x',       fn: Math.sin,             dName: 'cos x' },
+  xsin:   { name: 'x·sin x',     fn: x => x * Math.sin(x), dName: 'sin x + x·cos x' },
+  exp:    { name: 'eˣ',          fn: Math.exp,             dName: 'eˣ' },
+  xexp:   { name: 'x·e⁻ˣ',       fn: x => x * Math.exp(-x), dName: 'e⁻ˣ(1−x)' }
+};
+
+/* ===== Scene 1 ===== */
+const f1 = x => 0.5 * x * x + 1;
+function draw1() {
+  const x = +$('s1r').value;
+  const p = plot($('s1c'), f1, -5, 5, 0, 14);
+  const y = f1(x);
+  p.ctx.fillStyle = '#55aaff';
+  p.ctx.beginPath(); p.ctx.arc(p.X(x), p.Y(y), 6, 0, Math.PI * 2); p.ctx.fill();
+  $('s1i').textContent = 'y=' + fmt(y);
+}
+
+/* ===== Scene 2 ===== */
+const basic = [
+  ['y=x', x => x, [-5, 5]],
+  ['x²', x => x * x, [0, 25]],
+  ['x³', x => x * x * x, [-25, 25]],
+  ['sin x', Math.sin, [-1.5, 1.5]],
+  ['cos x', Math.cos, [-1.5, 1.5]],
+  ['eˣ', Math.exp, [0, 60]],
+  ['ln x', Math.log, [-5, 5]],
+  ['√x', Math.sqrt, [0, 3]],
+  ['|x|', Math.abs, [0, 5]]
+];
+let bi = 0;
+function initScene2() {
+  const box = $('s2buttons');
+  basic.forEach((a, i) => {
+    const b = document.createElement('button');
+    b.textContent = a[0];
+    b.onclick = () => { bi = i; updateS2Active(); draw2(); };
+    box.appendChild(b);
+  });
+  updateS2Active();
+}
+function updateS2Active() {
+  [...$('s2buttons').children].forEach((b, i) => b.classList.toggle('active', i === bi));
+}
+function draw2() {
+  const shift = +$('s2r').value;
+  const [name, fn, yr] = basic[bi];
+  plot($('s2c'), x => fn(x - shift), -5, 5, yr[0], yr[1]);
+  $('s2i').textContent = fmt(shift);
+}
+
+/* ===== Scene 3: secant ===== */
+let s3fn = 'quad';
+function initScene3() {
+  const box = $('s3presets');
+  ['quad', 'cubic', 'sin', 'xsin'].forEach(k => {
+    const b = document.createElement('button');
+    b.textContent = FUNC_PRESETS[k].name;
+    b.onclick = () => { s3fn = k; updateS3Active(); draw3(); };
+    box.appendChild(b);
+  });
+  updateS3Active();
+}
+function updateS3Active() {
+  [...$('s3presets').children].forEach((b, i) => {
+    b.classList.toggle('active', ['quad', 'cubic', 'sin', 'xsin'][i] === s3fn);
+  });
+}
+function draw3() {
+  const a = +$('s3a').value, b = +$('s3b').value;
+  const f = FUNC_PRESETS[s3fn].fn;
+  const [ymin, ymax] = autoYRange(f, -3.5, 3.5);
+  const p = plot($('s3c'), f, -3.5, 3.5, ymin, ymax);
+  const ya = f(a), yb = f(b);
+  line(p.ctx, p.X, p.Y, a, ya, b, yb, '#ff6262', 3);
+  p.ctx.fillStyle = '#fff';
+  [a, b].forEach(x => {
+    const y = f(x);
+    if (Number.isFinite(y)) {
+      p.ctx.beginPath(); p.ctx.arc(p.X(x), p.Y(y), 5, 0, Math.PI * 2); p.ctx.fill();
+    }
+  });
+  const dx = b - a || 1e-9;
+  $('s3i').textContent = 'Δx=' + fmt(b - a) + ' · Δy=' + fmt(yb - ya) + ' · k=' + fmt((yb - ya) / dx);
+}
+
+/* ===== Scene 4: derivative at point ===== */
+let s4fn = 'quad';
+function initScene4() {
+  const box = $('s4presets');
+  ['quad', 'cubic', 'sin', 'xsin', 'exp'].forEach(k => {
+    const b = document.createElement('button');
+    b.textContent = FUNC_PRESETS[k].name;
+    b.onclick = () => { s4fn = k; updateS4Active(); draw4(); };
+    box.appendChild(b);
+  });
+  updateS4Active();
+}
+function updateS4Active() {
+  [...$('s4presets').children].forEach((b, i) => {
+    b.classList.toggle('active', ['quad', 'cubic', 'sin', 'xsin', 'exp'][i] === s4fn);
+  });
+}
+function draw4() {
+  const x = +$('s4r').value;
+  const f = FUNC_PRESETS[s4fn].fn;
+  let [ymin, ymax] = autoYRange(f, -3.5, 3.5);
+  if (s4fn === 'exp') { ymin = -1; ymax = 30; }
+  const r = tangent($('s4c'), f, x, -3.5, 3.5, ymin, ymax);
+  $('s4i').textContent = 'f′(x₀)=' + fmt(r.k);
+}
+
+/* ===== Scene 5: sign ===== */
+let s5fn = 'cubic';
+function initScene5() {
+  const box = $('s5presets');
+  ['quad', 'cubic', 'sin', 'xsin', 'xexp'].forEach(k => {
+    const b = document.createElement('button');
+    b.textContent = FUNC_PRESETS[k].name;
+    b.onclick = () => { s5fn = k; updateS5Active(); draw5(); };
+    box.appendChild(b);
+  });
+  updateS5Active();
+}
+function updateS5Active() {
+  [...$('s5presets').children].forEach((b, i) => {
+    b.classList.toggle('active', ['quad', 'cubic', 'sin', 'xsin', 'xexp'][i] === s5fn);
+  });
+}
+function draw5() {
+  const x = +$('s5r').value;
+  const f = FUNC_PRESETS[s5fn].fn;
+  const [ymin, ymax] = autoYRange(f, -3.5, 3.5);
+  const r = tangent($('s5c'), f, x, -3.5, 3.5, ymin, ymax);
+  const verb = r.k > 1e-8 ? 'возрастает' : r.k < -1e-8 ? 'убывает' : 'стационарная';
+  $('s5i').textContent = 'f′(x₀)=' + fmt(r.k) + ' · ' + verb;
+}
+
+/* ===== Scene 6: full analysis ===== */
+function draw6() {
+  const fn = x => x * x * x - 3 * x;
+  const df = x => 3 * x * x - 3;
+  const x0 = +$('s6r').value;
+  const pf = plot($('s6f'), fn, -3, 3, -20, 20);
+  const pd = plot($('s6d'), df, -3, 3, -8, 28);
+  [['#ff6262', -3, -1], ['#55aaff', -1, 1], ['#ff6262', 1, 3]].forEach(q => {
+    line(pf.ctx, pf.X, pf.Y, q[1], fn(q[1]), q[2], fn(q[2]), q[0], 7);
+  });
+  [-1, 1].forEach(x => {
+    pf.ctx.fillStyle = x < 0 ? '#ff6262' : '#55aaff';
+    pf.ctx.beginPath(); pf.ctx.arc(pf.X(x), pf.Y(fn(x)), 6, 0, Math.PI * 2); pf.ctx.fill();
+  });
+  const y = fn(x0), k = df(x0);
+  line(pf.ctx, pf.X, pf.Y, x0 - 0.65, y - k * 0.65, x0 + 0.65, y + k * 0.65,
+    k > 0 ? '#ff6262' : k < 0 ? '#55aaff' : '#fff', 3);
+  pf.ctx.fillStyle = '#fff';
+  pf.ctx.beginPath(); pf.ctx.arc(pf.X(x0), pf.Y(y), 6, 0, Math.PI * 2); pf.ctx.fill();
+  const z = Math.max(10, Math.min(pd.h - 32, pd.Y(0)));
+  pd.ctx.fillStyle = 'rgba(255,70,70,.10)';
+  pd.ctx.fillRect(48, 10, pd.w - 68, Math.max(0, z - 10));
+  pd.ctx.fillStyle = 'rgba(70,140,255,.12)';
+  pd.ctx.fillRect(48, z, pd.w - 68, Math.max(0, pd.h - 32 - z));
+  line(pd.ctx, pd.X, pd.Y, x0, -8, x0, 28, '#fff', 1, [6, 6]);
+  $('s6i').textContent = 'x₀=' + fmt(x0) + ' · f′(x₀)=' + fmt(k);
+}
+
+/* ===== Scene 7: algorithm steps ===== */
+let s7step = 0;
+function render7() {
+  const steps = [
+    '1. Найти производную: f′(x) = 3x² − 3.',
+    '2. Решить f′(x) = 0: x = −1 и x = 1.',
+    '3. Определить знаки: + | − | +.',
+    '4. Сделать вывод: максимум при x = −1, минимум при x = 1.'
+  ];
+  $('s7steps').innerHTML = steps.slice(0, s7step).map(t => '<div class="step done">' + t + '</div>').join('');
+}
+$('s7next').onclick = () => { s7step = Math.min(4, s7step + 1); render7(); };
+$('s7reset').onclick = () => { s7step = 0; render7(); };
+
+/* ===== Scene 8: rules ===== */
+const rules = [
+  ['Константа', '(C)′ = 0'],
+  ['Степенная', '(xⁿ)′ = n·xⁿ⁻¹'],
+  ['Сумма', '(u+v)′ = u′+v′'],
+  ['Произведение', '(uv)′ = u′v+uv′'],
+  ['Частное', '(u/v)′ = (u′v−uv′)/v²'],
+  ['eˣ', '(eˣ)′ = eˣ'],
+  ['ln x', '(ln x)′ = 1/x'],
+  ['sin x', '(sin x)′ = cos x'],
+  ['cos x', '(cos x)′ = −sin x'],
+  ['tg x', '(tg x)′ = 1/cos²x'],
+  ['Сложная', '(g(f(x)))′ = g′(f(x))·f′(x)'],
+  ['Обратная', '(f⁻¹)′(y) = 1/f′(x)']
+];
+function initScene8() {
+  $('s8grid').innerHTML = rules.map((r, i) =>
+    `<div class="card formulaCard" data-i="${i}"><h3>${r[0]}</h3><div>${r[1]}</div></div>`
+  ).join('');
+  document.querySelectorAll('.formulaCard').forEach(c => {
+    c.onclick = () => {
+      document.querySelectorAll('.formulaCard').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      $('s8info').textContent = rules[+c.dataset.i][1];
+    };
+  });
+}
+
+/* ===== Scene 9: сложная функция ===== */
+const s9Outer = {
+  sq:   { name: 'u²',   fn: u => u * u,       d: u => 2 * u,            dName: '2u' },
+  sin:  { name: 'sin u', fn: Math.sin,        d: Math.cos,              dName: 'cos u' },
+  exp:  { name: 'eᵘ',   fn: Math.exp,        d: Math.exp,              dName: 'eᵘ' },
+  sqrt: { name: '√u',   fn: u => Math.sqrt(u), d: u => 1 / (2 * Math.sqrt(u)), dName: '1/(2√u)' },
+  cos:  { name: 'cos u', fn: Math.cos,        d: u => -Math.sin(u),     dName: '−sin u' }
+};
+const s9Inner = {
+  x2:   { name: 'x²',     fn: x => x * x, d: x => 2 * x, dName: '2x' },
+  lin:  { name: '2x+1',   fn: x => 2 * x + 1, d: () => 2, dName: '2' },
+  sin:  { name: 'sin x',  fn: Math.sin, d: Math.cos, dName: 'cos x' },
+  cube: { name: 'x³',     fn: x => x * x * x, d: x => 3 * x * x, dName: '3x²' }
+};
+
+function drawChainPanel(id, domainFn, fn, x0, rate, opts) {
+  const c = $(id);
+  // Определяем диапазон домена по значениям domainFn(t), t ∈ [-3, 3]
+  const domVals = [];
+  for (let i = 0; i <= 200; i++) {
+    const t = -3 + 6 * i / 200;
+    const v = domainFn(t);
+    if (Number.isFinite(v)) domVals.push(v);
+  }
+  domVals.sort((a, b) => a - b);
+  let xmin = domVals[Math.floor(domVals.length * 0.02)] ?? -3;
+  let xmax = domVals[Math.floor(domVals.length * 0.98)] ?? 3;
+  xmin = Math.min(xmin, x0 - 0.5);
+  xmax = Math.max(xmax, x0 + 0.5);
+
+  const [ymin, ymax] = autoYRange(fn, xmin, xmax);
+  const p = plot(c, fn, xmin, xmax, ymin, ymax, opts.color);
+
+  const y0 = fn(x0);
+  if (Number.isFinite(y0) && Math.abs(y0) < 1e6) {
+    p.ctx.fillStyle = '#fff';
+    p.ctx.beginPath(); p.ctx.arc(p.X(x0), p.Y(y0), 6, 0, Math.PI * 2); p.ctx.fill();
+    p.ctx.font = '12px Arial'; p.ctx.fillStyle = opts.color;
+    p.ctx.fillText(opts.label || '', p.X(x0) + 9, p.Y(y0) - 8);
+    const len = (xmax - xmin) * 0.15;
+    line(p.ctx, p.X, p.Y, x0 - len, y0 - rate * len, x0 + len, y0 + rate * len,
+      rate > 0 ? '#ff6262' : rate < 0 ? '#55aaff' : '#fff', 2.5);
+  }
+}
+
+function draw9() {
+  const O = s9Outer[$('s9o').value];
+  const I = s9Inner[$('s9i').value];
+  const x0 = +$('s9x').value;
+  $('s9xVal').textContent = fmt(x0);
+
+  const u0 = I.fn(x0);
+  const fRate = I.d(x0);
+  const gRate = Number.isFinite(u0) ? O.d(u0) : NaN;
+  const total = (Number.isFinite(fRate) && Number.isFinite(gRate)) ? fRate * gRate : NaN;
+
+  // 1) внутренняя: x → u
+  drawChainPanel('chainIn', x => x, I.fn, x0, fRate, { color: '#55aaff', label: 'x₀' });
+  // 2) внешняя: u → y (x0 здесь = u0)
+  drawChainPanel('chainOut', I.fn, O.fn, u0, gRate, { color: '#ffd84d', label: 'u₀' });
+  // 3) композиция: x → y
+  const composed = x => O.fn(I.fn(x));
+  drawChainPanel('chainFull', x => x, composed, x0, total, { color: '#65d59e', label: 'x₀' });
+
+  $('chainInRate').textContent = fmt(fRate);
+  $('chainOutRate').textContent = fmt(gRate);
+  $('chainTotalRate').textContent = fmt(total);
+
+  $('s9chain').innerHTML =
+    `<div>Шаг 1: <b>x</b> → <b>u = ${I.name}</b>. Скорость: <span class="k1">${I.dName}</span> = <b>${fmt(fRate)}</b></div>
+     <div>Шаг 2: <b>u</b> → <b>y = ${O.name}</b>. Скорость: <span class="k2">${O.dName}</span> = <b>${fmt(gRate)}</b></div>
+     <div style="margin-top:6px;border-top:1px dashed #445566;padding-top:6px">
+       Итог: <span class="k1">f′(x₀)</span> × <span class="k2">g′(u₀)</span>
+       = <span class="tot">${fmt(total)}</span>
+     </div>`;
+}
+
+/* ===== Scene 10: tangent ===== */
+let s10fn = 'quad';
+function initScene10() {
+  const box = $('s10presets');
+  ['quad', 'cubic', 'sin', 'exp'].forEach(k => {
+    const b = document.createElement('button');
+    b.textContent = FUNC_PRESETS[k].name;
+    b.onclick = () => { s10fn = k; updateS10Active(); draw10(); };
+    box.appendChild(b);
+  });
+  updateS10Active();
+}
+function updateS10Active() {
+  [...$('s10presets').children].forEach((b, i) => {
+    b.classList.toggle('active', ['quad', 'cubic', 'sin', 'exp'][i] === s10fn);
+  });
+}
+function draw10() {
+  const x = +$('s10r').value;
+  const f = FUNC_PRESETS[s10fn].fn;
+  let [ymin, ymax] = autoYRange(f, -3.5, 3.5);
+  if (s10fn === 'exp') { ymin = -1; ymax = 30; }
+  const r = tangent($('s10c'), f, x, -3.5, 3.5, ymin, ymax);
+  $('s10i').textContent = 'k=f′(x₀)=' + fmt(r.k);
+}
+
+/* ===== Scene 11: sign trainer ===== */
+const tasks11 = [
+  ['x²', x => x * x],
+  ['−x²', x => -x * x],
+  ['x³−3x', x => x * x * x - 3 * x],
+  ['sin x', Math.sin],
+  ['x·sin x', x => x * Math.sin(x)],
+  ['e⁻ˣ²', x => Math.exp(-x * x)]
+];
+let ti = 0;
+function draw11() {
+  const t = tasks11[ti];
+  const [ymin, ymax] = autoYRange(t[1], -4, 4);
+  const r = tangent($('s11c'), t[1], 1, -4, 4, ymin, ymax);
+  $('s11ans').value = '';
+  $('s11res').style.display = 'none';
+  $('s11res').className = 'answer';
+  $('s11c').dataset.sign = r.k > 1e-8 ? '+' : r.k < -1e-8 ? '-' : '0';
+  $('s11c').dataset.name = t[0];
+}
+$('s11new').onclick = () => { ti = (ti + 1) % tasks11.length; draw11(); };
+$('s11check').onclick = () => {
+  const a = $('s11ans').value;
+  const ok = a === $('s11c').dataset.sign;
+  $('s11res').style.display = 'block';
+  $('s11res').className = 'answer ' + (ok ? '' : 'wrong');
+  $('s11res').textContent = (ok ? 'Верно! ' : 'Неверно. ') +
+    'Функция ' + ($('s11c').dataset.name) + ' · в точке x=1 знак производной = ' + $('s11c').dataset.sign + '.';
+};
+
+/* ===== Scene 12: step-by-step ===== */
+let s12step = 0;
+function draw12() {
+  const fn = x => x * x * x - 3 * x;
+  tangent($('s12c'), fn, 0.7, -3, 3, -20, 20);
+  $('s12steps').innerHTML = [
+    '1. f′(x)=3x²−3.',
+    '2. f′(x)=0 ⇒ x=−1, 1.',
+    '3. Знаки: + | − | +.',
+    '4. Максимум x=−1, минимум x=1.'
+  ].slice(0, s12step).map(t => '<div class="step done">' + t + '</div>').join('');
+}
+$('s12next').onclick = () => { s12step = Math.min(4, s12step + 1); draw12(); };
+$('s12reset').onclick = () => { s12step = 0; draw12(); };
+
+/* ===== Scene 13: primitive ===== */
+const s13presets = {
+  lin:  { name: 'f=2x, F=x²',       f: x => 2 * x,      F: (x, C) => x * x + C,       fRange: [-7, 7], FRange: [-5, 10] },
+  cos:  { name: 'f=cos x, F=sin x', f: Math.cos,        F: (x, C) => Math.sin(x) + C, fRange: [-1.5, 1.5], FRange: [-2.5, 2.5] },
+  cube: { name: 'f=3x², F=x³',      f: x => 3 * x * x,  F: (x, C) => x * x * x + C,   fRange: [0, 27], FRange: [-27, 27] },
+  exp:  { name: 'f=eˣ, F=eˣ',       f: Math.exp,        F: (x, C) => Math.exp(x) + C, fRange: [0, 20], FRange: [0, 20] }
+};
+let s13key = 'lin';
+function initScene13() {
+  const box = $('s13presets');
+  Object.keys(s13presets).forEach(k => {
+    const b = document.createElement('button');
+    b.textContent = s13presets[k].name;
+    b.onclick = () => { s13key = k; updateS13Active(); draw13(); };
+    box.appendChild(b);
+  });
+  updateS13Active();
+}
+function updateS13Active() {
+  [...$('s13presets').children].forEach((b, i) => {
+    b.classList.toggle('active', Object.keys(s13presets)[i] === s13key);
+  });
+}
+function draw13() {
+  const C = +$('s13r').value;
+  const P = s13presets[s13key];
+  plot($('s13f'), P.f, -3, 3, P.fRange[0], P.fRange[1], '#55aaff');
+  plot($('s13F'), x => P.F(x, C), -3, 3, P.FRange[0], P.FRange[1], '#ffd84d');
+  $('s13i').textContent = 'C = ' + fmt(C);
+}
+
+/* ===== Scene 14: integral rectangles ===== */
+function draw14() {
+  const n = +$('s14r').value;
+  const mode = $('s14mode').value;
+  const fn = x => x * x + 1;
+  const p = plot($('s14c'), fn, 0, 3, 0, 11);
+  const dx = 3 / n;
+  let sum = 0;
+  for (let i = 0; i < n; i++) {
+    const x = i * dx;
+    const x2 = x + dx;
+    let h, yTop;
+    if (mode === 'left')       { h = fn(x); sum += h * dx; yTop = h; }
+    else if (mode === 'right') { h = fn(x2); sum += h * dx; yTop = h; }
+    else if (mode === 'mid')   { h = fn(x + dx / 2); sum += h * dx; yTop = h; }
+    else                       { const yl = fn(x), yr = fn(x2); sum += (yl + yr) / 2 * dx; yTop = Math.max(yl, yr); }
+    if (mode !== 'trap') {
+      p.ctx.fillStyle = 'rgba(255,216,77,.20)';
+      p.ctx.fillRect(p.X(x), p.Y(yTop), p.X(x2) - p.X(x), p.Y(0) - p.Y(yTop));
+      p.ctx.strokeStyle = 'rgba(255,216,77,.7)';
+      p.ctx.lineWidth = 1;
+      p.ctx.strokeRect(p.X(x), p.Y(yTop), p.X(x2) - p.X(x), p.Y(0) - p.Y(yTop));
+    } else {
+      const yl = fn(x), yr = fn(x2);
+      p.ctx.fillStyle = 'rgba(101,213,158,.20)';
+      p.ctx.beginPath();
+      p.ctx.moveTo(p.X(x), p.Y(0));
+      p.ctx.lineTo(p.X(x), p.Y(yl));
+      p.ctx.lineTo(p.X(x2), p.Y(yr));
+      p.ctx.lineTo(p.X(x2), p.Y(0));
+      p.ctx.closePath();
+      p.ctx.fill();
+      p.ctx.strokeStyle = 'rgba(101,213,158,.6)';
+      p.ctx.stroke();
+    }
+  }
+  const exact = 12;
+  $('s14i').innerHTML = `n = ${n} · Δx = ${fmt(dx)}<br>сумма ≈ <b>${fmt(sum)}</b><br>точно = ${exact}<br>погрешность = ${fmt(Math.abs(sum - exact))}`;
+}
+$('s14r').oninput = draw14;
+$('s14mode').onchange = draw14;
+
+/* ===== Scene 15: Newton-Leibniz ===== */
+function draw15() {
+  let a = +$('s15a').value, b = +$('s15b').value;
+  if (b <= a) { b = a + 0.2; $('s15b').value = b; }
+  const fn = x => x * x + 1;
+  const F = x => x * x * x / 3 + x;
+  const p = plot($('s15c'), fn, 0, 4, 0, 18);
+  const X1 = p.X(a), X2 = p.X(b), Y0 = p.Y(0);
+  p.ctx.fillStyle = 'rgba(255,216,77,.18)';
+  p.ctx.beginPath();
+  p.ctx.moveTo(X1, Y0);
+  for (let i = 0; i <= 100; i++) {
+    const x = a + (b - a) * i / 100;
+    p.ctx.lineTo(p.X(x), p.Y(fn(x)));
+  }
+  p.ctx.lineTo(X2, Y0);
+  p.ctx.closePath();
+  p.ctx.fill();
+  const area = F(b) - F(a);
+  $('s15i').textContent = `a=${fmt(a)} · b=${fmt(b)} · F(b)−F(a) = ${fmt(area)}`;
+}
+$('s15a').oninput = () => {
+  const a = +$('s15a').value;
+  const bEl = $('s15b');
+  bEl.min = (a + 0.1).toFixed(1);
+  if (+bEl.value < a + 0.1) bEl.value = (a + 0.2).toFixed(1);
+  draw15();
+};
+$('s15b').oninput = draw15;
+
+/* ===== Парсер финального тренажёра ===== */
+function normalize(s) {
+  return s.toLowerCase()
+    .replace(/π/g, 'pi').replace(/√/g, 'sqrt')
+    .replace(/−/g, '-').replace(/,/g, '.').replace(/\s+/g, '');
+}
+function compileExpression(src) {
+  let s = normalize(src);
+  if (!s) return null;
+  if (!/^[0-9a-z+\-*/^().\s]+$/.test(s)) {
+    throw Error('Разрешены: числа, x, e, pi, скобки, + − × ÷, ^ и функции sin, cos, tan, sqrt, ln, abs, exp, arctan.');
+  }
+  // Защита 'exp' от замены 'e'
+  s = s.replace(/exp/g, '__EXP__');
+  // e (число Эйлера) — только одиночная, не соседняя с буквами
+  s = s.replace(/(?<![a-zA-Z_])e(?![a-zA-Z_])/g, 'Math.E');
+  // pi
+  s = s.replace(/\bpi\b/g, 'Math.PI');
+  // Функции: длинные имена первыми
+  s = s.replace(/\barctan\b/g, 'Math.atan');
+  s = s.replace(/\bsqrt\b/g, 'Math.sqrt');
+  s = s.replace(/\bsin\b/g, 'Math.sin');
+  s = s.replace(/\bcos\b/g, 'Math.cos');
+  s = s.replace(/\btan\b/g, 'Math.tan');
+  s = s.replace(/\bln\b/g, 'Math.log');
+  s = s.replace(/\babs\b/g, 'Math.abs');
+  s = s.replace(/__EXP__/g, 'Math.exp');
+  s = s.replace(/\blog\b/g, 'Math.log');
+  // Неявное умножение: 2x, 2(x), )(, xMath., 2Math.
+  s = s.replace(/([0-9x)])(?=[x(])/g, '$1*');
+  s = s.replace(/([0-9x)])(?=Math\.)/g, '$1*');
+  s = s.replace(/\)(?=[0-9x(]|Math\.)/g, ')*');
+  s = s.replace(/(x)(?=[0-9(])/g, '$1*');
+  // степень
+  s = s.replace(/\^/g, '**');
+  // проверка остатков
+  if (/[^0-9x+\-*/().\sA-Za-z_*]/.test(s)) throw Error('Не удалось разобрать выражение.');
+  return new Function('x', '"use strict";return (' + s + ');');
+}
+
+/* ===== Scene 16: final trainer ===== */
+const exprEl = $('expr');
+const finalError = $('finalError');
+let finalFn = null, finalHover = null;
+
+function niceRange(fn) {
+  const vals = [];
+  for (let i = 0; i <= 500; i++) {
+    const x = -6 + 12 * i / 500;
+    try { const y = fn(x); if (Number.isFinite(y) && Math.abs(y) < 1e4) vals.push(y); } catch (e) {}
+  }
+  if (vals.length < 10) return [-5, 5];
+  vals.sort((a, b) => a - b);
+  let lo = vals[Math.floor(vals.length * 0.05)];
+  let hi = vals[Math.floor(vals.length * 0.95)];
+  if (hi - lo < 0.5) { lo -= 2; hi += 2; }
+  const pad = (hi - lo) * 0.18;
+  return [Math.min(-1, lo - pad), Math.max(1, hi + pad)];
+}
+
+function drawFinal() {
+  if (!finalFn) return;
+  const xmin = -6, xmax = 6;
+  const yr = niceRange(finalFn);
+  const dFn = x => derivative(finalFn, x);
+  const dr = niceRange(dFn);
+  const pf = plot($('finalF'), finalFn, xmin, xmax, yr[0], yr[1], '#ffd84d');
+  const pd = plot($('finalD'), dFn, xmin, xmax, dr[0], dr[1], '#9cc8ff');
+  if (dr[0] < 0 && dr[1] > 0) {
+    const z = Math.max(10, Math.min(pd.h - 32, pd.Y(0)));
+    pd.ctx.fillStyle = 'rgba(255,70,70,.10)';
+    pd.ctx.fillRect(48, 10, pd.w - 68, Math.max(0, z - 10));
+    pd.ctx.fillStyle = 'rgba(70,140,255,.12)';
+    pd.ctx.fillRect(48, z, pd.w - 68, Math.max(0, pd.h - 32 - z));
+  }
+  if (finalHover) drawHover(pf, pd, finalHover.x, dFn);
+  $('finalInfo').innerHTML = finalHover
+    ? `<div class="pill"><b>x₀</b> = ${fmt(finalHover.x)}</div>
+       <div class="pill"><b>f(x₀)</b> = ${fmt(finalHover.y)}</div>
+       <div class="pill"><b>f′(x₀)</b> = ${fmt(finalHover.k)}</div>`
+    : '<div class="pill">Наведите мышь на график функции</div>';
+}
+
+function drawHover(pf, pd, x, kfn) {
+  let y = finalFn(x), k = kfn(x);
+  if (!Number.isFinite(y) || !Number.isFinite(k)) return;
+  const len = 1.2;
+  line(pf.ctx, pf.X, pf.Y, x - len, y - k * len, x + len, y + k * len,
+    k > 0 ? '#ff6262' : k < 0 ? '#55aaff' : '#fff', 3);
+  const dx = 0.6;
+  const dy = k * dx;
+  line(pf.ctx, pf.X, pf.Y, x, y, x + dx, y, '#fff', 2);
+  line(pf.ctx, pf.X, pf.Y, x + dx, y, x + dx, y + dy, '#fff', 2);
+  line(pf.ctx, pf.X, pf.Y, x, y, x + dx, y + dy, '#fff', 1, [5, 5]);
+  pf.ctx.fillStyle = '#fff';
+  pf.ctx.beginPath(); pf.ctx.arc(pf.X(x), pf.Y(y), 6, 0, Math.PI * 2); pf.ctx.fill();
+  const py = pd.Y(k);
+  pd.ctx.save(); pd.ctx.strokeStyle = '#fff'; pd.ctx.setLineDash([7, 5]);
+  pd.ctx.beginPath(); pd.ctx.moveTo(48, py); pd.ctx.lineTo(pd.w - 20, py); pd.ctx.stroke();
+  pd.ctx.restore();
+  pd.ctx.fillStyle = '#fff';
+  pd.ctx.beginPath(); pd.ctx.arc(pd.X(x), pd.Y(k), 6, 0, Math.PI * 2); pd.ctx.fill();
+  pf.ctx.font = '13px Arial';
+  pf.ctx.fillStyle = '#fff';
+  pf.ctx.fillText('Δx=' + fmt(dx), pf.X(x + dx / 2) - 18, pf.Y(y) - 8);
+  pf.ctx.fillText('Δy=' + fmt(dy), pf.X(x + dx) + 6, pf.Y(y + dy / 2));
+  pf.ctx.fillStyle = k > 0 ? '#ff6262' : k < 0 ? '#55aaff' : '#fff';
+  pf.ctx.fillText('k=' + fmt(k), Math.min(pf.X(x) + 8, pf.w - 75), Math.max(20, pf.Y(y) - 14));
+  pd.ctx.fillStyle = '#fff';
+  pd.ctx.fillText('f′(x₀)=' + fmt(k), Math.min(pd.X(x) + 8, pd.w - 120), Math.max(22, pd.Y(k) - 10));
+}
+
+$('finalF').addEventListener('mousemove', e => {
+  if (!finalFn) return;
+  const r = $('finalF').getBoundingClientRect();
+  const px = e.clientX - r.left;
+  const x = -6 + (px - 48) / (r.width - 68) * 12;
+  if (x < -6 || x > 6) { finalHover = null; }
+  else {
+    let y; try { y = finalFn(x); } catch (er) { y = NaN; }
+    const k = derivative(finalFn, x);
+    finalHover = Number.isFinite(y) && Number.isFinite(k) ? { x, y, k } : null;
+  }
+  drawFinal();
+});
+$('finalF').addEventListener('mouseleave', () => { finalHover = null; drawFinal(); });
+
+function initFinalPresets() {
+  const presets = [
+    ['x^3 - 3*x', 'x³−3x'],
+    ['x^2+1', 'x²+1'],
+    ['sin(x)', 'sin x'],
+    ['cos(x)', 'cos x'],
+    ['e^x', 'eˣ'],
+    ['ln(x)', 'ln x'],
+    ['sqrt(x^2+1)', '√(x²+1)'],
+    ['x*sin(x)', 'x·sin x'],
+    ['x*e^(-x)', 'x·e⁻ˣ'],
+    ['e^(-x^2)', 'e⁻ˣ²'],
+    ['sin(x)/x', 'sin x / x'],
+    ['abs(x)', '|x|'],
+    ['arctan(x)', 'arctan x'],
+    ['1/(1+x^2)', '1/(1+x²)']
+  ];
+  const box = $('finalPresets');
+  presets.forEach(([expr, label]) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.onclick = () => { exprEl.value = expr; $('drawFinal').click(); };
+    box.appendChild(b);
+  });
+}
+
+$('drawFinal').onclick = () => {
+  try {
+    const f = compileExpression(exprEl.value);
+    if (!f) throw Error('Введите функцию.');
+    const test = f(0);
+    if (typeof test !== 'number') throw Error('Функция должна возвращать число.');
+    finalFn = f;
+    finalError.textContent = '';
+    finalHover = null;
+    drawFinal();
+  } catch (e) {
+    finalError.textContent = 'Ошибка: ' + e.message;
+  }
+};
+$('resetFinal').onclick = () => {
+  exprEl.value = 'x^3 - 3*x';
+  $('drawFinal').click();
+};
+exprEl.addEventListener('keydown', e => { if (e.key === 'Enter') $('drawFinal').click(); });
+
+/* ===== drawCurrent ===== */
+function drawCurrent() {
+  switch (idx) {
+    case 0: draw1(); break;
+    case 1: draw2(); break;
+    case 2: draw3(); break;
+    case 3: draw4(); break;
+    case 4: draw5(); break;
+    case 5: draw6(); break;
+    case 6: render7(); break;
+    case 7: /* формула-карточки уже отрисованы */ break;
+    case 8: draw9(); break;
+    case 9: draw10(); break;
+    case 10: draw11(); break;
+    case 11: draw12(); break;
+    case 12: draw13(); break;
+    case 13: draw14(); break;
+    case 14: draw15(); break;
+    case 15: drawFinal(); break;
+  }
+}
+
+/* ===== Инициализация ===== */
+function initAll() {
+  initScene2();
+  initScene3();
+  initScene4();
+  initScene5();
+  initScene8();
+  initScene10();
+  initScene13();
+  initFinalPresets();
+
+  // autos
+  autos.s1r  = makeAuto('s1r',  draw1);
+  autos.s2r  = makeAuto('s2r',  draw2);
+  autos.s3b  = makeAuto('s3b',  draw3);
+  autos.s4r  = makeAuto('s4r',  draw4);
+  autos.s5r  = makeAuto('s5r',  draw5);
+  autos.s6r  = makeAuto('s6r',  draw6);
+  autos.s9x  = makeAuto('s9x',  draw9);
+  autos.s10r = makeAuto('s10r', draw10);
+  autos.s13r = makeAuto('s13r', draw13);
+  autos.s14r = makeAuto('s14r', draw14);
+  autos.s15b = makeAuto('s15b', draw15);
+  bindAutos();
+
+  // handlers
+  $('s1r').oninput = draw1;
+  $('s2r').oninput = draw2;
+  $('s3a').oninput = draw3;
+  $('s3b').oninput = draw3;
+  $('s4r').oninput = draw4;
+  $('s5r').oninput = draw5;
+  $('s6r').oninput = draw6;
+  $('s9o').onchange = draw9;
+  $('s9i').onchange = draw9;
+  $('s9x').oninput = draw9;
+  $('s10r').oninput = draw10;
+  $('s13r').oninput = draw13;
+
+  // рендерим шаги
+  render7();
+  draw12();
+
+  // финальный
+  try {
+    finalFn = compileExpression(exprEl.value);
+    drawFinal();
+  } catch (e) {
+    finalError.textContent = e.message;
+  }
+}
+
+window.addEventListener('resize', () => requestAnimationFrame(drawCurrent));
+
+initAll();
+show(0);
+</script>
+</body>
+</html>
