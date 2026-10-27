@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ЕГЭ 17 — Числовая последовательность</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#edf3f8;color:#172033;font:14px Arial,sans-serif}
+.app{width:100%;max-width:none;margin:0;padding:0 10px}
+.top{background:#fff;border:1px solid #cbd7e6;border-radius:14px;padding:12px;position:sticky;top:8px;z-index:20;box-shadow:0 3px 12px #0000000d}
+.toprow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.mode-word{font-weight:700;color:#52627a;cursor:pointer;padding:8px 5px;text-decoration:underline;text-underline-offset:3px}.mode-word.active{color:#5b21b6}.brand{font-weight:800;font-size:17px;margin-right:8px}
+.btn{border:1px solid #9db0c8;background:#fff;border-radius:9px;padding:8px 12px;font-weight:700;cursor:pointer;color:#24344d}.btn:hover{background:#f5f8fc}.btn.active{border-color:#7c3cff;color:#5b21b6;background:#f4efff;box-shadow:0 0 0 1px #7c3cff33}.btn.green{background:#20c866;color:#fff;border-color:#20c866}.btn.orange{border-color:#f59e0b;color:#b45309}.btn.red{border-color:#f87171;color:#b91c1c}.btn.purple{border-color:#7c3cff;color:#5b21b6}
+.pool-note{margin:8px 0 0;color:#5f6f85;font-size:12px;font-weight:700}.layout{display:grid;grid-template-columns:285px minmax(0,1fr);gap:14px;margin-top:12px;height:calc(100vh - 112px);min-height:420px;align-items:stretch}.side{background:#0f172a;color:#f8fafc;border:0;border-radius:10px;padding:13px;height:100%;min-height:0;position:sticky;top:0;overflow-y:auto;overflow-x:hidden;box-shadow:0 4px 16px #0003}.layout>main{height:100%;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:6px;padding-bottom:40px}.side h3{margin:0 0 10px;font-size:16px}.side hr{border:0;border-top:1px solid #334155;margin:12px 0}.side-title{font-size:11px;font-weight:800;color:#94a3b8;margin:10px 0 6px;text-transform:uppercase}.mode-row{display:grid;grid-template-columns:1fr 1fr;gap:6px}.section-btn{width:100%;text-align:left;margin:4px 0;line-height:1.25}.student-row{display:flex;gap:5px}.student-row select{flex:1;padding:8px;border:1px solid #475569;border-radius:8px;background:#172033;color:#fff}.filter-group{display:grid;grid-template-columns:1fr 1fr;gap:6px}.filter-btn{font-size:12px;padding:7px 6px;background:#172033;color:#f8fafc;border-color:#475569}.filter-btn.active{border-color:#60a5fa;background:#1d4ed8;color:#fff;box-shadow:0 0 0 1px #60a5fa55}.search{width:100%;padding:9px;border:1px solid #475569;border-radius:9px;background:#172033;color:#fff}.search::placeholder{color:#94a3b8}.side .btn{background:#172033;color:#f8fafc;border-color:#475569}.side .btn:hover{background:#1e293b}.side .btn.active{background:#f4efff;color:#5b21b6;border-color:#a78bfa}.side .btn.orange{background:#f59e0b;color:#111827;border-color:#f59e0b}
+.task{background:#fff;border:1px solid #d5dfeb;border-left:4px solid #635bff;border-radius:13px;margin-bottom:14px;padding:12px;box-shadow:0 2px 8px #00000008}.taskhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.taskid{font-weight:800;color:#312e81;background:#eef0ff;border-radius:7px;padding:4px 7px}.tasktitle{font-weight:800}.flags{margin-left:auto;display:flex;gap:5px}.flag{font-size:12px;padding:5px 8px;border-radius:99px;border:1px solid #d3deeb;background:#f5f8fb;color:#789;cursor:pointer}.flag.on{background:#e9f7ef;color:#16723d;border-color:#7bd49d}
+.condition{margin:12px 0 18px;line-height:1.75;white-space:pre-line;overflow-wrap:anywhere}.condition strong{font-weight:800}.self-check{gap:8px}.code-title{font-size:11px;font-weight:800;color:#65758b;margin:7px 0}.codebox{background:#0e1a35;border-radius:9px;border:1px solid #23365c;overflow:visible}.codebox textarea{display:block;width:100%;min-height:230px;background:#0e1a35;color:#f5f9ff;border:0;outline:0;padding:14px;font:14px/1.55 Consolas,monospace;resize:none;white-space:pre-wrap;overflow-wrap:anywhere;overflow:hidden;tab-size:4;box-sizing:border-box}.toolbar{display:flex;gap:7px;flex-wrap:wrap;margin:9px 0}.output-label{font-size:11px;font-weight:800;color:#64748b;margin-top:8px}.output{background:#050b1b;color:#dce9ff;border-radius:8px;min-height:46px;padding:10px;font:13px/1.45 Consolas,monospace;white-space:pre-wrap;margin-top:4px}.answer{margin-top:9px}.answer-word{color:#2563eb;text-decoration:underline dotted;cursor:pointer;font-weight:700}.answer-val{font-weight:800;margin-left:6px}.commentbox{margin-top:10px;border:1px solid #cbd7e6;border-radius:8px;padding:9px}.commentbox label{display:block;font-size:11px;font-weight:800;color:#64748b;margin-bottom:4px}.commentbox textarea{width:100%;min-height:60px;border:1px solid #cbd7e6;border-radius:7px;padding:8px;resize:vertical}
+.task.done{border-left:6px solid #22c55e!important}.task.answer-correct{border:2px solid #16a34a!important;border-left:6px solid #16a34a!important;background:#f0fdf4;box-shadow:0 0 0 2px #16a34a22}.task.answer-correct .taskid{color:#166534;background:#dcfce7}.task.answer-wrong{border:2px solid #9f1239!important;border-left:6px solid #9f1239!important;background:#fff7f8;box-shadow:0 0 0 2px #9f123922}.task.answer-wrong .taskid{color:#881337;background:#fff1f2}
+.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;z-index:80}.modalbox{background:#fff;width:min(650px,94vw);max-height:90vh;overflow:auto;border-radius:14px;padding:18px;box-shadow:0 12px 40px #0003}.modalbox h2{margin-top:0}.modalbox label{display:block;font-size:12px;font-weight:800;margin:9px 0 4px}.modalbox input,.modalbox textarea,.modalbox select{width:100%;padding:9px;border:1px solid #bdccdd;border-radius:8px}.modalbox textarea{min-height:80px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.empty{padding:30px;text-align:center;color:#789;background:#fff;border:1px dashed #b9c8da;border-radius:12px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.side{position:static}.flags{margin-left:0}.filter-group{grid-template-columns:1fr 1fr}}
+.section-btn.active{background:#2563eb!important;color:#fff!important;border-color:#93c5fd!important;box-shadow:0 0 0 2px #60a5fa55!important}.side-title:first-of-type{margin-top:0}
+.self-check{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px;padding:9px;background:#f5f8fb;border:1px solid #d5dfeb;border-radius:9px}.self-check b{font-size:12px;color:#64748b;margin-right:4px}.self-check .btn{padding:6px 10px}.self-check .btn.chosen-correct{background:#16a34a;color:white;border-color:#16a34a}.self-check .btn.chosen-wrong{background:#be123c;color:white;border-color:#be123c}.answer-val{white-space:pre-wrap;display:block;margin-top:6px}.answer-val.hidden{display:none!important}
+</style>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script></head>
+<body class="">
+<div class="app">
+<header class="top">
+  <div class="toprow">
+    <div class="brand">Задание 17 — Числовая последовательность</div>
+    <span class="mode-word" id="studentMode">Ученик</span>
+    <span class="mode-word active" id="teacherMode">Учитель</span>
+    <button class="btn" id="printBtn">🖨️ Печать / PDF</button>
+    <button class="btn" id="saveAppBtn">💾 Сохранить приложение</button>
+  </div>
+</header>
+<div class="pool-note" id="poolNote">Найдено: 32 из 58</div>
+
+<div class="layout">
+<aside class="side">
+  <h3>Управление</h3>
+  <div class="side-title">РАЗМЕР УСЛОВИЯ</div>
+  <div class="filter-group" id="globalConditionFont">
+    <button class="btn filter-btn" data-global-size="small">Мелкий</button>
+    <button class="btn filter-btn active" data-global-size="medium">Средний</button>
+    <button class="btn filter-btn" data-global-size="large">Крупный</button>
+  </div>
+
+  <div class="side-title">РАЗДЕЛЫ</div>
+  <button type="button" class="btn section-btn" data-section="single">Отдельные числа</button>
+  <button type="button" class="btn section-btn active" data-section="pair">Пары элементов</button>
+  <button type="button" class="btn section-btn" data-section="triple">Тройки элементов</button>
+  <button type="button" class="btn section-btn" data-section="quad">Четвёрки элементов</button>
+  <button type="button" class="btn section-btn" data-section="nonadj">Несоседние пары</button>
+
+  <hr>
+  <div class="side-title">Ученик</div>
+  <div class="student-row">
+    <select id="studentSelect"><option value="s1">Ученик 1</option><option value="s1793037715465">лена</option></select>
+    <button class="btn" id="addStudentBtn">+</button>
+    <button class="btn red" id="delStudentBtn">−</button>
+  </div>
+
+  <hr>
+  <div class="side-title">Режим</div>
+  <div class="mode-row">
+    <button class="btn" id="studentModeSide">Ученик</button>
+    <button class="btn orange active" id="teacherModeSide">Учитель</button>
+  </div>
+  <button class="btn section-btn" id="showAllBtn">↺ Показать все задачи</button>
+  <button class="btn section-btn" id="openAllAnswersBtn">👁 Открыть все ответы</button>
+
+  <hr>
+  <div class="side-title">Фильтрация</div>
+  <input class="search" id="searchInput" placeholder="Поиск задач...">
+  <div class="filter-group" style="margin-top:7px">
+    <button class="btn filter-btn" id="fDone">Решено</button>
+    <button class="btn filter-btn" id="fUndone">Нерешено</button>
+    <button class="btn filter-btn" id="fFav">Избранное</button>
+    <button class="btn filter-btn" id="fUnfav">Неизбранное</button>
+    <button class="btn filter-btn" id="fDz">ДЗ</button>
+    <button class="btn filter-btn" id="fNotDz">Не ДЗ</button>
+  </div>
+  <button class="btn section-btn" id="resetFiltersBtn">Сбросить фильтры</button>
+
+  <hr>
+  <button class="btn section-btn" id="addTaskBtn">＋ Добавить задачу</button>
+</aside>
+
+<main id="main"></main>
+</div>
+</div>
+
+<div id="modalHost"></div>
+
+<script id="initial-state" type="application/json">{"tasks":[{"id":"03","title":"(№ 4702)","desc":"Необходимо найти минимальный кратный 7 и минимальный кратный 13 элемент последовательности. \nЕсли минимальный кратный 7 больше минимального кратного 13, то программа должна вывести количество кратных 7, а также максимальный из них. \nВ противном случае программа должна вывести количество кратных 13, а также максимальный из них.","question":"","answer":"92 9815","kind":"single","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nm7 = min(x for x in s if x % 7 == 0)\nm13 = min(x for x in s if x % 13 == 0)\n\nif m7 > m13:\n    l = [x for x in s if x % 7 == 0]\nelse:\n    l = [x for x in s if x % 13 == 0]\n\nprint(len(l), max(l))"},{"id":"02","title":"№ 2012 (Средний)","desc":"Рассматривается множество элементов последовательности, у которых \n- ровно два из его делителей входят в список (2, 3, 5, 7). \nНайдите количество, затем сумму минимального и максимального из таких чисел.","question":"","answer":"531 10774","kind":"single","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nl = []\nfor i in range(len(s)):\n    a=s[i]\n    if (a%2==0)+(a%3==0)+(a%5==0)+(a%7==0)== 2:\n        l.append(s[i])\nprint(len(l), min(l) + max(l))"},{"id":"01","title":"№ 2008 (Средний)","desc":"Рассматривается множество элементов последовательности, больших 100, которые удовлетворяют следующим условиям:\n− цифра в разряде десятков не превышает 4;\n− цифра в разряде сотен принадлежит отрезку [3; 7].\nНайдите количество таких чисел и минимальное из них.","question":"","answer":"502 1305","kind":"single","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nl = []\nfor i in range(len(s)):\n    a = s[i]\n    if a > 100 and str(a)[-2] <= '4' and '3' <= str(a)[-2] <= '7':\n        l.append(a)\nprint(len(l), min(l))"},{"id":"10","title":"№ 2401","desc":"Определите и запишите в ответе сначала КОЛИЧЕСТВО пар элементов последовательности, в которых \n- сумма модулей элементов пары имеет значение не превосходящее 200 и при этом не менее 50, \nзатем МИНИМАЛЬНОЕ из чисел, которые являются элементами таких пар.\n\nВ данной задаче под парой подразумевается два подряд идущих элемента последовательности.","question":"","answer":"1 -92","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if 9000 <= abs(a) + abs(b) <= 10000:\n        l.append(min(a,b))\nprint(len(l) , min(l) )"},{"id":"1995","title":"№ 1995","desc":"Определите и запишите в ответе сначала количество пар элементов последовательности, в которых \n- сумма элементов делится на 2 и не оканчивается на 6, \nзатем максимальное из средних арифметических элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"1971 9702","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    sm = a + b\n    if sm % 2 == 0 and str(sm)[-1]!='6':\n        l.append((a + b) / 2)\n\nprint(len(l), max(l))"},{"id":"6059","title":"№ 6059 (Базовый)","desc":"Необходимо определить количество пар, где \n- имеется два четных числа с наибольшим общими делителем, превышающим число 3, \nи указать наибольшую возможную разность между числами в паре. \n\nИзвестно, что парой принято называть два стоящих подряд числа.","question":"","answer":"25 7952","kind":"pair","code":"from math import gcd\nfile = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i], s[i+1]\n    if  a % 2 == 0 and b % 2 == 0 and gcd(a, b) > 3:\n        l.append(abs(a - b))\nprint(len(l), max(l) if l else 0)"},{"id":"7596","title":"№ 7596 Досрочная волна 2023","desc":"Определите количество пар последовательности, в которых \n- только одно число четырехзначное, \n- и сумма элементов пары НЕ кратна минимальному трехзначному значению последовательности, оканчивающемуся на 5. \nВ ответе запишите два числа: \nсначала количество найденных пар, \nзатем минимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"2 33120","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nm5 = min(x for x in s if 1000 <= abs(x) <= 9999 and abs(x) % 10 == 5)\n\nn3={c for c in range(1000,10000)}\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (a in n3)+(b in n3)==1 and (a + b) % m5 != 0:\n        l.append(a + b)\nprint(len(l), min(l))"},{"id":"16383","title":"дз № 16383 ЕГКР 27.04.24 (Базовый)","desc":"Определите количество пар элементов последовательности, в которых \n- только один из двух элементов оканчивается на 21 и является четырехзначным числом, \n- а сумма квадратов элементов пары не меньше квадрата максимального элемента последовательности, оканчивающегося на 21 и являющегося четырехзначным числом. \nВ ответе запишите количество найденных пар чисел, \nзатем максимальную из сумм элементов таких пap.\n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"74 103365","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn4 = {c for c in range(1000, 10000)}\nm5 = [x for x in s if abs(x) in n4 and abs(x) % 100 == 21]\n\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (a in m5)  + (b in m5) == 1 and a*a + b*b >= max(m5)**2:\n        l.append(a + b)\nprint(len(l), max(l))"},{"id":"8954","title":"дз № 8954 (Базовый)","desc":"Определите количество пар последовательности, \n- в которых только одно число кратно 7, \n- а сумма элементов пары НЕ кратна максимальному элементу последовательности, оканчивающемуся на AF в шестнадцатеричной системе счисления. \nВ ответе запишите количество найденных пар, затем максимальную из сумм элементов таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"2 9487","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nprint([hex(abs(x))[-2:] for x in s ])\nm5 = [x for x in s if hex(abs(x))[-2:] == 'af']\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if ((abs(a) % 7 == 0) + (abs(b) % 7 == 0)) == 1 and (a + b) % max(m5) != 0:\n        l.append(a + b)\nprint(len(l), max(l) if l else 0)"},{"id":"18045","title":"дз № 18045 (Базовый)","desc":"Определите количество пар последовательности, в которых \n- сумма последних цифр элементов равна количеству трехзначных чисел в последовательности. \nВ ответе запишите количество найденных пар, \nзатем минимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"243 3614","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn2 = {c for c in range(100, 1000)}\ncnt = sum(1 for x in s if abs(x) in n2)\n\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if abs(a) % 10 + abs(b) % 10 == cnt:\n        l.append(a + b)\nprint(len(l), min(l) if l else 0)"},{"id":"4367","title":"дз № 4367 (Базовый)","desc":"Определите количество пар последовательности, в которых \n- ХОТЯ БЫ ОДНО число делится на минимальный элемент последовательности, кратный 8, но не равный 8. \nГарантируется, что такой элемент в последовательности есть. \nВ ответе запишите количество найденных пар, \nзатем среди таких пар определите пару с минимальной суммой элементов и запишите максимальное из чисел в ней (если пар с минимальной суммой элементов несколько, то в ответ следует выбрать максимальное число из первой пары).\n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"3 74280","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nm5 = min(x for x in s if abs(x) % 8 == 0 and abs(x) != 8)\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if a % m5 == 0 or b % m5 == 0:\n        l.append((a + b, a, b))\nmn = min(p[0] for p in l)\nfirst = next(p for p in l if p[0] == mn)\nprint(len(l), max(first[1], first[2]))"},{"id":"16264","title":"№ 16264 (Базовый)","desc":"Определите количество пар элементов последовательности, в которых \n- хотя бы одно число кратно минимальному трехзначному значению последовательности, которое кратно сумме своих цифр.\nГарантируется, что в последовательности есть хотя бы одно двузначное число, соответствующее условию. \nВ ответе запишите количество найденных пар чисел, \nзатем максимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"537 19247","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn2 = {c for c in range(100, 1000)}\nm5 = min(x for x in s if abs(x) in n2 and abs(x) % (abs(x)//10 + abs(x)%10) == 0)\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (a % m5 == 0) + (b % m5 == 0) >= 1:\n        l.append(a + b)\nprint(len(l), max(l) if l else 0)"},{"id":"14652","title":"№ 14652 ( Базовый)","desc":"Определите и запишите в ответе сначала количество пар элементов последовательности, в которых \n- модуль разности является квадратом натурального числа, \nзатем максимальную из разностей элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности. ","question":"","answer":"164 1954","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn2 = {c**2 for c in range(1, 1000)}\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (abs(a-b) in n2) :\n        l.append(a - b)\nprint(len(l), max(l) if l else 0)"},{"id":"4698","title":"дз (№ 4698)","desc":"Определите количество пар чисел, в которых \n- хотя бы один из двух элементов больше, чем наибольшее из всех чисел в файле, делящихся на 127, \n- и в восьмеричной записи хотя бы одного элемента из двух содержится цепочка цифр 31. \n\nВ ответе запишите два числа: сначала количество найденных пар, \nа затем – минимальную сумму элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"28 11146","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn127 = max(c for c in s if c%127==0)\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (max(a,b)>n127) and '31' in oct(a)+' '+oct(b):\n        l.append(a + b)\nprint(len(l), min(l))"},{"id":"5924","title":"(№ 5924)","desc":"Определите количество пар последовательности, в которых \n- оба числа не меньше любого числа последовательности, кратного 73. \nГарантируется, что такой элемента в последовательности есть. \n\nВ ответе запишите количество найденных пар, \nзатем максимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности","question":"","answer":"161 19678","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn73 = [c for c in s if c%73==0]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if min(a,b)>=max(n73):\n        l.append(a + b)\nprint(len(l), max(l))"},{"id":"4705","title":"(№ 4705)","desc":"Необходимо найти сумму минимального и максимального числа среди оканчивающихся на 4 элементов последовательности. \n\nЗатем программа должна найти и вывести количество пар элементов последовательности, \nсумма которых меньше найденной суммы, \nа также наибольшую из этих сумм. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"503 10094","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn4 = [c for c in s if abs(c)%10==4]\nsu=max(n4)+min(n4)\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if a+b<su:\n        l.append(a + b)\nprint(len(l), max(l))"},{"id":"5059","title":"(№ 5059)","desc":"Определите количество пар элементов последовательности, в которых хотя бы у одного из чисел \n- сумма цифр восьмеричной записи равна сумме цифр восьмеричной записи минимального элемента последовательности, кратного 21. \nВ ответе запишите количество найденных пар, \nзатем минимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"1703 2281","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn21 = min([c for c in s if c%21==0])\nsu=lambda n: sum(int(c) for c in oct(n)[2:])\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (su(a)==su(n21)) or (su(b)==su(n21)):\n        l.append(a + b)\nprint(len(l), min(l))"},{"id":"8373","title":"№ 8373 (Средний)","desc":"Рассматриваются все пары элементов, в которых \n- только один элемент чётный, \n- и между элементами пары есть ровно один элемент \nи он кратен минимальному четному элементу из всех элементов последовательности. \n\nНайти количество таких пар и пару с минимальной суммой.","question":"","answer":"159 1261","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nmch = min([c for c in s if c%2==0])\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if ((a%2==0)+(c%2==0)==1) and (b%mch==0):\n        l.append(a + c)\nprint(len(l), min(l))"},{"id":"5265","title":"(№ 5265)","desc":"Найдите все пары элементов последовательности, в которых \n- сумма элементов пары – это число, которого нет в последовательности, \n- и которое меньше среднего арифметического всех четырёхзначных чисел в файле. \nВ ответе запишите количество найденных пар, \nзатем максимальную из сумм цифр обоих элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"486 48","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nm4 = [c for c in s if 999<abs(c) <10000]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if ((a+b) not in s) and (a+b < sum(m4)/len(m4)):\n        l.append(sum(int(c) for c in str(a)+str(b)))\nprint(len(l), max(l))"},{"id":"2679","title":"№ 2679 (Средний)","desc":"Определите количество пар элементов последовательности, в которых - хотя бы одно число кратно 5 или 7, \n- а сумма чисел пары не превышает максимальное число последовательности, оканчивающиеся на две одинаковые цифры. \nВ ответе запишите количество подходящих под условие пар, \nа затем максимальную из сумм чисел таких пар. \n\nВ данной задаче под парой подразумевается два подряд идущих числа.\n\nНапример, для чисел 22 5 15 21 -7 -10 ответом будет пара чисел 3 20.","question":"","answer":"2258 984","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nmm = [c for c in s if abs(c)>9 and str(c)[-2]==str(c)[-1]]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (a%5==0 or a%7==0 or b%5==0 or b%7==0) and (a+b <= max(mm)):\n        l.append(a+b)\nprint(len(l), max(l))"},{"id":"6295","title":"(№ 6295)","desc":"Определите количество пар элементов последовательности, для которых выполняются следующие условия:\n– последняя цифра записи одного из элементов пары совпадает с предпоследней цифрой записи другого элемента;\n– ровно один элемент из пары делится без остатка на 11;\n– сумма квадратов элементов пары не меньше квадрата среднего арифметического всех элементов последовательности, две последние цифры в записи которых одинаковы.\n\nВ ответе запишите два числа: сначала количество найденных пар, \nзатем максимальную величину суммы квадратов элементов этих пар.","question":"","answer":"153 182503568","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nmm = [c for c in s if abs(c)>9 and str(abs(c))[-2]==str(abs(c))[-1]]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (\n       ((abs(a)%10==(abs(b)//10)%10 and abs(b)>9) or (abs(b)%10==(abs(a)//10)%10 and abs(a)>9))\n         and (a%11==0)+(b%11==0)==1 and (a**2+b**2>=(sum(mm)/len(mm))**2)\n       ):\n        l.append(a**2+b**2)\nprint(len(l), max(l))"},{"id":"5184","title":"(№ 5184)","desc":"Найдите все пары элементов последовательности, в которых \n- в обоих числах пары равное количество чётных и нечётных цифр, \n- а сумма чисел пары больше максимального элемента последовательности. \n\nВ ответе запишите количество найденных пар, \nзатем максимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"745 19763","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nm = max(s)\nl = []\n\ndef check(n):\n    st = str(abs(n))\n    ch = len(c for c in st if int(c) % 2 == 0)\n    nch = len(c for c in st if int(c) % 2 != 0)\n    return ch == nch\n\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if check(a) and check(b) and (a + b) > m:\n        l.append(a + b)\n\nprint(len(l), max(l))"},{"id":"5181","title":"(№ 5181)","desc":"Найдите все пары элементов последовательности, в которых \n- хотя бы одно число в восьмеричной записи имеет нечётную длину, \n- а сумма чисел пары больше, чем среднее арифметическое всех чисел в файле. \n\nВ ответе запишите количество найденных пар, \nзатем минимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"8514 5176","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nsr = sum(s) / len(s)\nl = []\n\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    a8 = len(oct(abs(a))[2:])\n    b8 = len(oct(abs(b))[2:])\n    if (a8 % 2 != 0 or b8 % 2 != 0) and (a + b) > sr:\n        l.append(a + b)\n\nprint(len(l), min(l))"},{"id":"5283","title":"(№ 5283) ***XOR","desc":"Обозначим через M минимальное число в последовательности, кратное 43. \n\nОпределите количество пар последовательности, в которых \n- либо сумма чисел кратна M, \n- либо хотя бы в одном из чисел последняя цифра совпадает с последней цифрой числа M. \n\nГарантируется, что такая пара в последовательности есть. \n\nВ ответе запишите количество найденных пар, затем максимальное из чисел, которые являются элементами таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности","question":"","answer":"1895 9984","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nm = min(x for x in s if x % 43 == 0)\nlast = abs(m) % 10\nl = []\n\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if ((a + b) % m == 0) ^ ((abs(a) % 10 == last) or (abs(b) % 10 == last)):\n        l.append(max(a, b))\n\nprint(len(l), max(l))"},{"id":"5071","title":"(№ 5071)","desc":"Запишите в ответе количество пар элементов последовательности, в которых \n- модуль разности остатков от деления обоих чисел на 17 совпадает с суммой остатков от деления этих чисел на 4. \nЗатем запишите минимальную сумму чисел, составляющих такую пару. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности","question":"","answer":"492 1062","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if abs(a % 17 - b % 17) == (a % 4 + b % 4):\n        l.append(a + b)\n\nprint(len(l), min(l))"},{"id":"2977","title":"№ 2977** ЦЕЛОЧИСЛЕННЫЙ КОРЕНЬ","desc":"Определите и запишите сначала максимальную сумму элементов пары, в которой \n- корень каждого элемента пары является целочисленным и кратен 2, \nа затем количество всех подходящих пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"980 9","kind":"pair","code":"from math import isqrt\n\nfile = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    a2 = isqrt(abs(a))\n    b2 = isqrt(abs(b))\n    \n    if a2 ** 2 == abs(a) and a2 % 2 == 0 and b2 ** 2 == abs(b) and b2 % 2 == 0:\n        l.append(a + b)\n\nprint(max(l), len(l))"},{"id":"1997","title":"№ 1997 (Средний)","desc":"Определите и запишите в ответе сначала количество пар элементов последовательности, в которых \n- чётность чисел различна, \n- при этом чётное число делится на 4, а нечётное на 11, \nзатем максимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"126 15701","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (a % 2 == 0 and a % 4 == 0 and b % 2 != 0 and b % 11 == 0) or (b % 2 == 0 and b % 4 == 0 and a % 2 != 0 and a % 11 == 0):\n        l.append(a + b)\n\nprint(len(l), max(l))"},{"id":"5916","title":"№ 5916 (Средний)","desc":"Необходимо найти количество пар чисел, где \n- одно число состоит только из четных цифр, а другое только из нечетных. \nВ качестве ответа укажите количество подходящих пар \nи наибольшую среди всех их сумм.","question":"","answer":"92 17515","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\ndef ch(n):\n    return all(int(c) % 2 == 0 for c in str(abs(n)))\n\ndef nch(n):\n    return all(int(c) % 2 != 0 for c in str(abs(n)))\n\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (ch(a) and nch(b)) or (nch(a) and ch(b)):\n        l.append(a + b)\n\nprint(len(l), max(l))"},{"id":"4275","title":"(№ 4275)** - ИНДЕКС ПЕРВОГО ВХОЖДЕНИЯ","desc":"Определите и запишите в ответе сначала количество элементов последовательности, которые \n- равны её наибольшему элементу, \nзатем позицию первого такого элемента в последовательности при подсчёте с единицы. \nНапример, в последовательности 7; 3; 10; 4; 7; -2; 10; -12; 3 два элемента равны максимальному, позиция первого из них - 3. \n\nОтветом для данного примера будет пара чисел 2 и 3.","question":"","answer":"9 26","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nm = max(s)\nprint(s.count(m), s.index(m) + 1)"},{"id":"4899","title":"(№ 4899) (Е. Джобс)","desc":"Подходящей считается пара, в которой \n- хотя бы один элемент больше среднего арифметического всех положительных элементов последовательности. \nЗапишите в ответе количество подходящих пар, \nа затем максимальную сумму цифр одного элемента в подходящих парах. \nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.\n\nНапример, рассмотрим последовательность из шести элементов: 12; 18; 3; -15; 11; 16. \nСреднее арифметическое всех положительных элементов последовательности равно 12. \nСледовательно, подходит 3 пары: (12; 18), (18; 3) и (11; 16). \nСуммы цифр у элементов: 3 (1+2), 9 (1+8), 3, 2 (1+1), 7 (1+6). Ответ: 3 9.","question":"","answer":"4440 35","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\ndef su(n):\n    return sum(int(c) for c in str(abs(n)))\npol=[x for x in s if x > 0]\nsr = sum(pol) / len(pol)\n\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if a > sr or b > sr:\n        l.append(max(su(a), su(b)))\n\nprint(len(l), max(l))"},{"id":"2399","title":"№ 2399** - размер ef имеет значение","desc":"Определите количество пар чисел, в которых \n- ровно один из двух элементов больше, чем сумма цифр всех чисел в файле, делящихся на 35, \n- а шестнадцатеричная запись другого оканчивается на EF. \nВ ответе запишите два числа: сначала количество найденных пар, \nа затем – минимальную сумму элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"15 6410","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\ndef su(n):\n    return sum(int(c) for c in str(abs(n)))\n\nm = sum(su(x) for x in s if x % 35 == 0)\nl = []\n\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (a > m and b <= m and hex(abs(b))[-2:] == 'ef') or (b > m and a <= m and hex(abs(a))[-2:].lower() == 'ef'):\n        l.append(a + b)\n\nprint(len(l), min(l))"},{"id":"5158","title":"(№ 5158)","desc":"Определите количество пар элементов последовательности, в которых \n- произведение элементов больше суммы первых (слева) цифр всех чисел последовательности. \nВ ответе запишите количество найденных пар, \nзатем максимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"9989 19893","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\ndef su1(n):\n    return int(str(abs(n))[0])\n\nm = sum(su1(x) for x in s)\nl = []\n\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if a * b > m:\n        l.append(a + b)\n\nprint(len(l), max(l))"},{"id":"6184","title":"(№ 6184)","desc":"Определите количество пар элементов последовательности, в которых \n- все цифры первого элемента в паре больше всех цифр второго элемента в паре (первый элемент – крайний левый элемент в паре), \n- а сумма текущей пары не больше максимального элемента последовательности, запись которого содержит одинаковое количество четных и нечетных цифр. \nВ ответе запишите два числа: сначала количество найденных пар, \nзатем максимальную сумму элементов этих пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"11 9881","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\ndef eq_odd_even(n):\n    st = str(abs(n))\n    ch = sum(1 for c in st if int(c) % 2 == 0)\n    nch = sum(1 for c in st if int(c) % 2 != 0)\n    return ch == nch\n\nm = max(x for x in s if eq_odd_even(x))\nl = []\n\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if min(str(abs(a))) > max(str(abs(b))) and (a + b) <= m:\n        l.append(a + b)\n\nprint(len(l), max(l))"},{"id":"6760","title":"(№ 6760)","desc":"Определите количество пар последовательности, в которых \n- только одно число имеет отличное от 3 количество разрядов, \n- а элементы пары отличаются на значение, кратное минимальному трехзначному значению в последовательности, оканчивающемуся на 11. \nВ ответе запишите количество найденных пар, \nзатем максимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности","question":"","answer":"8 8089","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nm = min(x for x in s if 100 <= abs(x) <= 999 and abs(x) % 100 == 11)\nl = []\n\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    len_a = len(str(abs(a)))\n    len_b = len(str(abs(b)))\n    \n    if ((len_a != 3 and len_b == 3) or (len_a == 3 and len_b != 3)) and  abs(a - b) % m == 0:\n            l.append(a + b)\n\nprint(len(l), max(l))"},{"id":"11703","title":"дз № 11703 ( Базовый)","desc":"Определите количество троек элементов последовательности, в которых \n- хотя бы один из трёх элементов является пятизначным числом, \n- а произведение элементов тройки кратно максимальному элементу последовательности, оканчивающемуся на 18. \n\nВ ответе запишите количество найденных троек чисел, \nзатем максимальное из произведений элементов таких троек. \nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"7 32313429347472","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nm = max(x for x in s if abs(x) % 100 == 18)\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if ((10000 <= abs(a) <= 99999) or (10000 <= abs(b) <= 99999) or (10000 <= abs(c) <= 99999)) and (a * b * c) % m == 0:\n        l.append(a * b * c)\n\nprint(len(l), max(l))"},{"id":"2491","title":"дз № 2491 (Базовый)","desc":"Определите количество троек, в которых хотя бы один из трёх элементов меньше, чем среднее арифметическое всех чисел в файле, и десятичная запись всех трёх элементов тройки содержит цифру 9. В ответе запишите два числа: сначала количество найденных троек, а затем – максимальную сумму элементов таких троек. В данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"345 17460","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nsr = sum(s) / len(s)\nl = []\n\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if ('9' in str(a) and '9' in str(b) and '9' in str(c)) and (a < sr or b < sr or c < sr):\n        l.append(a + b + c)\n\nprint(len(l), max(l))"},{"id":"4354","title":"дз (№ 4354)","desc":"Определите сначала количество троек элементов последовательности, в которых \n- все три числа в двоичной системе счисления имеют ровно 3 единицы, \nа затем сумму максимальных чисел из таких троек. \n\nПод тройкой подразумевается три идущих подряд элемента последовательности","question":"","answer":"16 1548","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if (bin(abs(a)).count('1') == 3) and (bin(abs(b)).count('1') == 3) and (bin(abs(c)).count('1') == 3):\n        l.append(max(a, b, c))\n\nprint(len(l), sum(l))"},{"id":"2398","title":"№ 2398 (Средний)","desc":"Тройка идущих подряд чисел последовательности называется уникальной, если \n- только второе из них является положительным числом, заканчивающимся на 9. \nОпределите количество уникальных троек чисел, \nа затем – максимальную из всех сумм таких троек.","question":"","answer":"206 23427","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if not(a > 0 and a % 10 == 9) and (b > 0 and b % 10 == 9) and not(c > 0 and c % 10 == 9):\n        l.append(a + b + c)\n\nprint(len(l), max(l))"},{"id":"4355","title":"(№ 4355)","desc":"Определите сначала количество троек элементов последовательности, в которых \n- хотя бы 2 числа из тройки в шестнадцатеричной системе счисления в нулевом разряде имеют 0, \nа затем сумму максимальных чисел из таких троек. \n\nПод тройкой подразумевается три идущих подряд элемента последовательности","question":"","answer":"8 1060","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if (hex(abs(a))[-1] == '0') + (hex(abs(b))[-1] == '0') + (hex(abs(c))[-1] == '0') >= 2:\n        l.append(max(a, b, c))\n\nprint(len(l), sum(l))"},{"id":"17636","title":"дз № 17636 Основная волна 19.06.24 (Средний)","desc":"Определите количество троек элементов последовательности, в которых \n- хотя бы один элемент оканчивается на 3 и является трёхзначным числом, \nа сумма всех элементов меньше максимального элемента последовательности, оканчивающегося на 3 и являющегося трёхзначным числом. \nВ ответе запишите количество найденных троек, \nзатем максимальную из сумм элементов таких троек.\n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"147 944","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nn33 = {x for x in s if 100 <= abs(x) <= 999 and abs(x) % 10 == 3}\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if (a in n33 or b in n33 or c in n33) and (a + b + c) < max(n33):\n        l.append(a + b + c)\n\nprint(len(l), max(l))"},{"id":"5066","title":"(№ 5066)","desc":"Запишите в ответе количество троек элементов последовательности, в которых \n- семеричные записи всех чисел оканчиваются на разные цифры \n- и хотя бы одно число отрицательно. \nЗатем минимальную разность между максимальным и минимальным числами в таких тройках. \n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"3889 145","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if len({abs(a) % 7, abs(b) % 7, abs(c) % 7}) == 3 and (a < 0 or b < 0 or c < 0):\n        l.append(max(a, b, c) - min(a, b, c))\n\nprint(len(l), min(l))"},{"id":"14952","title":"дз № 14952 (Средний)","desc":"Определите количество троек элементов последовательности, в которых \n- не более одного из трёх элементов одновременно являются четырёхзначными и чётными числами\n- а сумма элементов тройки не больше максимального элемента последовательности, оканчивающегося на 121.\nВ ответе запишите количество найденных троек чисел, \nзатем максимальную из сумм элементов таких троек.\n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"5211 20116","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nn4 = {x for x in s if 1000 <= abs(x) <= 9999 and x % 2 == 0}\nm = max(x for x in s if abs(x) % 1000 == 121)\nl = []\n\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if (a in n4) + (b in n4) + (c in n4) <= 1 and (a + b + c) <= m:\n        l.append(a + b + c)\n\nprint(len(l), max(l))"},{"id":"11481","title":"дз № 11481","desc":"Определите количество троек элементов последовательности, среди которых \n- есть не более одного числа, начинающегося с цифры 6, \n- а сумма элементов тройки не меньше максимального элемента последовательности, начинающегося с цифры 8. \nВ ответе запишите количество найденных троек чисел, \nзатем минимальную из сумм элементов таких троек.\n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.\n\nПримечание: Числа 6868, -6868 начинаются с цифры 6.","question":"","answer":"186 89990","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nn6 = {x for x in s if str(abs(x))[0] == '6'}\nm = max(x for x in s if str(abs(x))[0] == '8')\nl = []\n\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if (a in n6) + (b in n6) + (c in n6) <= 1 and (a + b + c) >= m:\n        l.append(a + b + c)\n\nprint(len(l), min(l))"},{"id":"13882","title":"дз № 13882 (Средний)","desc":"Найдите все тройки элементов последовательности, среди которых \n- все числа имеют разную сумму цифр, \n- а сумма чисел тройки больше, чем максимальный элемент последовательности, кратный 401. \nВ ответе запишите количество найденных троек, \nзатем минимальную из сумм элементов таких троек. \n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"6283 9627","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\ndef su(n):\n    return sum(int(c) for c in str(abs(n)))\n\nm = max(x for x in s if x % 401 == 0)\nl = []\n\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if len({su(a), su(b), su(c)}) == 3 and (a + b + c) > m:\n        l.append(a + b + c)\n\nprint(len(l), min(l))"},{"id":"5210","title":"(№ 5210) ***","desc":"Элементы последовательности - четырёхзначные натуральные числа. \nНазовём два различных четырёхзначных числа хорошей парой, если \n- их среднее арифметическое (полусумма) и среднее геометрическое (квадратный корень из произведения) — натуральные числа. \n\nНайдите все тройки элементов последовательности, в которых \n- есть хотя бы одна хорошая пара, \n- а сумма всех чисел тройки меньше максимальной суммы двух различных элементов последовательности. \n\nВ ответе запишите количество найденных троек, \nзатем минимальную из сумм элементов таких троек. \n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"3151 3850","kind":"triple","code":"from math import isqrt\nfile = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nm = sum(sorted(set(s))[-2:])\nl = []\ndef good(a, b):\n    return (a != b) and (a + b) % 2 == 0 and isqrt(a * b)**2 == a * b\n\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if (good(a, b) or good(a, c) or good(b, c)) and (a + b + c) < m:\n        l.append(a + b + c)\n\nprint(len(l), min(l))"},{"id":"5245","title":"(№ 5245)","desc":"Элементы последовательности – четырёхзначные натуральные числа. \nНайдите все тройки элементов последовательности, для которых \n- семеричная запись суммы всех чисел тройки представляет собой палиндром, \n- а среднее арифметическое всех чисел тройки меньше, чем среднее арифметическое всех чисел в файле, кратных 11. \nВ ответе запишите количество найденных троек, \nзатем минимальную из сумм элементов таких троек. \n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"465 5000","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\ndef f(n, a):\n    rez = ''\n    n = abs(n)\n    while n > 0:\n        rez = '0123456789'[n % a] + rez\n        n //= a\n    return max(rez, '0')\n\nk11 = [x for x in s if x % 11 == 0]\nsr = sum(k11) / len(k11)\n\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if f(a + b + c, 7) == f(a + b + c, 7)[::-1] and (a + b + c)/ 3 < sr :\n        l.append(a + b + c)\n\nprint(len(l), min(l))"},{"id":"5207","title":"(№ 5207)","desc":"Назовём два различных четырёхзначных числа хорошей парой, \n- если сумма первых цифр двух чисел равна сумме последних цифр тех же чисел. \n\nНайдите все тройки элементов последовательности, в которых \n- есть хотя бы одна хорошая пара, \n- а среднее арифметическое всех чисел тройки больше, чем среднее арифметическое всех чисел в файле. \nВ ответе запишите количество найденных троек, \nзатем максимальную из сумм элементов таких троек. \n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности. ","question":"","answer":"877 28668","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nsr = sum(s) / len(s)\n\ndef good(a, b):\n    a, b = str(abs(a)), str(abs(b))\n    return (a != b) and len(a) == 4 and len(b) == 4 and (int(a[0]) + int(b[0])) == (int(a[-1]) + int(b[-1]))\n\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if (good(a, b) or good(a, c) or good(b, c)) and (a + b + c) / 3 > sr:\n        l.append(a + b + c)\n\nprint(len(l), max(l))"},{"id":"10771","title":"*№ 10771 ","desc":"Определите количество троек элементов последовательности, в которых \n- каждое число содержит цифру 3 в десятичной записи, \n- а сумма элементов такой тройки является простым числом. \nВ ответе запишите два числа: сначала количество найденных троек, \nзатем минимальную сумму элементов таких троек. \n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"13 4327","kind":"triple","code":"from math import ceil\n\nfile = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\ndef delit(n):\n    l = []\n    for c in range(1, ceil(n ** 0.5) + 1):\n        if n % c == 0:\n            l.append(c)\n            l.append(n // c)\n    return sorted(set(l))\n\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if '3' in str(abs(a)) and '3' in str(abs(b)) and '3' in str(abs(c)):\n        if len(delit(abs(a + b + c))) == 2:\n            l.append(a + b + c)\n\nprint(len(l), min(l))"},{"id":"5174","title":"(№ 5174)","desc":"Найдите все тройки элементов последовательности, в которых \n- хотя бы одно число равно сумме цифр другого числа в тройке, \n- а сумма всех чисел тройки меньше, чем сумма цифр всех чисел в файле, делящихся на 50. \nВ ответе запишите количество найденных троек, \nзатем максимальную из сумм элементов таких троек. \n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"310 6765","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\ndef su(n):\n    return sum(int(c) for c in str(abs(n)))\n\nm = sum(su(x) for x in s if x % 50 == 0)\nl = []\n\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if (a == su(b) or a == su(c) or  b == su(a) or b == su(c) or  c == su(a) or c == su(b)) and (a + b + c) < m:\n        l.append(a + b + c)\n\nprint(len(l), max(l))"},{"id":"5437","title":"(№ 5437)","desc":"Определите количество троек, в которых для каждого числа тройки \n- сумма цифр в нечётных разрядах нацело делится на сумму цифр в чётных разрядах. Разряды нумеруются с нуля справа налево. \nВ ответе запишите два числа: сначала количество найденных троек, \nа затем – минимальную сумму элементов таких троек. \n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"124 4103","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\ndef usl(n):\n    st = str(abs(n))[::-1]\n    ch= sum(int(c) for c in st[::2])\n    nch= sum(int(c) for c in st[1::2])\n    return ch != 0 and nch% ch == 0\n\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if usl(a) and usl(b) and usl(c):\n        l.append(a + b + c)\n\nprint(len(l), min(l))"},{"id":"5211","title":"(№ 5211)","desc":"Элементы последовательности - четырёхзначные натуральные числа. \nНайдите все тройки элементов последовательности, для которых \n- десятичная запись произведения всех чисел тройки содержит все 10 цифр (0..9), \n- а сумма всех чисел тройки меньше, чем сумма цифр всех чисел в файле. \n\nВ ответе запишите количество найденных троек, \nзатем минимальную из сумм элементов таких троек. \n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"43 4130","kind":"triple","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\ndef su(n):\n    return sum(int(c) for c in str(abs(n)))\n\nm = sum(su(x) for x in s)\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    prod_str = str(a * b * c)\n    if len(set(prod_str)) == 10 and (a + b + c) < m:\n        l.append(a + b + c)\n\nprint(len(l), min(l))"},{"id":"2002","title":"№ 2002 (Базовый)","desc":"Определите и запишите в ответе сначала количество четвёрок элементов последовательности, в которых \n- числа идут в порядке убывания, \n- при этом разность наибольшего и наименьшего числа больше 1000, \nзатем минимальную сумму элементов таких четвёрок. \nВ данной задаче под четвёркой подразумевается четыре идущих подряд элемента последовательности.","question":"","answer":"181 -31478","kind":"quad","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nfile.close()\n\nl = []\nfor i in range(len(s) - 3):\n    a, b, c, d = s[i:i+4]\n    if a > b > c > d and a - d > 1000:\n        l.append(a + b + c + d)\nprint(len(l), min(l) if l else 0)"},{"id":"2001","title":"№ 2001 (Базовый)","desc":"Определите и запишите в ответе сначала количество четвёрок элементов последовательности, в которых \n- чётность соседних чисел различна, \nзатем максимальную сумму среди таких четвёрок. \n\nВ данной задаче под четвёркой подразумевается четыре идущих подряд элемента последовательности.","question":"","answer":"604 26324","kind":"quad","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nfile.close()\n\nl = []\nfor i in range(len(s) - 3):\n    a, b, c, d = s[i:i+4]\n    if a % 2 != b % 2 and b % 2 != c % 2 and c % 2 != d % 2:\n        l.append(a + b + c + d)\nprint(len(l), max(l) if l else 0)"},{"id":"11949","title":"дз № 11949 (Средний)","desc":"Определите количество четвёрок элементов последовательности, в которых \n- или только одно из чисел \n- или все четыре числа являются двузначным, а сумма элементов четвёрки не меньше максимального элемента последовательности, оканчивающегося на 68.\nВ ответе запишите количество найденных четвёрок чисел, \nзатем максимальную из сумм элементов таких четвёрок.\n\nВ данной задаче под четвёркой подразумевается четыре идущих подряд элемента последовательности.","question":"","answer":"75 247177","kind":"quad","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nmx = max(x for x in s if abs(x) % 100 == 68)\nn3 = {c for c in range(100, 1000)}\nl = []\nfor i in range(len(s) - 3):\n    a,b,c,d=s[i:i+4]\n    if (a in n3) +(b in n3) +(c in n3) +(d in n3) in (1,4) and a+b+c+d >= mx:\n        l.append(a+b+c+d)\nprint(len(l), max(l) if l else 0)"},{"id":"14653","title":"дз № 14653 (Сложный)","desc":"Определите количество четверок последовательности, в которых \n- только два элемента являются трехзначными числами, \n- ровно один элемент делится на 18, \n- а сумма элементов делится на сумму двух минимальных положительных элементов последовательности, кратных 17, \n- и произведение элементов не превосходит квадрат максимального элемента последовательности, оканчивающегося на 69. \nВ ответе запишите количество найденных четверок чисел, затем минимальный из квадратов сумм элементов таких четверок. \nВ данной задаче под четверкой подразумевается четыре идущих подряд элемента последовательности.","question":"","answer":"10 73984","kind":"quad","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nfile.close()\nmx = max(x for x in s if abs(x) % 100 == 69)\nm17 = sum(sorted([x for x in s if x > 0 and x % 17 == 0])[:2])\nN3 = {c for c in range(100, 1000)}\nl = []\nfor i in range(len(s) - 3):\n    a, b, c, d = s[i:i+4]\n    n3 = [c for c in s[i:i+4] if abs(c) in N3]\n    n18 = [c for c in s[i:i+4] if c % 18 == 0]\n    if len(n3) == 2 and len(n18) == 1 and (a+b+c+d) % m17 == 0 and a*b*c*d <= mx*mx:\n        l.append((a+b+c+d) ** 2)\nprint(len(l), min(l) if l else 0)"},{"id":"3895","title":"№ 3895 (Средний) НЕ ТОЛЬКО СОСЕДИ","desc":"Найдите такие пары элементов, в которых \n- произведение элементов больше, чем произведение рядом стоящих чисел (перед и после пары). \nВ качестве ответа выведите максимальную сумму среди найденных пар, \nзатем количество таких из них, в которых есть хотя бы одно число, большее среднего арифметического всех чисел в файле.\n\nПод парой в задаче подразумевается два подряд идущих числа. \nПервая и последняя пара в файле не могут быть искомыми, так как перед или после них нет чисел.","question":"","answer":"19703 3103","kind":"nonadj","code":"from itertools import *\nfile = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nsr = sum(s) / len(s)\nl = []\nl1=[]\nfor i, j in combinations(range(len(s)), 2):\n    if i > 0 and j < len(s) - 1:\n        a, b = s[i], s[j]\n        if a * b > s[i-1] * s[j+1]:\n            l.append((a+ b))\n        if a>sr or b>sr:\n            l1.append((a,b))\nprint(max(l), len(l1))"},{"id":"4416","title":"4416 ","kind":"nonadj","desc":"Определите и запишите в ответе сначала количество пар элементов последовательности, у которых \n- сумма элементов кратна 60 \n- и хотя бы один элемент из пары делится на 40, \nзатем максимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два различных элемента последовательности. Порядок элементов в паре не важен.","question":"","answer":"29278 19860","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nl = []\nfor i in range(len(s)):\n    for j in range(len(s)):\n        if i>=j: continue\n        a, b = s[i], s[j]\n        if (a + b) % 60 == 0 and (a % 40 == 0 or b % 40 == 0):\n            l.append(a + b)\n\nprint(len(l), max(l))"},{"id":"4542","title":"*№ 4542","kind":"pair","desc":"Определите количество пар последовательности, в которых \n- только одно число находится между значениями минимального кратного 37 и максимального кратного 73. \nГарантируется, что такая пара в последовательности есть.\nВ ответе запишите количество найденных пар и \nминимальную сумму элементов среди таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"136 574","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nmn = min(x for x in s if x % 37 == 0)\nmx = max(x for x in s if x % 73 == 0)\n\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (mn < a < mx) + (mn < b < mx) == 1:\n        l.append(a + b)\n\nprint(len(l), min(l))"}],"students":[{"id":"s1","name":"Ученик 1"},{"id":"s1793037715465","name":"лена"}],"currentStudentId":"s1793037715465","progress":{"s1":{"10":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"1995":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"1997":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2001":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2002":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2398":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2399":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2491":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2679":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2977":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"3895":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4275":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4354":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4355":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4367":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4416":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4542":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4655":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4698":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4705":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4899":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5059":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5066":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5071":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5158":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5174":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5181":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5184":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5207":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5210":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5211":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5245":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5265":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5283":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5437":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5916":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5924":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"6059":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"6184":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"6295":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"6760":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"7596":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"8007":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"8373":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"8954":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"10771":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"11481":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"11703":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"11949":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"13882":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"14652":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"14653":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"14952":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"16264":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"16383":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"17636":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"18045":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"01":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"02":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"03":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null}},"s1793037715465":{"10":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"1995":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"1997":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2001":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2002":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2398":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2399":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2491":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2679":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"2977":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"3895":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4275":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4354":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4355":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4367":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4416":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4542":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4655":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4698":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4705":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"4899":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5059":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5066":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5071":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5158":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5174":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5181":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5184":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5207":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5210":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5211":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5245":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5265":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5283":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5437":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5916":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"5924":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"6059":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"6184":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"6295":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"6760":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"7596":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"8007":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"8373":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"8954":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"10771":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"11481":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"11703":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"11949":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"13882":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"14652":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"14653":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"14952":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"16264":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"16383":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"17636":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"18045":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"01":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"02":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null},"03":{"done":false,"fav":false,"dz":false,"comment":"","lastCheck":null}}},"filters":{"s1":{"q":"","done":null,"fav":null,"dz":null},"s1793037715465":{"q":"","done":null,"fav":null,"dz":null}},"selectedSection":"pair","conditionFont":"medium","mode":"teacher"}</script>
+
+<script>
+// 1. Исходные данные задач
+const RAW_TASKS = [
+{"id":"4702","title":"(№ 4702)фывфыв","desc":"Необходимо найти минимальный кратный 7 и минимальный кратный 13 элемент последовательности. Если минимальный кратный 7 больше минимального кратного 13, то программа должна вывести количество кратных 7, а также максимальный из них. В противном случае программа должна вывести количество кратных 13, а также максимальный из них.","question":"фывфыв","answer":"92 9815фывфыв","kind":"single","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if a > b > c:\n        l.append(a + b + c)\nprint(len(l), min(l) if l else 0)"},
+{"id":"2012","title":"№ 2012 (Средний)","desc":"Рассматривается множество элементов последовательности, у которых ровно два из его делителей входят в список (2, 3, 5, 7). Найдите количество, затем сумму минимального и максимального из таких чисел.","question":"","answer":"531 10774","kind":"single","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nl = []\nfor i in range(len(s)):\n    a=s[i]\n    if (a%2==0)+(a%3==0)+(a%5==0)+(a%7==0)== 2:\n        l.append(s[i])\nprint(len(l), min(l) + max(l))"},
+{"id":"2008","title":"№ 2008 (Средний)","desc":"Рассматривается множество элементов последовательности, больших 100, которые удовлетворяют следующим условиям:\n− цифра в разряде десятков не превышает 4;\n− цифра в разряде сотен принадлежит отрезку [3; 7].\nНайдите количество таких чисел и минимальное из них.","question":"","answer":"502 1305","kind":"single","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\nl = []\nfor i in range(len(s)):\n    a = s[i]\n    if a > 100 and str(a)[-2] <= '4' and '3' <= str(a)[-2] <= '7':\n        l.append(a)\nprint(len(l), min(l))"},
+{"id":"2401","title":"дз № 2401 (Базовый)","desc":"Определите и запишите в ответе сначала КОЛИЧЕСТВО пар элементов последовательности, в которых сумма модулей элементов пары имеет значение не превосходящее 200 и при этом не менее 50, затем МИНИМАЛЬНОЕ из чисел, которые являются элементами таких пар.\n\nВ данной задаче под парой подразумевается два подряд идущих элемента последовательности.","question":"","answer":"1 -92","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if 9000 <= abs(a) + abs(b) <= 10000:\n        l.append(min(a,b))\nprint(len(l) , min(l) )"},
+{"id":"1995","title":"№ 1995 (Базовый)","desc":"Определите и запишите в ответе сначала количество пар элементов последовательности, в которых сумма элементов делится на 2 и не оканчивается на 6, затем максимальное из средних арифметических элементов таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"1971 9702","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    sm = a + b\n    if sm % 2 == 0 and str(sm)[-1]!='6':\n        l.append((a + b) / 2)\n\nprint(len(l), max(l))"},
+{"id":"6059","title":"№ 6059 (Базовый)","desc":"Необходимо определить количество пар, где имеется два четных числа с наибольшим общими делителем, превышающим число 3, и указать наибольшую возможную разность между числами в паре. \n\nИзвестно, что парой принято называть два стоящих подряд числа.","question":"","answer":"25 7952","kind":"pair","code":"from math import gcd\nfile = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i], s[i+1]\n    if  a % 2 == 0 and b % 2 == 0 and gcd(a, b) > 3:\n        l.append(abs(a - b))\nprint(len(l), max(l) if l else 0)"},
+{"id":"7596","title":"дз № 7596 Досрочная волна 2023 (Базовый)","desc":"Определите количество пар последовательности, в которых только одно число четырехзначное, и сумма элементов пары НЕ кратна минимальному трехзначному значению последовательности, оканчивающемуся на 5. В ответе запишите два числа: сначала количество найденных пар, затем минимальную из сумм элементов таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"2 33120","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nm5 = min(x for x in s if 1000 <= abs(x) <= 9999 and abs(x) % 10 == 5)\n\nn3={c for c in range(1000,10000)}\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (a in n3)+(b in n3)==1 and (a + b) % m5 != 0:\n        l.append(a + b)\nprint(len(l), min(l))"},
+{"id":"16383","title":"дз № 16383 ЕГКР 27.04.24 (Базовый)","desc":"Определите количество пар элементов последовательности, в которых только один из двух элементов оканчивается на 21 и является четырехзначным числом, а сумма квадратов элементов пары не меньше квадрата максимального элемента последовательности, оканчивающегося на 21 и являющегося четырехзначным числом. \nВ ответе запишите количество найденных пар чисел, затем максимальную из сумм элементов таких пap.\n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"74 103365","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn4 = {c for c in range(1000, 10000)}\nm5 = [x for x in s if abs(x) in n4 and abs(x) % 100 == 21]\n\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (a in m5)  + (b in m5) == 1 and a*a + b*b >= max(m5)**2:\n        l.append(a + b)\nprint(len(l), max(l))"},
+{"id":"8954","title":"дз № 8954 (Базовый)","desc":"Определите количество пар последовательности, \nв которых только одно число кратно 7, \nа сумма элементов пары НЕ кратна максимальному элементу последовательности, оканчивающемуся на AF в шестнадцатеричной системе счисления. \nВ ответе запишите количество найденных пар, затем максимальную из сумм элементов таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"2 9487","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nprint([hex(abs(x))[-2:] for x in s ])\nm5 = [x for x in s if hex(abs(x))[-2:] == 'af']\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if ((abs(a) % 7 == 0) + (abs(b) % 7 == 0)) == 1 and (a + b) % max(m5) != 0:\n        l.append(a + b)\nprint(len(l), max(l) if l else 0)"},
+{"id":"18045","title":"дз № 18045 (Базовый)","desc":"Определите количество пар последовательности, в которых сумма последних цифр элементов равна количеству трехзначных чисел в последовательности. В ответе запишите количество найденных пар, затем минимальную из сумм элементов таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"243 3614","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn2 = {c for c in range(100, 1000)}\ncnt = sum(1 for x in s if abs(x) in n2)\n\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if abs(a) % 10 + abs(b) % 10 == cnt:\n        l.append(a + b)\nprint(len(l), min(l) if l else 0)"},
+{"id":"4367","title":"дз № 4367 (Базовый)","desc":"Определите количество пар последовательности, в которых ХОТЯ БЫ ОДНО число делится на минимальный элемент последовательности, кратный 8, но не равный 8. Гарантируется, что такой элемент в последовательности есть. В ответе запишите количество найденных пар, затем среди таких пар определите пару с минимальной суммой элементов и запишите максимальное из чисел в ней (если пар с минимальной суммой элементов несколько, то в ответ следует выбрать максимальное число из первой пары).\n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"3 74280","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nm5 = min(x for x in s if abs(x) % 8 == 0 and abs(x) != 8)\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if a % m5 == 0 or b % m5 == 0:\n        l.append((a + b, a, b))\nmn = min(p[0] for p in l)\nfirst = next(p for p in l if p[0] == mn)\nprint(len(l), max(first[1], first[2]))"},
+{"id":"16264","title":"№ 16264 (Базовый)","desc":"Определите количество пар элементов последовательности, в которых хотя бы одно число кратно минимальному трехзначному значению последовательности, которое кратно сумме своих цифр.\n\nГарантируется, что в последовательности есть хотя бы одно двузначное число, соответствующее условию. В ответе запишите количество найденных пар чисел, затем максимальную из сумм элементов таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"537 19247","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn2 = {c for c in range(100, 1000)}\nm5 = min(x for x in s if abs(x) in n2 and abs(x) % (abs(x)//10 + abs(x)%10) == 0)\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (a % m5 == 0) + (b % m5 == 0) >= 1:\n        l.append(a + b)\nprint(len(l), max(l) if l else 0)"},
+{"id":"14652","title":"№ 14652 ( Базовый)","desc":"Определите и запишите в ответе сначала количество пар элементов последовательности, \nв которых модуль разности является квадратом натурального числа, затем максимальную из разностей элементов таких пар. \nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности. ","question":"","answer":"164 1954","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn2 = {c**2 for c in range(1, 1000)}\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (abs(a-b) in n2) :\n        l.append(a - b)\nprint(len(l), max(l) if l else 0)"},
+{"id":"8007","title":"№ 8007 (Базовый)","desc":"Определите количество пар последовательности, в которых  \n- только одно число заканчивается на 10, \n- а сумма элементов пары меньше суммы цифр всех чисел в файле. \nВ ответе запишите количество найденных пар, \nзатем минимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"19 1339","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn10 = {c for c in range(-100000, 100000) if abs(c)%100==10}\nsu=sum(sum(int(c) for c in str(abs(n))) for n in s)\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if ((a in n10) + (b in n10)==1) and (a+b<su):\n        l.append(a + b)\nprint(len(l), min(l) if l else 0)"},
+{"id":"4698","title":"дз (№ 4698)","desc":"Определите количество пар чисел, в которых \n- хотя бы один из двух элементов больше, чем наибольшее из всех чисел в файле, делящихся на 127, \n- и в восьмеричной записи хотя бы одного элемента из двух содержится цепочка цифр 31. \n\nВ ответе запишите два числа: сначала количество найденных пар, \nа затем – минимальную сумму элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"28 11146","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn127 = max(c for c in s if c%127==0)\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (max(a,b)>n127) and '31' in oct(a)+' '+oct(b):\n        l.append(a + b)\nprint(len(l), min(l))"},
+{"id":"5924","title":"(№ 5924)","desc":"Определите количество пар последовательности, в которых \n- оба числа не меньше любого числа последовательности, кратного 73. \nГарантируется, что такой элемента в последовательности есть. \n\nВ ответе запишите количество найденных пар, \nзатем максимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности","question":"","answer":"161 19678","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn73 = [c for c in s if c%73==0]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if min(a,b)>=max(n73):\n        l.append(a + b)\nprint(len(l), max(l))"},
+{"id":"4705","title":"(№ 4705)","desc":"Необходимо найти сумму минимального и максимального числа среди оканчивающихся на 4 элементов последовательности. \n\nЗатем программа должна найти и вывести количество пар элементов последовательности, \nсумма которых меньше найденной суммы, \nа также наибольшую из этих сумм. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"503 10094","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn4 = [c for c in s if abs(c)%10==4]\nsu=max(n4)+min(n4)\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if a+b<su:\n        l.append(a + b)\nprint(len(l), max(l))"},
+{"id":"4655","title":"(№ 4655)","desc":"Определите количество пар, в которых хотя бы один из двух элементов больше, чем среднее арифметическое всех чисел в файле. В ответе запишите два числа: сначала количество найденных пар, а затем – максимальную сумму элементов таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"7515 19789","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"5059","title":"(№ 5059)","desc":"Определите количество пар элементов последовательности, в которых хотя бы у одного из чисел \n- сумма цифр восьмеричной записи равна сумме цифр восьмеричной записи минимального элемента последовательности, кратного 21. \nВ ответе запишите количество найденных пар, \nзатем минимальную из сумм элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"1703 2281","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nn21 = min([c for c in s if c%21==0])\nsu=lambda n: sum(int(c) for c in oct(n)[2:])\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (su(a)==su(n21)) or (su(b)==su(n21)):\n        l.append(a + b)\nprint(len(l), min(l))"},
+{"id":"8373","title":"№ 8373 (Средний)","desc":"Рассматриваются все пары элементов, в которых \n- только один элемент чётный, \n- и между элементами пары есть ровно один элемент \nи он кратен минимальному четному элементу из всех элементов последовательности. \n\nНайти количество таких пар и пару с минимальной суммой.","question":"","answer":"159 1261","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nmch = min([c for c in s if c%2==0])\nl = []\nfor i in range(len(s) - 2):\n    a, b, c = s[i:i+3]\n    if ((a%2==0)+(c%2==0)==1) and (b%mch==0):\n        l.append(a + c)\nprint(len(l), min(l))"},
+{"id":"5265","title":"(№ 5265)","desc":"Найдите все пары элементов последовательности, в которых \n- сумма элементов пары – это число, которого нет в последовательности, \n- и которое меньше среднего арифметического всех четырёхзначных чисел в файле. \nВ ответе запишите количество найденных пар, \nзатем максимальную из сумм цифр обоих элементов таких пар. \n\nВ данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"486 48","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nm4 = [c for c in s if 999<abs(c) <10000]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if ((a+b) not in s) and (a+b < sum(m4)/len(m4)):\n        l.append(sum(int(c) for c in str(a)+str(b)))\nprint(len(l), max(l))"},
+{"id":"2679","title":"№ 2679 (Средний)","desc":"Определите количество пар элементов последовательности, в которых - хотя бы одно число кратно 5 или 7, \n- а сумма чисел пары не превышает максимальное число последовательности, оканчивающиеся на две одинаковые цифры. \nВ ответе запишите количество подходящих под условие пар, \nа затем максимальную из сумм чисел таких пар. \n\nВ данной задаче под парой подразумевается два подряд идущих числа.\n\nНапример, для чисел 22 5 15 21 -7 -10 ответом будет пара чисел 3 20.","question":"","answer":"2258 984","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nmm = [c for c in s if abs(c)>9 and str(c)[-2]==str(c)[-1]]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (a%5==0 or a%7==0 or b%5==0 or b%7==0) and (a+b <= max(mm)):\n        l.append(a+b)\nprint(len(l), max(l))"},
+{"id":"6295","title":"(№ 6295)","desc":"Определите количество пар элементов последовательности, для которых выполняются следующие условия:\n– последняя цифра записи одного из элементов пары совпадает с предпоследней цифрой записи другого элемента;\n– ровно один элемент из пары делится без остатка на 11;\n– сумма квадратов элементов пары не меньше квадрата среднего арифметического всех элементов последовательности, две последние цифры в записи которых одинаковы.\n\nВ ответе запишите два числа: сначала количество найденных пар, \nзатем максимальную величину суммы квадратов элементов этих пар.","question":"","answer":"153 182503568","kind":"pair","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nmm = [c for c in s if abs(c)>9 and str(abs(c))[-2]==str(abs(c))[-1]]\nl = []\nfor i in range(len(s) - 1):\n    a, b = s[i:i+2]\n    if (\n       ((abs(a)%10==(abs(b)//10)%10 and abs(b)>9) or (abs(b)%10==(abs(a)//10)%10 and abs(a)>9))\n         and (a%11==0)+(b%11==0)==1 and (a**2+b**2>=(sum(mm)/len(mm))**2)\n       ):\n        l.append(a**2+b**2)\nprint(len(l), max(l))"},
+{"id":"5184","title":"(№ 5184)","desc":"Найдите все пары элементов последовательности, в которых в обоих числах пары равное количество чётных и нечётных цифр, а сумма чисел пары больше максимального элемента последовательности. В ответе запишите количество найденных пар, затем максимальную из сумм элементов таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.745 19763","question":"","answer":"","kind":"pair","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"5181","title":"(№ 5181)","desc":"Найдите все пары элементов последовательности, в которых хотя бы одно число в восьмеричной записи имеет нечётную длину, а сумма чисел пары больше, чем среднее арифметическое всех чисел в файле. В ответе запишите количество найденных пар, затем минимальную из сумм элементов таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.8514 5176","question":"","answer":"","kind":"pair","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"5283","title":"(№ 5283)","desc":"Обозначим через M минимальное число в последовательности, кратное 43. Определите количество пар последовательности, в которых либо сумма чисел кратна M, либо хотя бы в одном из чисел последняя цифра совпадает с последней цифрой числа M. Гарантируется, что такая пара в последовательности есть. В ответе запишите количество найденных пар, затем максимальное из чисел, которые являются элементами таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности","question":"","answer":"1895 9984","kind":"pair","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"5071","title":"(№ 5071)","desc":"Запишите в ответе количество пар элементов последовательности, в которых модуль разности остатков от деления обоих чисел на 17 совпадает с суммой остатков от деления этих чисел на 4. Затем запишите минимальную сумму чисел, составляющих такую пару. В данной задаче под парой подразумевается два идущих подряд элемента последовательности","question":"","answer":"492 1062","kind":"pair","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"2977","title":"№ 2977 (Средний)","desc":"Определите и запишите сначала максимальную сумму элементов пары, в которой корень каждого элемента пары является целочисленным и кратен 2, а затем количество всех подходящих пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"980 9","kind":"pair","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"1997","title":"№ 1997 (Средний)","desc":"Определите и запишите в ответе сначала количество пар элементов последовательности, в которых чётность чисел различна, при этом чётное число делится на 4, а нечётное на 11, затем максимальную из сумм элементов таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"126 15701","kind":"pair","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"5916","title":"№ 5916 (Средний)","desc":"Необходимо найти количество пар чисел, где одно число состоит только из четных цифр, а другое только из нечетных. Известно, что парой принято называть два стоящих подряд элемента последовательности. В качестве ответа укажите количество подходящих пар и наибольшую среди всех их сумм.","question":"","answer":"92 17515","kind":"pair","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"4275","title":"(№ 4275) (В. Шубинкин)","desc":"Определите и запишите в ответе сначала количество элементов последовательности, которые равны её наибольшему элементу, затем позицию первого такого элемента в последовательности при подсчёте с единицы. Например, в последовательности 7; 3; 10; 4; 7; -2; 10; -12; 3 два элемента равны максимальному, позиция первого из них - 3. Ответом для данного примера будет пара чисел 2 и 3.","question":"","answer":"9 26","kind":"pair","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"4899","title":"(№ 4899) (Е. Джобс)","desc":"Подходящей считается пара, в которой хотя бы один элемент больше среднего арифметического всех положительных элементов последовательности. Запишите в ответе количество подходящих пар, а затем максимальную сумму цифр одного элемента в подходящих парах. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.\n\nНапример, рассмотрим последовательность из шести элементов: 12; 18; 3; -15; 11; 16. Среднее арифметическое всех положительных элементов последовательности равно 12. Следовательно, подходит 3 пары: (12; 18), (18; 3) и (11; 16). Суммы цифр у элементов: 3 (1+2), 9 (1+8), 3, 2 (1+1), 7 (1+6). Ответ: 3 9.","question":"","answer":"4440 35","kind":"pair","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"2399","title":"№ 2399 (Средний)","desc":"Определите количество пар чисел, в которых ровно один из двух элементов больше, чем сумма цифр всех чисел в файле, делящихся на 35, а шестнадцатеричная запись другого оканчивается на EF. В ответе запишите два числа: сначала количество найденных пар, а затем – минимальную сумму элементов таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"15 6410","kind":"pair","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"5158","title":"(№ 5158)","desc":"Определите количество пар элементов последовательности, в которых произведение элементов больше суммы первых (слева) цифр всех чисел последовательности. В ответе запишите количество найденных пар, затем максимальную из сумм элементов таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"9989 19893","kind":"pair","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"6184","title":"(№ 6184)","desc":"Определите количество пар элементов последовательности, в которых все цифры первого элемента в паре больше всех цифр второго элемента в паре (первый элемент – крайний левый элемент в паре), а сумма текущей пары не больше максимального элемента последовательности, запись которого содержит одинаковое количество четных и нечетных цифр. В ответе запишите два числа: сначала количество найденных пар, затем максимальную сумму элементов этих пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"11 9881","kind":"pair","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"6760","title":"(№ 6760)","desc":"Определите количество пар последовательности, в которых только одно число имеет отличное от 3 количество разрядов, а элементы пары отличаются на значение, кратное минимальному трехзначному значению в последовательности, оканчивающемуся на 11. В ответе запишите количество найденных пар, затем максимальную из сумм элементов таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности","question":"","answer":"8 8089","kind":"pair","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"11703","title":"дз № 11703 ( Базовый)","desc":"Определите количество троек элементов последовательности, в которых хотя бы один из трёх элементов является пятизначным числом, а произведение элементов тройки кратно максимальному элементу последовательности, оканчивающемуся на 18. В ответе запишите количество найденных троек чисел, затем максимальное из произведений элементов таких троек. В данной задаче под тройкой подразумевается три идущих подряд элемента оследовательности.","question":"","answer":"7 32313429347472","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"2491","title":"дз № 2491 (Базовый)","desc":"Определите количество троек, в которых хотя бы один из трёх элементов меньше, чем среднее арифметическое всех чисел в файле, и десятичная запись всех трёх элементов тройки содержит цифру 9. В ответе запишите два числа: сначала количество найденных троек, а затем – максимальную сумму элементов таких троек. В данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.345 17460\n\nдз   *№ 4542 Danov 2202 (Уровень: Базовый)*\n\nОпределите количество пар последовательности, в которых только одно число находится между значениями минимального кратного 37 и максимального кратного 73. Гарантируется, что такая пара в последовательности есть.\n\nВ ответе запишите количество найденных пар и минимальную сумму элементов среди таких пар. В данной задаче под парой подразумевается два идущих подряд элемента последовательности.","question":"","answer":"136 574","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"4354","title":"дз (№ 4354)","desc":"Определите сначала количество троек элементов последовательности, в которых все три числа в двоичной системе счисления имеют ровно 3 единицы, а затем сумму максимальных чисел из таких троек. Под тройкой подразумевается три идущих подряд элемента последовательности","question":"","answer":"16 1548","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"2398","title":"№ 2398 (Средний)","desc":"Тройка идущих подряд чисел последовательности называется уникальной, если только второе из них является положительным числом, заканчивающимся на 9. Определите количество уникальных троек чисел, а затем – максимальную из всех сумм таких троек.","question":"","answer":"206 23427","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"4355","title":"(№ 4355)","desc":"Определите сначала количество троек элементов последовательности, в которых хотя бы 2 числа из тройки в шестнадцатеричной системе счисления в нулевом разряде имеют 0, а затем сумму максимальных чисел из таких троек. Под тройкой подразумевается три идущих подряд элемента последовательности","question":"","answer":"8 1060","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"17636","title":"дз № 17636 Основная волна 19.06.24 (Средний)","desc":"Определите количество троек элементов последовательности, в которых хотя бы один элемент оканчивается на 3 и является трёхзначным числом, а сумма всех элементов меньше максимального элемента последовательности, оканчивающегося на 3 и являющегося трёхзначным числом. В ответе запишите количество найденных троек, затем максимальную из сумм элементов таких троек.\\\n В данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"147 944","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"5066","title":"(№ 5066)","desc":"Запишите в ответе количество троек элементов последовательности, в которых семеричные записи всех чисел оканчиваются на разные цифры и хотя бы одно число отрицательно. Затем минимальную разность между максимальным и минимальным числами в таких тройках. В данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"3889 145","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"14952","title":"дз № 14952 (Средний)","desc":"Определите количество троек элементов последовательности, в которых не более одного из трёх элементов одновременно являются четырёхзначными и чётными числами. А сумма элементов тройки не больше максимального элемента последовательности, оканчивающегося на 121.\n\nВ ответе запишите количество найденных троек чисел, затем максимальную из сумм элементов таких троек.\n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"5211 20116","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"11481","title":"дз № 11481","desc":"Определите количество троек элементов последовательности, среди которых есть не более одного числа, начинающегося с цифры 6, а сумма элементов тройки не меньше максимального элемента последовательности, начинающегося с цифры 8. В ответе запишите количество найденных троек чисел, затем минимальную из сумм элементов таких троек.\n\nВ данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.\n\nПримечание: Числа 6868, -6868 начинаются с цифры 6.","question":"","answer":"186 89990","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"13882","title":"дз № 13882 (Средний)","desc":"Найдите все тройки элементов последовательности, среди которых все числа имеют разную сумму цифр, а сумма чисел тройки больше, чем максимальный элемент последовательности, кратный 401. В ответе запишите количество найденных троек, затем минимальную из сумм элементов таких троек. В данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"6283 9627","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"5210","title":"(№ 5210)","desc":"Элементы последовательности - четырёхзначные натуральные числа. Назовём два различных четырёхзначных числа хорошей парой, если их среднее арифметическое (полусумма) и среднее геометрическое (квадратный корень из произведения) — натуральные числа. Найдите все тройки элементов последовательности, в которых есть хотя бы одна хорошая пара, а сумма всех чисел тройки меньше максимальной суммы двух различных элементов последовательности. В ответе запишите количество найденных троек, затем минимальную из сумм элементов таких троек. В данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.3151 3850","question":"","answer":"","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"5245","title":"(№ 5245)","desc":"Элементы последовательности – четырёхзначные натуральные числа. Найдите все тройки элементов последовательности, для которых семеричная запись суммы всех чисел тройки представляет собой палиндром, а среднее арифметическое всех чисел тройки меньше, чем среднее арифметическое всех чисел в файле, кратных 11. В ответе запишите количество найденных троек, затем минимальную из сумм элементов таких троек. В данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.465 5000","question":"","answer":"","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"5207","title":"(№ 5207)","desc":"Назовём два различных четырёхзначных числа хорошей парой, если сумма первых цифр двух чисел равна сумме последних цифр тех же чисел. Найдите все тройки элементов последовательности, в которых есть хотя бы одна хорошая пара, а среднее арифметическое всех чисел тройки больше, чем среднее арифметическое всех чисел в файле. В ответе запишите количество найденных троек, затем максимальную из сумм элементов таких троек. В данной задаче под тройкой подразумевается три идущих подряд элемента последовательности. 877 28668","question":"","answer":"","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"4408","title":"(№ 4408)","desc":"Определите сначала количество пар, сумма элементов которых при переводе в систему счисления с основанием 7 образует число-палиндром, а затем наибольшую сумму-палиндром в семеричной системе счисления. Под парой чисел подразумевается два идущих подряд элемента последовательности.243 25552\n\n*№ 10771 (Уровень: Средний) *[(Н. Сафронов)](https://vk.com/safronov_nv) В файле содержится последовательность целых неотрицательных чисел, не превышающих 10000. Определите количество троек элементов последовательности, в которых каждое число содержит цифру 3 в десятичной записи, а сумма элементов такой тройки является простым числом. В ответе запишите два числа: сначала количество найденных троек, затем минимальную сумму элементов таких троек. В данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.13 4327\n\nне ПАРЫ И ОТДЕЛЬНЫЕ ЧИСЛА (3) \\\n* *№ 4416 (Уровень: Базовый)\n\nОпределите и запишите в ответе сначала количество пар элементов последовательности, у которых сумма элементов кратна 60 и хотя бы один элемент из пары делится на 40, затем максимальную из сумм элементов таких пар. В данной задаче под парой подразумевается два различных элемента последовательности. Порядок элементов в паре не важен.","question":"","answer":"29278 19860","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"5174","title":"(№ 5174)","desc":"Найдите все тройки элементов последовательности, в которых хотя бы одно число равно сумме цифр другого числа в тройке, а сумма всех чисел тройки меньше, чем сумма цифр всех чисел в файле, делящихся на 50. В ответе запишите количество найденных троек, затем максимальную из сумм элементов таких троек. В данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"310 6765","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"5437","title":"(№ 5437)","desc":"Определите количество троек, в которых для каждого числа тройки сумма цифр в нечётных разрядах нацело делится на сумму цифр в чётных разрядах. Разряды нумеруются с нуля справа налево. В ответе запишите два числа: сначала количество найденных троек, а затем – минимальную сумму элементов таких троек. В данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.","question":"","answer":"124 4103","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"5211","title":"(№ 5211)","desc":"Элементы последовательности - четырёхзначные натуральные числа. Найдите все тройки элементов последовательности, для которых десятичная запись произведения всех чисел тройки содержит все 10 цифр (0..9), а сумма всех чисел тройки меньше, чем сумма цифр всех чисел в файле. В ответе запишите количество найденных троек, затем минимальную из сумм элементов таких троек. В данной задаче под тройкой подразумевается три идущих подряд элемента последовательности.43 4130","question":"","answer":"","kind":"triple","code":"file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.\n"},
+{"id":"2002","title":"№ 2002 (Базовый)","desc":"Определите и запишите в ответе сначала количество четвёрок элементов последовательности, в которых числа идут в порядке убывания, при этом разность наибольшего и наименьшего числа больше 1000, затем минимальную сумму элементов таких четвёрок. В данной задаче под четвёркой подразумевается четыре идущих подряд элемента последовательности.","question":"","answer":"181 -31478","kind":"quad","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nfile.close()\n\nl = []\nfor i in range(len(s) - 3):\n    a, b, c, d = s[i:i+4]\n    if a > b > c > d and a - d > 1000:\n        l.append(a + b + c + d)\nprint(len(l), min(l) if l else 0)"},
+{"id":"2001","title":"№ 2001 (Базовый)","desc":"Определите и запишите в ответе сначала количество четвёрок элементов последовательности, в которых чётность соседних чисел различна, затем максимальную сумму среди таких четвёрок. В данной задаче под четвёркой подразумевается четыре идущих подряд элемента последовательности.","question":"","answer":"604 26324","kind":"quad","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nfile.close()\n\nl = []\nfor i in range(len(s) - 3):\n    a, b, c, d = s[i:i+4]\n    if a % 2 != b % 2 and b % 2 != c % 2 and c % 2 != d % 2:\n        l.append(a + b + c + d)\nprint(len(l), max(l) if l else 0)"},
+{"id":"11949","title":"дз № 11949 (Средний)","desc":"Определите количество четвёрок элементов последовательности, в которых или только одно из чисел или все четыре числа являются двузначным, а сумма элементов четвёрки не меньше максимального элемента последовательности, оканчивающегося на 68.\n\nВ ответе запишите количество найденных четвёрок чисел, затем максимальную из сумм элементов таких четвёрок.В данной задаче под четвёркой подразумевается четыре идущих подряд элемента последовательности.","question":"","answer":"75 247177","kind":"quad","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nmx = max(x for x in s if abs(x) % 100 == 68)\nn3 = {c for c in range(100, 1000)}\nl = []\nfor i in range(len(s) - 3):\n    a,b,c,d=s[i:i+4]\n    if (a in n3) +(b in n3) +(c in n3) +(d in n3) in (1,4) and a+b+c+d >= mx:\n        l.append(a+b+c+d)\nprint(len(l), max(l) if l else 0)"},
+{"id":"14653","title":"дз № 14653 (Сложный)","desc":"Определите количество четверок последовательности, в которых только два элемента являются трехзначными числами, ровно один элемент делится на 18, а сумма элементов делится на сумму двух минимальных положительных элементов последовательности, кратных 17, и произведение элементов не превосходит квадрат максимального элемента последовательности, оканчивающегося на 69. В ответе запишите количество найденных четверок чисел, затем минимальный из квадратов сумм элементов таких четверок. В данной задаче под четверкой подразумевается четыре идущих подряд элемента последовательности.","question":"","answer":"10 73984","kind":"quad","code":"file = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nfile.close()\nmx = max(x for x in s if abs(x) % 100 == 69)\nm17 = sum(sorted([x for x in s if x > 0 and x % 17 == 0])[:2])\nN3 = {c for c in range(100, 1000)}\nl = []\nfor i in range(len(s) - 3):\n    a, b, c, d = s[i:i+4]\n    n3 = [c for c in s[i:i+4] if abs(c) in N3]\n    n18 = [c for c in s[i:i+4] if c % 18 == 0]\n    if len(n3) == 2 and len(n18) == 1 and (a+b+c+d) % m17 == 0 and a*b*c*d <= mx*mx:\n        l.append((a+b+c+d) ** 2)\nprint(len(l), min(l) if l else 0)"},
+{"id":"3895","title":"№ 3895 (Средний) НЕ ТОЛЬКО СОСЕДИ","desc":"Найдите такие пары элементов, в которых произведение элементов больше, чем произведение рядом стоящих чисел (перед и после пары). В качестве ответа выведите максимальную сумму среди найденных пар, затем количество таких из них, в которых есть хотя бы одно число, большее среднего арифметического всех чисел в файле.\n\nПод парой в задаче подразумевается два подряд идущих числа. Первая и последняя пара в файле не могут быть искомыми, так как перед или после них нет чисел.","question":"","answer":"19703 3103","kind":"nonadj","code":"from itertools import *\nfile = open('17all.txt')\ns = [int(c) for c in file.readlines()]\nsr = sum(s) / len(s)\nl = []\nl1=[]\nfor i, j in combinations(range(len(s)), 2):\n    if i > 0 and j < len(s) - 1:\n        a, b = s[i], s[j]\n        if a * b > s[i-1] * s[j+1]:\n            l.append((a+ b))\n        if a>sr or b>sr:\n            l1.append((a,b))\nprint(max(l), len(l1))"}
+];
+
+const DATA_TEXT = `-9234
+-3759
+3937
+4610
+-3421
+8425
+937
+3926
+-6999
+4595
+7358
+-314
+6809
+-8117
+-5404
+-651
+-2354
+4868
+8095
+-3114
+6234
+734
+9195
+-8017
+3586
+3823
+8349
+635
+-2446
+-6164
+5024
+-3684
+-7472
+-4109
+-5360
+3075
+7163
+6303
+-531
+9329
+5747
+1976
+-3629
+5039
+3556
+-8574
+-3471
+2869
+1085
+7032
+507
+6896
+1501
+6424
+-370
+-3454
+4473
+8407
+-9690
+2326
+-1118
+-7811
+-7802
+7797`;
+
+// 2. Состояние
+let state = {
+  tasks: [],
+  students: [{ id: 's1', name: 'Ученик 1' }],
+  currentStudentId: 's1',
+  progress: {},
+  filters: {},
+  selectedSection: null,
+  conditionFont: 'medium',
+  mode: 'student'
+};
+
+function initState() {
+  const initScript = document.getElementById('initial-state');
+  let loaded = false;
+  
+  if (initScript && initScript.textContent.trim().length > 2) {
+    try {
+      const saved = JSON.parse(initScript.textContent);
+      if (saved && saved.tasks && saved.tasks.length > 0) {
+        state = Object.assign(state, saved);
+        loaded = true;
+      }
+    } catch (e) {
+      console.warn("Не удалось прочитать сохраненное состояние", e);
+    }
+  }
+  
+  if (!loaded) {
+    state.tasks = JSON.parse(JSON.stringify(RAW_TASKS));
+    state.students.forEach(s => {
+      state.progress[s.id] = {};
+      state.filters[s.id] = { q: '', done: null, fav: null, dz: null };
+      state.tasks.forEach(t => {
+        state.progress[s.id][t.id] = { done: false, fav: false, dz: false, comment: '', lastCheck: null };
+      });
+    });
+  }
+}
+
+// 3. Вспомогательные функции
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function formatConditionText(text) {
+  return esc(text).replace(/(^|[^\w])([0-9]+(?:[.,][0-9]+)?)(?=[^\w]|$)/g, '$1<strong>$2</strong>');
+}
+
+function getCurrentProgress() {
+  if (!state.progress[state.currentStudentId]) {
+    state.progress[state.currentStudentId] = {};
+    state.tasks.forEach(t => state.progress[state.currentStudentId][t.id] = { done: false, fav: false, dz: false, comment: '' });
+  }
+  return state.progress[state.currentStudentId];
+}
+
+function getCurrentFilters() {
+  if (!state.filters[state.currentStudentId]) {
+    state.filters[state.currentStudentId] = { q: '', done: null, fav: null, dz: null };
+  }
+  return state.filters[state.currentStudentId];
+}
+
+// Функция получения отфильтрованных задач
+function getFilteredTasks() {
+  const f = getCurrentFilters();
+  const q = f.q.trim().toLowerCase();
+  
+  return state.tasks.filter(t => {
+    const prog = getCurrentProgress()[t.id];
+    if (!prog) return false;
+    if (state.selectedSection && t.kind !== state.selectedSection) return false;
+    
+    const text = [t.id, t.title, t.desc, t.question].map(v => String(v ?? '')).join(' ').toLowerCase();
+    if (q && !text.includes(q)) return false;
+    
+    if (f.done !== null && prog.done !== f.done) return false;
+    if (f.fav !== null && prog.fav !== f.fav) return false;
+    if (f.dz !== null && prog.dz !== f.dz) return false;
+    
+    return true;
+  });
+}
+
+// 4. Отрисовка
+function render() {
+  const main = document.getElementById('main');
+  if (!main) return;
+  main.innerHTML = '';
+
+  const filtered = getFilteredTasks();
+
+  const counter = document.getElementById('poolNote');
+  if (counter) {
+    counter.textContent = `Найдено: ${filtered.length} из ${state.tasks.length}`;
+  }
+
+  if (filtered.length === 0) {
+    main.innerHTML = '<div class="empty">Нет задач по выбранным условиям.</div>';
+    return;
+  }
+
+  filtered.forEach(t => {
+    main.appendChild(renderCard(t));
+  });
+}
+
+function renderCard(task) {
+  const prog = getCurrentProgress()[task.id];
+  const card = document.createElement('section');
+  card.className = 'task ' + (state.mode === 'teacher' ? 'teacher ' : '') + (prog.done ? 'done' : '');
+  card.dataset.id = task.id;
+
+  const head = document.createElement('div');
+  head.className = 'taskhead';
+  head.innerHTML = `
+    <span class="taskid">№ ${esc(task.id)}</span>
+    <span class="tasktitle">${esc(task.title)}</span>
+    <div class="flags">
+      <button class="flag ${prog.done ? 'on' : ''}">${prog.done ? '✓ Решено' : 'Нерешено'}</button>
+      <button class="flag ${prog.fav ? 'on' : ''}">${prog.fav ? '★ Избранное' : 'Неизбранное'}</button>
+      <button class="flag ${prog.dz ? 'on' : ''}">${prog.dz ? 'ДЗ' : 'Не ДЗ'}</button>
+    </div>
+  `;
+  card.appendChild(head);
+
+  const cond = document.createElement('div');
+  cond.className = 'condition';
+  let condHtml = formatConditionText(task.desc).replace(/\n/g, '<br>');
+  if (task.question && task.question.trim()) {
+    condHtml += '<br><br><strong>' + formatConditionText(task.question) + '</strong>';
+  }
+  cond.innerHTML = condHtml;
+  cond.style.fontSize = state.conditionFont === 'small' ? '13px' : state.conditionFont === 'large' ? '20px' : '16px';
+  card.appendChild(cond);
+
+  const codeWrap = document.createElement('div');
+  codeWrap.className = 'code-wrap open';
+  const title = document.createElement('div');
+  title.className = 'code-title';
+  title.textContent = 'КОД';
+  codeWrap.appendChild(title);
+  
+  const view = document.createElement('div');
+  view.className = 'codebox';
+  const ta = document.createElement('textarea');
+  ta.dataset.taskId = task.id;
+  ta.value = task.code ?? '';
+  ta.spellcheck = false;
+  ta.readOnly = state.mode !== 'teacher';
+  ta.style.height = 'auto';
+  ta.style.minHeight = '230px';
+  
+  const fitCode = () => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.max(230, ta.scrollHeight + 6) + 'px';
+  };
+  
+  ta.addEventListener('input', () => {
+    fitCode();
+    task.code = ta.value;
+  });
+  
+  requestAnimationFrame(fitCode);
+  view.appendChild(ta);
+  codeWrap.appendChild(view);
+  card.appendChild(codeWrap);
+
+  const tb = document.createElement('div');
+  tb.className = 'toolbar';
+  
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'btn purple';
+  copyBtn.textContent = '📋 Скопировать код';
+  copyBtn.onclick = () => navigator.clipboard?.writeText(ta.value);
+  
+  const runBtn = document.createElement('button');
+  runBtn.className = 'btn green';
+  runBtn.textContent = '▶ Запустить код';
+  
+  const clearBtn = document.createElement('button');
+  clearBtn.className = 'btn';
+  clearBtn.textContent = '🧹 Очистить вывод';
+  
+  tb.append(copyBtn, runBtn, clearBtn);
+
+  if (state.mode === 'teacher') {
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn orange';
+    saveBtn.textContent = '💾 Сохранить код';
+    saveBtn.onclick = () => { task.code = ta.value; alert('Код сохранён'); };
+    
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn orange';
+    editBtn.textContent = '✏️ Редактировать задачу';
+    editBtn.onclick = () => openEditModal(task);
+    
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn red';
+    delBtn.textContent = '🗑 Удалить';
+    delBtn.onclick = () => {
+      if (!confirm('Удалить эту задачу?')) return;
+      const idx = state.tasks.findIndex(x => x.id === task.id);
+      if (idx >= 0) {
+        state.tasks.splice(idx, 1);
+        render();
+      }
+    };
+    
+    tb.append(saveBtn, editBtn, delBtn);
+  }
+  card.appendChild(tb);
+
+  const status = document.createElement('div');
+  status.className = 'output-label';
+  status.textContent = 'СТАТУС: Python не запускался';
+  card.appendChild(status);
+  
+  const out = document.createElement('div');
+  out.className = 'output';
+  out.textContent = '— вывод появится здесь —';
+  card.appendChild(out);
+
+  const ans = document.createElement('div');
+  ans.className = 'answer';
+  ans.innerHTML = '<span class="answer-word">Эталонный ответ (нажмите, чтобы показать)</span><span class="answer-val hidden">' + esc(task.answer) + '</span>';
+  
+  const aw = ans.querySelector('.answer-word');
+  const av = ans.querySelector('.answer-val');
+  aw.onclick = () => {
+    av.classList.toggle('hidden');
+    aw.textContent = av.classList.contains('hidden') ? 'Эталонный ответ (нажмите, чтобы показать)' : 'Эталонный ответ (нажмите, чтобы скрыть)';
+  };
+  card.appendChild(ans);
+
+  const selfCheck = document.createElement('div');
+  selfCheck.className = 'self-check';
+  
+  const markCorrect = document.createElement('button');
+  markCorrect.className = 'btn';
+  markCorrect.textContent = '✓ Верно';
+  
+  const markWrong = document.createElement('button');
+  markWrong.className = 'btn';
+  markWrong.textContent = '✗ Неверно';
+  
+  selfCheck.append(markCorrect, markWrong);
+  card.appendChild(selfCheck);
+
+  function setSelfCheck(correct) {
+    prog.done = correct;
+    card.classList.toggle('answer-correct', correct);
+    card.classList.toggle('done', correct);
+    card.classList.toggle('answer-wrong', !correct);
+    markCorrect.classList.toggle('chosen-correct', correct);
+    markWrong.classList.toggle('chosen-wrong', !correct);
+    const doneFlag = head.querySelectorAll('.flag')[0];
+    doneFlag.classList.toggle('on', correct);
+    doneFlag.textContent = correct ? '✓ Решено' : 'Нерешено';
+  }
+
+  markCorrect.onclick = () => setSelfCheck(true);
+  markWrong.onclick = () => setSelfCheck(false);
+
+  const cm = document.createElement('div');
+  cm.className = 'commentbox';
+  cm.innerHTML = '<label>Мой комментарий</label><textarea></textarea>';
+  const cmt = cm.querySelector('textarea');
+  cmt.value = prog.comment || '';
+  cmt.oninput = () => { prog.comment = cmt.value; };
+  card.appendChild(cm);
+
+  const flags = head.querySelectorAll('.flag');
+  flags[0].onclick = (e) => { e.stopPropagation(); prog.done = !prog.done; render(); };
+  flags[1].onclick = (e) => { e.stopPropagation(); prog.fav = !prog.fav; render(); };
+  flags[2].onclick = (e) => { e.stopPropagation(); prog.dz = !prog.dz; render(); };
+
+  runBtn.onclick = () => {
+    task.code = ta.value;
+    runPython(task.code, out, status, runBtn);
+  };
+
+  clearBtn.onclick = () => {
+    out.textContent = '— вывод появится здесь —';
+    status.textContent = 'СТАТУС: Python не запускался';
+  };
+
+  return card;
+}
+
+// 5. Python
+let pyodideInstance = null;
+let pyodideLoading = false;
+
+async function initPyodide() {
+  if (pyodideInstance) return pyodideInstance;
+  if (pyodideLoading) {
+    return new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (pyodideInstance) { clearInterval(interval); resolve(pyodideInstance); }
+      }, 100);
+    });
+  }
+  pyodideLoading = true;
+  try {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js';
+    document.head.appendChild(script);
+    await new Promise((resolve, reject) => { script.onload = resolve; script.onerror = reject; });
+    pyodideInstance = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/' });
+    return pyodideInstance;
+  } catch (err) {
+    throw err;
+  } finally {
+    pyodideLoading = false;
+  }
+}
+
+async function runPython(code, outEl, statusEl, btnEl) {
+  outEl.textContent = '⏳ Подготовка Python…';
+  statusEl.textContent = 'СТАТУС: ⏳ Подготовка Python…';
+  btnEl.disabled = true;
+
+  try {
+    const py = await initPyodide();
+    py.FS.writeFile('17all.txt', DATA_TEXT, { encoding: 'utf8' });
+    statusEl.textContent = 'СТАТУС: ▶ Выполняю код…';
+    outEl.textContent = '▶ Выполняю…';
+    
+    let output = '';
+    py.setStdout({ batched: (msg) => { output += msg + '\n'; } });
+    
+    try {
+      await py.runPythonAsync(code);
+      outEl.textContent = output || '(код выполнен, вывода нет)';
+      statusEl.textContent = 'СТАТУС: ✓ Код выполнен';
+    } catch (err) {
+      outEl.textContent = 'Ошибка: ' + err.message;
+      statusEl.textContent = 'СТАТУС: ✕ Ошибка выполнения';
+    }
+  } catch (err) {
+    outEl.textContent = 'Ошибка загрузки Python: ' + err.message;
+    statusEl.textContent = 'СТАТУС: ✕ Ошибка (требуется сервер)';
+  } finally {
+    btnEl.disabled = false;
+  }
+}
+
+// 6. Модальные окна (Добавление / Редактирование)
+function openAddModal() {
+  const host = document.getElementById('modalHost');
+  host.innerHTML = `
+    <div class="modal">
+      <div class="modalbox">
+        <h2>Добавить задачу</h2>
+        <label>Номер задачи (ID)</label>
+        <input id="add-id" placeholder="Например: 9999">
+        <label>Название</label>
+        <input id="add-title" placeholder="Например: Задача 9999 (Средний)">
+        <label>Раздел</label>
+        <select id="add-kind">
+          <option value="single">Отдельные числа</option>
+          <option value="pair">Пары элементов</option>
+          <option value="triple">Тройки элементов</option>
+          <option value="quad">Четвёрки элементов</option>
+          <option value="nonadj">Несоседние пары</option>
+        </select>
+        <label>Условие</label>
+        <textarea id="add-desc"></textarea>
+        <label>Ответ</label>
+        <input id="add-answer">
+        <label>Код Python</label>
+        <textarea id="add-code">file=open('17all.txt')\ns=[int(c) for c in file.readlines()]\n\n# Напиши решение задачи ниже.</textarea>
+        <div class="modal-actions">
+          <button class="btn" id="add-cancel">Отмена</button>
+          <button class="btn green" id="add-save">Добавить</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  host.querySelector('#add-cancel').onclick = () => host.innerHTML = '';
+  
+  host.querySelector('#add-save').onclick = () => {
+    const id = host.querySelector('#add-id').value.trim();
+    if (!id) { alert('Укажите номер'); return; }
+    if (state.tasks.some(t => t.id === id)) { alert('Такой номер уже существует'); return; }
+    
+    const task = {
+      id,
+      title: host.querySelector('#add-title').value || ('Задача ' + id),
+      kind: host.querySelector('#add-kind').value,
+      desc: host.querySelector('#add-desc').value,
+      question: '',
+      answer: host.querySelector('#add-answer').value,
+      code: host.querySelector('#add-code').value
+    };
+    
+    state.tasks.push(task);
+    Object.keys(state.progress).forEach(sid => {
+      state.progress[sid][id] = { done: false, fav: false, dz: false, comment: '', lastCheck: null };
+    });
+    
+    host.innerHTML = '';
+    render();
+  };
+}
+
+function openEditModal(task) {
+  const host = document.getElementById('modalHost');
+  host.innerHTML = `
+    <div class="modal">
+      <div class="modalbox">
+        <h2>Редактировать задачу</h2>
+        <label>Номер задачи (ID)</label>
+        <input id="edit-id" value="${esc(task.id)}">
+        <label>Название</label>
+        <input id="edit-title" value="${esc(task.title)}">
+        <label>Раздел</label>
+        <select id="edit-kind">
+          <option value="single" ${task.kind === 'single' ? 'selected' : ''}>Отдельные числа</option>
+          <option value="pair" ${task.kind === 'pair' ? 'selected' : ''}>Пары элементов</option>
+          <option value="triple" ${task.kind === 'triple' ? 'selected' : ''}>Тройки элементов</option>
+          <option value="quad" ${task.kind === 'quad' ? 'selected' : ''}>Четвёрки элементов</option>
+          <option value="nonadj" ${task.kind === 'nonadj' ? 'selected' : ''}>Несоседние пары</option>
+        </select>
+        <label>Условие</label>
+        <textarea id="edit-desc">${esc(task.desc)}</textarea>
+        <label>Вопрос (необязательно)</label>
+        <textarea id="edit-question">${esc(task.question || '')}</textarea>
+        <label>Ответ</label>
+        <input id="edit-answer" value="${esc(task.answer)}">
+        <div class="modal-actions">
+          <button class="btn" id="edit-cancel">Отмена</button>
+          <button class="btn green" id="edit-save">Сохранить</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  host.querySelector('#edit-cancel').onclick = () => host.innerHTML = '';
+  
+  host.querySelector('#edit-save').onclick = () => {
+    const newId = host.querySelector('#edit-id').value.trim();
+    if (!newId) { alert('Укажите номер'); return; }
+    if (state.tasks.some(t => t !== task && t.id === newId)) { alert('Такой номер уже существует'); return; }
+    
+    const oldId = task.id;
+    
+    if (oldId !== newId) {
+      Object.keys(state.progress).forEach(sid => {
+        if (state.progress[sid][oldId]) {
+          state.progress[sid][newId] = state.progress[sid][oldId];
+          delete state.progress[sid][oldId];
+        }
+      });
+    }
+    
+    task.id = newId;
+    task.title = host.querySelector('#edit-title').value;
+    task.kind = host.querySelector('#edit-kind').value;
+    task.desc = host.querySelector('#edit-desc').value;
+    task.question = host.querySelector('#edit-question').value;
+    task.answer = host.querySelector('#edit-answer').value;
+    
+    host.innerHTML = '';
+    render();
+  };
+}
+
+// 7. Печать
+function printTasks() {
+  const filtered = getFilteredTasks();
+  if (filtered.length === 0) {
+    alert('Нет задач для печати по текущим фильтрам.');
+    return;
+  }
+
+  const win = window.open('', '_blank');
+  win.document.write('<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Печать задач</title>');
+  win.document.write('<style>');
+  win.document.write('body{font-family:Arial,sans-serif;margin:20px;color:#000;}');
+  win.document.write('.task{margin-bottom:30px;page-break-inside:avoid;}');
+  win.document.write('.task-title{font-size:16px;font-weight:bold;margin-bottom:10px;border-bottom:1px solid #ccc;padding-bottom:5px;}');
+  win.document.write('.condition{margin-bottom:10px;white-space:pre-wrap;line-height:1.5;}');
+  win.document.write('.answer{font-weight:bold;margin-top:10px;}');
+  win.document.write('.code{background:#f4f4f4;padding:10px;border:1px solid #ddd;font-family:monospace;white-space:pre-wrap;margin-top:10px;}');
+  win.document.write('</style></head><body>');
+
+  filtered.forEach(t => {
+    win.document.write('<div class="task">');
+    win.document.write('<div class="task-title">Задача №' + esc(t.id) + ' - ' + esc(t.title) + '</div>');
+    win.document.write('<div class="condition">' + formatConditionText(t.desc).replace(/\n/g, '<br>') + '</div>');
+    if (t.question && t.question.trim()) {
+      win.document.write('<div class="condition"><strong>' + formatConditionText(t.question) + '</strong></div>');
+    }
+    win.document.write('<div class="answer">Ответ: ' + esc(t.answer) + '</div>');
+    if (t.code) {
+      win.document.write('<div class="code">' + esc(t.code) + '</div>');
+    }
+    win.document.write('</div>');
+  });
+
+  win.document.write('</body></html>');
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 500);
+}
+
+// 8. Интерфейс
+function updateFilterButtons() {
+  const f = getCurrentFilters();
+  document.getElementById('fDone').classList.toggle('active', f.done === true);
+  document.getElementById('fUndone').classList.toggle('active', f.done === false);
+  document.getElementById('fFav').classList.toggle('active', f.fav === true);
+  document.getElementById('fUnfav').classList.toggle('active', f.fav === false);
+  document.getElementById('fDz').classList.toggle('active', f.dz === true);
+  document.getElementById('fNotDz').classList.toggle('active', f.dz === false);
+  document.querySelectorAll('.section-btn[data-section]').forEach(el => {
+    el.classList.toggle('active', el.dataset.section === state.selectedSection);
+  });
+}
+
+function setupFilters() {
+  document.getElementById('searchInput').oninput = (e) => {
+    getCurrentFilters().q = e.target.value;
+    render();
+  };
+  
+  const toggleFilter = (key, val) => {
+    const f = getCurrentFilters();
+    f[key] = f[key] === val ? null : val;
+    updateFilterButtons();
+    render();
+  };
+  
+  document.getElementById('fDone').onclick = () => toggleFilter('done', true);
+  document.getElementById('fUndone').onclick = () => toggleFilter('done', false);
+  document.getElementById('fFav').onclick = () => toggleFilter('fav', true);
+  document.getElementById('fUnfav').onclick = () => toggleFilter('fav', false);
+  document.getElementById('fDz').onclick = () => toggleFilter('dz', true);
+  document.getElementById('fNotDz').onclick = () => toggleFilter('dz', false);
+  
+  document.getElementById('resetFiltersBtn').onclick = () => {
+    state.filters[state.currentStudentId] = { q: '', done: null, fav: null, dz: null };
+    state.selectedSection = null;
+    document.getElementById('searchInput').value = '';
+    updateFilterButtons();
+    render();
+  };
+  
+  document.getElementById('showAllBtn').onclick = () => {
+    state.filters[state.currentStudentId] = { q: '', done: null, fav: null, dz: null };
+    state.selectedSection = null;
+    document.getElementById('searchInput').value = '';
+    updateFilterButtons();
+    render();
+  };
+  
+  document.querySelectorAll('.section-btn[data-section]').forEach(btn => {
+    btn.onclick = () => {
+      const section = btn.dataset.section;
+      state.selectedSection = state.selectedSection === section ? null : section;
+      updateFilterButtons();
+      render();
+    };
+  });
+}
+
+function setupModes() {
+  document.getElementById('studentMode').onclick = () => setMode('student');
+  document.getElementById('teacherMode').onclick = () => setMode('teacher');
+  document.getElementById('studentModeSide').onclick = () => setMode('student');
+  document.getElementById('teacherModeSide').onclick = () => setMode('teacher');
+}
+
+function setMode(mode) {
+  state.mode = mode;
+  document.getElementById('studentMode').classList.toggle('active', mode === 'student');
+  document.getElementById('teacherMode').classList.toggle('active', mode === 'teacher');
+  document.getElementById('studentModeSide').classList.toggle('active', mode === 'student');
+  document.getElementById('teacherModeSide').classList.toggle('active', mode === 'teacher');
+  document.querySelectorAll('.teacher-only').forEach(el => {
+    el.style.display = mode === 'teacher' ? '' : 'none';
+  });
+  render();
+}
+
+function setupStudents() {
+  const select = document.getElementById('studentSelect');
+  
+  function refreshSelect() {
+    select.innerHTML = '';
+    state.students.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.name;
+      select.appendChild(opt);
+    });
+    select.value = state.currentStudentId;
+  }
+  
+  select.onchange = (e) => {
+    state.currentStudentId = e.target.value;
+    updateFilterButtons();
+    document.getElementById('searchInput').value = getCurrentFilters().q;
+    render();
+  };
+  
+  document.getElementById('addStudentBtn').onclick = () => {
+    const name = prompt('Имя ученика:');
+    if (!name) return;
+    const id = 's' + Date.now();
+    state.students.push({ id, name });
+    state.progress[id] = {};
+    state.filters[id] = { q: '', done: null, fav: null, dz: null };
+    state.tasks.forEach(t => {
+      state.progress[id][t.id] = { done: false, fav: false, dz: false, comment: '', lastCheck: null };
+    });
+    state.currentStudentId = id;
+    refreshSelect();
+    render();
+  };
+  
+  document.getElementById('delStudentBtn').onclick = () => {
+    if (state.students.length < 2) return;
+    if (!confirm('Удалить текущего ученика?')) return;
+    delete state.progress[state.currentStudentId];
+    delete state.filters[state.currentStudentId];
+    state.students = state.students.filter(s => s.id !== state.currentStudentId);
+    state.currentStudentId = state.students[0].id;
+    refreshSelect();
+    render();
+  };
+  
+  refreshSelect();
+}
+
+// 9. Сохранение
+document.getElementById('saveAppBtn').onclick = () => {
+  // Синхронизация кодов из редакторов
+  document.querySelectorAll('#main .task[data-id]').forEach(card => {
+    const task = state.tasks.find(t => t.id === card.dataset.id);
+    const editor = card.querySelector('.codebox textarea');
+    if (task && editor) task.code = editor.value;
+  });
+
+  // Запись в скрытый тег
+  const initScript = document.getElementById('initial-state');
+  initScript.textContent = JSON.stringify(state);
+
+  // Сборка HTML
+  const clone = document.documentElement.cloneNode(true);
+  clone.querySelector('#main').innerHTML = '';
+  clone.querySelector('body').className = '';
+  
+  const html = '<!doctype html>\n' + clone.outerHTML;
+  
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ege17_saved.html';
+  a.click();
+};
+
+// 10. Кнопки действий
+document.getElementById('addTaskBtn').onclick = openAddModal;
+document.getElementById('printBtn').onclick = printTasks;
+document.getElementById('openAllAnswersBtn').onclick = () => {
+  const answers = document.querySelectorAll('#main .answer-val');
+  if (answers.length === 0) return;
+  const isHidden = answers[0].classList.contains('hidden');
+  answers.forEach(a => a.classList.toggle('hidden', !isHidden));
+};
+
+// 11. Инициализация
+window.onload = () => {
+  initState();
+  setupFilters();
+  setupModes();
+  setupStudents();
+  updateFilterButtons();
+  render();
+  
+  document.querySelectorAll('[data-global-size]').forEach(btn => {
+    btn.onclick = () => {
+      state.conditionFont = btn.dataset.globalSize;
+      document.querySelectorAll('[data-global-size]').forEach(b => b.classList.toggle('active', b === btn));
+      render();
+    };
+  });
+};
+</script>
+
+</body></html>
