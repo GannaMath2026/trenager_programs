@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Тренажёр: Задание 5</title>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<style>
+:root {
+    --ink: #1e293b; --muted: #64748b; --primary: #6366f1; --primary-hover: #4f46e5;
+    --line: #e2e8f0; --bg: #f8fafc; --green: #10b981; --red: #ef4444; --yellow: #f59e0b;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0; background: var(--bg); font-family: system-ui, -apple-system, sans-serif;
+    color: var(--ink); height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* ШАПКА */
+header {
+    padding: 12px 24px; background: #fff; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center; z-index: 10;
+}
+.brand { font-weight: 800; font-size: 18px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+.btn {
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 14px;
+    cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:hover { background: #f1f5f9; }
+.btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn.primary:hover { background: var(--primary-hover); }
+.btn.danger { color: var(--red); border-color: #fca5a5; background: #fef2f2; }
+.btn.green { background: var(--green); color: #fff; border-color: var(--green); }
+.btn.yellow { background: var(--yellow); color: #fff; border-color: var(--yellow); }
+.btn.small { padding: 4px 8px; font-size: 12px; }
+
+/* МАКЕТ */
+.layout { display: flex; flex: 1; overflow: hidden; }
+
+/* ЛЕВОЕ МЕНЮ */
+aside.left {
+    width: 320px; background: #fff; border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; overflow-y: auto;
+}
+.sidebar-title {
+    padding: 16px 20px; font-size: 11px; font-weight: 800; text-transform: uppercase;
+    color: var(--muted); border-bottom: 1px solid var(--line); background: #f8fafc;
+    position: sticky; top: 0; z-index: 5;
+}
+.menu-lvl1 {
+    padding: 12px 16px; font-weight: 800; font-size: 14px; color: var(--ink);
+    background: #f8fafc; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; user-select: none; transition: background 0.2s;
+}
+.menu-lvl1:hover { background: #f1f5f9; }
+.menu-lvl1-content { display: flex; align-items: center; gap: 10px; flex: 1; }
+.menu-arrow { font-size: 12px; color: var(--muted); transition: transform 0.2s; display: inline-block; width: 16px; text-align: center;}
+.menu-lvl1.collapsed .menu-arrow { transform: rotate(-90deg); }
+
+.menu-lvl2 {
+    padding: 10px 16px 10px 46px; font-size: 13px; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    border-left: 3px solid transparent; transition: 0.2s;
+    animation: slideDown 0.2s ease-out;
+}
+@keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+.menu-lvl2:hover { background: #f1f5f9; }
+.menu-lvl2.active { background: #eff6ff; border-left-color: var(--primary); color: var(--primary); font-weight: 700; }
+.menu-lvl2.solved { border-left-color: var(--green); }
+.menu-status-dot { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; }
+.menu-lvl2.solved .menu-status-dot { background: var(--green); }
+.teacher-actions { padding: 16px; border-top: 1px solid var(--line); background: #f8fafc; display: flex; flex-direction: column; gap: 8px; margin-top: auto;}
+
+/* ЦЕНТР */
+main.center { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.tabs { display: flex; background: #fff; border-bottom: 1px solid var(--line); padding: 0 24px; }
+.tab {
+    padding: 16px 24px; cursor: pointer; font-weight: 700; color: var(--muted);
+    border-bottom: 2px solid transparent; transition: 0.2s;
+}
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.content-area { flex: 1; overflow-y: auto; padding: 24px; }
+.panel {
+    background: #fff; border: 1px solid var(--line); border-radius: 16px;
+    padding: 32px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+    max-width: 900px; margin: 0 auto; min-height: 100%;
+}
+
+/* ТЕОРИЯ */
+.theory-content h3 { color: var(--primary); margin-top: 0; font-size: 22px; }
+.theory-content p, .theory-content ul { line-height: 1.7; color: #334155; font-size: 15px; }
+.theory-content code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #0f172a; }
+.theory-content pre { background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 12px; overflow-x: auto; font-family: monospace; margin: 20px 0; }
+.theory-content pre code { background: transparent !important; padding: 0 !important; color: inherit !important; }
+
+/* ПРАКТИКА */
+.task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.task-title { font-size: 20px; font-weight: 800; margin: 0; }
+.task-desc { color: #475569; margin-bottom: 20px; line-height: 1.6; }
+.code-editor {
+    width: 100%; height: 140px; background: #0f172a; color: #e2e8f0;
+    border: 1px solid #334155; padding: 16px; border-radius: 12px;
+    font-family: monospace; font-size: 14px; line-height: 1.5; resize: vertical;
+}
+.output-box {
+    background: #0f172a; color: #a78bfa; padding: 16px; border-radius: 12px;
+    font-family: monospace; min-height: 50px; margin-top: 16px; border: 1px solid #334155; font-size: 14px;
+}
+.hint-box { background: #fffbeb; border: 1px solid #fcd34d; padding: 20px; border-radius: 12px; margin-top: 16px; color: #92400e; }
+.hint-box pre { background: #0f172a; color: #f8fafc; padding: 12px; border-radius: 8px; margin: 12px 0 0; }
+
+/* ПРАВАЯ ПАНЕЛЬ */
+aside.right { width: 300px; background: #fff; border-left: 1px solid var(--line); display: flex; flex-direction: column; }
+.progress-header { padding: 24px; border-bottom: 1px solid var(--line); text-align: center; }
+.circular-progress {
+    width: 120px; height: 120px; border-radius: 50%;
+    background: conic-gradient(var(--green) calc(var(--percent) * 1%), #e2e8f0 0);
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+    position: relative; transition: background 0.5s ease;
+}
+.circular-progress::before { content: ''; position: absolute; inset: 10px; background: #fff; border-radius: 50%; }
+.progress-text { position: relative; z-index: 1; font-size: 24px; font-weight: 800; color: var(--ink); }
+.progress-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.task-list { padding: 16px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+.task-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px;
+    border: 1px solid var(--line); border-radius: 8px; cursor: pointer; transition: 0.2s;
+}
+.task-item:hover { border-color: #cbd5e1; background: #f8fafc; }
+.task-item.active { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+.task-item.solved { border-color: #a7f3d0; background: #ecfdf5; }
+.task-item.wrong { border-color: #fecaca; background: #fef2f2; }
+.task-item.hint { border-color: #fde68a; background: #fffbeb; }
+.task-icon { font-size: 16px; }
+.task-name { font-size: 13px; font-weight: 600; flex: 1; }
+
+/* РЕДАКТОР */
+.edit-form { background: #f8fafc; border: 1px solid var(--line); padding: 20px; border-radius: 12px; margin-top: 24px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-weight: 700; font-size: 13px; margin-bottom: 6px; color: var(--muted); }
+.form-control { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 14px; }
+textarea.form-control { font-family: monospace; height: 120px; resize: vertical; }
+.action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+/* МОДАЛЬНОЕ ОКНО */
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+    opacity: 0; visibility: hidden; transition: 0.3s;
+}
+.modal-overlay.open { opacity: 1; visibility: visible; }
+.modal-content {
+    background: #fff; border-radius: 16px; padding: 24px; width: 100%; max-width: 400px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); transform: translateY(20px); transition: 0.3s;
+}
+.modal-overlay.open .modal-content { transform: translateY(0); }
+.modal-title { font-size: 18px; font-weight: 800; margin-top: 0; margin-bottom: 20px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+
+@keyframes flashGreen { 0%{background:#dcfce7;} 50%{background:#bbf7d0;} 100%{background:#f0fdf4;} }
+.flash-correct { animation: flashGreen 1.5s ease; }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="brand">✦ Тренажёр: Задание 5</div>
+    <div style="display:flex; gap:10px;">
+        <button id="toggleModeBtn" class="btn yellow">Режим Учителя</button>
+        <button id="saveAppBtn" class="btn primary">💾 Сохранить</button>
+        <button id="clearProgressBtn" class="btn danger">Очистить прогресс</button>
+    </div>
+</header>
+
+<div class="layout">
+    <!-- ЛЕВОЕ МЕНЮ -->
+    <aside class="left" id="leftMenu">
+        <div class="sidebar-title">Оглавление</div>
+        <div id="menuContainer"></div>
+        <div id="teacherMenuActions" class="teacher-actions hidden">
+            <button class="btn primary" onclick="addLvl1()">+ Добавить Раздел (Lvl 1)</button>
+            <button class="btn primary" onclick="openModalLvl2()">+ Добавить Подраздел (Lvl 2)</button>
+        </div>
+    </aside>
+
+    <!-- ЦЕНТР -->
+    <main class="center">
+        <div class="tabs" id="tabsContainer">
+            <div class="tab active" onclick="switchTab('theory')">Теория</div>
+            <div class="tab" onclick="switchTab('practice')">Практика</div>
+        </div>
+        <div class="content-area">
+            <!-- ТЕОРИЯ -->
+            <div id="theoryView" class="panel">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 id="theoryTitle" style="margin-top:0;">333</h2>
+                </div>
+                <div id="theoryContent" class="theory-content"></div>
+                
+                <div id="teacherTheoryEdit" class="edit-form hidden">
+                    <h3>Редактирование теории</h3>
+                    <div class="form-group">
+                        <label>Название подраздела</label>
+                        <input type="text" id="editSectionTitle" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Содержимое (HTML разрешен)</label>
+                        <textarea id="editSectionContent" class="form-control" style="height:200px;"></textarea>
+                    </div>
+                    <button class="btn primary" onclick="saveSectionEdit()">💾 Сохранить теорию</button>
+                </div>
+            </div>
+
+            <!-- ПРАКТИКА -->
+            <div id="practiceView" class="panel hidden">
+                <div id="taskContentArea"></div>
+                <div id="teacherAddTaskBtn" class="hidden" style="margin-top:32px; text-align:center; border-top:1px dashed var(--line); padding-top:24px;">
+                    <button class="btn primary" onclick="addNewTask()">+ Добавить карточку с заданием</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ПРАВАЯ ПАНЕЛЬ -->
+    <aside class="right">
+        <div class="progress-header">
+            <div class="circular-progress" id="progressCircle" style="--percent: 0;">
+                <div class="progress-text" id="progressPercentText">0%</div>
+            </div>
+            <div class="progress-label" id="progressLabelText">0 из 0 задач решено</div>
+        </div>
+        <div class="task-list" id="taskListContainer"></div>
+    </aside>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ДЛЯ ДОБАВЛЕНИЯ LVL 2 -->
+<div class="modal-overlay" id="modalLvl2">
+    <div class="modal-content">
+        <h3 class="modal-title">Добавление подраздела (Lvl 2)</h3>
+        <div class="form-group">
+            <label>Название подраздела</label>
+            <input type="text" id="newLvl2Title" class="form-control" placeholder="Например: Срезы">
+        </div>
+        <div class="form-group">
+            <label>Родительский раздел (Lvl 1)</label>
+            <select id="newLvl2Parent" class="form-control"><option value="sec_1">Строки</option><option value="sec_1793171139156">вапвап</option><option value="sec_1793171148878">4444</option></select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModalLvl2()">Отмена</button>
+            <button class="btn primary" onclick="confirmAddLvl2()">Добавить</button>
+        </div>
+    </div>
+</div>
+
+<!-- ДАННЫЕ -->
+<script id="data-store" type="application/json">{
+  "course": [
+    {
+      "id": "sec_1",
+      "title": "Строки",
+      "children": [
+        {
+          "id": "sub_1_1",
+          "title": "Срезы",
+          "theory": "<h3>Что такое срез?</h3><p>Срез (slice) — это способ получить отдельный символ строки или её часть. В Python используется синтаксис <code>s[start:stop:step]</code>.</p><ul><li><code>s[::-1]</code> — переворот строки.</li><li><code>s[::2]</code> — каждый второй символ.</li></ul>",
+          "tasks": [
+            {
+              "id": "t_1_1_1",
+              "title": "Переворот строки",
+              "desc": "Дана строка s = 'Hello'. Напишите код, который выводит её перевёрнутую версию.",
+              "answer": "olleH",
+              "template": "s = 'Hello'\n# Заполни срез\nprint(s[   ])",
+              "hint": "s = 'Hello'\nprint(s[::-1])"
+            }
+          ]
+        },
+        {
+          "id": "sub_1_2",
+          "title": "Сборка строк",
+          "theory": "<p>Сборка строк</p>",
+          "tasks": []
+        },
+        {
+          "id": "sub_1_3",
+          "title": "Замены",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1_4",
+          "title": "Подсчёт",
+          "theory": "",
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "id": "sec_1793171139156",
+      "title": "вапвап",
+      "children": [
+        {
+          "id": "sub_1793171139156_1",
+          "title": "Подраздел 1",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171139156_2",
+          "title": "Подраздел 2",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171139156_3",
+          "title": "Подраздел 3",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171139156_4",
+          "title": "Подраздел 4",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171139156_5",
+          "title": "Подраздел 5",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171139156_6",
+          "title": "Подраздел 6",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171139156_7",
+          "title": "Подраздел 7",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171139156_8",
+          "title": "Подраздел 8",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171139156_9",
+          "title": "Подраздел 9",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171139157_10",
+          "title": "Подраздел 10",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171174516",
+          "title": "333",
+          "theory": "",
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "id": "sec_1793171148878",
+      "title": "4444",
+      "children": [
+        {
+          "id": "sub_1793171148878_1",
+          "title": "Подраздел 1",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171148878_2",
+          "title": "Подраздел 2",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171148878_3",
+          "title": "Подраздел 3",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171148878_4",
+          "title": "Подраздел 4",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171148878_5",
+          "title": "Подраздел 5",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171148878_6",
+          "title": "Подраздел 6",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171148878_7",
+          "title": "Подраздел 7",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171148878_8",
+          "title": "Подраздел 8",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171148878_9",
+          "title": "Подраздел 9",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171148878_10",
+          "title": "Подраздел 10",
+          "theory": "",
+          "tasks": []
+        },
+        {
+          "id": "sub_1793171166244",
+          "title": "444",
+          "theory": "",
+          "tasks": []
+        }
+      ]
+    }
+  ],
+  "progress": {
+    "t1_1": {
+      "code": "s = 'Hello'\n# Заполни срез\nprint(s[ ::-1  ])",
+      "solved": true,
+      "wrong": false
+    },
+    "t1_2": {
+      "code": "s = 'abcdef'\n# Заполни срез\nprint(s[ ::2  ])",
+      "solved": true,
+      "wrong": false
+    },
+    "t2_1": {
+      "code": "a = 'Привет, '\nb = 'мир!'\n# Напиши код\nprint(  a+b )",
+      "solved": true,
+      "wrong": false
+    }
+  }
+}</script>
+
+<script>
+const $ = id => document.getElementById(id);
+
+// Инициализация структуры
+function initData() {
+    let data;
+    try { data = JSON.parse($('data-store').textContent); } catch(e) { data = { course: [] }; }
+    if (data.course && data.course.length > 0 && data.course[0].children.length > 0) return data.course;
+
+    const course = [];
+    const stringsSection = {
+        id: "sec_1", title: "Строки", children: [
+            { id: "sub_1_1", title: "Срезы", theory: "<h3>Срезы</h3>", tasks: [
+                { id: "t_1_1_1", title: "Переворот", desc: "Переверни строку 'Hello'.", answer: "olleH", template: "s = 'Hello'\nprint(s[   ])", hint: "print(s[::-1])" }
+            ]},
+            { id: "sub_1_2", title: "Сборка", theory: "", tasks: [] },
+            { id: "sub_1_3", title: "Замены", theory: "", tasks: [] }
+        ]
+    };
+    for (let i = 4; i <= 10; i++) stringsSection.children.push({ id: `sub_1_${i}`, title: `Пустой подраздел ${i}`, theory: "", tasks: [] });
+    course.push(stringsSection);
+
+    for (let i = 2; i <= 10; i++) {
+        const sec = { id: `sec_${i}`, title: `Раздел ${i}`, children: [] };
+        for (let j = 1; j <= 10; j++) sec.children.push({ id: `sub_${i}_${j}`, title: `Подраздел ${i}.${j}`, theory: "", tasks: [] });
+        course.push(sec);
+    }
+    return course;
+}
+
+let courseData = initData();
+let progress = JSON.parse(localStorage.getItem('trainer_progress') || '{}');
+let currentMode = 'student';
+let activeSecId = courseData[0].id;
+let activeSubId = courseData[0].children[0].id;
+let activeTaskIndex = 0;
+let currentTab = 'theory';
+let pyReady = false, py = null;
+
+// Состояние свернутых разделов
+let collapsedSecs = {};
+
+// Поиск подраздела
+function findSubSection(subId) {
+    for (let sec of courseData) {
+        const found = sec.children.find(s => s.id === subId);
+        if (found) return found;
+    }
+    return null;
+}
+
+// --- РЕНДЕР ЛЕВОГО МЕНЮ ---
+function renderMenu() {
+    const container = $('menuContainer');
+    container.innerHTML = '';
+    
+    courseData.forEach(sec => {
+        const isCollapsed = collapsedSecs[sec.id];
+        
+        const div1 = document.createElement('div');
+        div1.className = `menu-lvl1 ${isCollapsed ? 'collapsed' : ''}`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'menu-lvl1-content';
+        contentDiv.onclick = () => {
+            collapsedSecs[sec.id] = !collapsedSecs[sec.id];
+            renderMenu();
+        };
+        
+        const arrow = document.createElement('span');
+        arrow.className = 'menu-arrow';
+        arrow.textContent = '▼';
+        
+        const titleSpan = document.createElement('span');
+        titleSpan.textContent = sec.title;
+        
+        contentDiv.appendChild(arrow);
+        contentDiv.appendChild(titleSpan);
+        div1.appendChild(contentDiv);
+        
+        // Кнопка удаления (в режиме учителя)
+        if (currentMode === 'teacher') {
+            const delBtn = document.createElement('button');
+            delBtn.className = 'btn danger small';
+            delBtn.textContent = '🗑';
+            delBtn.onclick = (e) => { e.stopPropagation(); deleteLvl1(sec.id); };
+            div1.appendChild(delBtn);
+        }
+        
+        container.appendChild(div1);
+        
+        // Дети (если не свернуто)
+        if (!isCollapsed) {
+            sec.children.forEach(sub => {
+                const isSolved = sub.tasks && sub.tasks.length > 0 && sub.tasks.every(t => progress[t.id]?.solved);
+                const div2 = document.createElement('div');
+                div2.className = `menu-lvl2 ${activeSubId === sub.id ? 'active' : ''} ${isSolved ? 'solved' : ''}`;
+                
+                const titleSubSpan = document.createElement('span');
+                titleSubSpan.textContent = sub.title;
+                div2.appendChild(titleSubSpan);
+                
+                if (currentMode === 'teacher') {
+                    const delSubBtn = document.createElement('button');
+                    delSubBtn.className = 'btn danger small';
+                    delSubBtn.textContent = '🗑';
+                    delSubBtn.onclick = (e) => { e.stopPropagation(); deleteLvl2(sub.id); };
+                    div2.appendChild(delSubBtn);
+                } else {
+                    const dot = document.createElement('div');
+                    dot.className = 'menu-status-dot';
+                    div2.appendChild(dot);
+                }
+
+                div2.onclick = () => {
+                    activeSecId = sec.id;
+                    activeSubId = sub.id;
+                    activeTaskIndex = 0;
+                    render();
+                };
+                container.appendChild(div2);
+            });
+        }
+    });
+
+    if (currentMode === 'teacher') {
+        $('teacherMenuActions').classList.remove('hidden');
+    } else {
+        $('teacherMenuActions').classList.add('hidden');
+    }
+}
+
+// --- РЕНДЕР ЦЕНТРА ---
+function renderCenter() {
+    const sub = findSubSection(activeSubId);
+    if (!sub) return;
+
+    if (currentTab === 'theory') {
+        $('theoryView').classList.remove('hidden');
+        $('practiceView').classList.add('hidden');
+        $('tabsContainer').children[0].classList.add('active');
+        $('tabsContainer').children[1].classList.remove('active');
+        
+        $('theoryTitle').textContent = sub.title;
+        $('theoryContent').innerHTML = sub.theory || '<p style="color:#94a3b8;">Теория пока не добавлена.</p>';
+        
+        if (currentMode === 'teacher') {
+            $('teacherTheoryEdit').classList.remove('hidden');
+            $('editSectionTitle').value = sub.title;
+            $('editSectionContent').value = sub.theory || '';
+        } else {
+            $('teacherTheoryEdit').classList.add('hidden');
+        }
+    } else {
+        $('theoryView').classList.add('hidden');
+        $('practiceView').classList.remove('hidden');
+        $('tabsContainer').children[0].classList.remove('active');
+        $('tabsContainer').children[1].classList.add('active');
+        
+        renderPracticeCard(sub);
+    }
+}
+
+function renderPracticeCard(sub) {
+    const container = $('taskContentArea');
+    container.innerHTML = '';
+    
+    if (!sub.tasks || sub.tasks.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#64748b; padding:40px 0;">В этом подразделе пока нет заданий.</p>';
+        return;
+    }
+
+    if (activeTaskIndex >= sub.tasks.length) activeTaskIndex = sub.tasks.length - 1;
+    if (activeTaskIndex < 0) activeTaskIndex = 0;
+    
+    const task = sub.tasks[activeTaskIndex];
+    const state = progress[task.id] || { solved: false, wrong: false, hintUsed: false, code: task.template };
+    
+    let statusClass = '';
+    if (state.solved) statusClass = 'solved';
+    else if (state.wrong) statusClass = 'wrong';
+    else if (state.hintUsed) statusClass = 'hint';
+
+    const div = document.createElement('div');
+    div.className = `task-card ${statusClass}`;
+    div.id = `task_card_${task.id}`;
+    
+    if (currentMode === 'teacher') {
+        div.innerHTML = `
+            <div class="task-header"><h2 class="task-title">Редактирование</h2></div>
+            <div class="form-group"><label>Название</label><input type="text" id="edit_title_${task.id}" class="form-control" value="${task.title}"></div>
+            <div class="form-group"><label>Описание</label><textarea id="edit_desc_${task.id}" class="form-control" style="height:80px;">${task.desc}</textarea></div>
+            <div class="form-group"><label>Шаблон кода</label><textarea id="edit_template_${task.id}" class="form-control">${task.template}</textarea></div>
+            <div class="form-group"><label>Ответ</label><input type="text" id="edit_answer_${task.id}" class="form-control" value="${task.answer}"></div>
+            <div class="form-group"><label>Подсказка</label><textarea id="edit_hint_${task.id}" class="form-control">${task.hint}</textarea></div>
+            <div class="action-row">
+                <button class="btn primary" onclick="saveTaskEdit('${task.id}')">💾 Сохранить</button>
+                <button class="btn" onclick="moveTask('${task.id}', -1)">⬆️ Выше</button>
+                <button class="btn" onclick="moveTask('${task.id}', 1)">⬇️ Ниже</button>
+                <button class="btn danger" onclick="deleteTask('${task.id}')">🗑 Удалить</button>
+            </div>
+        `;
+    } else {
+        div.innerHTML = `
+            <div class="task-header"><h2 class="task-title">${activeTaskIndex + 1}. ${task.title}</h2></div>
+            <div class="task-desc">${task.desc}</div>
+            <label style="font-weight:700; display:block; margin-bottom:8px;">Напиши код:</label>
+            <textarea class="code-editor" id="code_${task.id}" spellcheck="false">${state.code || task.template}</textarea>
+            <div class="action-row">
+                <button class="btn green" onclick="runCode('${task.id}')">▶ Запустить код</button>
+                <button class="btn yellow" onclick="showHint('${task.id}')">💡 Подсказка</button>
+            </div>
+            <div class="output-box" id="out_${task.id}">— вывод —</div>
+            <div class="hint-box" id="hint_box_${task.id}" style="${state.hintUsed ? 'display:block;' : 'display:none;'}">
+                <strong>Подсказка:</strong><pre>${task.hint}</pre>
+            </div>
+        `;
+    }
+    container.appendChild(div);
+    
+    $('teacherAddTaskBtn').classList.toggle('hidden', currentMode !== 'teacher');
+}
+
+// --- РЕНДЕР ПРАВОЙ ПАНЕЛИ ---
+function renderRightPanel() {
+    const sub = findSubSection(activeSubId);
+    if (!sub || !sub.tasks) return;
+    
+    let solvedCount = 0;
+    const listContainer = $('taskListContainer');
+    listContainer.innerHTML = '';
+    
+    sub.tasks.forEach((task, i) => {
+        const state = progress[task.id] || {};
+        if (state.solved) solvedCount++;
+        
+        let cls = '', icon = '⚪';
+        if (state.solved) { cls = 'solved'; icon = '🟢'; }
+        else if (state.wrong) { cls = 'wrong'; icon = '🔴'; }
+        else if (state.hintUsed) { cls = 'hint'; icon = '🟡'; }
+        
+        if (i === activeTaskIndex && currentTab === 'practice') cls += ' active';
+        
+        const item = document.createElement('div');
+        item.className = `task-item ${cls}`;
+        item.innerHTML = `<span class="task-icon">${icon}</span><span class="task-name">${task.title}</span>`;
+        item.onclick = () => {
+            activeTaskIndex = i;
+            switchTab('practice');
+        };
+        listContainer.appendChild(item);
+    });
+    
+    const total = sub.tasks.length;
+    const percent = total === 0 ? 0 : Math.round((solvedCount / total) * 100);
+    
+    $('progressCircle').style.setProperty('--percent', percent);
+    $('progressPercentText').textContent = `${percent}%`;
+    $('progressLabelText').textContent = `${solvedCount} из ${total} задач решено`;
+}
+
+// --- ФУНКЦИИ УЧЕНИКА ---
+async function runCode(taskId) {
+    const sub = findSubSection(activeSubId);
+    const task = sub.tasks.find(t => t.id === taskId);
+    const code = $(`code_${taskId}`).value;
+    const out = $(`out_${taskId}`);
+    
+    out.textContent = '⏳ Запуск...';
+    saveProgress(taskId, { code: code });
+    
+    try {
+        const py = await initPy();
+        py.setStdout({ batched: msg => { out.textContent = msg; } });
+        await py.runPythonAsync(code);
+        
+        const output = out.textContent.trim();
+        
+        if (output === task.answer) {
+            out.textContent = '✅ Верно! Вывод: ' + output;
+            saveProgress(taskId, { solved: true, wrong: false });
+            
+            const card = document.getElementById(`task_card_${taskId}`);
+            if (card) card.classList.add('flash-correct');
+            
+            setTimeout(() => {
+                renderMenu();
+                renderRightPanel();
+                
+                const allSolved = sub.tasks.every(t => progress[t.id]?.solved);
+                if (allSolved) {
+                    alert(`Подраздел "${sub.title}" пройден!`);
+                } else {
+                    const nextTaskIdx = sub.tasks.findIndex(t => !progress[t.id]?.solved);
+                    if (nextTaskIdx !== -1) activeTaskIndex = nextTaskIdx;
+                    renderCenter();
+                    renderRightPanel();
+                }
+            }, 1500);
+            
+        } else {
+            out.textContent = '❌ Неверно. Вывод: ' + output;
+            saveProgress(taskId, { wrong: true, solved: false });
+            renderRightPanel();
+            renderMenu();
+        }
+    } catch(e) {
+        out.textContent = 'Ошибка: ' + e.message;
+    }
+}
+
+function showHint(taskId) {
+    $(`hint_box_${taskId}`).style.display = 'block';
+    saveProgress(taskId, { hintUsed: true });
+    renderRightPanel();
+    renderMenu();
+}
+
+// --- ФУНКЦИИ УЧИТЕЛЯ ---
+function addLvl1() {
+    const title = prompt('Название нового Раздела (Lvl 1):');
+    if (!title) return;
+    const newSec = { id: 'sec_' + Date.now(), title: title, children: [] };
+    for (let j = 1; j <= 10; j++) {
+        newSec.children.push({ id: `sub_${Date.now()}_${j}`, title: `Подраздел ${j}`, theory: "", tasks: [] });
+    }
+    courseData.push(newSec);
+    render();
+}
+
+// --- МОДАЛЬНОЕ ОКНО ДЛЯ ДОБАВЛЕНИЯ LVL 2 ---
+function openModalLvl2() {
+    $('newLvl2Title').value = '';
+    const select = $('newLvl2Parent');
+    select.innerHTML = '';
+    courseData.forEach(sec => {
+        const opt = document.createElement('option');
+        opt.value = sec.id;
+        opt.textContent = sec.title;
+        select.appendChild(opt);
+    });
+    $('modalLvl2').classList.add('open');
+}
+
+function closeModalLvl2() {
+    $('modalLvl2').classList.remove('open');
+}
+
+function confirmAddLvl2() {
+    const title = $('newLvl2Title').value.trim();
+    const parentId = $('newLvl2Parent').value;
+    if (!title) {
+        alert('Введите название подраздела!');
+        return;
+    }
+    
+    const parentSec = courseData.find(s => s.id === parentId);
+    if (!parentSec) return;
+
+    const newSub = { id: 'sub_' + Date.now(), title: title, theory: "", tasks: [] };
+    parentSec.children.push(newSub);
+    activeSecId = parentSec.id;
+    activeSubId = newSub.id;
+    currentTab = 'theory';
+    
+    closeModalLvl2();
+    render();
+}
+
+function deleteLvl1(id) {
+    if (!confirm('Удалить весь раздел и все его подразделы?')) return;
+    courseData = courseData.filter(s => s.id !== id);
+    if (courseData.length > 0) {
+        activeSecId = courseData[0].id;
+        activeSubId = courseData[0].children[0].id;
+    }
+    render();
+}
+
+function deleteLvl2(id) {
+    if (!confirm('Удалить этот подраздел?')) return;
+    for (let sec of courseData) {
+        const idx = sec.children.findIndex(s => s.id === id);
+        if (idx !== -1) {
+            sec.children.splice(idx, 1);
+            break;
+        }
+    }
+    const firstSec = courseData[0];
+    activeSubId = firstSec.children[0].id;
+    render();
+}
+
+function saveSectionEdit() {
+    const sub = findSubSection(activeSubId);
+    sub.title = $('editSectionTitle').value;
+    sub.theory = $('editSectionContent').value;
+    render();
+    alert('Теория сохранена!');
+}
+
+function addNewTask() {
+    const sub = findSubSection(activeSubId);
+    const newTask = {
+        id: 'task_' + Date.now(),
+        title: 'Новое задание',
+        desc: 'Описание',
+        answer: 'ответ',
+        template: '# Код',
+        hint: '# Решение'
+    };
+    sub.tasks.push(newTask);
+    activeTaskIndex = sub.tasks.length - 1;
+    switchTab('practice');
+}
+
+function saveTaskEdit(id) {
+    const sub = findSubSection(activeSubId);
+    const task = sub.tasks.find(t => t.id === id);
+    task.title = $(`edit_title_${id}`).value;
+    task.desc = $(`edit_desc_${id}`).value;
+    task.template = $(`edit_template_${id}`).value;
+    task.answer = $(`edit_answer_${id}`).value;
+    task.hint = $(`edit_hint_${id}`).value;
+    render();
+    alert('Задание сохранено!');
+}
+
+function moveTask(id, dir) {
+    const sub = findSubSection(activeSubId);
+    const idx = sub.tasks.findIndex(t => t.id === id);
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= sub.tasks.length) return;
+    const temp = sub.tasks[idx];
+    sub.tasks[idx] = sub.tasks[newIdx];
+    sub.tasks[newIdx] = temp;
+    activeTaskIndex = newIdx;
+    render();
+}
+
+function deleteTask(id) {
+    if (!confirm('Удалить задание?')) return;
+    const sub = findSubSection(activeSubId);
+    sub.tasks = sub.tasks.filter(t => t.id !== id);
+    activeTaskIndex = Math.max(0, activeTaskIndex - 1);
+    render();
+}
+
+// --- ВСПОМОГАТЕЛЬНЫЕ ---
+function saveProgress(id, data) {
+    progress[id] = { ...(progress[id] || {}), ...data };
+    localStorage.setItem('trainer_progress', JSON.stringify(progress));
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    renderCenter();
+    renderRightPanel();
+}
+
+function render() {
+    renderMenu();
+    renderCenter();
+    renderRightPanel();
+}
+
+async function initPy() {
+    if (pyReady) return py;
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js';
+    document.head.appendChild(script);
+    await new Promise((resolve, reject) => { script.onload = resolve; script.onerror = reject; });
+    py = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/' });
+    pyReady = true;
+    return py;
+}
+
+// --- ГЛОБАЛЬНЫЕ ---
+$('toggleModeBtn').onclick = () => {
+    currentMode = currentMode === 'student' ? 'teacher' : 'student';
+    $('toggleModeBtn').textContent = currentMode === 'student' ? 'Режим Учителя' : 'Режим Ученика';
+    $('toggleModeBtn').className = currentMode === 'student' ? 'btn yellow' : 'btn primary';
+    render();
+};
+
+$('clearProgressBtn').onclick = () => {
+    if (confirm('Очистить весь прогресс ученика?')) {
+        progress = {};
+        localStorage.removeItem('trainer_progress');
+        render();
+    }
+};
+
+$('saveAppBtn').onclick = () => {
+    const storeObj = { course: courseData, progress: progress };
+    document.getElementById('data-store').textContent = JSON.stringify(storeObj, null, 2);
+    
+    const clone = document.documentElement.cloneNode(true);
+    clone.querySelector('#menuContainer').innerHTML = '';
+    clone.querySelector('#theoryContent').innerHTML = '';
+    clone.querySelector('#taskContentArea').innerHTML = '';
+    clone.querySelector('#taskListContainer').innerHTML = '';
+    
+    const htmlString = '<!DOCTYPE html>\n' + clone.outerHTML;
+    const blob = new Blob([htmlString], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'trainer_saved.html';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    alert('Файл сохранен!');
+};
+
+window.onload = () => {
+    const store = JSON.parse($('data-store').textContent);
+    if (store.progress && Object.keys(store.progress).length > 0) {
+        if (Object.keys(progress).length === 0) progress = store.progress;
+    }
+    if (!activeSubId) {
+        activeSubId = courseData[0].children[0].id;
+    }
+    render();
+};
+</script>
+
+</body></html>
