@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ОГЭ Информатика — Тренажер №1 (Кодирование)</title>
+<style>
+:root{--bg:#f1f4f9;--panel:#fff;--ink:#1c2c45;--muted:#60738e;--line:#d7e1ec;--blue:#3267e8;--blue2:#214db8;--teal:#098f83;--navy:#17263d;--code:#0f1b30;--good:#187447;--goodbg:#e8f7ef;--warn:#9b681d;--warnbg:#fff6e7;--err:#b42318;--errbg:#fef3f2;--shadow:0 8px 26px #18304b0b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;transition:font-size 0.2s}
+header{background:var(--panel);border-bottom:1px solid var(--line);padding:13px 20px;display:flex;gap:16px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;box-shadow:0 3px 16px #1d35540a}
+.brand{min-width:220px}.brand small{display:block;color:var(--blue);font-size:11px;font-weight:900;letter-spacing:.11em}.brand strong{display:block;font-size:19px;line-height:1.3}.brand span{display:block;color:var(--muted);font-size:12px}
+.head-right{display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+.btn{border:1px solid var(--line);border-radius:9px;padding:8px 12px;background:#fff;color:#2c405e;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}.btn:hover{background:#f3f7fc;border-color:#9eafc5}.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}.btn.primary:hover{background:var(--blue2)}.btn.soft{background:#edf4ff;color:#3158a5;border-color:#cfddf5}.btn.good{background:#eaf7ef;color:#216847;border-color:#b9dfc8}.btn:disabled{opacity:.45;cursor:not-allowed}
+.layout{max-width:1600px;margin:auto;padding:14px;display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px;align-items:start}.side,.main{background:var(--panel);border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow)}
+.side{position:sticky;top:82px;padding:13px;max-height:calc(100vh - 98px);overflow:auto}.side h2{font-size:14px;margin:3px 7px 10px}
+.task-nav{display:grid;gap:4px}.task-nav button{width:100%;display:flex;align-items:center;gap:8px;text-align:left;border:1px solid transparent;border-radius:8px;background:transparent;padding:8px 9px;color:#344660;font-family:inherit;font-size:13px;font-weight:600;line-height:1.3;cursor:pointer}.task-nav button:hover{background:#f4f7fb}.task-nav button.active{background:#eaf0ff;border-color:#c3d3fa;color:#234ab1;box-shadow:inset 3px 0 var(--blue)}.task-nav button.done:not(.active){background:#eff8f2;color:#286344}
+.task-nav .num{font-size:11px;min-width:31px;color:#6f7f94;font-weight:850}.task-nav .label{flex:1}.task-nav .tick{color:#22824e;font-weight:900}
+.main{min-height:calc(100vh - 100px);padding:clamp(16px,2vw,27px);min-width:0}
+.task-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px}
+.task-badge{display:inline-flex;padding:5px 9px;border-radius:8px;background:#eaf0ff;color:#2d55b8;font-size:12px;font-weight:900}.source-badge{background:#eef2f6;color:#65758a}
+.task-title{font-size:clamp(22px,2.2vw,30px);line-height:1.2;margin:5px 0 15px;letter-spacing:-.02em}
+.condition-box{background:#f7f9fc;border:1px solid #d8e2ed;border-left:4px solid var(--blue);border-radius:12px;padding:15px 17px;margin:12px 0 14px}
+.condition-label,.section-label{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#647690;margin-bottom:6px}
+.condition{white-space:pre-line;line-height:1.75;font-size:16px}
+.task-note{background:#f0f7f6;border:1px solid #d0e7e2;border-radius:10px;color:#40665e;padding:10px 12px;font-size:13px;margin:12px 0}
+.actions{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.actions-left,.actions-right{display:flex;gap:8px;flex-wrap:wrap}
+.marks-group{display:flex;gap:8px;background:#f4f7fb;padding:6px;border-radius:10px;margin-bottom:12px}
+.mark-btn{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;color:#4a5e78;transition:.15s}
+.mark-btn.active.done{background:#eaf7ef;border-color:#b9dfc8;color:#187447}
+.mark-btn.active.hw{background:#edf4ff;border-color:#cfddf5;color:#3267e8}
+.mark-btn.active.fav{background:#fff6e7;border-color:#f1d0a6;color:#9b681d}
+.draft-box{background:#f8fafc;border:1px solid #d8e2ed;border-radius:12px;padding:15px;margin-top:15px}
+.draft-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.draft-item label{display:block;font-size:12px;font-weight:700;color:#647690;margin-bottom:4px}
+.draft-item input{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-family:inherit;font-size:14px}
+
+/* Modals & Screens */
+.overlay{position:fixed;inset:0;background:#17263dd0;z-index:100;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
+.overlay.show{display:flex !important}
+.modal{background:#fff;border-radius:16px;max-width:600px;width:100%;padding:24px;box-shadow:0 10px 40px #0003;max-height:90vh;overflow-y:auto}
+.modal h2{margin:0 0 12px;font-size:22px;color:var(--navy)}
+.modal p{margin:0 0 20px;color:var(--muted);font-size:14px}
+.filter-group{display:grid;gap:10px;margin-bottom:24px}
+.filter-group label{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-weight:600;font-size:14px;transition:.15s}
+.filter-group label:hover{border-color:var(--blue);background:#f8fbff}
+.filter-group input[type="radio"],.filter-group input[type="checkbox"]{width:18px;height:18px;accent-color:var(--blue);cursor:pointer}
+.quiz-box{background:#f7f9fc;border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:20px}
+.quiz-q{font-size:16px;font-weight:700;margin-bottom:12px;color:var(--navy)}
+.quiz-opts{display:grid;gap:8px}
+.quiz-opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:14px;transition:.15s}
+.quiz-opt:hover{background:#fff;border-color:#9eafc5}
+.quiz-opt input{accent-color:var(--blue)}
+.quiz-opt.correct{background:#e8f7ef;border-color:#b9dfc8;font-weight:700;color:#187447}
+.quiz-opt.wrong{background:#fef3f2;border-color:#f5c2c0;font-weight:700;color:#b42318}
+
+/* Table */
+table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}
+th,td{border:1px solid var(--line);padding:10px;text-align:left}
+th{background:#f4f7fb;color:#526987;font-weight:800}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <small>ОГЭ • ИНФОРМАТИКА</small>
+    <strong>Задание 1: Кодирование текста</strong>
+    <span>Тренажер теории и задач</span>
+  </div>
+  <div class="head-right">
+    <button class="btn" id="btnGuide">Методичка</button>
+    <button class="btn" id="btnSaveDoc">Скачать приложение</button>
+    <button class="btn primary" id="btnReport">Отчет для учителя</button>
+    <button class="btn soft" id="btnChangeFilter">Сменить фильтр</button>
+    <div style="display:flex;gap:4px;margin-left:10px;">
+      <button class="btn" onclick="changeFontSize(1)">A+</button>
+      <button class="btn" onclick="changeFontSize(-1)">A-</button>
+    </div>
+  </div>
+</header>
+
+<div class="layout" id="mainLayout" style="display:none">
+  <aside class="side">
+    <h2>Список задач</h2>
+    <div class="task-nav" id="navList"></div>
+  </aside>
+  <main class="main" id="mainView">
+    <!-- Content is rendered dynamically -->
+  </main>
+</div>
+
+<!-- Initial Setup Overlay -->
+<div class="overlay show" id="setupOverlay">
+  <div class="modal">
+    <h2>Настройка тренажера</h2>
+    <p>Введи свое имя и выбери, какие задачи ты хочешь прорешать сегодня.</p>
+    
+    <div style="margin-bottom:16px">
+      <label style="font-weight:700;font-size:13px;display:block;margin-bottom:6px">Имя ученика</label>
+      <input type="text" id="inpName" class="btn" style="width:100%;font-weight:400" placeholder="Например: Иван Иванов">
+    </div>
+
+    <div class="filter-group">
+      <label><input type="radio" name="filter" value="all" checked> Все задачи</label>
+      <label><input type="radio" name="filter" value="hw"> Только ДЗ</label>
+      <label><input type="radio" name="filter" value="fav"> Только избранные</label>
+      <label><input type="radio" name="filter" value="not_done"> Только нерешенные</label>
+      <label><input type="radio" name="filter" value="done"> Только решенные</label>
+    </div>
+
+    <div style="text-align:right">
+      <button class="btn primary" id="btnStart">Начать обучение</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Theory Quiz -->
+<div class="overlay" id="theoryOverlay">
+  <div class="modal" style="max-width:700px">
+    <h2>Проверка теории</h2>
+    <p>Чтобы перейти к решению задач, нужно пройти небольшой тест на понимание формул.</p>
+    <div id="theoryContent"></div>
+    <div style="text-align:right;margin-top:20px; display:flex; justify-content:space-between;">
+      <button class="btn" id="btnSkipTheory" style="border:none; color:#647690; text-decoration:underline;">Пропустить (для теста)</button>
+      <button class="btn primary" id="btnTheorySubmit">Проверить ответы</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Guide -->
+<div class="overlay" id="guideOverlay">
+  <div class="modal">
+    <h2 style="margin-bottom:20px">Шпаргалка: Решение задания 1</h2>
+    <div style="font-size:14px;line-height:1.6;color:#334155">
+      <p><b>1. Формулы:</b><br>
+      I = k × i, где I - объем (байты), k - количество символов, i - вес одного символа.<br>
+      Если вес дан в битах (8, 16, 32), то делим на 8, чтобы получить байты. (8 бит = 1 байт, 16 бит = 2 байта, 32 бита = 4 байта).</p>
+      
+      <p><b>2. Задачи на вычеркивание:</b><br>
+      Когда из текста удаляют слово, вместе с ним удаляется <b>1 запятая</b> и <b>1 пробел</b>. Значит, из текста выпадает длина слова + 2 символа.<br>
+      Уравнение: <code>(Длина слова + 2) * вес_символа = на сколько байт уменьшилось</code>.</p>
+      
+      <p><b>3. Задачи на добавление (повтор):</b><br>
+      Когда слово дублируют, добавляется само слово + пробел (или запятая и пробел).<br>
+      Уравнение: <code>(Длина слова + 1) * вес_символа = на сколько байт увеличилось</code>.</p>
+    </div>
+    <div style="text-align:right;margin-top:20px">
+      <button class="btn" onclick="document.getElementById('guideOverlay').classList.remove('show')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Teacher Report -->
+<div class="overlay" id="reportOverlay">
+  <div class="modal" style="max-width:800px">
+    <h2>Отчет для учителя</h2>
+    <p>Отчет сформирован. Скопируйте текст ниже или сохраните страницу как PDF.</p>
+    <div id="reportContent"></div>
+    <div style="text-align:right;margin-top:20px">
+      <button class="btn primary" onclick="window.print()">Сохранить как PDF</button>
+      <button class="btn" onclick="document.getElementById('reportOverlay').classList.remove('show')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- DATA ---
+const THEORY_QUIZ = [
+  { q: "В кодировке Unicode каждый символ кодируется 16 битами. Сколько байт занимает один символ?", opts: ["1 байт", "2 байта", "4 байта", "16 байт"], a: 1 },
+  { q: "При удалении слова из текста вида «Слово, слово2 — текст» ученик также удаляет ставшие лишними запятые и пробелы. Сколько ВСЕГО символов удаляется вместе с самим словом?", opts: ["Только само слово", "Слово и 1 пробел", "Слово, запятая и пробел", "Слово и 2 запятые"], a: 2 },
+  { q: "Задача: текст уменьшился на 16 байт. Вес символа = 2 байта. Сколько символов было удалено?", opts: ["4 символа", "8 символов", "16 символов", "32 символа"], a: 1 },
+  { q: "Если в тексте одно слово написали дважды подряд (через пробел), на сколько байт увеличится текст в КОИ-8 (8 бит на символ)?", opts: ["На длину слова", "На длину слова + 1", "На длину слова + 2", "На длину слова + 3"], a: 1 },
+  { q: "Какой объем в Кбайтах занимает текст из 2048 символов в кодировке Unicode (16 бит)?", opts: ["2 Кбайта", "4 Кбайта", "8 Кбайт", "16 Кбайт"], a: 1 }
+];
+
+const TASKS = [
+  {
+    id: 1, title: "01 Прототип: вычёркивание (КОИ-8)", type: "task", answer: "Москва",
+    text: "В кодировке КОИ-8 каждый символ кодируется 8 битами. Андрей написал текст (в нем нет лишних пробелов):\n«Обы, Лена, Волга, Москва, Макензи, Амазонка — реки».\nУченик вычеркнул из списка название одной из рек. Заодно он вычеркнул ставшие лишними запятые и пробелы — два пробела не должны идти подряд.\nПри этом размер нового предложения в данной кодировке оказался на 8 байтов меньше, чем размер исходного предложения.\nНапишите в ответе вычеркнутое название реки.",
+    hint: "1) 8 бит = 1 байт. Уменьшилось на 8 байт = 8 символов.\n2) Вычеркнуто: слово + запятая (1) + пробел (1).\n3) Длина слова + 2 = 8. Длина слова = 6.\n4) Ищем реку из 6 букв."
+  },
+  {
+    id: 2, title: "02 Прототип: добавление (Windows-1251)", type: "task", answer: "скользя",
+    text: "В кодировке Windows-1251 каждый символ кодируется 8 битами. Вова хотел написать текст:\n«Скользя по утреннему снегу, Друг милый, предадимся бегу Нетерпеливого коня И навестим поля пустые…»\nОдно из слов ученик написал два раза подряд, поставив между одинаковыми словами один пробел.\nПри этом размер написанного предложения в данной кодировке оказался на 8 байт больше, чем размер нужного предложения.\nНапишите в ответе лишнее слово.",
+    hint: "1) 8 бит = 1 байт. Увеличилось на 8 байт = 8 символов.\n2) Добавлено: слово + 1 пробел.\n3) Длина слова + 1 = 8. Длина слова = 7."
+  },
+  {
+    id: 3, title: "03 Прототип: вычёркивание (Unicode 16 бит)", type: "task", answer: "тюлень",
+    text: "В одной из кодировок Unicode каждый символ кодируется 16 битами. Вова написал текст:\n«еж, лев, слон, олень, тюлень, носорог, крокодил, аллигатор — дикие животные».\nУченик вычеркнул из списка название одного из животных. Заодно он вычеркнул ставшие лишними запятые и пробелы.\nПри этом размер нового предложения оказался на 16 байт меньше, чем размер исходного.\nНапишите в ответе вычеркнутое название животного.",
+    hint: "1) 16 бит = 2 байта. Уменьшилось на 16 байт = 8 символов.\n2) Вычеркнуто: слово + запятая + пробел.\n3) Длина слова + 2 = 8. Длина слова = 6."
+  },
+  {
+    id: 4, title: "04 Прототип: добавление с запятой (Unicode 16 бит)", type: "task", answer: "Ом",
+    text: "В одной из кодировок Unicode каждый символ кодируется 16 битами. Вова написал текст:\n«Ом, Бор, Кюри, Попов, Джоуль, Рентген, Курчатов, Резерфорд — великие физики».\nФамилию одного ученого ученик написал два раза подряд, добавив необходимые запятую и пробел.\nПри этом размер написанного предложения оказался на 8 байт больше, чем размер нужного.\nНапишите в ответе слово, использованное дважды.",
+    hint: "1) 16 бит = 2 байта. Увеличилось на 8 байт = 4 символа.\n2) Добавлено: слово + запятая + пробел.\n3) Длина слова + 2 = 4. Длина слова = 2."
+  },
+  {
+    id: 5, title: "05 Прототип: вычёркивание (UTF-32)", type: "task", answer: "Гуарана",
+    text: "В кодировке UTF-32 каждый символ кодируется 32 битами. Миша написал текст:\n«Айва, Алыча, Генипа, Гуарана, Курбарил, Мангостан — фрукты».\nУченик вычеркнул название одного фрукта. Заодно вычеркнул лишние запятые и пробелы.\nРазмер нового предложения оказался на 36 байтов меньше исходного.\nНапишите в ответе вычеркнутое название фрукта.",
+    hint: "1) 32 бита = 4 байта. Уменьшилось на 36 байт = 9 символов.\n2) Вычеркнуто: слово + запятая + пробел.\n3) Длина слова + 2 = 9. Длина слова = 7."
+  },
+  {
+    id: 6, title: "06 Прототип: объём рассказа (Windows, 8 бит)", type: "task", answer: "15",
+    text: "Рассказ, набранный на компьютере, содержит 8 страниц, на каждой странице 40 строк, в каждой строке 48 символов.\nОпределите информационный объем рассказа в Кбайтах в кодировке Windows, в которой каждый символ кодируется 8 бит.",
+    hint: "1) 8 бит = 1 байт.\n2) Символов: 8 * 40 * 48 = 15360.\n3) Объем в байтах: 15360 * 1 = 15360.\n4) В Кбайтах: 15360 / 1024 = 15."
+  },
+  {
+    id: 7, title: "07 Прототип: объём статьи (Unicode, 2 байта)", type: "task", answer: "75",
+    text: "Статья, набранная на компьютере, содержит 20 страниц, на каждой странице 40 строк, в каждой строке 48 символов.\nВ одном из представлений Unicode каждый символ кодируется двумя байтами.\nОпределите информационный объем статьи в Кбайтах.",
+    hint: "1) 1 символ = 2 байта.\n2) Символов: 20 * 40 * 48 = 38400.\n3) Объем в байтах: 38400 * 2 = 76800.\n4) В Кбайтах: 76800 / 1024 = 75."
+  },
+  {
+    id: 8, title: "08 Прототип: объём предложения (Unicode, 16 бит)", type: "task", answer: "84",
+    text: "В одной из кодировок Unicode каждый символ кодируется 16 битами.\nОпределите размер в байтах следующего предложения:\nСлух обо мне пройдет по всей Руси великой.",
+    hint: "1) 16 бит = 2 байта.\n2) Считаем символы (включая пробелы и точку):\nСлух(4) пробел(1) обо(3) пробел(1) мне(3) пробел(1) пройдет(7) пробел(1) по(2) пробел(1) всей(4) пробел(1) Руси(4) пробел(1) великой(7) точка(1) = 42 символа.\n3) Объем: 42 * 2 = 84 байта."
+  },
+  {
+    id: 9, title: "01 Аналог: вычёркивание (КОИ-8)", type: "task", answer: "Haskell",
+    text: "В кодировке КОИ-8 каждый символ кодируется 8 битами. Андрей написал текст:\n«C, Cg, Cat, Ruby, Swift, Delphi, Haskell — языки программирования».\nУченик вычеркнул из списка название одного из языков. Заодно он вычеркнул ставшие лишними запятые и пробелы.\nПри этом размер нового предложения в данной кодировке оказался на 9 байт меньше, чем размер исходного.\nНапишите в ответе вычеркнутое название языка программирования.",
+    hint: "1) 8 бит = 1 байт. Уменьшилось на 9 байт = 9 символов.\n2) Вычеркнуто: слово + запятая + пробел.\n3) Длина слова + 2 = 9. Длина слова = 7.\n4) Ищем язык из 7 букв."
+  },
+  {
+    id: 10, title: "02 Аналог: добавление (Unicode 16 бит)", type: "task", answer: "пустые",
+    text: "В одной из кодировок Unicode каждый символ кодируется 16 битами. Вова хотел написать текст:\n«Скользя по утреннему снегу, Друг милый, предадимся бегу Нетерпеливого коня И навестим поля пустые…»\nОдно из слов ученик написал два раза подряд, поставив между одинаковыми словами один пробел.\nПри этом размер написанного предложения в данной кодировке оказался на 14 байт больше, чем размер нужного.\nНапишите в ответе лишнее слово.",
+    hint: "1) 16 бит = 2 байта. Увеличилось на 14 байт = 7 символов.\n2) Добавлено: слово + 1 пробел.\n3) Длина слова + 1 = 7. Длина слова = 6."
+  },
+  {
+    id: 11, title: "03 Аналог: вычёркивание (Unicode 16 бит)", type: "task", answer: "лиственница",
+    text: "В одной из кодировок Unicode каждый символ кодируется 16 битами. Петя написал текст:\n«Ель, кедр, сосна, кипарис, лиственница, можжевельник — хвойные растения».\nУченик вычеркнул из списка название одного из растений. Заодно он вычеркнул ставшие лишними запятые и пробелы.\nПри этом размер нового предложения оказался на 26 байт меньше, чем размер исходного.\nНапишите в ответе вычеркнутое название хвойного растения.",
+    hint: "1) 16 бит = 2 байта. Уменьшилось на 26 байт = 13 символов.\n2) Вычеркнуто: слово + запятая + пробел.\n3) Длина слова + 2 = 13. Длина слова = 11."
+  },
+  {
+    id: 12, title: "04 Аналог: добавление с запятой (Unicode 16 бит)", type: "task", answer: "Ом",
+    text: "В одной из кодировок Unicode каждый символ кодируется 16 битами. Вова написал текст:\n«Пушкин, Гоголь, Толстой, Чехов, Достоевский, Есенин, Ом — великие люди».\nФамилию одного человека ученик написал два раза подряд, добавив необходимые запятую и пробел.\nПри этом размер написанного предложения оказался на 8 байт больше, чем размер нужного.\nНапишите в ответе слово, использованное дважды.",
+    hint: "1) 16 бит = 2 байта. Увеличилось на 8 байт = 4 символа.\n2) Добавлено: слово + запятая + пробел.\n3) Длина слова + 2 = 4. Длина слова = 2."
+  },
+  {
+    id: 13, title: "05 Аналог: вычёркивание (UTF-32)", type: "task", answer: "койот",
+    text: "В кодировке UTF-32 каждый символ кодируется 32 битами. Миша написал текст:\n«Волк, лиса, заяц, барсук, енот, койот, рысь, медведь — дикие животные».\nУченик вычеркнул название одного животного. Заодно вычеркнул лишние запятые и пробелы.\nРазмер нового предложения оказался на 24 байта меньше исходного.\nНапишите в ответе вычеркнутое название животного.",
+    hint: "1) 32 бита = 4 байта. Уменьшилось на 24 байта = 6 символов.\n2) Вычеркнуто: слово + запятая + пробел.\n3) Длина слова + 2 = 6. Длина слова = 4."
+  },
+  {
+    id: 14, title: "06 Аналог: объём рассказа (Unicode, 16 бит)", type: "task", answer: "8",
+    text: "Рассказ, набранный на компьютере, содержит 2 страницы, на каждой странице 32 строки, в каждой строке 64 символа.\nОпределите информационный объем рассказа в Кбайтах в одной из кодировок Unicode, в которой каждый символ кодируется 16 бит.",
+    hint: "1) 16 бит = 2 байта.\n2) Символов: 2 * 32 * 64 = 4096.\n3) Объем в байтах: 4096 * 2 = 8192.\n4) В Кбайтах: 8192 / 1024 = 8."
+  },
+  {
+    id: 15, title: "07 Аналог: объём статьи (Unicode, 2 байта)", type: "task", answer: "44",
+    text: "Статья, набранная на компьютере, содержит 15 страниц, на каждой странице 30 строк, в каждой строке 50 символов.\nВ одном из представлений Unicode каждый символ кодируется двумя байтами.\nОпределите информационный объем статьи в Кбайтах.",
+    hint: "1) 1 символ = 2 байта.\n2) Символов: 15 * 30 * 50 = 22500.\n3) Объем в байтах: 22500 * 2 = 45000.\n4) В Кбайтах: 45000 / 1024 = 43.94... (округляем до 44)."
+  },
+  {
+    id: 16, title: "08 Аналог: объём предложения (Unicode 16 бит)", type: "task", answer: "84",
+    text: "В одной из кодировок Unicode каждый символ кодируется 16 битами.\nОпределите размер в байтах следующего предложения:\nЯ к вам пишу — чего же боле? Что я могу еще сказать?",
+    hint: "1) 16 бит = 2 байта.\n2) Считаем символы, включая пробелы, знаки препинания и тире. Всего 42 символа.\n3) Объем: 42 * 2 = 84 байта."
+  }
+];
+
+// --- STATE MANAGEMENT ---
+let state = {
+  name: "",
+  filter: "all",
+  theoryPassed: false,
+  currentTaskId: null,
+  fontSizeMultiplier: 1,
+  tasks: {}
+};
+TASKS.forEach(t => {
+  state.tasks[t.id] = { status: 'not_started', done: false, hw: false, fav: false, attempts: 0, hintUsed: false, attemptsWithHint: 0, subQuestionsPassed: false, lastAnswer: "", draft: { weight: "", chars: "", bytes: "" } };
+});
+
+function loadState() {
+  const saved = localStorage.getItem('oge_task1_trainer_v3');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      state = { ...state, ...parsed };
+      TASKS.forEach(t => {
+        if (!state.tasks[t.id]) state.tasks[t.id] = { status: 'not_started', done: false, hw: false, fav: false, attempts: 0, hintUsed: false, attemptsWithHint: 0, subQuestionsPassed: false, lastAnswer: "", draft: { weight: "", chars: "", bytes: "" } };
+        if (!state.tasks[t.id].draft) state.tasks[t.id].draft = { weight: "", chars: "", bytes: "" };
+      });
+    } catch(e) {}
+  }
+  applyFontSize();
+}
+function saveState() {
+  localStorage.setItem('oge_task1_trainer_v3', JSON.stringify(state));
+}
+
+function changeFontSize(delta) {
+  state.fontSizeMultiplier = Math.max(0.8, Math.min(2.0, state.fontSizeMultiplier + delta * 0.1));
+  applyFontSize();
+  saveState();
+}
+function applyFontSize() {
+  document.body.style.fontSize = (16 * state.fontSizeMultiplier) + 'px';
+  document.documentElement.style.setProperty('--font-scale', state.fontSizeMultiplier);
+}
+
+// --- DOM ELEMENTS ---
+const setupOverlay = document.getElementById('setupOverlay');
+const theoryOverlay = document.getElementById('theoryOverlay');
+const mainLayout = document.getElementById('mainLayout');
+const navList = document.getElementById('navList');
+const mainView = document.getElementById('mainView');
+
+// --- INIT ---
+loadState();
+if (state.name && state.theoryPassed) {
+  document.getElementById('inpName').value = state.name;
+  document.querySelector(`input[name="filter"][value="${state.filter}"]`).checked = true;
+  setupOverlay.classList.remove('show');
+  initApp();
+} else if (state.name) {
+  document.getElementById('inpName').value = state.name;
+}
+
+// --- SETUP LOGIC ---
+document.getElementById('btnStart').onclick = () => {
+  const name = document.getElementById('inpName').value.trim();
+  if (!name) return alert("Пожалуйста, введите имя!");
+  state.name = name;
+  state.filter = document.querySelector('input[name="filter"]:checked').value;
+  saveState();
+  
+  setupOverlay.classList.remove('show');
+  
+  if (!state.theoryPassed) {
+    showTheoryQuiz();
+  } else {
+    initApp();
+  }
+};
+
+document.getElementById('btnChangeFilter').onclick = () => {
+  setupOverlay.classList.add('show');
+};
+
+// --- THEORY LOGIC ---
+function showTheoryQuiz() {
+  theoryOverlay.classList.add('show');
+  const container = document.getElementById('theoryContent');
+  container.innerHTML = THEORY_QUIZ.map((q, i) => `
+    <div class="quiz-box">
+      <div class="quiz-q">${i+1}. ${q.q}</div>
+      <div class="quiz-opts">
+        ${q.opts.map((opt, j) => `
+          <label class="quiz-opt">
+            <input type="radio" name="q${i}" value="${j}"> ${opt}
+          </label>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('btnTheorySubmit').onclick = () => {
+  let allCorrect = true;
+  THEORY_QUIZ.forEach((q, i) => {
+    const selected = document.querySelector(`input[name="q${i}"]:checked`);
+    const box = document.querySelectorAll('.quiz-box')[i];
+    if (selected && parseInt(selected.value) === q.a) {
+      box.style.borderColor = '#b9dfc8';
+      box.style.background = '#e8f7ef';
+    } else {
+      allCorrect = false;
+      box.style.borderColor = '#f5c2c0';
+      box.style.background = '#fef3f2';
+    }
+  });
+
+  if (allCorrect) {
+    alert("Отлично! Теория сдана. Переходим к задачам.");
+    state.theoryPassed = true;
+    saveState();
+    theoryOverlay.classList.remove('show');
+    initApp();
+  } else {
+    alert("Есть ошибки. Пожалуйста, повторите теорию и попробуйте снова.");
+  }
+};
+
+document.getElementById('btnSkipTheory').onclick = () => {
+  if(confirm("Вы уверены, что хотите пропустить проверку теории?")) {
+    state.theoryPassed = true;
+    saveState();
+    theoryOverlay.classList.remove('show');
+    initApp();
+  }
+}
+
+document.getElementById('btnGuide').onclick = () => {
+  document.getElementById('guideOverlay').classList.add('show');
+};
+
+// --- APP INITIALIZATION ---
+function initApp() {
+  mainLayout.style.display = 'grid';
+  renderNav();
+  
+  const filteredTasks = getFilteredTasks();
+  if (filteredTasks.length > 0) {
+    const currentExists = filteredTasks.find(t => t.id === state.currentTaskId);
+    if (!currentExists) {
+      state.currentTaskId = filteredTasks[0].id;
+    }
+    renderTask(state.currentTaskId);
+  } else {
+    mainView.innerHTML = `<h2>Нет задач по выбранному фильтру</h2><p style="color:var(--muted)">Измените фильтр в настройках (кнопка сверху).</p>`;
+  }
+}
+
+function getFilteredTasks() {
+  return TASKS.filter(t => {
+    const ts = state.tasks[t.id];
+    if (state.filter === 'hw') return ts.hw;
+    if (state.filter === 'fav') return ts.fav;
+    if (state.filter === 'done') return ts.done;
+    if (state.filter === 'not_done') return !ts.done;
+    return true; // all
+  });
+}
+
+// --- RENDERING NAV ---
+function renderNav() {
+  const tasks = getFilteredTasks();
+  navList.innerHTML = '';
+  tasks.forEach(t => {
+    const ts = state.tasks[t.id];
+    const btn = document.createElement('button');
+    btn.className = t.id === state.currentTaskId ? 'active' : (ts.done ? 'done' : '');
+    btn.innerHTML = `
+      <span class="num">№ ${t.id}</span>
+      <span class="label">${t.title}</span>
+      <span class="tick">${ts.done ? '✓' : ''}</span>
+    `;
+    btn.onclick = () => {
+      state.currentTaskId = t.id;
+      renderNav();
+      renderTask(t.id);
+    };
+    navList.appendChild(btn);
+  });
+}
+
+// --- BOLD NUMBERS HELPER ---
+function boldNumbers(text) {
+  // Ищем цифры и оборачиваем в тег <b>
+  return text.replace(/(\d+([.,]\d+)?)/g, '<b>$1</b>');
+}
+
+// --- RENDERING TASK ---
+function renderTask(id) {
+  const t = TASKS.find(x => x.id === id);
+  if (!t) return;
+  const ts = state.tasks[t.id];
+
+  let statusLabel = ts.done ? (ts.hintUsed ? 'Решено (с подсказкой)' : 'Решено (1 попытка)') : 'В работе';
+  if (ts.done && ts.attemptsWithHint > 0 && !ts.subQuestionsPassed) {
+    statusLabel = 'Требуется углубление темы';
+  }
+
+  // Форматируем текст условия (жирные цифры)
+  const formattedText = boldNumbers(t.text).replace(/\n/g, '<br>');
+
+  mainView.innerHTML = `
+    <div class="task-top">
+      <span class="task-badge">Задание ${t.id}</span>
+      <span style="flex:1"></span>
+      <span class="task-badge ${ts.done ? '' : 'source-badge'}">${statusLabel}</span>
+    </div>
+    
+    <h1 class="task-title">${t.title}</h1>
+    
+    <div class="marks-group">
+      <button class="mark-btn ${ts.done ? 'active done' : ''}" onclick="toggleMark(${t.id}, 'done')">✓ Решено</button>
+      <button class="mark-btn ${ts.hw ? 'active hw' : ''}" onclick="toggleMark(${t.id}, 'hw')">ДЗ</button>
+      <button class="mark-btn ${ts.fav ? 'active fav' : ''}" onclick="toggleMark(${t.id}, 'fav')">★ Избранное</button>
+    </div>
+
+    <div class="condition-box">
+      <div class="condition-label">Условие задачи</div>
+      <div class="condition">${formattedText}</div>
+    </div>
+    
+    <div class="draft-box">
+      <div class="condition-label" style="margin-bottom:10px; color:#526987;">Черновик решения (необязательно)</div>
+      <div class="draft-grid">
+        <div class="draft-item">
+          <label>Вес одного символа (в байтах)</label>
+          <input type="text" id="draft_weight" value="${ts.draft.weight}" oninput="saveDraft(${t.id}, 'weight', this.value)" placeholder="Например: 2">
+        </div>
+        <div class="draft-item">
+          <label>Сколько символов исчезло/добавилось?</label>
+          <input type="text" id="draft_chars" value="${ts.draft.chars}" oninput="saveDraft(${t.id}, 'chars', this.value)" placeholder="Например: 8">
+        </div>
+        <div class="draft-item">
+          <label>Количество байт (из условия)</label>
+          <input type="text" id="draft_bytes" value="${ts.draft.bytes}" oninput="saveDraft(${t.id}, 'bytes', this.value)" placeholder="Например: 16">
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap;">
+      <div style="flex:1; min-width:250px">
+        <label style="font-weight:700;font-size:13px;display:block;margin-bottom:6px">Ваш ответ (можно вводить выражения, например 15*2):</label>
+        <input type="text" id="taskInput" class="btn" style="width:100%;font-weight:400;font-size:18px;padding:12px" value="${ts.lastAnswer}" oninput="state.tasks[${t.id}].lastAnswer = this.value; saveState();">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:22px;">
+        <button class="btn primary" style="padding:12px 24px;font-size:16px;" onclick="checkAnswer(${t.id})">Проверить</button>
+        <button class="btn soft" style="padding:12px" onclick="showHint(${t.id})">Подсказка</button>
+      </div>
+    </div>
+    <div id="taskFeedback" style="margin-top:15px; font-weight:bold;"></div>
+
+    <div class="actions">
+      <div class="actions-left">
+        <button class="btn" onclick="moveTask(-1)">← Предыдущее</button>
+        <button class="btn" onclick="moveTask(1)">Следующее →</button>
+      </div>
+    </div>
+
+    ${ts.hintUsed && !ts.subQuestionsPassed && ts.done ? `
+      <div class="condition-box" style="border-left-color: #f59e0b; background: #fffbeb; margin-top:20px;">
+        <div class="condition-label" style="color: #b45309;">Требуется углубление темы</div>
+        <p style="font-size:14px; margin-bottom:10px;">Вы воспользовались подсказкой. Чтобы засчитать задачу, ответьте на 3 дополнительных вопроса.</p>
+        <div id="subQuestionsBlock">
+          <button class="btn primary" onclick="startSubQuestions(${t.id})">Пройти мини-тест</button>
+        </div>
+      </div>
+    ` : ''}
+  `;
+}
+
+function saveDraft(id, field, value) {
+  state.tasks[id].draft[field] = value;
+  saveState();
+}
+
+// --- ACTIONS ---
+function toggleMark(id, type) {
+  const ts = state.tasks[id];
+  ts[type] = !ts[type];
+  if (type === 'done' && !ts[type]) {
+    ts.attempts = 0;
+    ts.hintUsed = false;
+    ts.subQuestionsPassed = false;
+  }
+  saveState();
+  renderNav();
+  renderTask(id);
+}
+
+function showHint(id) {
+  const t = TASKS.find(x => x.id === id);
+  const ts = state.tasks[id];
+  if (!ts.hintUsed) {
+    ts.hintUsed = true;
+    saveState();
+  }
+  alert("ПОДСКАЗКА:\n\n" + t.hint);
+  renderTask(id);
+}
+
+function evaluateMath(expr) {
+  try {
+    // Оставляем только цифры, точку, запятую и математические знаки
+    const sanitized = expr.replace(/,/g, '.').replace(/[^0-9+\-*/(). ]/g, '');
+    if (!sanitized) return null;
+    // Используем Function для безопасного вычисления
+    const result = new Function('return ' + sanitized)();
+    return Number(result);
+  } catch (e) {
+    return null;
+  }
+}
+
+function checkAnswer(id) {
+  const t = TASKS.find(x => x.id === id);
+  const ts = state.tasks[id];
+  const inputStr = document.getElementById('taskInput').value.trim();
+  ts.lastAnswer = inputStr;
+  
+  if (!inputStr) return;
+
+  let isCorrect = false;
+  const val = evaluateMath(inputStr);
+  const correctVal = parseFloat(t.answer);
+
+  if (val !== null && !isNaN(correctVal)) {
+    // Сравниваем с погрешностью для дробных чисел
+    isCorrect = Math.abs(val - correctVal) < 0.01;
+  } else {
+    // Если это не число, сравниваем как текст (для задач, где ответ - слово)
+    isCorrect = inputStr.toLowerCase() === t.answer.toLowerCase();
+  }
+
+  const feedback = document.getElementById('taskFeedback');
+
+  if (isCorrect) {
+    if (!ts.done) {
+      ts.done = true;
+      if (ts.hintUsed) {
+        ts.attemptsWithHint++;
+        feedback.innerHTML = `<span style="color:var(--good)">Верно! Но так как вы использовали подсказку, необходимо пройти мини-тест для закрепления.</span>`;
+      } else {
+        feedback.innerHTML = `<span style="color:var(--good)">Верно! Задача решена с 1 попытки. Переход к следующей...</span>`;
+      }
+    } else {
+      feedback.innerHTML = `<span style="color:var(--good)">Верно!</span>`;
+    }
+    
+    saveState();
+    renderNav();
+    
+    if (ts.hintUsed && !ts.subQuestionsPassed) {
+      renderTask(id); // Показываем блок с вопросами
+    } else {
+      // Автоматический переход через 1.5 секунды
+      setTimeout(() => {
+        moveTask(1);
+      }, 1500);
+    }
+  } else {
+    ts.attempts++;
+    if (ts.hintUsed) ts.attemptsWithHint++;
+    feedback.innerHTML = `<span style="color:var(--err)">Неверно. Попробуйте еще раз или воспользуйтесь подсказкой.</span>`;
+    saveState();
+  }
+}
+
+function startSubQuestions(id) {
+  const block = document.getElementById('subQuestionsBlock');
+  block.innerHTML = `
+    <div class="quiz-box" style="background:#fff;">
+      <div class="quiz-q">1. В каком случае при удалении слова из списка вычитается 3 символа (слово + 2)?</div>
+      <div class="quiz-opts">
+        <label class="quiz-opt"><input type="radio" name="sub1" value="0"> Когда слово стоит в начале</label>
+        <label class="quiz-opt"><input type="radio" name="sub1" value="1"> Когда после слова идут запятая и пробел</label>
+        <label class="quiz-opt"><input type="radio" name="sub1" value="2"> Когда слово повторяется дважды</label>
+      </div>
+    </div>
+    <div class="quiz-box" style="background:#fff;">
+      <div class="quiz-q">2. Если текст занимает 10 байт при весе символа 8 бит, сколько в нем символов?</div>
+      <div class="quiz-opts">
+        <label class="quiz-opt"><input type="radio" name="sub2" value="0"> 5</label>
+        <label class="quiz-opt"><input type="radio" name="sub2" value="1"> 10</label>
+        <label class="quiz-opt"><input type="radio" name="sub2" value="2"> 80</label>
+      </div>
+    </div>
+    <div class="quiz-box" style="background:#fff;">
+      <div class="quiz-q">3. Сколько байт занимает 1 символ в кодировке UTF-32?</div>
+      <div class="quiz-opts">
+        <label class="quiz-opt"><input type="radio" name="sub3" value="0"> 2 байта</label>
+        <label class="quiz-opt"><input type="radio" name="sub3" value="1"> 4 байта</label>
+        <label class="quiz-opt"><input type="radio" name="sub3" value="2"> 8 байт</label>
+      </div>
+    </div>
+    <button class="btn primary" onclick="checkSubQuestions(${id})">Проверить ответы</button>
+  `;
+}
+
+function checkSubQuestions(id) {
+  const a1 = document.querySelector('input[name="sub1"]:checked');
+  const a2 = document.querySelector('input[name="sub2"]:checked');
+  const a3 = document.querySelector('input[name="sub3"]:checked');
+  
+  if (!a1 || !a2 || !a3) return alert("Ответьте на все вопросы!");
+  
+  if (a1.value === '1' && a2.value === '1' && a3.value === '1') {
+    state.tasks[id].subQuestionsPassed = true;
+    saveState();
+    alert("Молодец! Тема закреплена. Задача полностью засчитана.");
+    moveTask(1);
+  } else {
+    alert("Есть ошибки. Подумайте еще раз.");
+  }
+}
+
+function moveTask(dir) {
+  const tasks = getFilteredTasks();
+  let idx = tasks.findIndex(t => t.id === state.currentTaskId);
+  idx += dir;
+  if (idx >= 0 && idx < tasks.length) {
+    state.currentTaskId = tasks[idx].id;
+    renderNav();
+    renderTask(state.currentTaskId);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+}
+
+// --- SAVE DOCUMENT ---
+document.getElementById('btnSaveDoc').onclick = () => {
+  const htmlContent = document.documentElement.outerHTML;
+  const blob = new Blob([htmlContent], {type: 'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'oge_trainer_saved.html';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+// --- REPORT GENERATION ---
+document.getElementById('btnReport').onclick = () => {
+  const reportOverlay = document.getElementById('reportOverlay');
+  const reportContent = document.getElementById('reportContent');
+  
+  let rows = TASKS.map(t => {
+    const ts = state.tasks[t.id];
+    let status = "Не решено";
+    if (ts.done) {
+      if (ts.hintUsed) {
+        status = ts.subQuestionsPassed ? "Решено (с подсказкой и закреплением)" : "Решено (с подсказкой, нет закрепления)";
+      } else {
+        status = "Решено (1 попытка)";
+      }
+    }
+    let marks = [];
+    if (ts.hw) marks.push("ДЗ");
+    if (ts.fav) marks.push("Избранное");
+    
+    return `
+      <tr>
+        <td>${t.id}</td>
+        <td>${t.title}</td>
+        <td>${status}</td>
+        <td>${ts.attempts + (ts.done && !ts.hintUsed ? 1 : 0)}</td>
+        <td>${marks.join(', ') || '-'}</td>
+      </tr>
+    `;
+  }).join('');
+
+  reportContent.innerHTML = `
+    <h3>Ученик: ${state.name}</h3>
+    <p style="font-size:13px;color:#647690">Дата: ${new Date().toLocaleDateString()}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Задача</th>
+          <th>Статус</th>
+          <th>Попыток</th>
+          <th>Метки</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
+  
+  reportOverlay.classList.add('show');
+};
+
+</script>
+</body>
+</html>

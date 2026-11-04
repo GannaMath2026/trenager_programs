@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Медиана — геометрия</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0d10;--panel:#151a21;--panel2:#1c232c;--line:#303a46;--text:#edf2f7;--muted:#a8b3c2;--red:#ff5656;--yellow:#ffd34e;--blue:#65b7ff;--green:#65d6a1}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:18px 24px;border-bottom:1px solid var(--line);font-size:22px;font-weight:750}
+main{padding:22px;max-width:1600px;margin:0 0 0 250px}.sceneNav{position:fixed;z-index:5;left:0;top:64px;bottom:0;width:238px;padding:12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;background:#11161d;border-right:1px solid var(--line)}.sceneNav .btn{text-align:left;width:100%;flex:0 0 auto;line-height:1.35}.factcard{background:linear-gradient(135deg,#1b222b,#141920);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px;display:flex;gap:20px;align-items:center;justify-content:space-between}.factcard h2{margin:0 0 7px;font-size:21px}.factcard p{margin:0;color:#d2dbe5}.factResult{max-width:440px;text-align:right;color:var(--yellow);font-weight:750;white-space:pre-line}
+.btn{border:1px solid #536171;background:#26313d;color:white;padding:9px 13px;border-radius:9px;cursor:pointer}.btn:hover{background:#344252}.btn.active{background:#493034;border-color:#a95760}
+.sceneWrap{border:1px solid var(--line);border-radius:14px;background:#0e1217;overflow:hidden}.sceneHead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line);color:var(--muted)}.scene{display:block;width:100%;height:min(65vh,650px);min-height:360px;touch-action:none}.scene text{font-family:system-ui,sans-serif;fill:#f4f7fa;font-size:16px;paint-order:stroke;stroke:#0e1217;stroke-width:3px;stroke-linejoin:round}.edge{stroke:#dce4ec;stroke-width:2.4;fill:none}.median{stroke:var(--red);stroke-width:2.8;fill:none}.vertex{fill:#fff;stroke:#111;stroke-width:2;cursor:grab}.vertex:active{cursor:grabbing}.stats{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}.stat{background:#1b232c;border:1px solid #303b47;border-radius:8px;padding:7px 11px;color:#dbe5ef}.note{color:var(--muted);font-size:13px}.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.bottom{padding:12px 16px;border-top:1px solid var(--line);color:var(--muted)}@media(max-width:700px){.sceneNav{position:relative;top:auto;bottom:auto;width:auto;max-height:180px;border:1px solid var(--line);border-radius:12px;margin:8px;display:flex;flex-direction:row;overflow-x:auto;overflow-y:hidden}.sceneNav .btn{width:auto;min-width:190px;text-align:center}main{margin:0;padding:10px}.factcard{align-items:flex-start;flex-direction:column}.factResult{text-align:left}.scene{height:55vh;min-height:300px}}
+
+html,body{height:100%;min-height:100%}
+body{height:100dvh;overflow:hidden}
+header{display:none}
+.sceneNav{top:0;bottom:0;height:100dvh}
+main{height:100dvh;max-width:none;margin:0 0 0 238px;padding:7px 9px;display:flex;flex-direction:column;overflow:hidden}
+.factcard{display:none}
+.sceneWrap{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;border-radius:9px}
+.sceneHead{flex:0 0 auto;min-height:38px;padding:4px 8px;gap:8px;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overflow-y:hidden}
+#sceneHint,#controls1{display:none!important}
+#controls2 b,#controls5 span{display:none!important}
+.controls{flex-wrap:nowrap;flex:0 0 auto;gap:6px}
+.controls .btn{padding:5px 9px;white-space:nowrap}
+.scene{flex:1 1 auto;width:100%;height:0;min-height:0;max-height:none;display:block}
+.stats{flex:0 0 auto;min-height:0;padding:3px 8px;gap:5px;max-height:58px;overflow:auto}
+.bottom{display:none}
+#vargnon{flex:1 1 auto;width:100%;height:100%!important;min-height:0!important;border:0}
+#stats:empty{display:none}
+@media(max-width:700px){
+  body{height:100dvh;overflow:hidden}
+  .sceneNav{position:relative;top:auto;bottom:auto;height:58px;max-height:58px;width:100%;margin:0;padding:5px 8px;border:0;border-bottom:1px solid var(--line);border-radius:0;flex-direction:row;overflow-x:auto;overflow-y:hidden}
+  .sceneNav .btn{width:auto;min-width:160px;text-align:center}
+  main{height:calc(100dvh - 58px);margin:0;padding:5px}
+  .sceneHead{min-height:34px;padding:3px 5px}
+  .scene{min-height:0;height:0}
+  #vargnon{min-height:0!important}
+}
+
+
+.factcard{display:flex!important;flex:0 0 auto;align-items:center;justify-content:space-between;gap:12px;margin:0 0 6px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#151d26;min-height:40px}
+.factLine{display:flex;align-items:center;gap:12px;min-width:0}
+.factLine strong{color:#ffd34e;white-space:nowrap;font-size:14px}
+.factResult{display:block;max-width:none;text-align:left;color:#edf2f7;font-size:14px;font-weight:500;white-space:normal}
+#proofBtn{flex:0 0 auto;padding:5px 11px}
+.proofPanel{flex:0 0 auto;margin:0 0 6px;padding:7px 12px;background:#151d26;border:1px solid #303a46;border-radius:8px;color:#e2e8f0;font-size:13px;line-height:1.35;max-height:112px;overflow:auto}
+.proofPanel[hidden]{display:none!important}
+.proofPanel ol{margin:0;padding-left:22px}
+.proofPanel li{margin:2px 0}
+#stats,#bottom{display:none!important}
+.sceneWrap{flex:1 1 auto;min-height:0}
+#vargnon{flex:1 1 auto;width:100%;height:0!important;min-height:0!important;border:0}
+@media(max-width:700px){.factcard{gap:6px;padding:5px 7px}.factLine{gap:7px}.factResult{font-size:12px}.proofPanel{max-height:95px;font-size:12px}}
+
+</style>
+</head>
+<body>
+
+<main>
+<nav class="sceneNav"><button class="btn active" id="scene1Btn">1 · Медиана</button><button class="btn" id="scene2Btn">2 · Серединный перпендикуляр</button><button class="btn" id="scene3Btn">3 · Точка пересечения медиан</button><button class="btn" id="scene4Btn">4 · Свойства медиан</button><button class="btn" id="scene5Btn">5 · Параллелограмм Вариньона</button><button class="btn" id="scene6Btn">6 · Медиана к гипотенузе</button><button class="btn" id="scene7Btn">7 · Равенство углов</button><button class="btn" id="scene8Btn">8 · Формулы медиан</button><button class="btn" id="scene9Btn">9 · Параллелограмм</button></nav>
+<section class="factcard" id="factCard"><div class="factLine"><strong>Факт</strong><span class="factResult" id="factResult"></span></div><button class="btn" id="proofBtn" type="button">Подробнее</button></section><section class="proofPanel" id="proofPanel" hidden><ol id="proofSteps"></ol></section>
+<section class="sceneWrap">
+<div class="sceneHead"><span id="sceneHint">Перетаскивайте вершины A, B, C</span><div class="controls" id="controls1"></div><div class="controls" id="controls2" style="display:none"><input id="position" type="range" min="-150" max="150" step="1" value="-90"><button class="btn" id="reset2">Сбросить</button></div><div class="controls" id="controls3" style="display:none"><button class="btn" id="reset3">Сбросить вершины</button></div><div class="controls" id="controls4" style="display:none"><button class="btn active" id="mode4a">Режим 1</button><button class="btn" id="mode4b">Режим 2</button><button class="btn" id="mode4c">Режим 3</button></div><div class="controls" id="controls8" style="display:none"><button class="btn active" id="formulaMode1">Одна медиана</button><button class="btn" id="formulaMode2">Сумма квадратов медиан</button></div>
+<div class="controls" id="controls5" style="display:none;flex-wrap:wrap"><button class="btn" id="reset5">Сбросить</button></div></div>
+<svg id="scene" class="scene" viewBox="0 0 800 520" role="img" aria-label="Геометрическая сцена"></svg>
+<iframe id="vargnon" title="Параллелограмм Вариньона" style="display:none;width:100%;height:min(78vh,900px);min-height:650px;border:0;background:#0f172a" sandbox="allow-scripts"></iframe>
+<div class="stats" id="stats"></div>
+<div class="bottom" id="bottom">Перемещайте вершину, пока треугольник не станет равнобедренным относительно активной вершины.</div>
+</section>
+</main>
+<script>
+const svg=document.getElementById('scene'),ns='http://www.w3.org/2000/svg';
+let A={x:230,y:390},B={x:570,y:390},C={x:400,y:110},initial={A:{x:230,y:390},B:{x:570,y:390},C:{x:400,y:110}},active='A',drag=null,scene=1,Pval=.35,showMarks=true;
+const add=(tag,attrs={},parent=svg,text='')=>{let e=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(text)e.textContent=text;parent.appendChild(e);return e};
+const sub=(p,q)=>({x:p.x-q.x,y:p.y-q.y}),plus=(p,q)=>({x:p.x+q.x,y:p.y+q.y}),mul=(p,k)=>({x:p.x*k,y:p.y*k}),mid=(p,q)=>mul(plus(p,q),.5),dist=(p,q)=>Math.hypot(p.x-q.x,p.y-q.y);
+function point(e){let p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;let q=p.matrixTransform(svg.getScreenCTM().inverse());return{x:q.x,y:q.y}}
+function getV(n){return {A,B,C}[n]}function setV(n,p){if(n==='A')A=p;else if(n==='B')B=p;else C=p}
+function angleArc(P,Q,R,r,color,label=''){let a1=Math.atan2(Q.y-P.y,Q.x-P.x),a2=Math.atan2(R.y-P.y,R.x-P.x),d=((a2-a1+Math.PI*3)%(Math.PI*2))-Math.PI,pts=[];for(let i=0;i<=32;i++){let a=a1+d*i/32;pts.push({x:P.x+r*Math.cos(a),y:P.y+r*Math.sin(a)})}add('polyline',{points:pts.map(p=>`${p.x},${p.y}`).join(' '),fill:'none',stroke:color,'stroke-width':2.6,'stroke-linecap':'round'});if(label){let a=a1+d/2;add('text',{x:P.x+(r+20)*Math.cos(a),y:P.y+(r+20)*Math.sin(a),fill:color,'text-anchor':'middle'},svg,label)}}
+function angleArcGap(P,Q,R,r,color,gap){let a1=Math.atan2(Q.y-P.y,Q.x-P.x),a2=Math.atan2(R.y-P.y,R.x-P.x),d=((a2-a1+Math.PI*3)%(Math.PI*2))-Math.PI,sgn=Math.sign(d)||1,start=a1+sgn*gap/2,end=a2-sgn*gap/2,pts=[];for(let i=0;i<=32;i++){let a=start+(end-start)*i/32;pts.push({x:P.x+r*Math.cos(a),y:P.y+r*Math.sin(a)})}add('polyline',{points:pts.map(p=>`${p.x},${p.y}`).join(' '),fill:'none',stroke:color,'stroke-width':2.8,'stroke-linecap':'round'})}
+function line(P,Q,attrs={}){return add('line',{x1:P.x,y1:P.y,x2:Q.x,y2:Q.y,...attrs})}
+function render1(){
+ svg.innerHTML='';const V={A,B,C},op={A:['B','C'],B:['C','A'],C:['A','B']},[uName,wName]=op[active],P=V[active],U=V[uName],W=V[wName],M=mid(U,W),side1=dist(P,U),side2=dist(P,W),iso=Math.abs(side1-side2)<2.5;
+ add('polygon',{points:[A,B,C].map(p=>`${p.x},${p.y}`).join(' '),fill:'#65b7ff','fill-opacity':'.035',stroke:'none'});
+ [[A,B],[B,C],[C,A]].forEach(([p,q])=>line(p,q,{class:'edge'}));line(P,M,{class:'median'});
+ let d=sub(W,U),len=Math.hypot(d.x,d.y)||1,n={x:-d.y/len,y:d.x/len};
+ for(let s of [mid(U,M),mid(M,W)])line(plus(s,mul(n,-7)),plus(s,mul(n,7)),{stroke:'#ffd34e','stroke-width':2.5});
+ if(iso&&showMarks){let v1=sub(U,M),v2=sub(P,M),l1=Math.hypot(v1.x,v1.y)||1,l2=Math.hypot(v2.x,v2.y)||1,r=15,p1=plus(M,mul(v1,r/l1)),p2=plus(p1,mul(v2,r/l2)),p3=plus(M,mul(v2,r/l2));add('polyline',{points:[p1,p2,p3].map(p=>`${p.x},${p.y}`).join(' '),fill:'none',stroke:'#ffd34e','stroke-width':2.5});angleArcGap(P,U,M,35,'#65d6a1',0.10);angleArcGap(P,M,W,35,'#65d6a1',0.10);for(let [X,Y] of [[P,U],[P,W]]){let m=mid(X,Y),dd=sub(Y,X),nn=Math.hypot(dd.x,dd.y)||1,perp={x:-dd.y/nn,y:dd.x/nn};line(plus(m,mul(perp,-8)),plus(m,mul(perp,8)),{stroke:'#65d6a1','stroke-width':2.5})}}
+ for(let [name,Q] of Object.entries(V)){add('circle',{cx:Q.x,cy:Q.y,r:6,class:'vertex','data-v':name});add('text',{x:Q.x+11,y:Q.y-12},svg,name)}
+ add('circle',{cx:M.x,cy:M.y,r:4.5,fill:'#ffd34e',stroke:'#111','stroke-width':1.5});add('text',{x:M.x+10,y:M.y+22,fill:'#ffd34e'},svg,active+'ₘ');
+ document.getElementById('stats').innerHTML=iso?'<span class="stat">Равнобедренный: '+active+uName+' = '+active+wName+'</span><span class="stat">Медиана = высота = биссектриса</span><span class="stat">Углы при '+active+' равны</span>':'<span class="stat">Медиана: '+active+'M</span><span class="stat">M — середина '+uName+wName+'</span><span class="stat">'+uName+'M = M'+wName+'</span>';
+ document.getElementById('factResult').textContent=iso?'Особое положение найдено: медиана стала высотой и биссектрисой.':'Медиана делит противоположную сторону на два равных отрезка.';
+}
+function render2(){
+ svg.innerHTML='';
+ const U={x:180,y:300},V={x:620,y:300},M=mid(U,V),offset=Number(document.getElementById('position').value),P={x:M.x,y:M.y+offset};
+ line(U,V,{stroke:'#65b7ff','stroke-width':4});
+ line({x:M.x,y:65},{x:M.x,y:455},{stroke:'#ffd34e','stroke-width':3});
+ // Matching tick marks show AM = MB.
+ for(const x of [290,510]) line({x:x-6,y:292},{x:x+6,y:308},{stroke:'#65b7ff','stroke-width':2.8});
+ line(P,U,{stroke:'#edf2f7','stroke-width':2,'stroke-dasharray':'5 6'});
+ line(P,V,{stroke:'#edf2f7','stroke-width':2,'stroke-dasharray':'5 6'});
+ // Two matching tick marks on PA and PB indicate equal distances.
+ for(const [X,Y] of [[P,U],[P,V]]){const d=sub(Y,X),L=Math.hypot(d.x,d.y)||1,n={x:-d.y/L,y:d.x/L},m=plus(X,mul(d,.48));for(const k of [-1,1])line(plus(m,mul(n,k*7)),plus(m,mul(n,k*14)),{stroke:'#ffd34e','stroke-width':2.5});}
+ add('polyline',{points:`${M.x},${M.y-18} ${M.x+18},${M.y-18} ${M.x+18},${M.y}`,fill:'none',stroke:'#ffd34e','stroke-width':2.5});
+ for(let [name,X] of [['A',U],['B',V],['P',P],['M',M]]){
+   add('circle',{cx:X.x,cy:X.y,r:name==='P'?8:5.5,fill:name==='P'?'#ff5656':'#fff',stroke:'#111','stroke-width':2,'data-point':name==='P'?'P':''});
+   add('text',{x:X.x+10,y:X.y-12},svg,name)
+ }
+ add('text',{x:M.x+22,y:92,fill:'#ffd34e'},svg,'Серединный перпендикуляр');
+ document.getElementById('stats').innerHTML='<span class="stat">PA = '+dist(P,U).toFixed(1)+'</span><span class="stat">PB = '+dist(P,V).toFixed(1)+'</span><span class="stat">AM = MB</span><span class="stat">PM ⟂ AB</span>';
+ document.getElementById('factResult').textContent='Для любой точки P на серединном перпендикуляре PA = PB.';
+}
+
+function render3(){
+ svg.innerHTML='';
+ const V=[A,B,C], mids=[mid(B,C),mid(C,A),mid(A,B)];
+ const centroid={x:(A.x+B.x+C.x)/3,y:(A.y+B.y+C.y)/3};
+ add('polygon',{points:V.map(p=>`${p.x},${p.y}`).join(' '),fill:'#65b7ff','fill-opacity':'.035',stroke:'none'});
+ [[A,B],[B,C],[C,A]].forEach(([p,q])=>line(p,q,{class:'edge'}));
+ // Each median runs from a vertex to the opposite side's midpoint.
+ V.forEach((p,i)=>line(p,mids[i],{stroke:'#ff5656','stroke-width':2.8}));
+ // Mark each median at its one-third and two-third points, making the 2:1 split explicit.
+ V.forEach((p,i)=>{const m=mids[i],d=sub(m,p),len=Math.hypot(d.x,d.y)||1,n={x:-d.y/len,y:d.x/len};[1/3,2/3].forEach(t=>{const q=plus(p,mul(d,t));line(plus(q,mul(n,-8)),plus(q,mul(n,8)),{stroke:'#ffd34e','stroke-width':3});});});
+ add('circle',{cx:centroid.x,cy:centroid.y,r:7,fill:'#ffd34e',stroke:'#111','stroke-width':2});
+ add('text',{x:centroid.x+12,y:centroid.y-12,fill:'#ffd34e'},svg,'G');
+ for(let [name,Q] of [['A',A],['B',B],['C',C]]){add('circle',{cx:Q.x,cy:Q.y,r:6,class:'vertex','data-v':name});add('text',{x:Q.x+11,y:Q.y-12},svg,name)}
+ mids.forEach((m,i)=>add('circle',{cx:m.x,cy:m.y,r:4.5,fill:'#fff',stroke:'#111','stroke-width':1.5}));
+ // Label ratio portions along all medians without cluttering the centroid.
+ document.getElementById('stats').innerHTML='<span class="stat">Все 3 медианы пересекаются в G</span><span class="stat">От вершины до G: ⅔ медианы</span><span class="stat">От G до середины стороны: ⅓ медианы</span><span class="stat">AG : GM = BG : GN = CG : GK = 2 : 1</span>';
+ document.getElementById('factResult').textContent='Точка пересечения медиан делит каждую медиану в отношении 2 : 1, считая от вершины.';
+}
+
+let mode4=1;
+function render4(which){
+ svg.innerHTML=''; const V=[A,B,C], mids=[mid(B,C),mid(C,A),mid(A,B)],G={x:(A.x+B.x+C.x)/3,y:(A.y+B.y+C.y)/3};
+ const colors=['#42c8f5','#ff7c9c','#ffd166'];
+ add('polygon',{points:V.map(p=>`${p.x},${p.y}`).join(' '),fill:'#65b7ff','fill-opacity':'.025',stroke:'none'});
+ [[A,B],[B,C],[C,A]].forEach(([p,q])=>line(p,q,{class:'edge'}));
+ if(which===1){
+   // One median from C, plus altitude from C to AB.
+   const M=mids[2]; line(C,M,{stroke:'#9aa3ad','stroke-width':3});
+   const d=sub(B,A),den=d.x*d.x+d.y*d.y||1,t=Math.max(0,Math.min(1,((C.x-A.x)*d.x+(C.y-A.y)*d.y)/den)),H=plus(A,mul(d,t));
+   line(C,H,{stroke:'#ff3b45','stroke-width':3});
+   // Right-angle marker follows the side direction and is correctly placed at H.
+   const u=mul(d,1/Math.sqrt(den)),v=sub(C,H),vl=Math.hypot(v.x,v.y)||1,w=mul(v,1/vl),sz=16;
+   const p1=plus(H,mul(u,sz)),p2=plus(p1,mul(w,sz)),p3=plus(H,mul(w,sz));
+   add('polyline',{points:[H,p1,p2,p3].map(p=>`${p.x},${p.y}`).join(' '),fill:'none',stroke:'#ffd166','stroke-width':2.5});
+   add('polygon',{points:[A,B,M].map(p=>`${p.x},${p.y}`).join(' '),fill:'#ffd500','fill-opacity':'.52',stroke:'none'});
+   add('polygon',{points:[A,M,C].map(p=>`${p.x},${p.y}`).join(' '),fill:'#19bfff','fill-opacity':'.52',stroke:'none'});
+   line(C,M,{stroke:'#ffffff','stroke-width':3});line(C,H,{stroke:'#ff3b45','stroke-width':3});
+   document.getElementById('stats').innerHTML='<span class="stat">BM = MC</span><span class="stat">Общее основание и высота</span><span class="stat">S(ACM) = S(BCM)</span>';
+   document.getElementById('factResult').textContent='Медиана делит треугольник на две равновеликие части.';
+ } else if(which===2){
+   // Median segments gray; centroid-to-side altitudes dashed red; paired equal-area regions.
+   [[C,mids[2]],[A,mids[0]],[B,mids[1]]].forEach(([P,Q])=>line(P,Q,{stroke:'#ffffff','stroke-width':2.6}));
+   const pairs=[[C,A,G,'#ff9f43'],[A,B,G,'#f7c7ff'],[C,B,G,'#8ee3ff']];
+   pairs.forEach(([P,Q,R,col])=>add('polygon',{points:[P,Q,R].map(p=>`${p.x},${p.y}`).join(' '),fill:col,'fill-opacity':'.42',stroke:col,'stroke-width':1.8}));
+   // altitude from G to each side with correctly oriented right-angle marker
+   [[A,B],[B,C],[C,A]].forEach(([P,Q])=>{
+     const d=sub(Q,P),den=d.x*d.x+d.y*d.y||1,t=Math.max(0,Math.min(1,((G.x-P.x)*d.x+(G.y-P.y)*d.y)/den)),H=plus(P,mul(d,t));
+     line(G,H,{stroke:'#ff4d5f','stroke-width':2.5,'stroke-dasharray':'6 5'});
+     const u=mul(d,1/Math.sqrt(den)),v=sub(G,H),vl=Math.hypot(v.x,v.y)||1,w=mul(v,1/vl),z=11;
+     const p1=plus(H,mul(u,z)),p2=plus(p1,mul(w,z)),p3=plus(H,mul(w,z));
+     add('polyline',{points:[H,p1,p2,p3].map(p=>`${p.x},${p.y}`).join(' '),fill:'none',stroke:'#ff4d5f','stroke-width':2});
+   });
+   document.getElementById('stats').innerHTML='<span class="stat">Высоты из G — красные пунктиры</span><span class="stat">Пары равновеликих треугольников выделены оттенками</span>';
+   document.getElementById('factResult').textContent='Центроид делит медианы в отношении 2:1; высоты из него к сторонам показаны красным.';
+ } else {
+   // The three median triangles are bright, distinct, translucent regions.
+   [[C,G,A],[C,G,B],[G,A,B]].forEach((pts,i)=>add('polygon',{points:pts.map(p=>`${p.x},${p.y}`).join(' '),fill:colors[i],'fill-opacity':'.48',stroke:colors[i],'stroke-width':2.2}));
+   document.getElementById('stats').innerHTML='<span class="stat">CGA</span><span class="stat">CGB</span><span class="stat">GAB</span><span class="stat">Три цветные области</span>';
+   document.getElementById('factResult').textContent='Треугольники CGA, CGB и GAB выделены разными цветами.';
+ }
+ // Draw medians for modes 2 and 3; mode 1 intentionally shows only one.
+ if(which===2){
+   V.forEach((p,i)=>line(p,mids[i],{stroke:'#9aa3ad','stroke-width':2.5}));
+   // Centroid altitudes to all three sides, dashed black with a small right-angle marker.
+   [[A,B],[B,C],[C,A]].forEach(([P,Q])=>{const d=sub(Q,P),den=d.x*d.x+d.y*d.y||1,t=Math.max(0,Math.min(1,((G.x-P.x)*d.x+(G.y-P.y)*d.y)/den)),H=plus(P,mul(d,t));line(G,H,{stroke:'#080a0d','stroke-width':2.8,'stroke-dasharray':'5 5'});});
+ } else if(which===3)V.forEach((p,i)=>line(p,mids[i],{stroke:'#9aa3ad','stroke-width':2.5,'stroke-dasharray':'7 6'}));
+ add('circle',{cx:G.x,cy:G.y,r:6,fill:'#fff',stroke:'#111','stroke-width':2});add('text',{x:G.x+10,y:G.y-10},svg,'G');
+ for(let [name,Q] of [['A',A],['B',B],['C',C]]){add('circle',{cx:Q.x,cy:Q.y,r:6,class:'vertex','data-v':name});add('text',{x:Q.x+10,y:Q.y-12},svg,name)}
+}
+const rightC={x:230,y:370};
+let legA=220,legB=340;
+function render5(){
+ svg.innerHTML='';
+ const C0={...rightC},A0={x:C0.x,y:C0.y-legA},B0={x:C0.x+legB,y:C0.y};
+ const M=mid(A0,B0),r=dist(M,A0);
+ add('circle',{cx:M.x,cy:M.y,r,fill:'rgba(101,183,255,.035)',stroke:'#65b7ff','stroke-width':2.5});
+ line(A0,C0,{stroke:'#fff','stroke-width':2.6});line(C0,B0,{stroke:'#fff','stroke-width':2.6});line(A0,B0,{stroke:'#fff','stroke-width':2.6});
+ [[M,A0],[M,B0],[M,C0]].forEach(([P,Q])=>line(P,Q,{stroke:'#ffd34e','stroke-width':2.4,'stroke-dasharray':'6 5'}));
+ for(const [P,Q] of [[A0,M],[M,B0],[M,C0]]){const d=sub(Q,P),L=Math.hypot(d.x,d.y)||1,n={x:-d.y/L,y:d.x/L},midp=mid(P,Q);line(plus(midp,mul(n,-7)),plus(midp,mul(n,7)),{stroke:'#ffd34e','stroke-width':3});}
+ add('polyline',{points:`${C0.x},${C0.y-18} ${C0.x+18},${C0.y-18} ${C0.x+18},${C0.y}`,fill:'none',stroke:'#65d6a1','stroke-width':2.5});
+ for(let [name,Q] of [['A',A0],['B',B0],['C',C0],['M',M]]){add('circle',{cx:Q.x,cy:Q.y,r:name==='M'?5.5:7,fill:name==='M'?'#ffd34e':'#fff',stroke:'#111','stroke-width':2,'data-point':name==='A'||name==='B'?name:''});add('text',{x:Q.x+10,y:Q.y-12,fill:name==='M'?'#ffd34e':'#fff'},svg,name)}
+ const hyp=dist(A0,B0);
+ document.getElementById('stats').innerHTML=`<span class="stat">∠C = 90°</span><span class="stat">AB = ${hyp.toFixed(1)}</span><span class="stat">MA = MB = MC = ${r.toFixed(1)}</span><span class="stat">R = AB / 2 = ${(hyp/2).toFixed(1)}</span>`;
+ document.getElementById('factResult').textContent='В прямоугольном треугольнике медиана к гипотенузе равна её половине.';
+}
+let tri7={A:{x:610,y:410},B:{x:150,y:100},C:{x:150,y:410}};
+function render7(){
+ svg.innerHTML='';
+ const C0=tri7.C,A0=tri7.A,B0={x:C0.x,y:Math.max(60,Math.min(520,C0.y-(C0.y-tri7.B.y)))};
+ // Keep right angle at C: A is horizontal from C, B vertical from C.
+ A0.y=C0.y; B0.x=C0.x; tri7.B=B0;
+ const M=mid(A0,B0),d=sub(B0,A0),den=d.x*d.x+d.y*d.y||1,t=Math.max(0,Math.min(1,((C0.x-A0.x)*d.x+(C0.y-A0.y)*d.y)/den)),H=plus(A0,mul(d,t));
+ [[A0,B0],[B0,C0],[C0,A0]].forEach(([P,Q])=>line(P,Q,{stroke:'#fff','stroke-width':2.6}));
+ line(C0,M,{stroke:'#ff657a','stroke-width':3});line(C0,H,{stroke:'#ffd34e','stroke-width':2.8,'stroke-dasharray':'7 6'});
+ angleArcGap(C0,A0,M,42,'#42d9ff',.12);angleArcGap(C0,B0,H,68,'#ffad42',.12);
+ // right-angle marker at C, tucked inside triangle
+ const u={x:1,y:0},v={x:0,y:-1},z=18,p1=plus(C0,mul(u,z)),p2=plus(p1,mul(v,z)),p3=plus(C0,mul(v,z));
+ add('polyline',{points:[p1,p2,p3].map(p=>`${p.x},${p.y}`).join(' '),fill:'none',stroke:'#ffd34e','stroke-width':2.5});
+ // Right-angle marker at H follows hypotenuse and altitude.
+ const ud=mul(d,1/Math.sqrt(den)),vh=sub(C0,H),vl=Math.hypot(vh.x,vh.y)||1,w=mul(vh,1/vl),q=12;
+ add('polyline',{points:[H,plus(H,mul(ud,q)),plus(plus(H,mul(ud,q)),mul(w,q)),plus(H,mul(w,q))].map(p=>`${p.x},${p.y}`).join(' '),fill:'none',stroke:'#ffd34e','stroke-width':2});
+ for(const [name,P] of [['A',A0],['B',B0],['C',C0],['M',M]]){add('circle',{cx:P.x,cy:P.y,r:6,fill:'#fff','data-point':name,style:'cursor:grab'});add('text',{x:P.x+10,y:P.y-12},svg,name)}
+ document.getElementById('stats').innerHTML='<span class="stat">CA ⟂ CB</span>';
+ document.getElementById('factResult').textContent='Медиана и высота к гипотенузе создают равные углы.';
+}
+
+let formulaMode=1,formulaSide='a',pts8={A:{x:95,y:370},B:{x:325,y:85},C:{x:435,y:390}};
+function render8(){
+ svg.innerHTML='';
+ const pts=pts8, sides={a:[pts.B,pts.C],b:[pts.A,pts.C],c:[pts.A,pts.B]};
+ const centroid={x:(pts.A.x+pts.B.x+pts.C.x)/3,y:(pts.A.y+pts.B.y+pts.C.y)/3};
+ [[pts.A,pts.B],[pts.B,pts.C],[pts.C,pts.A]].forEach(([X,Y])=>line(X,Y,{stroke:'#fff','stroke-width':2.7}));
+ // Large Latin side labels sit just outside the sides; vertex names are intentionally omitted.
+ [['a',mid(pts.B,pts.C)],['b',mid(pts.A,pts.C)],['c',mid(pts.A,pts.B)]].forEach(([k,M])=>{
+   let dx=M.x-centroid.x,dy=M.y-centroid.y,l=Math.hypot(dx,dy)||1;
+   add('text',{x:M.x+dx/l*24,y:M.y+dy/l*24,fill:'#ffffff','font-size':29,'font-weight':700,'text-anchor':'middle','stroke-width':4},svg,k);
+ });
+ const handle=(P,name)=>add('circle',{cx:P.x,cy:P.y,r:7,fill:'#fff',stroke:'#101820','stroke-width':2,'data-point':name,style:'cursor:grab'});
+ if(formulaMode===1){
+   const [P,Q]=sides[formulaSide],V=formulaSide==='a'?pts.A:formulaSide==='b'?pts.B:pts.C,M=mid(P,Q);
+   line(V,M,{stroke:'#ff657a','stroke-width':3.4});
+   add('circle',{cx:M.x,cy:M.y,r:5,fill:'#ffd34e',stroke:'#101820','stroke-width':1.5});
+   Object.entries(pts).forEach(([name,P])=>handle(P,name));
+   const cards=[
+     {k:'a',y:22,label:'mₐ² =',num:'2b² + 2c² − a²'},
+     {k:'b',y:145,label:'mᵦ² =',num:'2a² + 2c² − b²'},
+     {k:'c',y:268,label:'m꜀² =',num:'2a² + 2b² − c²'}
+   ];
+   cards.forEach(card=>{
+     const active=card.k===formulaSide,x=480,w=305,h=108,y=card.y;
+     add('rect',{x,y,width:w,height:h,rx:11,fill:active?'#253e50':'#17212b',stroke:active?'#ffd34e':'#526273','stroke-width':active?3:1.7,'data-formula':card.k,style:'cursor:pointer'});
+     add('text',{x:x+16,y:y+61,fill:'#fff','font-size':25,'font-weight':700,'pointer-events':'none'},svg,card.label);
+     add('text',{x:x+120,y:y+48,fill:'#fff','font-size':21,'text-anchor':'middle','pointer-events':'none'},svg,card.num);
+     line({x:x+82,y:y+60},{x:x+w-14,y:y+60},{stroke:'#eaf1f7','stroke-width':1.8});
+     add('text',{x:x+200,y:y+91,fill:'#fff','font-size':23,'text-anchor':'middle','pointer-events':'none'},svg,'4');
+   });
+ }else{
+   const medians=[
+     [pts.A,mid(pts.B,pts.C)],
+     [pts.B,mid(pts.A,pts.C)],
+     [pts.C,mid(pts.A,pts.B)]
+   ];
+   medians.forEach(([V,M])=>line(V,M,{stroke:'#ff657a','stroke-width':3}));
+   Object.entries(pts).forEach(([name,P])=>handle(P,name));
+   add('rect',{x:480,y:168,width:305,height:150,rx:12,fill:'#1b2a37',stroke:'#ffd34e','stroke-width':2.6});
+   add('text',{x:632,y:211,fill:'#fff','font-size':21,'font-weight':700,'text-anchor':'middle'},svg,'mₐ² + mᵦ² + m꜀² =');
+   add('text',{x:632,y:258,fill:'#fff','font-size':23,'text-anchor':'middle'},svg,'3(a² + b² + c²)');
+   line({x:515,y:271},{x:750,y:271},{stroke:'#fff','stroke-width':2});
+   add('text',{x:632,y:303,fill:'#fff','font-size':23,'text-anchor':'middle'},svg,'4');
+ }
+ svg.querySelectorAll('[data-formula]').forEach(el=>el.addEventListener('click',()=>{
+   formulaMode=1;formulaSide=el.getAttribute('data-formula');
+   document.getElementById('formulaMode1').classList.add('active');
+   document.getElementById('formulaMode2').classList.remove('active');
+   render8();
+ }));
+ document.getElementById('formulaMode1').classList.toggle('active',formulaMode===1);
+ document.getElementById('formulaMode2').classList.toggle('active',formulaMode===2);
+}
+function render9(){
+ svg.innerHTML='';
+ const A0=pts9.A,B0=pts9.B,C0=pts9.C,M=mid(A0,B0),E={x:2*M.x-C0.x,y:2*M.y-C0.y};
+ [[A0,B0],[B0,C0],[C0,A0]].forEach(([P,Q])=>line(P,Q,{stroke:'#fff','stroke-width':2.5}));
+ line(C0,M,{stroke:'#ff657a','stroke-width':3});
+ if(window.extended9)add('polygon',{points:[C0,A0,E,B0].map(P=>`${P.x},${P.y}`).join(' '),fill:'#42c8f5','fill-opacity':'.28',stroke:'#42c8f5','stroke-width':2.5});
+ if(window.extended9)line(M,E,{stroke:'#ffd34e','stroke-width':3});
+ for(const [name,P] of [['A',A0],['B',B0],['C',C0]]){add('circle',{cx:P.x,cy:P.y,r:6,fill:'#fff','data-point':name,style:'cursor:grab'});add('text',{x:P.x+10,y:P.y-12},svg,name)}
+ add('circle',{cx:M.x,cy:M.y,r:10,fill:'#ffd34e',stroke:'#111','stroke-width':2,'data-point':'M',style:'cursor:pointer'});
+ add('text',{x:M.x+10,y:M.y+20},svg,'M');
+ document.getElementById('stats').innerHTML=window.extended9?'<span class="stat">Параллелограмм построен</span>':'';
+ document.getElementById('factResult').textContent=window.extended9?'Получен параллелограмм.':'';
+}
+let pts9={A:{x:140,y:380},B:{x:660,y:420},C:{x:390,y:100}},lastPan=null;
+
+let proofOpen=false;
+const factLibrary={
+1:{fact:'Медиана соединяет вершину с серединой противоположной стороны и делит треугольник на две равные по площади части.',steps:['M — середина BC, поэтому BM = MC.','У треугольников ABM и ACM равные основания BM и MC.','Высота из A к прямой BC у них общая. Значит, площади этих треугольников равны.']},
+2:{fact:'Любая точка на серединном перпендикуляре к отрезку одинаково удалена от его концов.',steps:['P лежит на серединном перпендикуляре к AB.','Любая точка этого перпендикуляра равноудалена от A и B.','Поэтому PA = PB.']},
+3:{fact:'Три медианы пересекаются в одной точке G. Она делит каждую медиану в отношении 2 : 1 от вершины.',steps:['Каждая медиана соединяет вершину с серединой противоположной стороны.','Все три медианы пересекаются в одной точке G — центроиде.','От вершины до G расстояние вдвое больше, чем от G до середины стороны.']},
+4:{
+1:{fact:'Медиана делит треугольник на два равновеликих треугольника.',steps:['M — середина AB, поэтому AM = MB.','У треугольников ACM и BCM равные основания AM и MB.','Высота из C к AB общая, значит площади равны.']},
+2:{fact:'Три медианы делят исходный треугольник на шесть равновеликих маленьких треугольников.',steps:['Центроид G делит каждую медиану в отношении 2 : 1.','Полученные маленькие треугольники имеют равные площади.','Площадь каждой из шести частей равна одной шестой площади исходного треугольника.']},
+3:{fact:'Треугольники CGA, CGB и GAB имеют одинаковые площади — каждая составляет треть исходного треугольника.',steps:['G — точка пересечения медиан.','Центроид делит каждую медиану в отношении 2 : 1.','Поэтому высоты из G к сторонам составляют треть соответствующих высот исходного треугольника.']}},
+5:{fact:'Если соединить середины соседних сторон любого четырёхугольника, получится параллелограмм Вариньона.',steps:['Отрезок, соединяющий середины двух сторон треугольника, параллелен его третьей стороне.','Стороны четырёхугольника Вариньона параллельны диагоналям исходного четырёхугольника.','У него обе пары противоположных сторон параллельны — значит, это параллелограмм.']},
+6:{fact:'В прямоугольном треугольнике медиана к гипотенузе равна половине гипотенузы.',steps:['M — середина гипотенузы AB.','В прямоугольном треугольнике середина гипотенузы — центр описанной окружности.','MA = MB = MC, поэтому CM = AB / 2.']},
+7:{fact:'В прямоугольном треугольнике середина гипотенузы равноудалена от всех трёх вершин.',steps:['M — середина гипотенузы, поэтому MA = MB.','Для прямоугольного треугольника MA = MB = MC.','Треугольники AMC и BMC равнобедренные; отсюда следуют отмеченные равенства углов.']},
+8:{
+1:{fact:'Квадрат медианы выражается через квадраты трёх сторон треугольника.',steps:['Пусть медиана проведена к стороне a.','По теореме Аполлония: b² + c² = 2mₐ² + a² / 2.','Отсюда mₐ² = (2b² + 2c² − a²) / 4.']},
+2:{fact:'Сумма квадратов трёх медиан равна трём четвертям суммы квадратов сторон.',steps:['Запишем теорему Аполлония для каждой из трёх медиан.','Сложим три равенства.','После упрощения получим mₐ² + mᵦ² + m꜀² = 3/4 · (a² + b² + c²).']}},
+9:{fact:'Если продлить медиану за середину основания ещё на её длину, получится параллелограмм.',steps:['M — середина AB, значит AM = MB.','Продлим CM до D так, чтобы MD = MC.','В четырёхугольнике ACBD диагонали AB и CD пересекаются и делятся пополам в M. Значит, ACBD — параллелограмм.']}
+};
+function currentFact(){if(scene===4)return factLibrary[4][mode4];if(scene===8)return factLibrary[8][formulaMode];return factLibrary[scene]||factLibrary[1]}
+function syncFact(){const d=currentFact();document.getElementById('factResult').textContent=d.fact;document.getElementById('proofSteps').innerHTML=d.steps.map(x=>'<li>'+x+'</li>').join('');document.getElementById('proofBtn').textContent=proofOpen?'Скрыть':'Подробнее';document.getElementById('proofPanel').hidden=!proofOpen}
+document.getElementById('proofBtn').addEventListener('click',()=>{proofOpen=!proofOpen;syncFact()});
+
+const _render1=render1,_render2=render2,_render3=render3,_render4=render4,_render5=render5,_render7=render7,_render8=render8,_render9=render9;
+render1=function(){_render1();syncFact()};
+render2=function(){_render2();syncFact()};
+render3=function(){_render3();syncFact()};
+render4=function(m){_render4(m);syncFact()};
+render5=function(){_render5();syncFact()};
+render7=function(){_render7();syncFact()};
+render8=function(){_render8();syncFact()};
+render9=function(){_render9();syncFact()};
+
+function setScene(n){
+ scene=n; const navIds=[1,2,3,4,5,6,7,8,9];
+ navIds.forEach(id=>{const el=document.getElementById('scene'+id+'Btn');if(el)el.classList.toggle('active',n===id)});
+ document.getElementById('controls1').style.display=n===1?'flex':'none';document.getElementById('controls2').style.display=n===2?'flex':'none';document.getElementById('controls3').style.display=n===3?'flex':'none';document.getElementById('controls4').style.display=n===4?'flex':'none';document.getElementById('controls5').style.display=n===6?'flex':'none';document.getElementById('controls8').style.display=n===8?'flex':'none';
+ 
+ document.getElementById('scene').style.display=n===5?'none':'block';document.getElementById('vargnon').style.display=n===5?'block':'none';
+document.getElementById('sceneHint').textContent='';
+ document.getElementById('bottom').textContent=n===4?(['','Медиана и высота из одной вершины.','Три равновеликие области CAG, AGB, CGB.','Три цветных треугольника CGA, CGB, GAB.'][mode4]):n===3?'Центроид делит каждую медиану в отношении 2:1 от вершины.':'';
+ if(n===5){document.getElementById('stats').innerHTML='';syncFact();return}
+ if(n===1)render1();else if(n===2)render2();else if(n===3)render3();else if(n===4)render4(mode4);else if(n===6)render5();else if(n===7)render7();else if(n===8)render8();else if(n===9)render9();
+ syncFact();
+}
+svg.addEventListener('pointerdown',e=>{
+ let v=e.target.getAttribute('data-v'),pt=e.target.getAttribute('data-point');
+ if(([1,3,4].includes(scene))&&v){drag=v;if(scene===1)active=v;svg.setPointerCapture(e.pointerId);e.preventDefault()}
+ else if(scene===2&&pt==='P'){drag='P';svg.setPointerCapture(e.pointerId);e.preventDefault()}
+ else if(scene===6&&(pt==='A'||pt==='B')){drag=pt;svg.setPointerCapture(e.pointerId);e.preventDefault()}
+ else if(scene===8&&['A','B','C'].includes(pt)){drag='8'+pt;svg.setPointerCapture(e.pointerId);e.preventDefault()}
+ else if(scene===7&&['A','B','C'].includes(pt)){drag='7'+pt;svg.setPointerCapture(e.pointerId);e.preventDefault()}
+ else if(scene===9&&e.ctrlKey){drag='9PAN';lastPan=point(e);svg.setPointerCapture(e.pointerId);e.preventDefault()}
+ else if(scene===9&&['A','B','C'].includes(pt)){drag='9'+pt;svg.setPointerCapture(e.pointerId);e.preventDefault()}
+ else if(scene===9&&pt==='M'){window.extended9=!window.extended9;render9();e.preventDefault()}
+});
+svg.addEventListener('pointermove',e=>{
+ if(!drag)return;let p=point(e);
+ if([1,3,4].includes(scene)){setV(drag,p);scene===1?render1():scene===3?render3():render4(mode4)}
+ else if(scene===6){if(drag==='A')legA=Math.max(80,Math.min(330,rightC.y-p.y));if(drag==='B')legB=Math.max(80,Math.min(420,p.x-rightC.x));render5()}
+ else if(scene===8&&drag.startsWith('8')){pts8[drag[1]]=p;render8()}
+ else if(scene===7&&drag.startsWith('7')){
+   let k=drag[1],C=tri7.C;
+   if(k==='A')tri7.A={x:Math.max(C.x+90,Math.min(700,p.x)),y:C.y};
+   if(k==='B')tri7.B={x:C.x,y:Math.max(55,Math.min(C.y-90,p.y))};
+   if(k==='C'){let dx=p.x-C.x,dy=p.y-C.y;tri7.C=p;tri7.A={x:tri7.A.x+dx,y:p.y};tri7.B={x:p.x,y:tri7.B.y+dy}}
+   render7()
+ }else if(scene===9&&drag==='9PAN'){let dx=p.x-lastPan.x,dy=p.y-lastPan.y;Object.values(pts9).forEach(P=>{P.x+=dx;P.y+=dy});lastPan=p;render9()}else if(scene===9&&drag.startsWith('9')){pts9[drag[1]]=p;render9()}
+ else {let offset=Math.max(-150,Math.min(150,p.y-300));document.getElementById('position').value=offset;render2()}
+});
+svg.addEventListener('pointerup',()=>drag=null);svg.addEventListener('pointercancel',()=>drag=null);
+function setMode4(m){mode4=m;['mode4a','mode4b','mode4c'].forEach((id,i)=>document.getElementById(id).classList.toggle('active',i+1===m));if(scene===4)render4(mode4);syncFact();document.getElementById('bottom').textContent=['','Медиана и высота из одной вершины.','Три равновеликие области CAG, AGB, CGB.','Три цветных треугольника CGA, CGB, GAB.'][m]}
+document.getElementById('formulaMode1').addEventListener('click',()=>{formulaMode=1;render8();syncFact()});document.getElementById('formulaMode2').addEventListener('click',()=>{formulaMode=2;render8();syncFact()});document.getElementById('mode4a').addEventListener('click',()=>setMode4(1));document.getElementById('mode4b').addEventListener('click',()=>setMode4(2));document.getElementById('mode4c').addEventListener('click',()=>setMode4(3));document.getElementById('position').addEventListener('input',render2);document.getElementById('reset2').addEventListener('click',()=>{document.getElementById('position').value=0;render2()});document.getElementById('scene1Btn').addEventListener('click',()=>setScene(1));document.getElementById('scene2Btn').addEventListener('click',()=>setScene(2));document.getElementById('scene3Btn').addEventListener('click',()=>setScene(3));document.getElementById('scene4Btn').addEventListener('click',()=>setScene(4));document.getElementById('scene5Btn').addEventListener('click',()=>setScene(5));document.getElementById('scene6Btn').addEventListener('click',()=>setScene(6));document.getElementById('scene7Btn').addEventListener('click',()=>setScene(7));document.getElementById('scene8Btn').addEventListener('click',()=>setScene(8));document.getElementById('scene9Btn').addEventListener('click',()=>{window.extended9=false;pts9={A:{x:140,y:380},B:{x:660,y:420},C:{x:390,y:100}};setScene(9)});document.getElementById('reset5').addEventListener('click',()=>{legA=220;legB=340;render5()});document.getElementById('reset3').addEventListener('click',()=>{A={...initial.A};B={...initial.B};C={...initial.C};render3()});
+document.getElementById('reset2').addEventListener('click',()=>{document.getElementById('position').value=.35;render2()});
+document.getElementById("vargnon").srcdoc=new TextDecoder().decode(Uint8Array.from(atob("PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9InJ1Ij4KPGhlYWQ+CjxtZXRhIGNoYXJzZXQ9IlVURi04Ij4KPHRpdGxlPtCf0LDRgNCw0LvQu9C10LvQvtCz0YDQsNC80Lwg0JLQsNGA0LjQvdGM0L7QvdCwPC90aXRsZT4KPHN0eWxlPgogICogeyBib3gtc2l6aW5nOiBib3JkZXItYm94OyB9CiAgaHRtbCxib2R5IHsgd2lkdGg6MTAwJTsgaGVpZ2h0OjEwMCU7IG1pbi1oZWlnaHQ6MDsgfQogIGJvZHkgewogICAgbWFyZ2luOiAwOyBwYWRkaW5nOiA3cHg7CiAgICBmb250LWZhbWlseTogJ1NlZ29lIFVJJywgQXJpYWwsIHNhbnMtc2VyaWY7CiAgICBiYWNrZ3JvdW5kOiAjMGYxNzJhOyBjb2xvcjogI2UyZThmMDsKICAgIGRpc3BsYXk6IGZsZXg7IGZsZXgtZGlyZWN0aW9uOiBjb2x1bW47IGFsaWduLWl0ZW1zOiBzdHJldGNoOwogICAgb3ZlcmZsb3c6YXV0bzsKICB9CiAgaDEgeyBmbGV4OjAgMCBhdXRvOyBmb250LXNpemU6IDE3cHg7IG1hcmdpbjogMCAwIDVweDsgY29sb3I6ICMzOGJkZjg7IHRleHQtYWxpZ246bGVmdDsgfQogIC5zdWIgeyBkaXNwbGF5Om5vbmU7IH0KCiAgLndyYXAgewogICAgZGlzcGxheTogZmxleDsgZ2FwOiAxMnB4OyBmbGV4LXdyYXA6IHdyYXA7CiAgICBqdXN0aWZ5LWNvbnRlbnQ6IGNlbnRlcjsgYWxpZ24taXRlbXM6IGZsZXgtc3RhcnQ7CiAgICB3aWR0aDoxMDAlOyBmbGV4OjEgMSBhdXRvOyBtaW4taGVpZ2h0OjA7CiAgfQoKICAvKiDQltGR0YHRgtC60L4g0YTQuNC60YHQuNGA0YPQtdC8INC/0YDQvtC/0L7RgNGG0LjQuCBjYW52YXMgKi8KICBjYW52YXMgewogICAgd2lkdGg6IG1pbig2OHZoLCA2NDBweCk7CiAgICBoZWlnaHQ6IGF1dG87CiAgICBhc3BlY3QtcmF0aW86IDEgLyAxOwogICAgbWF4LXdpZHRoOiAxMDAlOwogICAgZmxleDogMCAxIGF1dG87CiAgICBkaXNwbGF5OiBibG9jazsKICAgIGJhY2tncm91bmQ6ICMxZTI5M2I7CiAgICBib3JkZXItcmFkaXVzOiAxMnB4OwogICAgYm94LXNoYWRvdzogMCA0cHggMjBweCByZ2JhKDAsMCwwLC41KTsKICAgIHRvdWNoLWFjdGlvbjogbm9uZTsKICAgIGN1cnNvcjogY3Jvc3NoYWlyOwogIH0KCiAgLnBhbmVsIHsKICAgIGJhY2tncm91bmQ6ICMxZTI5M2I7IGJvcmRlci1yYWRpdXM6IDEycHg7IHBhZGRpbmc6IDEycHg7CiAgICBtaW4td2lkdGg6IDA7IHdpZHRoOiBtaW4oMzQwcHgsIDEwMCUpOyBtYXgtd2lkdGg6IDM1MHB4OyBmbGV4OjEgMSAyOTBweDsKICAgIG1heC1oZWlnaHQ6MTAwJTsgb3ZlcmZsb3cteTphdXRvOwogICAgYm94LXNoYWRvdzogMCA0cHggMjBweCByZ2JhKDAsMCwwLC41KTsKICB9CiAgLnBhbmVsIGgyIHsKICAgIGZvbnQtc2l6ZTogMTJweDsgbWFyZ2luOiAxNHB4IDAgOHB4OyBjb2xvcjogIzM4YmRmODsKICAgIHRleHQtdHJhbnNmb3JtOiB1cHBlcmNhc2U7IGxldHRlci1zcGFjaW5nOiAuNXB4OwogIH0KICAucGFuZWwgaDI6Zmlyc3QtY2hpbGQgeyBtYXJnaW4tdG9wOiAwOyB9CgogIC5zaGFwZXMgeyBkaXNwbGF5OiBncmlkOyBncmlkLXRlbXBsYXRlLWNvbHVtbnM6IDFmciAxZnI7IGdhcDogNnB4OyB9CiAgLnNoYXBlcyBidXR0b24gewogICAgcGFkZGluZzogOXB4IDZweDsgZm9udC1zaXplOiAxMnB4OyBmb250LXdlaWdodDogNjAwOwogICAgYmFja2dyb3VuZDogIzMzNDE1NTsgY29sb3I6ICNlMmU4ZjA7IGJvcmRlcjogMXB4IHNvbGlkICM0NzU1Njk7CiAgICBib3JkZXItcmFkaXVzOiA4cHg7IGN1cnNvcjogcG9pbnRlcjsgdHJhbnNpdGlvbjogYWxsIC4xNXM7CiAgfQogIC5zaGFwZXMgYnV0dG9uOmhvdmVyIHsgYmFja2dyb3VuZDogIzQ3NTU2OTsgYm9yZGVyLWNvbG9yOiAjMzhiZGY4OyB9CiAgLnNoYXBlcyBidXR0b24uYWN0aXZlIHsgYmFja2dyb3VuZDogIzM4YmRmODsgY29sb3I6ICMwZjE3MmE7IGJvcmRlci1jb2xvcjogIzM4YmRmODsgfQogIC5zaGFwZXMgYnV0dG9uLndpZGUgeyBncmlkLWNvbHVtbjogc3BhbiAyOyB9CgogIC5yb3cgewogICAgZGlzcGxheTogZmxleDsganVzdGlmeS1jb250ZW50OiBzcGFjZS1iZXR3ZWVuOyBhbGlnbi1pdGVtczogY2VudGVyOwogICAgZm9udC1zaXplOiAxM3B4OyBwYWRkaW5nOiA1cHggMDsgYm9yZGVyLWJvdHRvbTogMXB4IHNvbGlkICMzMzQxNTU7IGdhcDogOHB4OwogIH0KICAucm93Omxhc3QtY2hpbGQgeyBib3JkZXItYm90dG9tOiBub25lOyB9CiAgLnZhbCB7IGNvbG9yOiAjNGFkZTgwOyBmb250LXdlaWdodDogNjAwOyBmb250LXZhcmlhbnQtbnVtZXJpYzogdGFidWxhci1udW1zOyB9CgogIC5iYWRnZSB7IGRpc3BsYXk6IGlubGluZS1ibG9jazsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogNnB4OwogICAgICAgICAgIGZvbnQtc2l6ZTogMTFweDsgZm9udC13ZWlnaHQ6IDcwMDsgfQogIC55ZXMgeyBiYWNrZ3JvdW5kOiAjMTY2NTM0OyBjb2xvcjogIzRhZGU4MDsgfQogIC5ubyAgeyBiYWNrZ3JvdW5kOiAjN2YxZDFkOyBjb2xvcjogI2ZjYTVhNTsgfQoKICAudmVyZGljdCB7CiAgICBtYXJnaW4tdG9wOiAxMnB4OyBwYWRkaW5nOiAxMnB4OyBib3JkZXItcmFkaXVzOiAxMHB4OwogICAgYmFja2dyb3VuZDogIzBmMTcyYTsgYm9yZGVyLWxlZnQ6IDRweCBzb2xpZCAjMzhiZGY4OwogICAgZm9udC1zaXplOiAxM3B4OyBsaW5lLWhlaWdodDogMS41OwogIH0KICAudmVyZGljdCBiIHsgY29sb3I6ICMzOGJkZjg7IH0KICAudmVyZGljdCAuYmlnIHsgZm9udC1zaXplOiAxNnB4OyBjb2xvcjogIzRhZGU4MDsgZm9udC13ZWlnaHQ6IDcwMDsKICAgICAgICAgICAgICAgICAgZGlzcGxheTogYmxvY2s7IG1hcmdpbjogNHB4IDA7IH0KCiAgYnV0dG9uLmFjdGlvbiB7CiAgICB3aWR0aDogMTAwJTsgbWFyZ2luLXRvcDogMTBweDsgcGFkZGluZzogOXB4OwogICAgYmFja2dyb3VuZDogIzM4YmRmODsgY29sb3I6ICMwZjE3MmE7IGJvcmRlcjogbm9uZTsKICAgIGJvcmRlci1yYWRpdXM6IDhweDsgZm9udC13ZWlnaHQ6IDcwMDsgY3Vyc29yOiBwb2ludGVyOyBmb250LXNpemU6IDEzcHg7CiAgfQogIGJ1dHRvbi5hY3Rpb246aG92ZXIgeyBiYWNrZ3JvdW5kOiAjN2RkM2ZjOyB9CgogIC5oaW50IHsgZm9udC1zaXplOiAxMnB4OyBjb2xvcjogIzY0NzQ4YjsgbWFyZ2luLXRvcDogMTJweDsgbGluZS1oZWlnaHQ6IDEuNjsgfQogIC5oaW50IGIgeyBjb2xvcjogIzk0YTNiODsgfQoKICBAbWVkaWEobWF4LXdpZHRoOjc2MHB4KXsKICAgIGJvZHl7aGVpZ2h0OmF1dG87bWluLWhlaWdodDoxMDAlO292ZXJmbG93OmF1dG99CiAgICAud3JhcHtmbGV4LXdyYXA6d3JhcDtvdmVyZmxvdzp2aXNpYmxlfQogICAgY2FudmFze3dpZHRoOm1pbig4MnZ3LDY0dmgsNjQwcHgpO2hlaWdodDphdXRvO2ZsZXg6MCAxIDY0MHB4fQogICAgLnBhbmVse3dpZHRoOjEwMCU7bWF4LXdpZHRoOm5vbmU7bWF4LWhlaWdodDpub25lO21pbi13aWR0aDowfQogIH0KPC9zdHlsZT4KPC9oZWFkPgo8Ym9keT4KCjxoMT7Qn9Cw0YDQsNC70LvQtdC70L7Qs9GA0LDQvNC8INCS0LDRgNC40L3RjNC+0L3QsDwvaDE+CjxkaXYgY2xhc3M9InN1YiI+0JLRi9Cx0LXRgNC4INGE0LjQs9GD0YDRgyDRhdC+0LfRj9C40L3QsCDQuNC3INGB0L/QuNGB0LrQsCDigJQg0L/QvtGC0L7QvCDQvNC+0LbQtdGI0Ywg0YLQsNGJ0LjRgtGMINCy0LXRgNGI0LjQvdGLPC9kaXY+Cgo8ZGl2IGNsYXNzPSJ3cmFwIj4KICA8Y2FudmFzIGlkPSJjdiIgd2lkdGg9IjY0MCIgaGVpZ2h0PSI2NDAiPjwvY2FudmFzPgoKICA8ZGl2IGNsYXNzPSJwYW5lbCI+CiAgICA8aDI+0KTQuNCz0YPRgNCwINGF0L7Qt9GP0LjQvdCwPC9oMj4KICAgIDxkaXYgY2xhc3M9InNoYXBlcyIgaWQ9InNoYXBlcyI+CiAgICAgIDxidXR0b24gZGF0YS1zaGFwZT0ic3F1YXJlIj7QmtCy0LDQtNGA0LDRgjwvYnV0dG9uPgogICAgICA8YnV0dG9uIGRhdGEtc2hhcGU9InJlY3QiPtCf0YDRj9C80L7Rg9Cz0L7Qu9GM0L3QuNC6PC9idXR0b24+CiAgICAgIDxidXR0b24gZGF0YS1zaGFwZT0icGFyYSI+0J/QsNGA0LDQu9C70LXQu9C+0LPRgNCw0LzQvDwvYnV0dG9uPgogICAgICA8YnV0dG9uIGRhdGEtc2hhcGU9InJob21idXMiPtCg0L7QvNCxPC9idXR0b24+CiAgICAgIDxidXR0b24gZGF0YS1zaGFwZT0idHJhcCI+0KLRgNCw0L/QtdGG0LjRjzwvYnV0dG9uPgogICAgICA8YnV0dG9uIGRhdGEtc2hhcGU9InRyYXBSZWN0Ij7Qn9GA0Y/QvNC+0YPQsy4g0YLRgNCw0L/QtdGG0LjRjzwvYnV0dG9uPgogICAgICA8YnV0dG9uIGRhdGEtc2hhcGU9InRyYXBJc28iPtCg0LDQstC90L7QsdC10LTRgC4g0YLRgNCw0L/QtdGG0LjRjzwvYnV0dG9uPgogICAgICA8YnV0dG9uIGRhdGEtc2hhcGU9ImtpdGUiPtCU0LXQu9GM0YLQvtC40LQ8L2J1dHRvbj4KICAgICAgPGJ1dHRvbiBkYXRhLXNoYXBlPSJjb252ZXgiIGNsYXNzPSJ3aWRlIj7Qn9GA0L7QuNC30LLQvtC70YzQvdGL0Lkg0LLRi9C/0YPQutC70YvQuTwvYnV0dG9uPgogICAgICA8YnV0dG9uIGRhdGEtc2hhcGU9ImNvbmNhdmUiIGNsYXNzPSJ3aWRlIj7QndC10LLRi9C/0YPQutC70YvQuSAo0LLQvtCz0L3Rg9GC0YvQuSk8L2J1dHRvbj4KICAgIDwvZGl2PgoKICAgIDxoMj7QpdC+0LfRj9C40L08L2gyPgogICAgPGRpdiBjbGFzcz0icm93Ij48c3Bhbj7Qn9C70L7RidCw0LTRjDwvc3Bhbj48c3BhbiBjbGFzcz0idmFsIiBpZD0ic1F1YWQiPuKAlDwvc3Bhbj48L2Rpdj4KICAgIDxkaXYgY2xhc3M9InJvdyI+PHNwYW4+QUM8L3NwYW4+PHNwYW4gY2xhc3M9InZhbCIgaWQ9ImRBQyI+4oCUPC9zcGFuPjwvZGl2PgogICAgPGRpdiBjbGFzcz0icm93Ij48c3Bhbj5CRDwvc3Bhbj48c3BhbiBjbGFzcz0idmFsIiBpZD0iZEJEIj7igJQ8L3NwYW4+PC9kaXY+CiAgICA8ZGl2IGNsYXNzPSJyb3ciPjxzcGFuPuKIoChBQywgQkQpPC9zcGFuPjxzcGFuIGNsYXNzPSJ2YWwiIGlkPSJhbmdEIj7igJQ8L3NwYW4+PC9kaXY+CgogICAgPGgyPtCU0LjQsNCz0L7QvdCw0LvQuDwvaDI+CiAgICA8ZGl2IGNsYXNzPSJyb3ciPjxzcGFuPkFDID0gQkQ8L3NwYW4+PHNwYW4gaWQ9ImNoa0VxIiBjbGFzcz0iYmFkZ2Ugbm8iPtC90LXRgjwvc3Bhbj48L2Rpdj4KICAgIDxkaXYgY2xhc3M9InJvdyI+PHNwYW4+QUMg4oqlIEJEPC9zcGFuPjxzcGFuIGlkPSJjaGtQZXJwIiBjbGFzcz0iYmFkZ2Ugbm8iPtC90LXRgjwvc3Bhbj48L2Rpdj4KCiAgICA8aDI+0JLQsNGA0LjQvdGM0L7QvTwvaDI+CiAgICA8ZGl2IGNsYXNzPSJyb3ciPjxzcGFuPtCf0LvQvtGJ0LDQtNGMIEVGR0g8L3NwYW4+PHNwYW4gY2xhc3M9InZhbCIgaWQ9InNWYXIiPuKAlDwvc3Bhbj48L2Rpdj4KICAgIDxkaXYgY2xhc3M9InJvdyI+PHNwYW4+UzxzdWI+RUZHSDwvc3ViPiAvIFM8c3ViPkFCQ0Q8L3N1Yj48L3NwYW4+PHNwYW4gY2xhc3M9InZhbCIgaWQ9InJhdGlvIj7igJQ8L3NwYW4+PC9kaXY+CgogICAgPGRpdiBjbGFzcz0idmVyZGljdCIgaWQ9InZlcmRpY3QiPtCS0YvQsdC10YDQuCDRhNC40LPRg9GA0YPigKY8L2Rpdj4KCiAgICA8YnV0dG9uIGNsYXNzPSJhY3Rpb24iIGlkPSJyZXNldCI+4oa6INCS0LXRgNC90YPRgtGMINCy0YvQsdGA0LDQvdC90YPRjiDRhNC40LPRg9GA0YM8L2J1dHRvbj4KCiAgICA8ZGl2IGNsYXNzPSJoaW50Ij4KICAgICAgPGI+0J/RgNCw0LLQuNC70L46PC9iPjxicj4KICAgICAgQUMgPSBCRCDihpIgPGI+0YDQvtC80LE8L2I+PGJyPgogICAgICBBQyDiiqUgQkQg4oaSIDxiPtC/0YDRj9C80L7Rg9Cz0L7Qu9GM0L3QuNC6PC9iPjxicj4KICAgICAg0L7QsdCwIOKGkiA8Yj7QutCy0LDQtNGA0LDRgjwvYj4KICAgIDwvZGl2PgogIDwvZGl2Pgo8L2Rpdj4KCjxzY3JpcHQ+CmNvbnN0IGN2ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2N2Jyk7CmNvbnN0IGN0eCA9IGN2LmdldENvbnRleHQoJzJkJyk7CmNvbnN0IFIgPSA5LCBISVQgPSAxODsKY29uc3QgVyA9IGN2LndpZHRoLCBIID0gY3YuaGVpZ2h0OyAgIC8vIDY0MCDDlyA2NDAKCmxldCBwdHMgPSBbXTsKbGV0IGRyYWcgPSAtMTsKbGV0IGN1cnJlbnRTaGFwZSA9ICdzcXVhcmUnOwoKY29uc3QgQyA9IHt4OiBXLzIsIHk6IEgvMn07CmNvbnN0IFAgPSAoeCx5LG5hbWUsY29sb3IpID0+ICh7eCx5LG5hbWUsY29sb3J9KTsKY29uc3QgQ09MID0geyBBOicjZjg3MTcxJywgQjonI2ZiYmYyNCcsIEM6JyM0YWRlODAnLCBEOicjYTc4YmZhJyB9OwoKLy8gPT09PT09PT09PT09INCi0J7Qp9Cd0KvQlSDQk9CV0J3QldCg0JDQotCe0KDQqyDQpNCY0JPQo9CgID09PT09PT09PT09PQpjb25zdCBzaGFwZXMgPSB7CiAgLy8g0JrQstCw0LTRgNCw0YI6INCy0YHQtSDRgdGC0L7RgNC+0L3RiyDRgNCw0LLQvdGLLCDQtNC40LDQs9C+0L3QsNC70Lgg0KDQkNCS0J3QqyDQuCDiiqUg4oaSINCS0LDRgNC40L3RjNC+0L0gPSDQutCy0LDQtNGA0LDRggogIHNxdWFyZSgpewogICAgY29uc3QgcyA9IDI2MCwgaCA9IHMvMjsKICAgIHJldHVybiBbCiAgICAgIFAoQy54LWgsIEMueS1oLCAnQScsIENPTC5BKSwKICAgICAgUChDLngraCwgQy55LWgsICdCJywgQ09MLkIpLAogICAgICBQKEMueCtoLCBDLnkraCwgJ0MnLCBDT0wuQyksCiAgICAgIFAoQy54LWgsIEMueStoLCAnRCcsIENPTC5EKQogICAgXTsKICB9LAoKICAvLyDQn9GA0Y/QvNC+0YPQs9C+0LvRjNC90LjQujog0LTQuNCw0LPQvtC90LDQu9C4INCg0JDQktCd0KssINCd0JUg4oqlIOKGkiDQktCw0YDQuNC90YzQvtC9ID0g0YDQvtC80LEKICByZWN0KCl7CiAgICBjb25zdCB3ID0gMzQwLCBoID0gMjIwOwogICAgcmV0dXJuIFsKICAgICAgUChDLngtdy8yLCBDLnktaC8yLCAnQScsIENPTC5BKSwKICAgICAgUChDLngrdy8yLCBDLnktaC8yLCAnQicsIENPTC5CKSwKICAgICAgUChDLngrdy8yLCBDLnkraC8yLCAnQycsIENPTC5DKSwKICAgICAgUChDLngtdy8yLCBDLnkraC8yLCAnRCcsIENPTC5EKQogICAgXTsKICB9LAoKICAvLyDQn9Cw0YDQsNC70LvQtdC70L7Qs9GA0LDQvNC8OiDQtNC40LDQs9C+0L3QsNC70Lgg0J3QlSDRgNCw0LLQvdGLLCDQndCVIOKKpQogIHBhcmEoKXsKICAgIGNvbnN0IHcgPSAyODAsIGggPSAyMDAsIHNoaWZ0ID0gOTA7CiAgICByZXR1cm4gWwogICAgICBQKEMueC13LzIgLSBzaGlmdC8yLCBDLnktaC8yLCAnQScsIENPTC5BKSwKICAgICAgUChDLngrdy8yIC0gc2hpZnQvMiwgQy55LWgvMiwgJ0InLCBDT0wuQiksCiAgICAgIFAoQy54K3cvMiArIHNoaWZ0LzIsIEMueStoLzIsICdDJywgQ09MLkMpLAogICAgICBQKEMueC13LzIgKyBzaGlmdC8yLCBDLnkraC8yLCAnRCcsIENPTC5EKQogICAgXTsKICB9LAoKICAvLyDQoNC+0LzQsTog0LTQuNCw0LPQvtC90LDQu9C4IOKKpSwg0J3QlSDRgNCw0LLQvdGLIOKGkiDQktCw0YDQuNC90YzQvtC9ID0g0L/RgNGP0LzQvtGD0LPQvtC70YzQvdC40LoKICByaG9tYnVzKCl7CiAgICBjb25zdCBkMSA9IDM0MCwgZDIgPSAyMjA7CiAgICByZXR1cm4gWwogICAgICBQKEMueCwgQy55LWQyLzIsICdBJywgQ09MLkEpLAogICAgICBQKEMueCtkMS8yLCBDLnksICdCJywgQ09MLkIpLAogICAgICBQKEMueCwgQy55K2QyLzIsICdDJywgQ09MLkMpLAogICAgICBQKEMueC1kMS8yLCBDLnksICdEJywgQ09MLkQpCiAgICBdOwogIH0sCgogIC8vINCi0YDQsNC/0LXRhtC40Y86INC00LjQsNCz0L7QvdCw0LvQuCDRgNCw0LfQvdGL0LUsINC90LUg4oqlCiAgdHJhcCgpewogICAgY29uc3QgdG9wID0gMTgwLCBib3QgPSAzNjAsIGggPSAyMjAsIHNoaWZ0ID0gNDA7CiAgICByZXR1cm4gWwogICAgICBQKEMueC10b3AvMiArIHNoaWZ0LCBDLnktaC8yLCAnQScsIENPTC5BKSwKICAgICAgUChDLngrdG9wLzIgKyBzaGlmdCwgQy55LWgvMiwgJ0InLCBDT0wuQiksCiAgICAgIFAoQy54K2JvdC8yLCAgICAgICAgIEMueStoLzIsICdDJywgQ09MLkMpLAogICAgICBQKEMueC1ib3QvMiwgICAgICAgICBDLnkraC8yLCAnRCcsIENPTC5EKQogICAgXTsKICB9LAoKICAvLyDQn9GA0Y/QvNC+0YPQs9C+0LvRjNC90LDRjyDRgtGA0LDQv9C10YbQuNGPOiDQtNCy0LAg0L/RgNGP0LzRi9GFINGD0LPQu9CwCiAgdHJhcFJlY3QoKXsKICAgIGNvbnN0IHRvcCA9IDE1MCwgYm90ID0gMzIwLCBoID0gMjIwOwogICAgcmV0dXJuIFsKICAgICAgUChDLngtYm90LzIsICAgICAgIEMueS1oLzIsICdBJywgQ09MLkEpLAogICAgICBQKEMueC1ib3QvMiArIHRvcCwgQy55LWgvMiwgJ0InLCBDT0wuQiksCiAgICAgIFAoQy54K2JvdC8yLCAgICAgICBDLnkraC8yLCAnQycsIENPTC5DKSwKICAgICAgUChDLngtYm90LzIsICAgICAgIEMueStoLzIsICdEJywgQ09MLkQpCiAgICBdOwogIH0sCgogIC8vINCg0LDQstC90L7QsdC10LTRgNC10L3QvdCw0Y8g0YLRgNCw0L/QtdGG0LjRjzog0LTQuNCw0LPQvtC90LDQu9C4INCg0JDQktCd0Ksg4oaSINCS0LDRgNC40L3RjNC+0L0gPSDRgNC+0LzQsQogIHRyYXBJc28oKXsKICAgIGNvbnN0IHRvcCA9IDE2MCwgYm90ID0gMzQwLCBoID0gMjIwOwogICAgcmV0dXJuIFsKICAgICAgUChDLngtdG9wLzIsIEMueS1oLzIsICdBJywgQ09MLkEpLAogICAgICBQKEMueCt0b3AvMiwgQy55LWgvMiwgJ0InLCBDT0wuQiksCiAgICAgIFAoQy54K2JvdC8yLCBDLnkraC8yLCAnQycsIENPTC5DKSwKICAgICAgUChDLngtYm90LzIsIEMueStoLzIsICdEJywgQ09MLkQpCiAgICBdOwogIH0sCgogIC8vINCU0LXQu9GM0YLQvtC40LQ6INC00LjQsNCz0L7QvdCw0LvQuCDiiqUsINCd0JUg0YDQsNCy0L3RiyDihpIg0JLQsNGA0LjQvdGM0L7QvSA9INC/0YDRj9C80L7Rg9Cz0L7Qu9GM0L3QuNC6CiAga2l0ZSgpewogICAgY29uc3QgZHkgPSAyODAsIGR4ID0gMTYwOwogICAgcmV0dXJuIFsKICAgICAgUChDLngsIEMueS1keS8yLCAnQScsIENPTC5BKSwKICAgICAgUChDLngrZHgvMiwgQy55LCAnQicsIENPTC5CKSwKICAgICAgUChDLngsIEMueStkeS8yLCAnQycsIENPTC5DKSwKICAgICAgUChDLngtZHgvMiwgQy55LCAnRCcsIENPTC5EKQogICAgXTsKICB9LAoKICAvLyDQn9GA0L7QuNC30LLQvtC70YzQvdGL0Lkg0LLRi9C/0YPQutC70YvQuQogIGNvbnZleCgpewogICAgcmV0dXJuIFsKICAgICAgUCgxNDAsIDEyMCwgJ0EnLCBDT0wuQSksCiAgICAgIFAoNTIwLCAxODAsICdCJywgQ09MLkIpLAogICAgICBQKDQ4MCwgNTIwLCAnQycsIENPTC5DKSwKICAgICAgUCgxMzAsIDQ3MCwgJ0QnLCBDT0wuRCkKICAgIF07CiAgfSwKCiAgLy8g0J3QtdCy0YvQv9GD0LrQu9GL0LkgKNCy0L7Qs9C90YPRgtGL0LkpCiAgY29uY2F2ZSgpewogICAgcmV0dXJuIFsKICAgICAgUCgxNDAsIDE0MCwgJ0EnLCBDT0wuQSksCiAgICAgIFAoNTIwLCAxNzAsICdCJywgQ09MLkIpLAogICAgICBQKDMwMCwgMzYwLCAnQycsIENPTC5DKSwKICAgICAgUCgxNjAsIDUxMCwgJ0QnLCBDT0wuRCkKICAgIF07CiAgfQp9OwoKLy8gPT09PT09PT09PT09INCT0JXQntCc0JXQotCg0JjQryA9PT09PT09PT09PT0KY29uc3QgbWlkID0gKHAscSkgPT4gKHt4OihwLngrcS54KS8yLCB5OihwLnkrcS55KS8yfSk7CmNvbnN0IGRpc3QgPSAocCxxKSA9PiBNYXRoLmh5cG90KHAueC1xLngsIHAueS1xLnkpOwpjb25zdCBkb3QgPSAodSx2KSA9PiB1Lngqdi54ICsgdS55KnYueTsKCmZ1bmN0aW9uIHBvbHlBcmVhKFApewogIGxldCBzID0gMDsKICBmb3IobGV0IGk9MDtpPFAubGVuZ3RoO2krKyl7CiAgICBjb25zdCBhID0gUFtpXSwgYiA9IFBbKGkrMSklUC5sZW5ndGhdOwogICAgcyArPSBhLngqYi55IC0gYi54KmEueTsKICB9CiAgcmV0dXJuIE1hdGguYWJzKHMpLzI7Cn0KCmZ1bmN0aW9uIGFuZ2xlQmV0d2Vlbih1LHYpewogIGNvbnN0IGMgPSBNYXRoLmFicyhkb3QodSx2KSkgLyAoTWF0aC5oeXBvdCh1LngsdS55KSpNYXRoLmh5cG90KHYueCx2LnkpIHx8IDEpOwogIHJldHVybiBNYXRoLmFjb3MoTWF0aC5taW4oMSwgYykpICogMTgwIC8gTWF0aC5QSTsKfQoKLy8gPT09PT09PT09PT09INCe0KLQoNCY0KHQntCS0JrQkCA9PT09PT09PT09PT0KZnVuY3Rpb24gZHJhdygpewogIGN0eC5jbGVhclJlY3QoMCwwLFcsSCk7CgogIGNvbnN0IFtBLEIsQ2MsRF0gPSBwdHM7CiAgY29uc3QgRSA9IG1pZChBLEIpLCBGID0gbWlkKEIsQ2MpLCBHID0gbWlkKENjLEQpLCBIaCA9IG1pZChELEEpOwoKICAvLyDRgdC10YLQutCwCiAgY3R4LnN0cm9rZVN0eWxlID0gJyMxZTI5M2InOyBjdHgubGluZVdpZHRoID0gMTsKICBmb3IobGV0IHg9MDt4PFc7eCs9NDApeyBjdHguYmVnaW5QYXRoKCk7IGN0eC5tb3ZlVG8oeCwwKTsgY3R4LmxpbmVUbyh4LEgpOyBjdHguc3Ryb2tlKCk7IH0KICBmb3IobGV0IHk9MDt5PEg7eSs9NDApeyBjdHguYmVnaW5QYXRoKCk7IGN0eC5tb3ZlVG8oMCx5KTsgY3R4LmxpbmVUbyhXLHkpOyBjdHguc3Ryb2tlKCk7IH0KCiAgY29uc3QgYWMgPSB7eDpDYy54LUEueCwgeTpDYy55LUEueX07CiAgY29uc3QgYmQgPSB7eDpELngtQi54LCB5OkQueS1CLnl9OwogIGNvbnN0IGRBQyA9IGRpc3QoQSxDYyksIGRCRCA9IGRpc3QoQixEKTsKICBjb25zdCBhbmcgPSBhbmdsZUJldHdlZW4oYWMsIGJkKTsKCiAgLy8g0J7QotCd0J7QodCY0KLQldCb0KzQndCr0JUg0L/RgNC+0LLQtdGA0LrQuCDigJQg0L3QtSDQt9Cw0LLQuNGB0Y/RgiDQvtGCINC80LDRgdGI0YLQsNCx0LAKICBjb25zdCBlcSAgID0gTWF0aC5hYnMoZEFDIC0gZEJEKSAvIE1hdGgubWF4KGRBQywgZEJEKSA8IDAuMDA1OyAgIC8vIDAuNSUKICBjb25zdCBwZXJwID0gTWF0aC5hYnMoYW5nIC0gOTApIDwgMC41OyAgICAgICAgICAgICAgICAgICAgICAgICAgICAvLyAwLjXCsAoKICAvLyDQtNC40LDQs9C+0L3QsNC70LgKICBjdHguc2V0TGluZURhc2goWzcsN10pOwogIGN0eC5saW5lV2lkdGggPSAyOwogIGN0eC5zdHJva2VTdHlsZSA9IHBlcnAgPyAnI2Y0NzJiNicgOiAnIzQ3NTU2OSc7CiAgY3R4LmJlZ2luUGF0aCgpOyBjdHgubW92ZVRvKEEueCxBLnkpOyBjdHgubGluZVRvKENjLngsQ2MueSk7IGN0eC5zdHJva2UoKTsKICBjdHguYmVnaW5QYXRoKCk7IGN0eC5tb3ZlVG8oQi54LEIueSk7IGN0eC5saW5lVG8oRC54LEQueSk7IGN0eC5zdHJva2UoKTsKICBjdHguc2V0TGluZURhc2goW10pOwoKICAvLyDQvNCw0YDQutC10YAg0L/RgNGP0LzQvtCz0L4g0YPQs9C70LAg0LzQtdC20LTRgyDQtNC40LDQs9C+0L3QsNC70Y/QvNC4CiAgaWYgKHBlcnApewogICAgY29uc3QgZGVub20gPSAoQS54LUNjLngpKihCLnktRC55KSAtIChBLnktQ2MueSkqKEIueC1ELngpOwogICAgaWYgKE1hdGguYWJzKGRlbm9tKSA+IDFlLTYpewogICAgICBjb25zdCBweCA9ICgoQS54KkNjLnkgLSBBLnkqQ2MueCkqKEIueC1ELngpIC0gKEEueC1DYy54KSooQi54KkQueSAtIEIueSpELngpKSAvIGRlbm9tOwogICAgICBjb25zdCBweSA9ICgoQS54KkNjLnkgLSBBLnkqQ2MueCkqKEIueS1ELnkpIC0gKEEueS1DYy55KSooQi54KkQueSAtIEIueSpELngpKSAvIGRlbm9tOwogICAgICBjdHguc3Ryb2tlU3R5bGUgPSAnI2Y0NzJiNic7IGN0eC5saW5lV2lkdGggPSAyOwogICAgICBjb25zdCBzID0gMTI7CiAgICAgIGNvbnN0IHUxID0ge3g6Q2MueC1BLngsIHk6Q2MueS1BLnl9OyBjb25zdCBsMSA9IE1hdGguaHlwb3QodTEueCx1MS55KSB8fCAxOwogICAgICBjb25zdCB1MiA9IHt4OkQueC1CLngsIHk6RC55LUIueX07IGNvbnN0IGwyID0gTWF0aC5oeXBvdCh1Mi54LHUyLnkpIHx8IDE7CiAgICAgIGNvbnN0IHYxID0ge3g6dTEueC9sMSpzLCB5OnUxLnkvbDEqc307CiAgICAgIGNvbnN0IHYyID0ge3g6dTIueC9sMipzLCB5OnUyLnkvbDIqc307CiAgICAgIGN0eC5iZWdpblBhdGgoKTsKICAgICAgY3R4Lm1vdmVUbyhweCt2MS54LCBweSt2MS55KTsKICAgICAgY3R4LmxpbmVUbyhweCt2MS54K3YyLngsIHB5K3YxLnkrdjIueSk7CiAgICAgIGN0eC5saW5lVG8ocHgrdjIueCwgcHkrdjIueSk7CiAgICAgIGN0eC5zdHJva2UoKTsKICAgIH0KICB9CgogIC8vINGF0L7Qt9GP0LjQvQogIGN0eC5iZWdpblBhdGgoKTsKICBjdHgubW92ZVRvKEEueCxBLnkpOyBjdHgubGluZVRvKEIueCxCLnkpOyBjdHgubGluZVRvKENjLngsQ2MueSk7IGN0eC5saW5lVG8oRC54LEQueSk7IGN0eC5jbG9zZVBhdGgoKTsKICBjdHguZmlsbFN0eWxlID0gJ3JnYmEoNTYsMTg5LDI0OCwwLjA3KSc7CiAgY3R4LmZpbGwoKTsKICBjdHguc3Ryb2tlU3R5bGUgPSAnIzM4YmRmOCc7IGN0eC5saW5lV2lkdGggPSAyLjU7IGN0eC5zdHJva2UoKTsKCiAgLy8g0L/QsNGA0LDQu9C70LXQu9C+0LPRgNCw0LzQvCDQktCw0YDQuNC90YzQvtC90LAKICBjdHguYmVnaW5QYXRoKCk7CiAgY3R4Lm1vdmVUbyhFLngsRS55KTsgY3R4LmxpbmVUbyhGLngsRi55KTsgY3R4LmxpbmVUbyhHLngsRy55KTsgY3R4LmxpbmVUbyhIaC54LEhoLnkpOyBjdHguY2xvc2VQYXRoKCk7CiAgY3R4LmZpbGxTdHlsZSA9ICdyZ2JhKDc0LDIyMiwxMjgsMC4xOCknOwogIGN0eC5maWxsKCk7CiAgY3R4LnN0cm9rZVN0eWxlID0gJyM0YWRlODAnOyBjdHgubGluZVdpZHRoID0gMzsgY3R4LnN0cm9rZSgpOwoKICAvLyDRgdC10YDQtdC00LjQvdGLCiAgW1snRScsRV0sWydGJyxGXSxbJ0cnLEddLFsnSCcsSGhdXS5mb3JFYWNoKChbbixwXSk9PnsKICAgIGN0eC5iZWdpblBhdGgoKTsgY3R4LmFyYyhwLngscC55LDYsMCw3KTsKICAgIGN0eC5maWxsU3R5bGUgPSAnIzRhZGU4MCc7IGN0eC5maWxsKCk7CiAgICBjdHguc3Ryb2tlU3R5bGUgPSAnIzBmMTcyYSc7IGN0eC5saW5lV2lkdGggPSAyOyBjdHguc3Ryb2tlKCk7CiAgICBjdHguZmlsbFN0eWxlID0gJyNiYmY3ZDAnOyBjdHguZm9udCA9ICdib2xkIDE0cHggQXJpYWwnOwogICAgY3R4LmZpbGxUZXh0KG4sIHAueCsxMCwgcC55LTgpOwogIH0pOwoKICAvLyDQstC10YDRiNC40L3RiyDRhdC+0LfRj9C40L3QsAogIHB0cy5mb3JFYWNoKChwLGkpPT57CiAgICBjdHguYmVnaW5QYXRoKCk7IGN0eC5hcmMocC54LHAueSxSKzQsMCw3KTsKICAgIGN0eC5maWxsU3R5bGUgPSAoaT09PWRyYWcpID8gJ3JnYmEoMjU1LDI1NSwyNTUsMC4xNSknIDogJ3JnYmEoMCwwLDAsMCknOwogICAgY3R4LmZpbGwoKTsKCiAgICBjdHguYmVnaW5QYXRoKCk7IGN0eC5hcmMocC54LHAueSxSLDAsNyk7CiAgICBjdHguZmlsbFN0eWxlID0gcC5jb2xvcjsgY3R4LmZpbGwoKTsKICAgIGN0eC5zdHJva2VTdHlsZSA9ICcjMGYxNzJhJzsgY3R4LmxpbmVXaWR0aCA9IDIuNTsgY3R4LnN0cm9rZSgpOwoKICAgIGN0eC5maWxsU3R5bGUgPSAnI2ZmZic7IGN0eC5mb250ID0gJ2JvbGQgMTRweCBBcmlhbCc7CiAgICBjdHgudGV4dEFsaWduPSdjZW50ZXInOyBjdHgudGV4dEJhc2VsaW5lPSdtaWRkbGUnOwogICAgY3R4LmZpbGxUZXh0KHAubmFtZSwgcC54LCBwLnkrMC41KTsKICAgIGN0eC50ZXh0QWxpZ249J3N0YXJ0JzsgY3R4LnRleHRCYXNlbGluZT0nYWxwaGFiZXRpYyc7CiAgfSk7CgogIHVwZGF0ZVBhbmVsKHtlcSwgcGVycCwgZEFDLCBkQkQsIGFuZ30pOwp9CgovLyA9PT09PT09PT09PT0g0J/QkNCd0JXQm9CsID09PT09PT09PT09PQpmdW5jdGlvbiBzZXRCYWRnZShpZCwgb24pewogIGNvbnN0IGVsID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoaWQpOwogIGVsLnRleHRDb250ZW50ID0gb24gPyAn0LTQsCDinJMnIDogJ9C90LXRgic7CiAgZWwuY2xhc3NOYW1lID0gJ2JhZGdlICcgKyAob24gPyAneWVzJyA6ICdubycpOwp9CgpmdW5jdGlvbiB1cGRhdGVQYW5lbCh7ZXEsIHBlcnAsIGRBQywgZEJELCBhbmd9KXsKICBjb25zdCBbQSxCLENjLERdID0gcHRzOwogIGNvbnN0IEUgPSBtaWQoQSxCKSwgRiA9IG1pZChCLENjKSwgRyA9IG1pZChDYyxEKSwgSGggPSBtaWQoRCxBKTsKCiAgY29uc3Qgc1EgPSBwb2x5QXJlYShwdHMpOwogIGNvbnN0IHNWID0gcG9seUFyZWEoW0UsRixHLEhoXSk7CgogIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzUXVhZCcpLnRleHRDb250ZW50ID0gc1EudG9GaXhlZCgxKTsKICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnZEFDJykudGV4dENvbnRlbnQgPSBkQUMudG9GaXhlZCgxKTsKICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnZEJEJykudGV4dENvbnRlbnQgPSBkQkQudG9GaXhlZCgxKTsKICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnYW5nRCcpLnRleHRDb250ZW50ID0gYW5nLnRvRml4ZWQoMSkgKyAnwrAnOwogIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzVmFyJykudGV4dENvbnRlbnQgPSBzVi50b0ZpeGVkKDEpOwogIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdyYXRpbycpLnRleHRDb250ZW50ID0gKHNWL3NRKS50b0ZpeGVkKDQpOwoKICBzZXRCYWRnZSgnY2hrRXEnLCBlcSk7CiAgc2V0QmFkZ2UoJ2Noa1BlcnAnLCBwZXJwKTsKCiAgY29uc3QgdiA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCd2ZXJkaWN0Jyk7CiAgbGV0IGJpZyA9ICfQv9GA0L7QuNC30LLQvtC70YzQvdGL0Lkg0L/QsNGA0LDQu9C70LXQu9C+0LPRgNCw0LzQvCc7CiAgbGV0IHdoeSA9ICfQtNC40LDQs9C+0L3QsNC70Lgg0YXQvtC30Y/QuNC90LAg0L3QtSDRgNCw0LLQvdGLINC4INC90LUg0L/QtdGA0L/QtdC90LTQuNC60YPQu9GP0YDQvdGLJzsKCiAgaWYgKGVxICYmIHBlcnApewogICAgYmlnID0gJ9Ca0JLQkNCU0KDQkNCiJzsKICAgIHdoeSA9ICfQtNC40LDQs9C+0L3QsNC70Lgg0YXQvtC30Y/QuNC90LAg0YDQsNCy0L3RiyDQuCDQv9C10YDQv9C10L3QtNC40LrRg9C70Y/RgNC90YsnOwogICAgdi5zdHlsZS5ib3JkZXJMZWZ0Q29sb3IgPSAnI2E3OGJmYSc7CiAgfSBlbHNlIGlmIChlcSl7CiAgICBiaWcgPSAn0KDQntCc0JEnOwogICAgd2h5ID0gJ9C00LjQsNCz0L7QvdCw0LvQuCDRhdC+0LfRj9C40L3QsCDRgNCw0LLQvdGLJzsKICAgIHYuc3R5bGUuYm9yZGVyTGVmdENvbG9yID0gJyM0YWRlODAnOwogIH0gZWxzZSBpZiAocGVycCl7CiAgICBiaWcgPSAn0J/QoNCv0JzQntCj0JPQntCb0KzQndCY0JonOwogICAgd2h5ID0gJ9C00LjQsNCz0L7QvdCw0LvQuCDRhdC+0LfRj9C40L3QsCDQv9C10YDQv9C10L3QtNC40LrRg9C70Y/RgNC90YsnOwogICAgdi5zdHlsZS5ib3JkZXJMZWZ0Q29sb3IgPSAnIzRhZGU4MCc7CiAgfSBlbHNlIHsKICAgIHYuc3R5bGUuYm9yZGVyTGVmdENvbG9yID0gJyMzOGJkZjgnOwogIH0KCiAgdi5pbm5lckhUTUwgPSBg0J/QsNGA0LDQu9C70LXQu9C+0LPRgNCw0LzQvCDQktCw0YDQuNC90YzQvtC90LA6PHNwYW4gY2xhc3M9ImJpZyI+JHtiaWd9PC9zcGFuPtGC0LDQuiDQutCw0LogJHt3aHl9LmA7Cn0KCi8vID09PT09PT09PT09PSDQnNCr0KjQrCAvINCi0JDQpyA9PT09PT09PT09PT0KZnVuY3Rpb24gZ2V0UG9zKGUpewogIGNvbnN0IHIgPSBjdi5nZXRCb3VuZGluZ0NsaWVudFJlY3QoKTsKICBjb25zdCB0ID0gZS50b3VjaGVzID8gZS50b3VjaGVzWzBdIDogZTsKICByZXR1cm4gewogICAgeDogKHQuY2xpZW50WCAtIHIubGVmdCkgKiBXIC8gci53aWR0aCwKICAgIHk6ICh0LmNsaWVudFkgLSByLnRvcCkgICogSCAvIHIuaGVpZ2h0CiAgfTsKfQpmdW5jdGlvbiBkb3duKGUpewogIGUucHJldmVudERlZmF1bHQoKTsKICBjb25zdCBtID0gZ2V0UG9zKGUpOwogIGRyYWcgPSBwdHMuZmluZEluZGV4KHAgPT4gTWF0aC5oeXBvdChwLngtbS54LCBwLnktbS55KSA8IEhJVCk7CiAgaWYoZHJhZyA+PSAwKSBkcmF3KCk7Cn0KZnVuY3Rpb24gbW92ZShlKXsKICBpZihkcmFnIDwgMCkgcmV0dXJuOwogIGUucHJldmVudERlZmF1bHQoKTsKICBjb25zdCBtID0gZ2V0UG9zKGUpOwogIGNvbnN0IHBhZCA9IFIgKyAyOwogIHB0c1tkcmFnXS54ID0gTWF0aC5tYXgocGFkLCBNYXRoLm1pbihXIC0gcGFkLCBtLngpKTsKICBwdHNbZHJhZ10ueSA9IE1hdGgubWF4KHBhZCwgTWF0aC5taW4oSCAtIHBhZCwgbS55KSk7CiAgZHJhdygpOwp9CmZ1bmN0aW9uIHVwKCl7IGRyYWcgPSAtMTsgZHJhdygpOyB9Cgpjdi5hZGRFdmVudExpc3RlbmVyKCdtb3VzZWRvd24nLCBkb3duKTsKd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoJ21vdXNlbW92ZScsIG1vdmUpOwp3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcignbW91c2V1cCcsIHVwKTsKY3YuYWRkRXZlbnRMaXN0ZW5lcigndG91Y2hzdGFydCcsIGRvd24sIHtwYXNzaXZlOmZhbHNlfSk7CndpbmRvdy5hZGRFdmVudExpc3RlbmVyKCd0b3VjaG1vdmUnLCBtb3ZlLCB7cGFzc2l2ZTpmYWxzZX0pOwp3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcigndG91Y2hlbmQnLCB1cCk7CgovLyA9PT09PT09PT09PT0g0JrQndCe0J/QmtCYID09PT09PT09PT09PQpkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCcjc2hhcGVzIGJ1dHRvbicpLmZvckVhY2goYnRuID0+IHsKICBidG4uYWRkRXZlbnRMaXN0ZW5lcignY2xpY2snLCAoKSA9PiB7CiAgICBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCcjc2hhcGVzIGJ1dHRvbicpLmZvckVhY2goYiA9PiBiLmNsYXNzTGlzdC5yZW1vdmUoJ2FjdGl2ZScpKTsKICAgIGJ0bi5jbGFzc0xpc3QuYWRkKCdhY3RpdmUnKTsKICAgIGN1cnJlbnRTaGFwZSA9IGJ0bi5kYXRhc2V0LnNoYXBlOwogICAgcHRzID0gc2hhcGVzW2N1cnJlbnRTaGFwZV0oKTsKICAgIGRyYXcoKTsKICB9KTsKfSk7Cgpkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncmVzZXQnKS5vbmNsaWNrID0gKCkgPT4gewogIHB0cyA9IHNoYXBlc1tjdXJyZW50U2hhcGVdKCk7CiAgZHJhdygpOwp9OwoKLy8g0YHRgtCw0YDRggpwdHMgPSBzaGFwZXMuc3F1YXJlKCk7CmRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJyNzaGFwZXMgYnV0dG9uW2RhdGEtc2hhcGU9InNxdWFyZSJdJykuY2xhc3NMaXN0LmFkZCgnYWN0aXZlJyk7CmRyYXcoKTsKPC9zY3JpcHQ+CjwvYm9keT4KPC9odG1sPg=="),c=>c.charCodeAt(0)));setMode4(1);setScene(1);window.addEventListener('load',()=>setScene(1));
+</script>
+</body></html>

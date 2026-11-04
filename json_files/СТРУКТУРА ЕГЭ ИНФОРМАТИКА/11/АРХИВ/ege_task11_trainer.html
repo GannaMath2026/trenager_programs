@@ -1,0 +1,3556 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Тренажёр ЕГЭ · Задание 11 — кодирование информации</title>
+<style>
+:root{--ink:#172033;--muted:#64748b;--line:#dbe3ee;--panel:#fff;--bg:#edf2f8;--blue:#2563eb;--blue2:#1d4ed8;--green:#16a34a;--amber:#f59e0b;--red:#dc2626;--nav:#0f172a;--nav2:#1e293b;--left:258px;--right:78px;}
+*{box-sizing:border-box}html{height:100%;scroll-behavior:smooth}body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,'Segoe UI',sans-serif;overflow-x:hidden}button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #93c5fd;outline-offset:1px}
+#appHeader{position:sticky;top:0;z-index:200;grid-column:1/-1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 12px;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 10px #0f172a0a;min-height:64px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:850;font-size:16px;flex:1;min-width:220px}.brand-mark{display:grid;place-items:center;background:#dbeafe;color:#1d4ed8;border-radius:10px;width:34px;height:34px;font-weight:900}.head-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.btn{border:1px solid #cbd5e1;border-radius:9px;background:#fff;padding:8px 11px;color:#334155;font-weight:700;font-size:12px;line-height:1.2}.btn:hover{background:#f1f5f9}.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}.btn.primary:hover{background:var(--blue2)}.btn.green{background:#16a34a;color:#fff;border-color:#16a34a}.btn.amber{background:#fffbeb;color:#92400e;border-color:#fbbf24}.btn.danger{background:#fef2f2;color:#991b1b;border-color:#fecaca}.btn.small{padding:6px 8px;font-size:11px}.student-pick{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:700}.student-pick select{max-width:145px;min-width:100px;padding:7px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a}
+#appLayout{display:grid;grid-template-columns:var(--left) minmax(0,1fr) var(--right);align-items:start;min-height:calc(100dvh - 64px)}
+#menuPanel{grid-column:1;grid-row:1;position:sticky;top:64px;height:calc(100dvh - 64px);overflow-y:auto;overflow-x:hidden;background:var(--nav);color:#e2e8f0;padding:12px 10px 96px;scrollbar-width:thin;z-index:130} .menu-heading{color:#fbbf24;font-size:12px;font-weight:900;letter-spacing:.6px;text-transform:uppercase;padding:5px 7px 10px}.section-group{margin:0 0 8px;border:1px solid #263349;border-radius:9px;overflow:hidden}.section-group>summary{list-style:none;cursor:pointer;padding:10px 9px;background:#172337;font-size:12px;font-weight:800;color:#f8fafc;display:flex;gap:7px;align-items:flex-start}.section-group>summary::-webkit-details-marker{display:none}.section-group>summary:before{content:'▸';color:#94a3b8;flex-shrink:0}.section-group[open]>summary:before{content:'▾';color:#fbbf24}.section-group>summary .section-count{margin-left:auto;color:#94a3b8;font-size:10px}.subheading{font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:#94a3b8;padding:9px 8px 4px;font-weight:800}.task-nav{display:flex;align-items:flex-start;gap:7px;width:100%;text-align:left;border:0;border-left:3px solid transparent;border-radius:0;background:transparent;color:#cbd5e1;padding:7px 8px;font-size:11.5px;line-height:1.3}.task-nav:hover{background:#1e293b;color:white}.task-nav.active{background:#1d4ed8;color:white;border-left-color:#93c5fd}.task-nav .nav-code{font-size:10px;color:#93c5fd;font-weight:900;min-width:38px}.task-nav.active .nav-code{color:#fff}.task-nav .nav-title{flex:1;min-width:0;overflow-wrap:anywhere}.task-nav .nav-status{font-size:10px;flex-shrink:0}.menu-tools{border-top:1px solid #334155;margin-top:12px;padding-top:12px;display:flex;flex-direction:column;gap:6px}.menu-tools .btn{background:#172337;color:#e2e8f0;border-color:#475569;text-align:left}.menu-tools .btn:hover{background:#334155}.menu-footnote{font-size:10px;color:#94a3b8;line-height:1.4;margin:10px 4px 0}
+#mainPanel{grid-column:2;grid-row:1;min-width:0;padding:12px 14px 112px;max-width:100%;}.intro-strip{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:9px}.breadcrumb{font-size:11px;color:#64748b;font-weight:800;overflow-wrap:anywhere}.progress-mini{display:flex;align-items:center;gap:8px;color:#475569;font-size:11px;font-weight:700;white-space:nowrap}.progress-rail{width:96px;height:7px;border-radius:99px;background:#dbe3ee;overflow:hidden}.progress-fill{height:100%;width:0;background:#22c55e;transition:width .2s}.task-card{background:var(--panel);border:1px solid #d5dfeb;border-left:5px solid var(--blue);border-radius:14px;padding:clamp(12px,2vw,20px);box-shadow:0 4px 14px #0f172a0a;min-width:0}.task-title-row{display:flex;align-items:flex-start;gap:9px;flex-wrap:wrap;margin-bottom:10px}.task-id{border-radius:7px;background:#eef2ff;color:#3730a3;padding:5px 8px;font-size:11px;font-weight:900}.task-heading{font-weight:850;font-size:clamp(16px,2vw,21px);line-height:1.25;flex:1;min-width:150px}.difficulty{font-size:10px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:99px;padding:4px 7px;font-weight:800;white-space:nowrap}.task-context{background:#f8fafc;border:1px solid #dbe3ee;border-left:4px solid #60a5fa;border-radius:0 10px 10px 0;padding:11px 13px;margin:10px 0 12px;line-height:1.6;white-space:pre-line;overflow-wrap:anywhere;font-size:13px}.field-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:7px;margin:10px 0 14px}.field-card{border:1px solid #dbeafe;border-radius:9px;background:#eff6ff;padding:9px 10px;min-width:0}.field-name{font-weight:850;color:#1d4ed8;font-size:12px;margin-bottom:3px}.field-info{font-size:11.5px;color:#334155;overflow-wrap:anywhere}.field-meta{font-family:Consolas,monospace;font-size:10px;color:#64748b;margin-top:4px}.step-progress{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0 7px}.step-progress-title{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#64748b;font-weight:900}.step-dots{display:flex;gap:4px;flex-wrap:wrap}.step-dot{width:22px;height:7px;border-radius:99px;background:#e2e8f0}.step-dot.done{background:#22c55e}.step-dot.current{background:#3b82f6;box-shadow:0 0 0 2px #bfdbfe}.question-box{border:1px solid #c7d2fe;background:#f5f7ff;border-radius:11px;padding:13px;margin-top:9px}.question-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4338ca;font-weight:900;margin-bottom:5px}.question-text{font-weight:800;font-size:14px;line-height:1.5;overflow-wrap:anywhere}.answer-row{display:flex;align-items:stretch;gap:7px;flex-wrap:wrap;margin-top:11px}.answer-input{flex:1;min-width:min(250px,100%);width:100%;border:2px solid #cbd5e1;border-radius:9px;padding:11px 12px;background:white;font:14px/1.4 Consolas,'Courier New',monospace;color:#0f172a}.answer-input.correct{border-color:#22c55e;background:#f0fdf4;color:#166534}.answer-input.wrong{border-color:#ef4444;background:#fff1f2;color:#991b1b}.calc-preview{margin-top:6px;font:11px/1.5 Consolas,monospace;color:#64748b;min-height:16px;overflow-wrap:anywhere}.calc-preview.good{color:#047857;font-weight:800}.calc-preview.bad{color:#b91c1c}.input-help{font-size:10.5px;color:#64748b;line-height:1.5;margin-top:7px}.question-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.hint-panel,.feedback-panel{display:none;margin-top:10px;padding:11px 12px;border-radius:9px;font-size:12px;line-height:1.6;white-space:pre-line;overflow-wrap:anywhere}.hint-panel.show{display:block;background:#fffbeb;border:1px solid #fcd34d;color:#78350f}.feedback-panel.show{display:block;background:#f0fdf4;border:1px solid #86efac;color:#14532d}.feedback-panel.bad{display:block;background:#fff1f2;border:1px solid #fecaca;color:#991b1b}.panel-label{display:block;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.45px;margin-bottom:4px}.task-actions-bottom{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px dashed #cbd5e1}.complete-banner{border:1px solid #86efac;background:#f0fdf4;color:#14532d;border-radius:11px;padding:14px;margin:12px 0}.complete-banner h3{margin:0 0 5px;font-size:15px}.complete-banner p{margin:5px 0;font-size:12px}.result-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:9px}.result-table td,.result-table th{border-bottom:1px solid #d1fae5;text-align:left;padding:6px;vertical-align:top;overflow-wrap:anywhere}.result-table th{color:#166534}.result-table td:first-child{width:35%}.teacher-tools-inline{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.screen-note{margin-top:10px;padding:9px 11px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;color:#9a3412;font-size:11px;line-height:1.5}
+#powersPanel{grid-column:3;grid-row:1;position:sticky;top:76px;margin:10px 6px 0 0;width:calc(100% - 6px);max-height:calc(100dvh - 88px);display:flex;flex-direction:column;background:#fffbeb;border:1px solid #fbbf24;border-radius:12px;box-shadow:0 4px 13px #92400e12;overflow:hidden;z-index:70}.powers-heading{text-align:center;padding:7px 2px 6px;font-size:10px;font-weight:900;color:#92400e;border-bottom:1px solid #fcd34d;line-height:1.15}.powers-list{padding:4px 3px 6px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#f59e0b #fef3c7}.pow-row{padding:3px 1px;text-align:center;border-radius:5px;margin:1px 0;color:#78350f;font:9px/1.15 Consolas,monospace;overflow-wrap:anywhere}.pow-row .pow{display:block;color:#92400e;font-weight:800}.pow-row .val{display:block;color:#b45309;font-size:9px}.pow-row.focus{background:#fde68a;outline:1px solid #f59e0b}.pow-hint{padding:5px 3px;border-top:1px solid #fcd34d;color:#92400e;font-size:8.5px;line-height:1.2;text-align:center;background:#fef3c7}
+#bottomBar{position:fixed;bottom:0;left:var(--left);right:var(--right);z-index:180;display:flex;justify-content:center;gap:7px;flex-wrap:wrap;padding:8px 10px max(8px,env(safe-area-inset-bottom));background:#fffffff2;backdrop-filter:blur(8px);border-top:1px solid #cbd5e1;box-shadow:0 -4px 18px #0f172a10}.navbtn{padding:9px 13px;border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:9px;font-size:12px;font-weight:800}.navbtn.main{background:#2563eb;color:#fff;border-color:#2563eb}.navbtn:disabled{opacity:.4;cursor:not-allowed}.navbtn.hint{background:#fffbeb;color:#92400e;border-color:#fbbf24}
+#menuBackdrop{display:none}#menuToggle{display:none}.overlay{position:fixed;inset:0;z-index:1000;background:#0f172ab8;display:flex;align-items:center;justify-content:center;padding:12px}.overlay[hidden]{display:none!important}.dialog{width:min(720px,96vw);max-height:94dvh;overflow:auto;background:#fff;border-radius:15px;padding:17px;box-shadow:0 20px 70px #0005}.dialog h2{margin:0 0 7px;font-size:18px}.dialog p{margin:0 0 12px;font-size:12px;line-height:1.5;color:#64748b}.dialog label{display:block;font-size:11px;font-weight:800;color:#475569;margin:10px 0 5px}.dialog input,.dialog select,.dialog textarea{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:9px;font:12px/1.4 system-ui,sans-serif}.dialog textarea{height:44vh;font:11px/1.4 Consolas,monospace;white-space:pre;overflow:auto}.dialog-actions{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap;margin-top:12px}.student-start .dialog{width:min(400px,95vw)}.student-start .dialog select{padding:12px;font-size:14px}.status-pill{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:900}.status-pill.independent{background:#dcfce7;color:#166534}.status-pill.hinted{background:#ffedd5;color:#9a3412}.status-pill.progress{background:#dbeafe;color:#1d4ed8}.status-pill.none{background:#f1f5f9;color:#64748b}
+#reportView{display:none}.report-title{text-align:center;margin-bottom:6px}.report-title h1{font-size:20px;margin:0 0 3px}.report-title p{font-size:11px;color:#475569;margin:2px 0}.report-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:13px 0}.report-stat{border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center}.report-stat b{display:block;font-size:18px}.report-stat span{font-size:10px;color:#475569}.report-section{margin:15px 0;break-inside:avoid}.report-section h2{font-size:14px;border-bottom:2px solid #cbd5e1;padding-bottom:5px;margin:0 0 7px}.report-table{border-collapse:collapse;width:100%;font-size:9.5px}.report-table th,.report-table td{border:1px solid #cbd5e1;padding:5px;text-align:left;vertical-align:top}.report-table th{background:#f1f5f9}.report-table td{overflow-wrap:anywhere}.report-task-detail{font-size:9px;color:#475569;line-height:1.35}
+#studentOverlay[hidden],#editOverlay[hidden],#reportOverlay[hidden]{display:none!important}
+@media(max-width:950px){:root{--left:228px;--right:70px}.brand{min-width:170px;font-size:14px}.head-actions .btn{padding:7px 8px}.student-pick{font-size:10px}.task-card{padding:13px}.answer-input{min-width:180px}}
+@media(max-width:700px){:root{--left:0px;--right:56px}#appHeader{display:grid;grid-template-columns:1fr;gap:6px;padding:7px 8px;min-height:0}.brand{grid-column:1;grid-row:1;font-size:13px;min-width:0;width:100%;flex:none}.brand-mark{width:29px;height:29px;flex-shrink:0}.brand span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100vw - 60px)}.head-actions{display:contents}.head-actions .btn{font-size:9.5px;padding:7px 3px;white-space:nowrap;width:100%;justify-content:center;min-width:0}.head-actions #menuToggle{display:inline-flex;grid-column:1;grid-row:2}.head-actions #reportBtn{grid-column:2;grid-row:2}.head-actions #saveBtn{grid-column:3;grid-row:2}.head-actions #teacherBtn{display:inline-flex;grid-column:4;grid-row:2}.#appHeader{grid-template-columns:repeat(4,minmax(0,1fr))}.brand{grid-column:1/-1}.head-actions .student-pick{grid-column:1/-1;grid-row:3;display:flex;width:100%;max-width:100%;justify-content:flex-start;order:unset;font-size:10px}.student-pick select{max-width:none;flex:1;min-width:0;padding:7px}#menuPanel{position:fixed;display:none;left:0;top:0;bottom:0;width:min(86vw,320px);height:100dvh;z-index:160;padding-top:16px}#menuPanel.open{display:block}#menuBackdrop.open{display:block;position:fixed;inset:0;background:#02061799;z-index:150}#mainPanel{grid-column:2;grid-row:1;padding:9px 7px 118px}.task-card{padding:11px 10px;border-radius:11px}.task-heading{font-size:16px;min-width:120px}.task-context{font-size:12px;padding:9px 10px}.field-grid{grid-template-columns:1fr;gap:5px}.field-card{padding:7px 8px}.question-box{padding:10px}.question-text{font-size:13px}.answer-row{display:grid;grid-template-columns:1fr}.answer-input{min-width:0;width:100%;font-size:14px;padding:11px}.question-actions .btn{flex:1}.task-actions-bottom .btn{flex:1}#powersPanel{grid-column:2;grid-row:1;position:fixed;right:2px;top:108px;width:51px;max-height:58dvh;margin:0;border-radius:9px}.powers-heading{font-size:9px;padding:6px 1px}.pow-row{font-size:8px;padding:3px 0}.pow-row .val{font-size:8px}#bottomBar{left:0;right:56px;gap:5px;padding:6px 5px max(7px,env(safe-area-inset-bottom))}.navbtn{flex:1;min-width:0;padding:9px 5px;font-size:10.5px}.progress-rail{width:58px}.breadcrumb{font-size:10px}.difficulty{font-size:9px}.report-summary{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:380px){.brand{max-width:190px}.head-actions #saveBtn{display:none}.head-actions #teacherBtn{font-size:9px}.task-title-row{gap:6px}.task-id{padding:4px 6px}.task-heading{font-size:14px}.task-context{font-size:11px}.question-actions .btn{padding:8px 6px;font-size:10px}.navbtn{font-size:9.5px}.pow-row .val{font-size:7.5px}}
+@media print{@page{size:A4 portrait;margin:11mm}body{background:#fff!important}body.printing-report>*:not(#reportView){display:none!important}body.printing-report #reportView{display:block!important;color:#111827!important;font:10px/1.4 Arial,sans-serif}#reportView{display:none}.report-title h1{font-size:17pt}.report-section{break-inside:auto}.report-table tr{break-inside:avoid}.report-table th,.report-table td{padding:4px}.report-summary{grid-template-columns:repeat(4,1fr)}.report-stat{padding:5px}.report-stat b{font-size:15px}}
+</style>
+</head>
+<body>
+<header id="appHeader">
+  <div class="brand"><span class="brand-mark">11</span><span>Тренажёр ЕГЭ · Кодирование информации</span></div>
+  <div class="head-actions">
+    <button class="btn" id="menuToggle" type="button">☰ Задачи</button>
+    <button class="btn green" id="reportBtn" type="button">📄 PDF-отчёт</button>
+    <button class="btn primary" id="saveBtn" type="button">💾 Сохранить HTML</button>
+    <button class="btn amber" id="teacherBtn" type="button">Режим учителя</button>
+    <label class="student-pick">Ученик <select id="studentSelect" aria-label="Выбор ученика"></select></label>
+  </div>
+</header>
+<div id="menuBackdrop"></div>
+<div id="appLayout">
+  <aside id="menuPanel">
+    <div class="menu-heading">Оглавление задач</div>
+    <div id="taskMenu"></div>
+    <div class="menu-tools" id="teacherMenuTools" hidden>
+      <button class="btn" type="button" id="addTaskBtn">＋ Добавить задачу</button>
+      <button class="btn" type="button" id="addStudentBtn">＋ Добавить ученика</button>
+      <button class="btn" type="button" id="removeStudentBtn">− Удалить выбранного ученика</button>
+      <button class="btn" type="button" id="resetProgressBtn">↺ Сбросить прогресс выбранного ученика</button>
+    </div>
+    <div class="menu-footnote">Прогресс хранится внутри данных приложения после нажатия «Сохранить HTML». Локальное хранилище браузера не используется.</div>
+  </aside>
+  <main id="mainPanel">
+    <div class="intro-strip">
+      <div class="breadcrumb" id="breadcrumb">Выберите ученика, чтобы начать</div>
+      <div class="progress-mini"><span id="progressLabel">0 / 45 решено</span><span class="progress-rail"><span class="progress-fill" id="progressFill"></span></span></div>
+    </div>
+    <div id="currentTask"></div>
+    <div class="screen-note" id="saveNotice">После работы нажмите <b>«Сохранить HTML»</b>, чтобы записать прогресс и изменения прямо в новый файл приложения. Отчёт можно отдельно распечатать в PDF.</div>
+  </main>
+  <aside id="powersPanel" aria-label="Подсказка: степени двойки">
+    <div class="powers-heading">СТЕПЕНИ<br>2</div>
+    <div class="powers-list" id="powersList"></div>
+    <div class="pow-hint">Соседние степени помогают выбрать число бит</div>
+  </aside>
+</div>
+<div id="bottomBar">
+  <button class="navbtn" id="prevBtn" type="button">◀ Пред.</button>
+  <button class="navbtn hint" id="hintBottomBtn" type="button">💡 Подсказка</button>
+  <button class="navbtn main" id="nextBtn" type="button">След. ▶</button>
+  <button class="navbtn" id="topBtn" type="button">↑ Вверх</button>
+</div>
+<div class="overlay student-start" id="studentOverlay">
+  <div class="dialog">
+    <h2>Кто сегодня решает?</h2>
+    <p>Выбери своё имя. Прогресс, подсказки и самостоятельные решения будут записываться отдельно для каждого ученика.</p>
+    <label for="startStudentSelect">Ученик</label>
+    <select id="startStudentSelect"></select>
+    <div class="dialog-actions"><button class="btn primary" id="startBtn" type="button">Начать занятие</button></div>
+  </div>
+</div>
+<div class="overlay" id="editOverlay" hidden>
+  <div class="dialog">
+    <h2 id="editDialogTitle">Редактирование задачи</h2>
+    <p>Редактируется полная карточка JSON: условие, схема, раздел, сложность, шаги, ответы, подсказки и объяснения. После сохранения нажмите «Сохранить HTML», чтобы изменения остались в файле.</p>
+    <label for="taskJsonEditor">Данные карточки</label>
+    <textarea id="taskJsonEditor" spellcheck="false"></textarea>
+    <div class="dialog-actions"><button class="btn" id="cancelEditBtn" type="button">Отмена</button><button class="btn primary" id="saveEditBtn" type="button">Сохранить карточку</button></div>
+  </div>
+</div>
+<div class="overlay" id="reportOverlay" hidden>
+  <div class="dialog">
+    <h2>Формирование отчёта</h2>
+    <p>Отчёт включает результат каждой задачи, число попыток, использование подсказок и сохранённые ответы. В следующем окне печати выберите «Сохранить в PDF».</p>
+    <label for="reportScope">Кого включить в отчёт</label>
+    <select id="reportScope"><option value="current">Только выбранный ученик</option><option value="all">Все ученики</option></select>
+    <div class="dialog-actions"><button class="btn" id="cancelReportBtn" type="button">Отмена</button><button class="btn green" id="makeReportBtn" type="button">Открыть PDF-отчёт</button></div>
+  </div>
+</div>
+<div id="reportView"></div>
+<script id="embedded-state" type="application/json">{
+  "app": "Тренажёр задания 11 ЕГЭ — кодирование информации",
+  "version": 3,
+  "savedAt": null,
+  "students": [
+    {
+      "id": "student_default",
+      "name": "Ученик 1"
+    }
+  ],
+  "currentStudentId": null,
+  "progress": {},
+  "tasks": [
+    {
+      "id": "basic-variants-5",
+      "short": "Старт 1",
+      "name": "Минимум бит для 5 вариантов",
+      "section": "Основы кодирования информации",
+      "subsection": "Количество вариантов и степени двойки",
+      "sectionOrder": 1,
+      "subsectionOrder": 1,
+      "difficulty": 1,
+      "level": "Начальный",
+      "source": "Добавленная тренировочная карточка",
+      "context": "Есть 5 возможных вариантов события. Для каждого варианта нужно выделить уникальный двоичный код одинаковой длины.\nСколько минимально бит нужно?",
+      "schema": {
+        "title": "Дано",
+        "fields": [
+          {
+            "name": "Число вариантов",
+            "slots": 5,
+            "info": "5 разных значений",
+            "chars": 1,
+            "power": 5
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Биты на код",
+          "question": "Сколько минимально бит нужно для 5 вариантов?",
+          "answer": 3,
+          "explanation": "2² = 4 — кодов недостаточно. 2³ = 8 — кодов достаточно. Ответ: 3 бита.",
+          "hint": "Найди такую степень двойки, которая не меньше 5, но предыдущая степень меньше 5."
+        }
+      ],
+      "code": {
+        "finalAnswer": 3,
+        "finalExplain": "2² \u003c 5 ≤ 2³, поэтому нужно 3 бита."
+      }
+    },
+    {
+      "id": "basic-variants-26",
+      "short": "Старт 2",
+      "name": "Алфавит из 26 букв",
+      "section": "Основы кодирования информации",
+      "subsection": "Количество вариантов и степени двойки",
+      "sectionOrder": 1,
+      "subsectionOrder": 1,
+      "difficulty": 2,
+      "level": "Начальный",
+      "source": "Добавленная тренировочная карточка",
+      "context": "Один символ выбирается из 26 заглавных латинских букв. Символы кодируются одинаковым минимальным числом бит.\nСколько бит требуется на один символ?",
+      "schema": {
+        "title": "Дано",
+        "fields": [
+          {
+            "name": "Алфавит",
+            "slots": 26,
+            "info": "26 букв",
+            "chars": 1,
+            "power": 26
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Биты на символ",
+          "question": "Сколько бит нужно для одного символа?",
+          "answer": 5,
+          "explanation": "2⁴ = 16 — мало, а 2⁵ = 32 — достаточно. Нужно 5 бит.",
+          "hint": "Сравни 26 с соседними степенями двойки."
+        }
+      ],
+      "code": {
+        "finalAnswer": 5,
+        "finalExplain": "2⁴ \u003c 26 ≤ 2⁵, поэтому нужно 5 бит."
+      }
+    },
+    {
+      "id": "basic-bits-bytes-27",
+      "short": "Старт 3",
+      "name": "Округление бит до байтов",
+      "section": "Основы кодирования информации",
+      "subsection": "Биты, байты и округление",
+      "sectionOrder": 1,
+      "subsectionOrder": 2,
+      "difficulty": 1,
+      "level": "Начальный",
+      "source": "Добавленная тренировочная карточка",
+      "context": "Код занимает 27 бит. Для хранения выделяется целое число байтов, а неиспользованные биты последнего байта тоже занимают место.\nСколько байтов нужно для одного такого кода?",
+      "schema": {
+        "title": "Дано",
+        "fields": [
+          {
+            "name": "Размер кода",
+            "slots": 27,
+            "info": "27 бит",
+            "chars": 1,
+            "power": 27
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Байты",
+          "question": "Сколько целых байтов нужно для 27 бит?",
+          "answer": 4,
+          "explanation": "1 байт = 8 бит. 27/8 = 3,375 байта, значит нужно округлить вверх до 4 байт.",
+          "hint": "Подели 27 на 8 и округли вверх, потому что нельзя выделить долю байта."
+        }
+      ],
+      "code": {
+        "finalAnswer": 4,
+        "finalExplain": "ceil(27/8) = 4 байта."
+      }
+    },
+    {
+      "id": "2046",
+      "short": "2046",
+      "context": "В школе 800 учащихся. Коды записаны минимальным количеством бит.\n\nКаков информационный объём в байтах сообщения о кодах 320 учащихся?",
+      "schema": {
+        "title": "Структура кода учащегося",
+        "fields": [
+          {
+            "name": "Код",
+            "slots": 1,
+            "info": "1 из 800 вариантов",
+            "chars": 1,
+            "power": 800
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Код (бит)",
+          "question": "Сколько бит на один код учащегося?",
+          "answer": 10,
+          "explanation": "2⁹=512 — мало, 2¹⁰=1024 — хватит. Ответ: 10 бит.",
+          "hint": "800 учащихся."
+        },
+        {
+          "label": "Сообщение (бит)",
+          "question": "Сколько всего бит в сообщении о 320 учащихся?",
+          "answer": 3200,
+          "explanation": "320 · 10 = 3200 бит.",
+          "hint": "Умножай."
+        },
+        {
+          "label": "Сообщение (байт)",
+          "question": "Каков объём сообщения в байтах?",
+          "answer": 400,
+          "explanation": "3200/8 = 400 байт.",
+          "hint": "Деление на 8."
+        }
+      ],
+      "code": {
+        "finalAnswer": 400,
+        "finalExplain": "320·10/8 = 400"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "1 поле в идентификаторе",
+      "subsectionOrder": 1,
+      "sectionOrder": 2,
+      "difficulty": 1,
+      "level": "Начальный",
+      "name": "В школе 800 учащихся. Коды записаны минимальным количеством бит.",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "5702",
+      "short": "5702",
+      "context": "ID из 10 символов, каждый — одна из 26 строчных латинских букв или цифра (36 вариантов).\nДоп. сведения отдельно. На 100 пользователей 1000 байт.\n\nСколько бит выделено на доп. сведения?",
+      "schema": {
+        "title": "Структура пользователя",
+        "fields": [
+          {
+            "name": "ID",
+            "slots": 10,
+            "info": "26 букв + 10 цифр",
+            "chars": 10,
+            "power": 36
+          },
+          {
+            "name": "Доп",
+            "slots": 1,
+            "info": "?",
+            "chars": 1,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Символ (бит)",
+          "question": "Сколько бит на один символ ID?",
+          "answer": 6,
+          "explanation": "36 вариантов. 2⁵=32 — мало, 2⁶=64 — хватит.",
+          "hint": "36 символов."
+        },
+        {
+          "label": "Всего на одного",
+          "question": "Сколько байт на одного пользователя?",
+          "answer": 10,
+          "explanation": "1000/100 = 10 байт.",
+          "hint": "Всего / количество."
+        },
+        {
+          "label": "Бит на ID",
+          "question": "Сколько бит на один ID?",
+          "answer": 52,
+          "explanation": "ceil(log2(36¹⁰)) = ceil(10·log2(36)) = ceil(51.7) = 52 бита.",
+          "hint": "ceil(10 · log2(36))."
+        },
+        {
+          "label": "Байт на ID",
+          "question": "Сколько байт на ID (вверх)?",
+          "answer": 7,
+          "explanation": "52/8 = 6.5 → 7 байт.",
+          "hint": "Округление вверх."
+        },
+        {
+          "label": "Доп (байт)",
+          "question": "Сколько байт на доп. сведения?",
+          "answer": 3,
+          "explanation": "10 − 7 = 3 байта.",
+          "hint": "Вычти ID."
+        },
+        {
+          "label": "Доп (бит)",
+          "question": "Сколько бит на доп. сведения?",
+          "answer": 28,
+          "explanation": "ceil((52+x)/8) ≤ 10 → x ≤ 28.",
+          "hint": "52+x ≤ 80."
+        }
+      ],
+      "code": {
+        "finalAnswer": 28,
+        "finalExplain": "52+x ≤ 80 → x ≤ 28"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Дополнительные сведения",
+      "subsectionOrder": 2,
+      "sectionOrder": 2,
+      "difficulty": 2,
+      "level": "Базовый",
+      "name": "ID из 10 символов, каждый — одна из 26 строчных латинских букв или ц…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "6595",
+      "short": "6595",
+      "context": "Пароль из 48 символов, алфавит 8 символов (Т, А, Щ, И, М, Е, Г, Э). Посимвольное кодирование, минимальное число бит, минимальное целое число байт.\nДоп. сведения — целое число байт.\nДля 250 пользователей — 5750 байт.\n\nСколько байт выделено на доп. сведения?",
+      "schema": {
+        "title": "Структура пользователя",
+        "fields": [
+          {
+            "name": "Пароль",
+            "slots": 48,
+            "info": "алфавит 8 символов",
+            "chars": 48,
+            "power": 8
+          },
+          {
+            "name": "Доп",
+            "slots": 1,
+            "info": "?",
+            "chars": 1,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Символ (бит)",
+          "question": "Сколько бит на один символ пароля?",
+          "answer": 3,
+          "explanation": "2²=4 — мало, 2³=8 — хватит.",
+          "hint": "8-символьный алфавит."
+        },
+        {
+          "label": "Пароль (бит)",
+          "question": "Сколько бит в пароле?",
+          "answer": 144,
+          "explanation": "48·3 = 144 бита.",
+          "hint": "48 символов по 3 бита."
+        },
+        {
+          "label": "Пароль (байт)",
+          "question": "Сколько байт в пароле (вверх)?",
+          "answer": 18,
+          "explanation": "144/8 = 18 байт.",
+          "hint": "Деление на 8."
+        },
+        {
+          "label": "На одного",
+          "question": "Сколько байт на одного пользователя?",
+          "answer": 23,
+          "explanation": "5750/250 = 23 байта.",
+          "hint": "Всего / количество."
+        },
+        {
+          "label": "Доп",
+          "question": "Сколько байт выделено на доп. сведения?",
+          "answer": 5,
+          "explanation": "23 − 18 = 5 байт.",
+          "hint": "Вычти пароль из общего."
+        }
+      ],
+      "code": {
+        "finalAnswer": 5,
+        "finalExplain": "23 − 18 = 5"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Дополнительные сведения",
+      "subsectionOrder": 2,
+      "sectionOrder": 2,
+      "difficulty": 2,
+      "level": "Базовый",
+      "name": "Пароль из 48 символов, алфавит 8 символов (Т, А, Щ, И, М, Е, Г, Э).…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "4774",
+      "short": "4774",
+      "context": "Идентификатор из двух частей:\n• 10 заглавных латинских букв (посимвольно, минимум бит).\n• Целое число от 00001 до 99999 (минимум бит).\nДля полного ID — минимально возможное целое число байт.\nДоп. сведения занимают 13 байт.\n\nСколько максимум пользователей в 1800 байт?",
+      "schema": {
+        "title": "Структура ID пользователя",
+        "fields": [
+          {
+            "name": "Буквы",
+            "slots": 10,
+            "info": "26 заглавных букв",
+            "chars": 10,
+            "power": 26
+          },
+          {
+            "name": "Число",
+            "slots": 5,
+            "info": "00001…99999",
+            "chars": 5,
+            "power": 100000
+          },
+          {
+            "name": "Доп",
+            "slots": 1,
+            "info": "13 байт",
+            "chars": 1,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Буква (бит)",
+          "question": "Сколько бит на одну заглавную букву?",
+          "answer": 5,
+          "explanation": "2⁴=16 — мало, 2⁵=32 — хватит.",
+          "hint": "26 букв."
+        },
+        {
+          "label": "Число (бит)",
+          "question": "Сколько бит на число от 1 до 99999?",
+          "answer": 17,
+          "explanation": "2¹⁶=65536 — мало, 2¹⁷=131072 — хватит.",
+          "hint": "99999 вариантов."
+        },
+        {
+          "label": "ID (бит)",
+          "question": "Сколько всего бит в ID?",
+          "answer": 67,
+          "explanation": "10·5 + 17 = 50+17 = 67 бит.",
+          "hint": "10 букв + число."
+        },
+        {
+          "label": "ID (байт)",
+          "question": "Сколько байт занимает ID (вверх)?",
+          "answer": 9,
+          "explanation": "67/8 = 8.375 → 9 байт.",
+          "hint": "Деление с округлением вверх."
+        },
+        {
+          "label": "На одного",
+          "question": "Сколько байт на одного пользователя?",
+          "answer": 22,
+          "explanation": "9 + 13 = 22 байта.",
+          "hint": "ID + доп."
+        },
+        {
+          "label": "Пользователей",
+          "question": "Сколько максимум пользователей поместится в 1800 байт?",
+          "answer": 81,
+          "explanation": "1800/22 = 81.8 → 81 (округление вниз).",
+          "hint": "Деление с округлением вниз."
+        }
+      ],
+      "code": {
+        "finalAnswer": 81,
+        "finalExplain": "1800/22 = 81.8 → 81"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Дополнительные сведения",
+      "subsectionOrder": 2,
+      "sectionOrder": 2,
+      "difficulty": 3,
+      "level": "Средний",
+      "name": "Идентификатор из двух частей:",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "7840",
+      "short": "7840",
+      "context": "ID из 4 символов, каждый — китайский иероглиф из диапазона Unicode 0x4E00–0x9FBB (20924 иероглифа).\nОдинаковое минимальное целое число байт на ID, посимвольно, минимум бит.\n\nСколько Кбайт на 4864 ID?",
+      "schema": {
+        "title": "Структура ID",
+        "fields": [
+          {
+            "name": "ID",
+            "slots": 4,
+            "info": "20924 иероглифа",
+            "chars": 4,
+            "power": 20924
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Алфавит",
+          "question": "Сколько иероглифов в диапазоне?",
+          "answer": 20924,
+          "explanation": "0x9FBB − 0x4E00 + 1 = 20924.",
+          "hint": "Разность + 1."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Сколько бит на один иероглиф?",
+          "answer": 15,
+          "explanation": "2¹⁴=16384 — мало, 2¹⁵=32768 — хватит.",
+          "hint": "N = 20924."
+        },
+        {
+          "label": "ID (бит)",
+          "question": "Сколько бит в ID из 4 иероглифов?",
+          "answer": 60,
+          "explanation": "4·15 = 60 бит.",
+          "hint": "4 иероглифа."
+        },
+        {
+          "label": "ID (байт)",
+          "question": "Сколько байт в ID (вверх)?",
+          "answer": 8,
+          "explanation": "60/8 = 7.5 → 8 байт.",
+          "hint": "Округление вверх."
+        },
+        {
+          "label": "Всего (байт)",
+          "question": "Сколько байт на 4864 ID?",
+          "answer": 38912,
+          "explanation": "4864·8 = 38912 байт.",
+          "hint": "Умножай."
+        },
+        {
+          "label": "Всего (КБ)",
+          "question": "Сколько Кбайт?",
+          "answer": 38,
+          "explanation": "38912/1024 = 38 КБ.",
+          "hint": "Деление на 1024."
+        }
+      ],
+      "code": {
+        "finalAnswer": 38,
+        "finalExplain": "38912/1024 = 38"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "1 поле в идентификаторе",
+      "subsectionOrder": 2,
+      "sectionOrder": 2,
+      "difficulty": 3,
+      "level": "Средний",
+      "name": "ID из 4 символов, каждый — китайский иероглиф из диапазона Unicode 0…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "6823",
+      "short": "6823",
+      "context": "Идентификатор из цифр, больших и малых букв латинского алфавита (62 символа). Посимвольное кодирование, минимальное число бит, минимальное целое число байт.\nДоп. сведения — 32 байта (фиксировано).\nДля 314 пользователей потребовалось 12874 байта.\n\nНайдите максимальную длину идентификатора.",
+      "schema": {
+        "title": "Структура идентификатора",
+        "fields": [
+          {
+            "name": "ID",
+            "slots": 12,
+            "info": "цифры + буквы (62 символа)",
+            "chars": "?",
+            "power": 62
+          },
+          {
+            "name": "Доп",
+            "slots": 1,
+            "info": "32 байта",
+            "chars": 1,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Символ (бит)",
+          "question": "Сколько бит на один символ идентификатора?",
+          "answer": 6,
+          "explanation": "26+26+10 = 62. 2⁵=32 — мало, 2⁶=64 — хватит. Ответ: 6 бит.",
+          "hint": "Цифры + большие + малые буквы."
+        },
+        {
+          "label": "На одного",
+          "question": "Сколько байт приходится на одного пользователя?",
+          "answer": 41,
+          "explanation": "12874/314 = 41 байт.",
+          "hint": "Всего / количество."
+        },
+        {
+          "label": "ID (байт)",
+          "question": "Сколько байт выделено на идентификатор?",
+          "answer": 9,
+          "explanation": "41 − 32 = 9 байт.",
+          "hint": "Вычти доп. сведения."
+        },
+        {
+          "label": "ID (бит)",
+          "question": "Сколько бит выделено на идентификатор?",
+          "answer": 72,
+          "explanation": "9 · 8 = 72 бита.",
+          "hint": "Переведи байты в биты."
+        },
+        {
+          "label": "Длина ID",
+          "question": "Какова максимальная длина идентификатора (символов)?",
+          "answer": 12,
+          "explanation": "72/6 = 12 символов.",
+          "hint": "Всего бит / бит на символ."
+        }
+      ],
+      "code": {
+        "finalAnswer": 12,
+        "finalExplain": "72/6 = 12"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Дополнительные сведения",
+      "subsectionOrder": 2,
+      "sectionOrder": 2,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "Идентификатор из цифр, больших и малых букв латинского алфавита (62…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "parity-even",
+      "short": "Чётность 1",
+      "name": "Бит чётности: чётное число единиц",
+      "section": "Посимвольное кодирование",
+      "subsection": "Биты чётности",
+      "sectionOrder": 2,
+      "subsectionOrder": 3,
+      "difficulty": 1,
+      "level": "Начальный",
+      "source": "Добавленная тренировочная карточка",
+      "context": "К двоичной записи 101101 справа приписывают бит чётности так, чтобы общее количество единиц в результате было чётным.\nКакой бит нужно добавить?",
+      "schema": {
+        "title": "Двоичная запись",
+        "fields": [
+          {
+            "name": "Исходная запись",
+            "slots": 6,
+            "info": "101101",
+            "chars": 6,
+            "power": 2
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Число единиц",
+          "question": "Сколько единиц в строке 101101?",
+          "answer": 4,
+          "explanation": "В записи четыре единицы. Их количество уже чётное.",
+          "hint": "Посчитай все символы «1» в записи 101101."
+        },
+        {
+          "label": "Бит чётности",
+          "question": "Какой бит добавить, чтобы количество единиц осталось чётным?",
+          "answer": 0,
+          "explanation": "Добавление 0 не меняет число единиц, поэтому нужен бит 0.",
+          "hint": "Если число единиц уже чётное, добавление 0 сохраняет чётность."
+        }
+      ],
+      "code": {
+        "finalAnswer": 0,
+        "finalExplain": "Нужно добавить 0."
+      }
+    },
+    {
+      "id": "parity-odd",
+      "short": "Чётность 2",
+      "name": "Бит чётности: нечётное число единиц",
+      "section": "Посимвольное кодирование",
+      "subsection": "Биты чётности",
+      "sectionOrder": 2,
+      "subsectionOrder": 3,
+      "difficulty": 1,
+      "level": "Начальный",
+      "source": "Добавленная тренировочная карточка",
+      "context": "К двоичной записи 1110100 справа приписывают бит чётности так, чтобы общее количество единиц стало нечётным.\nКакой бит нужно добавить?",
+      "schema": {
+        "title": "Двоичная запись",
+        "fields": [
+          {
+            "name": "Исходная запись",
+            "slots": 7,
+            "info": "1110100",
+            "chars": 7,
+            "power": 2
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Число единиц",
+          "question": "Сколько единиц в строке 1110100?",
+          "answer": 4,
+          "explanation": "В исходной записи четыре единицы — это чётное количество.",
+          "hint": "Посчитай символы «1»."
+        },
+        {
+          "label": "Бит чётности",
+          "question": "Какой бит добавить, чтобы количество единиц стало нечётным?",
+          "answer": 1,
+          "explanation": "Добавление 1 увеличивает количество единиц с 4 до 5 — оно станет нечётным.",
+          "hint": "Чтобы из чётного количества единиц получить нечётное, добавь 1."
+        }
+      ],
+      "code": {
+        "finalAnswer": 1,
+        "finalExplain": "Нужно добавить 1."
+      }
+    },
+    {
+      "id": "parity-rule",
+      "short": "Чётность 3",
+      "name": "Бит по алгоритму из условия",
+      "section": "Посимвольное кодирование",
+      "subsection": "Биты чётности",
+      "sectionOrder": 2,
+      "subsectionOrder": 3,
+      "difficulty": 2,
+      "level": "Базовый",
+      "source": "Добавленная тренировочная карточка",
+      "context": "Алгоритм приписывает справа бит по правилу: если в двоичной записи нечётное количество единиц, приписать 1, иначе приписать 0.\nИсходная запись — 1010111. Какой бит приписывается?",
+      "schema": {
+        "title": "Дано",
+        "fields": [
+          {
+            "name": "Исходная запись",
+            "slots": 7,
+            "info": "1010111",
+            "chars": 7,
+            "power": 2
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Подсчёт единиц",
+          "question": "Сколько единиц в записи 1010111?",
+          "answer": 5,
+          "explanation": "В записи пять единиц, это нечётное количество.",
+          "hint": "Посчитай цифры 1: 1 0 1 0 1 1 1."
+        },
+        {
+          "label": "Приписываемый бит",
+          "question": "Какой бит предписывает алгоритм?",
+          "answer": 1,
+          "explanation": "Количество единиц нечётное, поэтому по условию приписывается 1.",
+          "hint": "Примени правило алгоритма буквально."
+        }
+      ],
+      "code": {
+        "finalAnswer": 1,
+        "finalExplain": "Пять единиц — нечётное количество, поэтому приписывается 1."
+      }
+    },
+    {
+      "id": "parity-records",
+      "short": "Чётность 4",
+      "name": "Объём кодов с битом чётности",
+      "section": "Посимвольное кодирование",
+      "subsection": "Биты чётности",
+      "sectionOrder": 2,
+      "subsectionOrder": 3,
+      "difficulty": 3,
+      "level": "Средний",
+      "source": "Добавленная тренировочная карточка",
+      "context": "Каждая запись содержит 12 бит данных. К каждой записи добавляется один бит чётности. Каждая запись хранится отдельно в минимальном целом числе байтов.\nСколько байтов занимают 2048 записей?",
+      "schema": {
+        "title": "Структура записи",
+        "fields": [
+          {
+            "name": "Данные",
+            "slots": 12,
+            "info": "12 бит",
+            "chars": 12,
+            "power": 4096
+          },
+          {
+            "name": "Бит чётности",
+            "slots": 1,
+            "info": "1 бит",
+            "chars": 1,
+            "power": 2
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Биты в записи",
+          "question": "Сколько бит содержит одна запись вместе с битом чётности?",
+          "answer": 13,
+          "explanation": "12 бит данных + 1 бит чётности = 13 бит.",
+          "hint": "Прибавь один дополнительный бит к 12."
+        },
+        {
+          "label": "Байты в записи",
+          "question": "Сколько целых байтов отводится на одну запись?",
+          "answer": 2,
+          "explanation": "13/8 = 1,625, поэтому для одной записи нужно 2 байта.",
+          "hint": "Раздели 13 на 8 и округли вверх для каждой записи."
+        },
+        {
+          "label": "Общий объём",
+          "question": "Сколько байтов займут 2048 записей?",
+          "answer": 4096,
+          "explanation": "2048 × 2 = 4096 байт. Каждая запись отдельно округляется до 2 байт.",
+          "hint": "Умножь количество записей на размер одной записи в байтах."
+        }
+      ],
+      "code": {
+        "finalAnswer": 4096,
+        "finalExplain": "ceil(13/8) × 2048 = 2 × 2048 = 4096 байт."
+      }
+    },
+    {
+      "id": "2047",
+      "short": "2047",
+      "context": "В базе данных хранятся записи о датах. Каждая запись содержит 3 поля:\n• год (1 до 2100),\n• номер месяца (1 до 12),\n• номер дня в месяце (1 до 31).\n\nКаждое поле записывается отдельно с минимально возможным числом бит.\n\nОпределите минимальное количество бит для кодирования одной записи.",
+      "schema": {
+        "title": "Структура одной записи",
+        "fields": [
+          {
+            "name": "Год",
+            "slots": 4,
+            "info": "1…2100",
+            "chars": 1,
+            "power": 2100
+          },
+          {
+            "name": "Месяц",
+            "slots": 3,
+            "info": "1…12",
+            "chars": 1,
+            "power": 12
+          },
+          {
+            "name": "День",
+            "slots": 3,
+            "info": "1…31",
+            "chars": 1,
+            "power": 31
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Год (бит)",
+          "question": "Сколько бит нужно, чтобы закодировать все возможные годы?",
+          "answer": 12,
+          "explanation": "2¹¹=2048 — мало. 2¹²=4096 — хватит. Ответ: 12 бит.",
+          "hint": "Год от 1 до 2100 — это 2100 вариантов."
+        },
+        {
+          "label": "Месяц (бит)",
+          "question": "Сколько бит нужно для кодирования месяца?",
+          "answer": 4,
+          "explanation": "2³=8 — мало, 2⁴=16 — хватит. Ответ: 4 бита.",
+          "hint": "Месяц от 1 до 12 — 12 вариантов."
+        },
+        {
+          "label": "День (бит)",
+          "question": "Сколько бит нужно для кодирования дня?",
+          "answer": 5,
+          "explanation": "2⁴=16 — мало, 2⁵=32 — хватит. Ответ: 5 бит.",
+          "hint": "День от 1 до 31 — 31 вариант."
+        },
+        {
+          "label": "Всего (бит)",
+          "question": "Сколько ВСЕГО бит нужно для одной записи?",
+          "answer": 21,
+          "explanation": "12+4+5 = 21 бит.",
+          "hint": "Поля кодируются отдельно. Сложи три значения."
+        }
+      ],
+      "code": {
+        "finalAnswer": 21,
+        "finalExplain": "12+4+5 = 21"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Несколько полей",
+      "subsectionOrder": 4,
+      "sectionOrder": 2,
+      "difficulty": 2,
+      "level": "Базовый",
+      "name": "В базе данных хранятся записи о датах. Каждая запись содержит 3 поля…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "263",
+      "short": "263",
+      "context": "В базе данных: Фамилия (16 символов, русские буквы: 1 прописная + строчные), Имя (12 символов), Отчество (16 символов), Год рождения (1992–2003).\nБуквы е и ё совпадают (32 буквы).\nКаждое поле записывается минимальным числом бит.\n\nСколько минимум байт нужно для кодирования одной записи?",
+      "schema": {
+        "title": "Структура записи",
+        "fields": [
+          {
+            "name": "Фамилия",
+            "slots": 16,
+            "info": "32 русские буквы",
+            "chars": 16,
+            "power": 32
+          },
+          {
+            "name": "Имя",
+            "slots": 12,
+            "info": "32 русские буквы",
+            "chars": 12,
+            "power": 32
+          },
+          {
+            "name": "Отчество",
+            "slots": 16,
+            "info": "32 русские буквы",
+            "chars": 16,
+            "power": 32
+          },
+          {
+            "name": "Год",
+            "slots": 4,
+            "info": "1992…2003",
+            "chars": 1,
+            "power": 12
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Буква (бит)",
+          "question": "Сколько бит на одну русскую букву?",
+          "answer": 5,
+          "explanation": "2⁵=32 — хватит (32 буквы).",
+          "hint": "32 буквы (с ё=е)."
+        },
+        {
+          "label": "Фамилия (бит)",
+          "question": "Сколько бит на фамилию?",
+          "answer": 80,
+          "explanation": "16·5 = 80 бит.",
+          "hint": "16 символов."
+        },
+        {
+          "label": "Имя (бит)",
+          "question": "Сколько бит на имя?",
+          "answer": 60,
+          "explanation": "12·5 = 60 бит.",
+          "hint": "12 символов."
+        },
+        {
+          "label": "Отчество (бит)",
+          "question": "Сколько бит на отчество?",
+          "answer": 80,
+          "explanation": "16·5 = 80 бит.",
+          "hint": "16 символов."
+        },
+        {
+          "label": "Год (бит)",
+          "question": "Сколько бит на год рождения (1992–2003)?",
+          "answer": 4,
+          "explanation": "2³=8 — мало, 2⁴=16 — хватит (12 лет).",
+          "hint": "12 вариантов."
+        },
+        {
+          "label": "Всего (бит)",
+          "question": "Сколько всего бит на запись?",
+          "answer": 224,
+          "explanation": "80+60+80+4 = 224 бита.",
+          "hint": "Сложи все поля."
+        },
+        {
+          "label": "Всего (байт)",
+          "question": "Сколько байт?",
+          "answer": 28,
+          "explanation": "224/8 = 28 байт.",
+          "hint": "Деление на 8."
+        }
+      ],
+      "code": {
+        "finalAnswer": 28,
+        "finalExplain": "224/8 = 28"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Несколько полей",
+      "subsectionOrder": 4,
+      "sectionOrder": 2,
+      "difficulty": 3,
+      "level": "Средний",
+      "name": "В базе данных: Фамилия (16 символов, русские буквы: 1 прописная + ст…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "5703",
+      "short": "5703",
+      "context": "Раз в год наблюдения за солнечной активностью пишутся в базу данных минимальным целым числом байт.\n\nКаждая запись:\n• результат измерений из 5 заглавных латинских букв,\n• год измерения (2000 до 2099).\n\nКаждый символ кодируется минимально возможным числом бит. Символы, не изменяющиеся в записи года, сохранять не нужно.\n\nСколько байтов требуется для хранения всех измерений?",
+      "schema": {
+        "title": "Структура записи",
+        "fields": [
+          {
+            "name": "Буквы",
+            "slots": 5,
+            "info": "5 заглавных латинских букв",
+            "chars": 5,
+            "power": 26
+          },
+          {
+            "name": "Год",
+            "slots": 4,
+            "info": "2000…2099, храним 2 цифры",
+            "chars": 2,
+            "power": 10
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Буква (бит)",
+          "question": "Сколько бит нужно для одной заглавной латинской буквы?",
+          "answer": 5,
+          "explanation": "2⁴=16 — мало, 2⁵=32 — хватит. Ответ: 5 бит.",
+          "hint": "26 заглавных букв."
+        },
+        {
+          "label": "Цифра года (бит)",
+          "question": "Сколько бит нужно для одной десятичной цифры?",
+          "answer": 4,
+          "explanation": "2³=8 — мало, 2⁴=16 — хватит. Ответ: 4 бита.",
+          "hint": "10 цифр."
+        },
+        {
+          "label": "Символов года",
+          "question": "Сколько символов года нужно сохранять?",
+          "answer": 2,
+          "explanation": "Первые \"20\" не меняются. Меняются только 2 последние цифры.",
+          "hint": "2000...2099 — что всегда одинаковое?"
+        },
+        {
+          "label": "Запись (бит)",
+          "question": "Сколько всего бит занимает одна запись?",
+          "answer": 33,
+          "explanation": "5·5 + 2·4 = 25+8 = 33 бита.",
+          "hint": "5 букв по 5 бит + 2 цифры по 4 бита."
+        },
+        {
+          "label": "Запись (байт)",
+          "question": "Сколько байт занимает одна запись (округление вверх)?",
+          "answer": 5,
+          "explanation": "33/8 = 4.125 → 5 байт.",
+          "hint": "Деление на 8 с округлением вверх."
+        },
+        {
+          "label": "Записей",
+          "question": "Сколько всего записей в базе?",
+          "answer": 100,
+          "explanation": "С 2000 по 2099 включительно — 100 лет.",
+          "hint": "2099−2000+1 = ?"
+        },
+        {
+          "label": "Всего (байт)",
+          "question": "Сколько всего байт для хранения всех измерений?",
+          "answer": 500,
+          "explanation": "100 · 5 = 500 байт.",
+          "hint": "Умножь число записей на объём одной."
+        }
+      ],
+      "code": {
+        "finalAnswer": 500,
+        "finalExplain": "100 · 5 = 500"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Несколько полей",
+      "subsectionOrder": 4,
+      "sectionOrder": 2,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "Раз в год наблюдения за солнечной активностью пишутся в базу данных…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "2052",
+      "short": "2052",
+      "context": "На пропуске: личный код, код подразделения и доп. информация.\n• Личный код — 14 символов: 26 букв или 10 цифр. Кодируется посимвольно, минимальным целым числом байт.\n• Код подразделения — 8 символов: первые 5 — буквы A–F, последние 3 — цифры. Тоже посимвольно, минимальным целым числом байт.\n\nВсего на пропуске 30 байт. Сколько байт выделено для доп. сведений?",
+      "schema": {
+        "title": "Структура пропуска",
+        "fields": [
+          {
+            "name": "Личный код",
+            "slots": 14,
+            "info": "26 букв или 10 цифр",
+            "chars": 14,
+            "power": 36
+          },
+          {
+            "name": "Подразделение",
+            "slots": 8,
+            "info": "5 букв A–F + 3 цифры",
+            "chars": 8,
+            "power": "?"
+          },
+          {
+            "name": "Доп. сведения",
+            "slots": 1,
+            "info": "?",
+            "chars": 1,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Символов в ЛК",
+          "question": "Сколько вариантов символа на одной позиции личного кода?",
+          "answer": 36,
+          "explanation": "26+10 = 36.",
+          "hint": "Сложи буквы и цифры."
+        },
+        {
+          "label": "Символ ЛК (бит)",
+          "question": "Сколько бит на один символ личного кода?",
+          "answer": 6,
+          "explanation": "2⁵=32 — мало, 2⁶=64 — хватит.",
+          "hint": "N = 36."
+        },
+        {
+          "label": "ЛК (бит)",
+          "question": "Сколько всего бит в личном коде?",
+          "answer": 84,
+          "explanation": "14·6 = 84 бита.",
+          "hint": "14 символов по 6 бит."
+        },
+        {
+          "label": "ЛК (байт)",
+          "question": "Сколько байт в личном коде (вверх)?",
+          "answer": 11,
+          "explanation": "84/8 = 10.5 → 11 байт.",
+          "hint": "Деление с округлением вверх."
+        },
+        {
+          "label": "Буква КП (бит)",
+          "question": "Сколько бит на одну букву кода подразделения (A–F)?",
+          "answer": 3,
+          "explanation": "2²=4 — мало, 2³=8 — хватит.",
+          "hint": "6 букв."
+        },
+        {
+          "label": "Цифра КП (бит)",
+          "question": "Сколько бит на одну цифру кода подразделения?",
+          "answer": 4,
+          "explanation": "2³=8 — мало, 2⁴=16 — хватит.",
+          "hint": "10 цифр."
+        },
+        {
+          "label": "КП (бит)",
+          "question": "Сколько всего бит в коде подразделения?",
+          "answer": 27,
+          "explanation": "5·3 + 3·4 = 15+12 = 27 бит.",
+          "hint": "5 букв по 3 + 3 цифры по 4."
+        },
+        {
+          "label": "КП (байт)",
+          "question": "Сколько байт в коде подразделения (вверх)?",
+          "answer": 4,
+          "explanation": "27/8 = 3.375 → 4 байта.",
+          "hint": "Деление с округлением вверх."
+        },
+        {
+          "label": "Доп. сведения",
+          "question": "Сколько байт осталось на доп. сведения?",
+          "answer": 15,
+          "explanation": "30 − 11 − 4 = 15 байт.",
+          "hint": "Вычти из 30 оба кода."
+        }
+      ],
+      "code": {
+        "finalAnswer": 15,
+        "finalExplain": "30 − 11 − 4 = 15"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Несколько полей + дополнительные сведения",
+      "subsectionOrder": 5,
+      "sectionOrder": 2,
+      "difficulty": 3,
+      "level": "Средний",
+      "name": "На пропуске: личный код, код подразделения и доп. информация.",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "2857",
+      "short": "2857",
+      "context": "Уникальный код из трёх частей:\n• Категория: 6 вариантов (A–F), посимвольное кодирование.\n• Группа: 11 символов, каждый — одна из 20 букв (без учёта категорий), посимвольно.\n• Номер в категории: 1..1999 — минимальное число бит.\nДля кода в целом — минимальное целое число байт.\nДоп. информация — целое число байт.\n36 объектов занимают 1188 байт.\n\nСколько байт на доп. информацию об одном объекте?",
+      "schema": {
+        "title": "Структура уникального кода",
+        "fields": [
+          {
+            "name": "Категория",
+            "slots": 1,
+            "info": "6 вариантов A–F",
+            "chars": 1,
+            "power": 6
+          },
+          {
+            "name": "Группа",
+            "slots": 11,
+            "info": "20 букв",
+            "chars": 11,
+            "power": 20
+          },
+          {
+            "name": "Номер",
+            "slots": 4,
+            "info": "1…1999",
+            "chars": 1,
+            "power": 1999
+          },
+          {
+            "name": "Доп",
+            "slots": 1,
+            "info": "?",
+            "chars": 1,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Категория (бит)",
+          "question": "Сколько бит на категорию?",
+          "answer": 3,
+          "explanation": "2²=4 — мало, 2³=8 — хватит (6 категорий).",
+          "hint": "6 вариантов."
+        },
+        {
+          "label": "Буква группы (бит)",
+          "question": "Сколько бит на одну букву группы?",
+          "answer": 5,
+          "explanation": "2⁴=16 — мало, 2⁵=32 — хватит (20 букв).",
+          "hint": "20 букв."
+        },
+        {
+          "label": "Группа (бит)",
+          "question": "Сколько бит в группе?",
+          "answer": 55,
+          "explanation": "11 · 5 = 55 бит.",
+          "hint": "11 символов."
+        },
+        {
+          "label": "Номер (бит)",
+          "question": "Сколько бит на номер 1..1999?",
+          "answer": 11,
+          "explanation": "2¹⁰=1024 — мало, 2¹¹=2048 — хватит.",
+          "hint": "1999 вариантов."
+        },
+        {
+          "label": "Код (бит)",
+          "question": "Сколько всего бит в коде?",
+          "answer": 69,
+          "explanation": "3 + 55 + 11 = 69 бит.",
+          "hint": "Сложи три части."
+        },
+        {
+          "label": "Код (байт)",
+          "question": "Сколько байт в коде (вверх)?",
+          "answer": 9,
+          "explanation": "69/8 = 8.625 → 9 байт.",
+          "hint": "Округление вверх."
+        },
+        {
+          "label": "На одного",
+          "question": "Сколько байт на одного пользователя?",
+          "answer": 33,
+          "explanation": "1188/36 = 33 байта.",
+          "hint": "Всего / количество."
+        },
+        {
+          "label": "Доп",
+          "question": "Сколько байт на доп. информацию?",
+          "answer": 24,
+          "explanation": "33 − 9 = 24 байта.",
+          "hint": "Вычти код."
+        }
+      ],
+      "code": {
+        "finalAnswer": 24,
+        "finalExplain": "33 − 9 = 24"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Несколько полей + дополнительные сведения",
+      "subsectionOrder": 5,
+      "sectionOrder": 2,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "Уникальный код из трёх частей:",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "3338",
+      "short": "3338",
+      "context": "Электронный пропуск: личный код из двух частей.\n• Первая часть — 10 символов, каждая из 26 заглавных латинских букв.\n• Вторая часть — 8 символов, каждая из 10 цифр.\nСимволы в пределах одной части кодируются одинаково минимальным числом бит. Для кода в целом — минимально возможное целое число байт.\nДля 60 пользователей потребовалось 1980 байт.\n\nСколько байт выделено для доп. информации об одном пользователе?",
+      "schema": {
+        "title": "Структура электронного пропуска",
+        "fields": [
+          {
+            "name": "Часть 1",
+            "slots": 10,
+            "info": "26 заглавных букв",
+            "chars": 10,
+            "power": 26
+          },
+          {
+            "name": "Часть 2",
+            "slots": 8,
+            "info": "10 цифр",
+            "chars": 8,
+            "power": 10
+          },
+          {
+            "name": "Доп",
+            "slots": 1,
+            "info": "?",
+            "chars": 1,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Буква (бит)",
+          "question": "Сколько бит на одну заглавную букву?",
+          "answer": 5,
+          "explanation": "2⁴=16 — мало, 2⁵=32 — хватит.",
+          "hint": "26 букв."
+        },
+        {
+          "label": "Цифра (бит)",
+          "question": "Сколько бит на одну цифру?",
+          "answer": 4,
+          "explanation": "2³=8 — мало, 2⁴=16 — хватит.",
+          "hint": "10 цифр."
+        },
+        {
+          "label": "Код (бит)",
+          "question": "Сколько всего бит в коде?",
+          "answer": 82,
+          "explanation": "10·5 + 8·4 = 50+32 = 82 бита.",
+          "hint": "10 букв + 8 цифр."
+        },
+        {
+          "label": "Код (байт)",
+          "question": "Сколько байт занимает код (вверх)?",
+          "answer": 11,
+          "explanation": "82/8 = 10.25 → 11 байт.",
+          "hint": "Деление с округлением вверх."
+        },
+        {
+          "label": "На одного",
+          "question": "Сколько всего байт приходится на одного пользователя?",
+          "answer": 33,
+          "explanation": "1980/60 = 33 байта.",
+          "hint": "Всего / количество."
+        },
+        {
+          "label": "Доп",
+          "question": "Сколько байт выделено для доп. информации?",
+          "answer": 22,
+          "explanation": "33 − 11 = 22 байта.",
+          "hint": "Вычти код из общего."
+        }
+      ],
+      "code": {
+        "finalAnswer": 22,
+        "finalExplain": "33 − 11 = 22"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Несколько полей + дополнительные сведения",
+      "subsectionOrder": 5,
+      "sectionOrder": 2,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "Электронный пропуск: личный код из двух частей.",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "7418",
+      "short": "7418",
+      "context": "ID из 10 символов + пароль из 25 символов. Один и тот же алфавит для обоих, посимвольное кодирование с минимальным числом бит.\nДоп. сведения — 48 байт на пользователя.\nДля 1536 пользователей — 120 Кбайт.\n\nКакое максимальное количество символов в алфавите?",
+      "schema": {
+        "title": "Структура пользователя",
+        "fields": [
+          {
+            "name": "ID",
+            "slots": 10,
+            "info": "общий алфавит",
+            "chars": 10,
+            "power": "?"
+          },
+          {
+            "name": "Пароль",
+            "slots": 25,
+            "info": "общий алфавит",
+            "chars": 25,
+            "power": "?"
+          },
+          {
+            "name": "Доп",
+            "slots": 1,
+            "info": "48 байт",
+            "chars": 1,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Всего байт",
+          "question": "Сколько всего байт отведено (120 Кбайт = ?)?",
+          "answer": 122880,
+          "explanation": "120 · 1024 = 122880 байт.",
+          "hint": "Умножь на 1024."
+        },
+        {
+          "label": "На одного",
+          "question": "Сколько байт на одного пользователя?",
+          "answer": 80,
+          "explanation": "122880/1536 = 80 байт.",
+          "hint": "Всего / количество."
+        },
+        {
+          "label": "ID+пароль (байт)",
+          "question": "Сколько байт на ID + пароль?",
+          "answer": 32,
+          "explanation": "80 − 48 = 32 байта.",
+          "hint": "Вычти доп. сведения."
+        },
+        {
+          "label": "ID+пароль (бит)",
+          "question": "Сколько бит на ID + пароль?",
+          "answer": 256,
+          "explanation": "32 · 8 = 256 бит.",
+          "hint": "Байты в биты."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Сколько максимум бит на один символ?",
+          "answer": 7,
+          "explanation": "Всего 35 символов. 35k ≤ 256 → k ≤ 7.31 → 7 бит.",
+          "hint": "35 = 10+25 символов."
+        },
+        {
+          "label": "Мощность",
+          "question": "Какова максимальная мощность алфавита?",
+          "answer": 128,
+          "explanation": "2⁷ = 128.",
+          "hint": "Возведи 2 в степень."
+        }
+      ],
+      "code": {
+        "finalAnswer": 128,
+        "finalExplain": "2⁷ = 128"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Обратные задачи",
+      "subsectionOrder": 6,
+      "sectionOrder": 2,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "ID из 10 символов + пароль из 25 символов. Один и тот же алфавит для…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "18614",
+      "short": "18614",
+      "context": "Код из 24 символов: буква (заглавная/строчная) или цифра или спецсимвол. Кодируется минимальным числом бит, минимальным целым числом байт.\n5100 кодов выделено ≤ 170 Кбайт.\n\nКакое наибольшее количество спецсимволов в наборе?",
+      "schema": {
+        "title": "Структура кода",
+        "fields": [
+          {
+            "name": "Код",
+            "slots": 24,
+            "info": "62 базовых + спецсимволы",
+            "chars": 24,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "База",
+          "question": "Сколько символов без спецнабора (буквы + цифры)?",
+          "answer": 62,
+          "explanation": "26+26+10 = 62.",
+          "hint": "Заглавные + строчные + цифры."
+        },
+        {
+          "label": "Всего КБ",
+          "question": "Сколько байт в 170 Кбайт?",
+          "answer": 174080,
+          "explanation": "170·1024 = 174080 байт.",
+          "hint": "КБ → байты."
+        },
+        {
+          "label": "Байт на код",
+          "question": "Максимум байт на один код?",
+          "answer": 34,
+          "explanation": "174080/5100 = 34.13 → 34 байта.",
+          "hint": "Всего / количество."
+        },
+        {
+          "label": "Бит на код",
+          "question": "Сколько бит приходится на один код?",
+          "answer": 272,
+          "explanation": "34·8 = 272 бита.",
+          "hint": "Байты в биты."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Сколько максимум бит на один символ?",
+          "answer": 11,
+          "explanation": "24k ≤ 272 → k ≤ 11.33 → 11 бит.",
+          "hint": "24 символа."
+        },
+        {
+          "label": "Спецсимволов",
+          "question": "Сколько максимум спецсимволов?",
+          "answer": 1986,
+          "explanation": "2¹¹ = 2048. 2048 − 62 = 1986.",
+          "hint": "2^k − 62."
+        }
+      ],
+      "code": {
+        "finalAnswer": 1986,
+        "finalExplain": "2048 − 62 = 1986"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Обратные задачи",
+      "subsectionOrder": 6,
+      "sectionOrder": 2,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "Код из 24 символов: буква (заглавная/строчная) или цифра или спецсим…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "4323",
+      "short": "4323",
+      "context": "ID из 163 символов, минимальное целое число байт на ID, посимвольно, минимум бит.\n32768 ID занимают 3264 Кбайт.\n\nОпределите минимальное количество различных символов в алфавите.",
+      "schema": {
+        "title": "Структура ID",
+        "fields": [
+          {
+            "name": "ID",
+            "slots": 163,
+            "info": "мощность алфавита ?",
+            "chars": 163,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Байт всего",
+          "question": "Сколько байт в 3264 КБ?",
+          "answer": 3342336,
+          "explanation": "3264·1024 = 3342336.",
+          "hint": "КБ → байты."
+        },
+        {
+          "label": "Байт на ID",
+          "question": "Сколько байт на один ID?",
+          "answer": 102,
+          "explanation": "3342336/32768 = 102 байта.",
+          "hint": "Всего / количество."
+        },
+        {
+          "label": "Бит на ID",
+          "question": "Сколько бит на ID?",
+          "answer": 816,
+          "explanation": "102·8 = 816 бит.",
+          "hint": "Байты в биты."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Сколько бит на один символ?",
+          "answer": 5,
+          "explanation": "816/163 = 5.006 → 5 бит.",
+          "hint": "163 символа."
+        },
+        {
+          "label": "Мощность",
+          "question": "Сколько различных символов в алфавите?",
+          "answer": 17,
+          "explanation": "Строго: 163k = 816 → k=5. Ответ задачи: 17.",
+          "hint": "Задача-перебор."
+        }
+      ],
+      "code": {
+        "finalAnswer": 17,
+        "finalExplain": "k=5, m=17"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Обратные задачи",
+      "subsectionOrder": 6,
+      "sectionOrder": 2,
+      "difficulty": 5,
+      "level": "Высокий",
+      "name": "ID из 163 символов, минимальное целое число байт на ID, посимвольно,…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "7552",
+      "short": "7552",
+      "context": "Серийный номер содержит цифры и символы из 2030-символьного спец. алфавита. Одинаковое минимальное число байт на номер, посимвольно, минимум бит.\n318 номеров занимают более 67 Кбайт.\n\nОпределите минимальную длину серийного номера.",
+      "schema": {
+        "title": "Структура серийного номера",
+        "fields": [
+          {
+            "name": "Номер",
+            "slots": 157,
+            "info": "10 цифр + 2030 спецсимволов",
+            "chars": "?",
+            "power": 2040
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Алфавит",
+          "question": "Сколько всего символов?",
+          "answer": 2040,
+          "explanation": "2030 + 10 цифр = 2040.",
+          "hint": "Спец. + цифры."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Сколько бит на один символ?",
+          "answer": 11,
+          "explanation": "2¹⁰=1024 — мало, 2¹¹=2048 — хватит.",
+          "hint": "N = 2040."
+        },
+        {
+          "label": "Байт всего",
+          "question": "Сколько байт в 67 КБ?",
+          "answer": 68608,
+          "explanation": "67·1024 = 68608 байт.",
+          "hint": "КБ → байты."
+        },
+        {
+          "label": "Байт на номер",
+          "question": "Минимум байт на один номер (>67 КБ)?",
+          "answer": 216,
+          "explanation": "68608/318 = 215.7 → 216 байт.",
+          "hint": "Всего / количество."
+        },
+        {
+          "label": "Бит на номер",
+          "question": "Сколько бит на номер?",
+          "answer": 1728,
+          "explanation": "216·8 = 1728 бит.",
+          "hint": "Байты в биты."
+        },
+        {
+          "label": "Длина",
+          "question": "Минимальная длина номера?",
+          "answer": 157,
+          "explanation": "1728/11 = 157.09 → 157 символов.",
+          "hint": "Всего бит / бит на символ."
+        }
+      ],
+      "code": {
+        "finalAnswer": 157,
+        "finalExplain": "1728/11 = 157.09 → 157"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Обратные задачи",
+      "subsectionOrder": 6,
+      "sectionOrder": 2,
+      "difficulty": 5,
+      "level": "Высокий",
+      "name": "Серийный номер содержит цифры и символы из 2030-символьного спец. ал…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "17552",
+      "short": "17552",
+      "context": "Серийный номер из 261 символа. Одинаковое минимальное целое число байт на номер. Посимвольно, минимум бит на символ.\n252500 номеров занимают более 31 Мбайт.\n\nОпределите минимально возможную мощность алфавита.",
+      "schema": {
+        "title": "Структура серийного номера",
+        "fields": [
+          {
+            "name": "Номер",
+            "slots": 261,
+            "info": "мощность алфавита ?",
+            "chars": 261,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Всего байт",
+          "question": "Сколько байт в 31 МБ?",
+          "answer": 32505856,
+          "explanation": "31·1024·1024 = 32505856.",
+          "hint": "МБ → байты."
+        },
+        {
+          "label": "Байт на номер",
+          "question": "Минимум байт на один номер (>31 МБ)?",
+          "answer": 129,
+          "explanation": "32505856/252500 = 128.7 → минимум 129 байт.",
+          "hint": "Всего / количество."
+        },
+        {
+          "label": "Бит на номер",
+          "question": "Бит на номер?",
+          "answer": 1032,
+          "explanation": "129·8 = 1032 бита.",
+          "hint": "Байты в биты."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Минимум бит на символ?",
+          "answer": 4,
+          "explanation": "1032/261 = 3.95 → 4 бита.",
+          "hint": "261 символ."
+        },
+        {
+          "label": "Мощность",
+          "question": "Минимальная мощность алфавита?",
+          "answer": 9,
+          "explanation": "2³=8 — мало, значит 9..16. Минимум — 9.",
+          "hint": "Задача-перебор."
+        }
+      ],
+      "code": {
+        "finalAnswer": 9,
+        "finalExplain": "минимум 9"
+      },
+      "section": "Посимвольное кодирование",
+      "subsection": "Обратные задачи",
+      "subsectionOrder": 6,
+      "sectionOrder": 2,
+      "difficulty": 5,
+      "level": "Высокий",
+      "name": "Серийный номер из 261 символа. Одинаковое минимальное целое число ба…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "np-integer",
+      "short": "Целое число",
+      "name": "Числовое поле кодируется целиком",
+      "section": "Непосимвольное кодирование",
+      "subsection": "Числовое поле кодируется целиком",
+      "sectionOrder": 3,
+      "subsectionOrder": 1,
+      "difficulty": 1,
+      "level": "Начальный",
+      "source": "Добавленная тренировочная карточка",
+      "context": "В записи хранится порядковый номер от 0 до 999 включительно. Число кодируется как единое целое значение в двоичном виде, а не как отдельные десятичные цифры.\nСколько бит нужно для кодирования номера?",
+      "schema": {
+        "title": "Дано",
+        "fields": [
+          {
+            "name": "Номер",
+            "slots": 1000,
+            "info": "значения 0…999, всего 1000 вариантов",
+            "chars": 1,
+            "power": 1000
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Число вариантов",
+          "question": "Сколько разных значений номера возможно?",
+          "answer": 1000,
+          "explanation": "От 0 до 999 включительно — 999 − 0 + 1 = 1000 вариантов.",
+          "hint": "Для целого диапазона от a до b число значений равно b − a + 1."
+        },
+        {
+          "label": "Биты",
+          "question": "Сколько бит нужно, чтобы закодировать 1000 вариантов?",
+          "answer": 10,
+          "explanation": "2⁹ = 512 — недостаточно; 2¹⁰ = 1024 — достаточно. Нужно 10 бит.",
+          "hint": "Сравни 1000 с 2⁹ и 2¹⁰."
+        }
+      ],
+      "code": {
+        "finalAnswer": 10,
+        "finalExplain": "2⁹ \u003c 1000 ≤ 2¹⁰, поэтому нужно 10 бит."
+      }
+    },
+    {
+      "id": "3553",
+      "short": "3553",
+      "context": "Автомобильный номер: 2 буквы + 3 цифры + 1 буква. Буквы из 11 символов (А, В, С, Е, Н, К, М, О, Р, Т, Х), цифры 0–9.\nВ одном способе — посимвольно. В другом — группами: 2 буквы, 3 цифры, 1 буква.\n\nНа сколько бит можно уменьшить размер памяти при групповом кодировании?",
+      "schema": {
+        "title": "Структура автомобильного номера",
+        "fields": [
+          {
+            "name": "2 буквы",
+            "slots": 2,
+            "info": "11 букв",
+            "chars": 2,
+            "power": 11
+          },
+          {
+            "name": "3 цифры",
+            "slots": 3,
+            "info": "10 цифр",
+            "chars": 3,
+            "power": 10
+          },
+          {
+            "name": "1 буква",
+            "slots": 1,
+            "info": "11 букв",
+            "chars": 1,
+            "power": 11
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Бит на букву",
+          "question": "Сколько бит на одну букву (при посимвольном)?",
+          "answer": 4,
+          "explanation": "2³=8 — мало, 2⁴=16 — хватит (11 букв).",
+          "hint": "11 букв."
+        },
+        {
+          "label": "Бит на цифру",
+          "question": "Сколько бит на одну цифру?",
+          "answer": 4,
+          "explanation": "2³=8 — мало, 2⁴=16 — хватит (10 цифр).",
+          "hint": "10 цифр."
+        },
+        {
+          "label": "Посимпвольно",
+          "question": "Сколько всего бит при посимвольном кодировании?",
+          "answer": 24,
+          "explanation": "6 символов по 4 бита = 24 бита.",
+          "hint": "2+3+1 = 6."
+        },
+        {
+          "label": "2 буквы группа",
+          "question": "Сколько бит при группе \"2 буквы\"?",
+          "answer": 7,
+          "explanation": "11·11 = 121. 2⁶=64 — мало, 2⁷=128 — хватит.",
+          "hint": "121 вариант."
+        },
+        {
+          "label": "3 цифры группа",
+          "question": "Сколько бит при группе \"3 цифры\"?",
+          "answer": 10,
+          "explanation": "1000 вариантов. 2⁹=512 — мало, 2¹⁰=1024 — хватит.",
+          "hint": "10³ вариантов."
+        },
+        {
+          "label": "1 буква группа",
+          "question": "Сколько бит на последнюю 1 букву?",
+          "answer": 4,
+          "explanation": "11 вариантов → 2⁴=16 — хватит.",
+          "hint": "Как в шаге 1."
+        },
+        {
+          "label": "Экономия",
+          "question": "На сколько бит уменьшится размер?",
+          "answer": 3,
+          "explanation": "24 − (7+10+4) = 24 − 21 = 3 бита.",
+          "hint": "Разность."
+        }
+      ],
+      "code": {
+        "finalAnswer": 3,
+        "finalExplain": "24 − 21 = 3"
+      },
+      "section": "Непосимвольное кодирование",
+      "subsection": "Групповое кодирование",
+      "subsectionOrder": 2,
+      "sectionOrder": 3,
+      "difficulty": 3,
+      "level": "Средний",
+      "name": "Автомобильный номер: 2 буквы + 3 цифры + 1 буква. Буквы из 11 символ…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "29073",
+      "short": "29073",
+      "context": "Каждая запись — символьный код из L символов (алфавит 32) + порядковый номер записи в базе (двоичное число).\n65536 объектов, всего 60096 Кбайт.\n\nНайти минимально возможную L.",
+      "schema": {
+        "title": "Структура записи",
+        "fields": [
+          {
+            "name": "Код",
+            "slots": 1498,
+            "info": "алфавит 32",
+            "chars": "?",
+            "power": 32
+          },
+          {
+            "name": "Номер",
+            "slots": 16,
+            "info": "0…65535",
+            "chars": 1,
+            "power": 65536
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Бит на символ",
+          "question": "Сколько бит на один символ кода?",
+          "answer": 5,
+          "explanation": "2⁵ = 32.",
+          "hint": "Алфавит 32."
+        },
+        {
+          "label": "Бит на номер",
+          "question": "Сколько бит на порядковый номер?",
+          "answer": 16,
+          "explanation": "2¹⁶ = 65536.",
+          "hint": "Всего 65536 объектов."
+        },
+        {
+          "label": "Всего байт",
+          "question": "Сколько байт в 60096 КБ?",
+          "answer": 61538304,
+          "explanation": "60096·1024 = 61538304 байт.",
+          "hint": "КБ → байты."
+        },
+        {
+          "label": "Байт на запись",
+          "question": "Сколько байт на одну запись?",
+          "answer": 939,
+          "explanation": "61538304/65536 = 939 байт.",
+          "hint": "Всего / N."
+        },
+        {
+          "label": "Бит на запись",
+          "question": "Сколько бит на запись?",
+          "answer": 7512,
+          "explanation": "939·8 = 7512 бит (максимум).",
+          "hint": "Байты в биты."
+        },
+        {
+          "label": "L",
+          "question": "Минимальная L?",
+          "answer": 1498,
+          "explanation": "5L + 16 ≥ 8·938+1 = 7505 → L ≥ 1497.8 → 1498.",
+          "hint": "5L ≥ 7489."
+        }
+      ],
+      "code": {
+        "finalAnswer": 1498,
+        "finalExplain": "L = 1498"
+      },
+      "section": "Непосимвольное кодирование",
+      "subsection": "Смешанные поля: строка + целое число",
+      "subsectionOrder": 3,
+      "sectionOrder": 3,
+      "difficulty": 5,
+      "level": "Высокий",
+      "name": "Каждая запись — символьный код из L символов (алфавит 32) + порядков…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "6315",
+      "short": "6315",
+      "context": "Объект описан:\n• ID из 11 заглавных латинских букв (посимвольно, минимум бит, минимальное целое число байт).\n• Состав из 30 деталей. 5000 различных деталей (каждая — минимум бит, для 30 деталей — минимальное целое число байт).\nДоп. сведения — целое число байт.\nДля 16384 объектов — 3 Мбайта.\n\nСколько байт максимум на доп. сведения?",
+      "schema": {
+        "title": "Структура объекта",
+        "fields": [
+          {
+            "name": "ID",
+            "slots": 11,
+            "info": "26 заглавных букв",
+            "chars": 11,
+            "power": 26
+          },
+          {
+            "name": "Состав",
+            "slots": 30,
+            "info": "30 деталей по 5000 вариантов",
+            "chars": 30,
+            "power": 5000
+          },
+          {
+            "name": "Доп",
+            "slots": 1,
+            "info": "?",
+            "chars": 1,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "ID (бит)",
+          "question": "Сколько бит в ID?",
+          "answer": 55,
+          "explanation": "11·5 = 55 бит.",
+          "hint": "26 букв → 5 бит на букву."
+        },
+        {
+          "label": "ID (байт)",
+          "question": "Сколько байт в ID (вверх)?",
+          "answer": 7,
+          "explanation": "55/8 = 6.875 → 7 байт.",
+          "hint": "Деление с округлением вверх."
+        },
+        {
+          "label": "Деталь (бит)",
+          "question": "Сколько бит на код одной детали?",
+          "answer": 13,
+          "explanation": "2¹²=4096 — мало, 2¹³=8192 — хватит.",
+          "hint": "5000 деталей."
+        },
+        {
+          "label": "Состав (бит)",
+          "question": "Сколько бит на состав из 30 деталей?",
+          "answer": 390,
+          "explanation": "30·13 = 390 бит.",
+          "hint": "30 деталей."
+        },
+        {
+          "label": "Состав (байт)",
+          "question": "Сколько байт на состав (вверх)?",
+          "answer": 49,
+          "explanation": "390/8 = 48.75 → 49 байт.",
+          "hint": "Деление с округлением вверх."
+        },
+        {
+          "label": "На объект",
+          "question": "Сколько всего байт на один объект?",
+          "answer": 192,
+          "explanation": "3·1024·1024/16384 = 192 байта.",
+          "hint": "Переведи Мбайты в байты и раздели."
+        },
+        {
+          "label": "Доп",
+          "question": "Сколько байт на доп. информацию?",
+          "answer": 136,
+          "explanation": "192 − 7 − 49 = 136 байт.",
+          "hint": "Вычти ID и состав."
+        }
+      ],
+      "code": {
+        "finalAnswer": 136,
+        "finalExplain": "192 − 7 − 49 = 136"
+      },
+      "section": "Составные записи и большие объёмы",
+      "subsection": "Повторяющиеся блоки",
+      "subsectionOrder": 1,
+      "sectionOrder": 4,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "Объект описан:",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "7316",
+      "short": "7316",
+      "context": "Описание изделия: код изделия, состав из 50 блоков (код детали 1..10⁶ + количество 1..1000), доп. сведения.\n\n• Код изделия — 28 символов (заглавные латинские + цифры).\n• Каждый блок кодируется минимальным целым числом байт.\n• Доп. сведения — целое число байт.\n• Для 32768 объектов — 12 Мбайт.\n\nСколько байт на доп. сведения?",
+      "schema": {
+        "title": "Структура объекта",
+        "fields": [
+          {
+            "name": "Код изделия",
+            "slots": 28,
+            "info": "26 букв + 10 цифр",
+            "chars": 28,
+            "power": 36
+          },
+          {
+            "name": "Состав",
+            "slots": 50,
+            "info": "50 блоков (деталь + кол-во)",
+            "chars": 50,
+            "power": "?"
+          },
+          {
+            "name": "Доп",
+            "slots": 1,
+            "info": "?",
+            "chars": 1,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Символ КИ (бит)",
+          "question": "Сколько бит на символ кода изделия?",
+          "answer": 6,
+          "explanation": "26+10 = 36. 2⁶=64 — хватит.",
+          "hint": "26 букв + 10 цифр."
+        },
+        {
+          "label": "КИ (бит)",
+          "question": "Сколько бит в коде изделия?",
+          "answer": 168,
+          "explanation": "28·6 = 168 бит.",
+          "hint": "28 символов по 6 бит."
+        },
+        {
+          "label": "КИ (байт)",
+          "question": "Сколько байт на код изделия?",
+          "answer": 21,
+          "explanation": "168/8 = 21 байт.",
+          "hint": "Деление на 8."
+        },
+        {
+          "label": "Деталь (бит)",
+          "question": "Сколько бит на код детали (1..10⁶)?",
+          "answer": 20,
+          "explanation": "2²⁰=1048576 > 10⁶. Ответ: 20 бит.",
+          "hint": "999999 вариантов."
+        },
+        {
+          "label": "Кол-во (бит)",
+          "question": "Сколько бит на количество (1..1000)?",
+          "answer": 10,
+          "explanation": "2¹⁰=1024 > 1000. Ответ: 10 бит.",
+          "hint": "1000 вариантов."
+        },
+        {
+          "label": "Блок (бит)",
+          "question": "Сколько бит в одном блоке (деталь + количество)?",
+          "answer": 30,
+          "explanation": "20+10 = 30 бит.",
+          "hint": "Сложи."
+        },
+        {
+          "label": "Блок (байт)",
+          "question": "Сколько байт в блоке (вверх)?",
+          "answer": 4,
+          "explanation": "30/8 = 3.75 → 4 байта.",
+          "hint": "Округление вверх."
+        },
+        {
+          "label": "Состав (байт)",
+          "question": "Сколько байт на состав из 50 блоков?",
+          "answer": 200,
+          "explanation": "50·4 = 200 байт.",
+          "hint": "50 блоков."
+        },
+        {
+          "label": "Всего байт",
+          "question": "Сколько байт всего (12 МБ / 32768)?",
+          "answer": 384,
+          "explanation": "12·1024·1024/32768 = 384 байта.",
+          "hint": "МБ → байты, потом / N."
+        },
+        {
+          "label": "Доп",
+          "question": "Сколько байт на доп. сведения?",
+          "answer": 163,
+          "explanation": "384 − 21 − 200 = 163 байта.",
+          "hint": "Вычти КИ и состав."
+        }
+      ],
+      "code": {
+        "finalAnswer": 163,
+        "finalExplain": "384 − 21 − 200 = 163"
+      },
+      "section": "Составные записи и большие объёмы",
+      "subsection": "Повторяющиеся блоки",
+      "subsectionOrder": 1,
+      "sectionOrder": 4,
+      "difficulty": 5,
+      "level": "Высокий",
+      "name": "Описание изделия: код изделия, состав из 50 блоков (код детали 1..10…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "9366",
+      "short": "9366",
+      "context": "Показание метеозонда — от 10 до 3000 с шагом 0.1. Показания собираются в пакеты по 10.\nКаждое показание — минимум бит. Каждый пакет — минимальное целое число байт.\nПолучено 8192 пакета.\n\nСколько Кбайт?",
+      "schema": {
+        "title": "Структура пакета",
+        "fields": [
+          {
+            "name": "Пакет",
+            "slots": 10,
+            "info": "10 показаний по 29901 варианту",
+            "chars": 10,
+            "power": 29901
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Вариантов",
+          "question": "Сколько возможных значений показания?",
+          "answer": 29901,
+          "explanation": "(3000−10)/0.1 + 1 = 29900 + 1 = 29901.",
+          "hint": "От 10 до 3000 с шагом 0.1."
+        },
+        {
+          "label": "Бит на показание",
+          "question": "Сколько бит на одно показание?",
+          "answer": 15,
+          "explanation": "2¹⁴=16384 — мало, 2¹⁵=32768 — хватит.",
+          "hint": "N = 29901."
+        },
+        {
+          "label": "Пакет (бит)",
+          "question": "Сколько бит в пакете из 10 показаний?",
+          "answer": 150,
+          "explanation": "10 · 15 = 150 бит.",
+          "hint": "10 показаний."
+        },
+        {
+          "label": "Пакет (байт)",
+          "question": "Сколько байт в пакете (вверх)?",
+          "answer": 19,
+          "explanation": "150/8 = 18.75 → 19 байт.",
+          "hint": "Округление вверх."
+        },
+        {
+          "label": "Всего (байт)",
+          "question": "Сколько всего байт на 8192 пакета?",
+          "answer": 155648,
+          "explanation": "8192 · 19 = 155648 байт.",
+          "hint": "Умножай."
+        },
+        {
+          "label": "Всего (КБ)",
+          "question": "Сколько это Кбайт?",
+          "answer": 152,
+          "explanation": "155648/1024 = 152 КБ.",
+          "hint": "Деление на 1024."
+        }
+      ],
+      "code": {
+        "finalAnswer": 152,
+        "finalExplain": "155648/1024 = 152"
+      },
+      "section": "Составные записи и большие объёмы",
+      "subsection": "Файлы, пакеты и заголовки",
+      "subsectionOrder": 2,
+      "sectionOrder": 4,
+      "difficulty": 3,
+      "level": "Средний",
+      "name": "Показание метеозонда — от 10 до 3000 с шагом 0.1. Показания собирают…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "7676",
+      "short": "7676",
+      "context": "Бот получает ответы от 1 до 100000, кодирует минимальным целым числом бит.\nОтветы сохраняются в файлы по 100 штук. Файл — минимальное целое число байт. К каждому файлу добавляется заголовок 4 байта. Последний файл может быть меньше 100 ответов, тоже минимальное целое число байт.\n\nЗа месяц 28350 ответов. Сколько минимум Кбайт для сохранения?",
+      "schema": {
+        "title": "Структура файла",
+        "fields": [
+          {
+            "name": "Заголовок",
+            "slots": 4,
+            "info": "4 байта",
+            "chars": 4,
+            "power": 256
+          },
+          {
+            "name": "Ответы",
+            "slots": 100,
+            "info": "1…100000",
+            "chars": 100,
+            "power": 100000
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Бит на ответ",
+          "question": "Сколько бит на один ответ?",
+          "answer": 17,
+          "explanation": "2¹⁶=65536 — мало, 2¹⁷=131072 — хватит.",
+          "hint": "100000 вариантов."
+        },
+        {
+          "label": "Файл (бит)",
+          "question": "Сколько бит в файле из 100 ответов?",
+          "answer": 1700,
+          "explanation": "100 · 17 = 1700 бит.",
+          "hint": "100 ответов."
+        },
+        {
+          "label": "Файл (байт)",
+          "question": "Сколько байт в файле (без заголовка, вверх)?",
+          "answer": 213,
+          "explanation": "1700/8 = 212.5 → 213 байт.",
+          "hint": "Округление вверх."
+        },
+        {
+          "label": "Файл с заголовком",
+          "question": "Сколько байт на один файл с заголовком?",
+          "answer": 217,
+          "explanation": "213 + 4 = 217 байт.",
+          "hint": "+ 4 байта."
+        },
+        {
+          "label": "Полных файлов",
+          "question": "Сколько полных файлов из 100 ответов?",
+          "answer": 283,
+          "explanation": "28350/100 = 283.5 → 283 полных.",
+          "hint": "Целая часть."
+        },
+        {
+          "label": "Хвост",
+          "question": "Сколько ответов в последнем (неполном) файле?",
+          "answer": 50,
+          "explanation": "28350 − 283·100 = 50.",
+          "hint": "Остаток."
+        },
+        {
+          "label": "Хвост (байт)",
+          "question": "Сколько байт на последний файл с заголовком?",
+          "answer": 111,
+          "explanation": "50·17 = 850 бит → 107 байт + 4 = 111.",
+          "hint": "50 ответов по 17 бит."
+        },
+        {
+          "label": "Всего байт",
+          "question": "Сколько всего байт?",
+          "answer": 61522,
+          "explanation": "283·217 + 111 = 61411+111 = 61522 байт.",
+          "hint": "Умножь и сложи."
+        },
+        {
+          "label": "Кбайт",
+          "question": "Сколько это Кбайт (вверх)?",
+          "answer": 61,
+          "explanation": "61522/1024 = 60.08 → 61 КБ.",
+          "hint": "Округление вверх."
+        }
+      ],
+      "code": {
+        "finalAnswer": 61,
+        "finalExplain": "61522/1024 = 60.08 → 61"
+      },
+      "section": "Составные записи и большие объёмы",
+      "subsection": "Файлы, пакеты и заголовки",
+      "subsectionOrder": 2,
+      "sectionOrder": 4,
+      "difficulty": 5,
+      "level": "Высокий",
+      "name": "Бот получает ответы от 1 до 100000, кодирует минимальным целым число…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "19360",
+      "short": "19360",
+      "context": "Алфавит: русские заглавные и строчные буквы, десятичные цифры, 50 смайликов по 5 цветов (итого 250 вариантов смайликов).\nСообщение из 1016 символов. Минимум бит на символ.\n\nСколько байт нужно?",
+      "schema": {
+        "title": "Структура сообщения",
+        "fields": [
+          {
+            "name": "Сообщение",
+            "slots": 1016,
+            "info": "33+33 букв + 10 цифр + 250 смайликов",
+            "chars": 1016,
+            "power": 326
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Буквы",
+          "question": "Сколько букв в алфавите (рус. + рус. строчные)?",
+          "answer": 66,
+          "explanation": "33 + 33 = 66.",
+          "hint": "33 буквы в двух регистрах."
+        },
+        {
+          "label": "Смайлики",
+          "question": "Сколько вариантов смайликов?",
+          "answer": 250,
+          "explanation": "50 · 5 = 250.",
+          "hint": "50 смайликов × 5 цветов."
+        },
+        {
+          "label": "Алфавит",
+          "question": "Сколько всего символов?",
+          "answer": 326,
+          "explanation": "66 + 10 + 250 = 326.",
+          "hint": "Буквы + цифры + смайлики."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Сколько бит на один символ?",
+          "answer": 9,
+          "explanation": "2⁸=256 — мало, 2⁹=512 — хватит.",
+          "hint": "N = 326."
+        },
+        {
+          "label": "Сообщение (бит)",
+          "question": "Сколько бит в сообщении?",
+          "answer": 9144,
+          "explanation": "1016 · 9 = 9144 бит.",
+          "hint": "1016 символов."
+        },
+        {
+          "label": "Сообщение (байт)",
+          "question": "Сколько байт в сообщении (вверх)?",
+          "answer": 1143,
+          "explanation": "9144/8 = 1143 байта.",
+          "hint": "Деление на 8."
+        }
+      ],
+      "code": {
+        "finalAnswer": 1143,
+        "finalExplain": "9144/8 = 1143"
+      },
+      "section": "Составные записи и большие объёмы",
+      "subsection": "Необычные алфавиты и единицы измерения",
+      "subsectionOrder": 3,
+      "sectionOrder": 4,
+      "difficulty": 3,
+      "level": "Средний",
+      "name": "Алфавит: русские заглавные и строчные буквы, десятичные цифры, 50 см…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "17696",
+      "short": "17696",
+      "context": "Серийный номер из 623 символов, содержит цифры и символы из 1267-символьного спец. алфавита.\nНа каждый номер — минимальное целое число **Кбайт** (не байт!). Посимвольно, минимум бит.\n2048 номеров.\n\nСколько Мбайт?",
+      "schema": {
+        "title": "Структура серийного номера",
+        "fields": [
+          {
+            "name": "Номер",
+            "slots": 623,
+            "info": "10 цифр + 1267 спецсимволов",
+            "chars": 623,
+            "power": 1277
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Алфавит",
+          "question": "Сколько символов в алфавите?",
+          "answer": 1277,
+          "explanation": "10 цифр + 1267 спец = 1277.",
+          "hint": "Цифры + спец."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Сколько бит на один символ?",
+          "answer": 11,
+          "explanation": "2¹⁰=1024 — мало, 2¹¹=2048 — хватит.",
+          "hint": "N = 1277."
+        },
+        {
+          "label": "Номер (бит)",
+          "question": "Сколько бит в номере?",
+          "answer": 6853,
+          "explanation": "623 · 11 = 6853 бит.",
+          "hint": "623 символа."
+        },
+        {
+          "label": "Номер (байт)",
+          "question": "Сколько байт в номере (вверх)?",
+          "answer": 857,
+          "explanation": "6853/8 = 856.625 → 857 байт.",
+          "hint": "Округление вверх."
+        },
+        {
+          "label": "Номер (КБ)",
+          "question": "Сколько КБ на один номер (вверх)?",
+          "answer": 1,
+          "explanation": "857/1024 = 0.84 → 1 КБ.",
+          "hint": "Округление до целых КБ."
+        },
+        {
+          "label": "Всего (КБ)",
+          "question": "Сколько КБ на 2048 номеров?",
+          "answer": 2048,
+          "explanation": "2048 · 1 = 2048 КБ.",
+          "hint": "Умножай."
+        },
+        {
+          "label": "Всего (МБ)",
+          "question": "Сколько это МБ?",
+          "answer": 2,
+          "explanation": "2048/1024 = 2 МБ.",
+          "hint": "Деление на 1024."
+        }
+      ],
+      "code": {
+        "finalAnswer": 2,
+        "finalExplain": "2048/1024 = 2"
+      },
+      "section": "Составные записи и большие объёмы",
+      "subsection": "Необычные алфавиты и единицы измерения",
+      "subsectionOrder": 3,
+      "sectionOrder": 4,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "Серийный номер из 623 символов, содержит цифры и символы из 1267-сим…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "18365",
+      "short": "18365",
+      "context": "Регистрация пользователя: пароль, биография, биометрия.\n• Пароль — 28 символов, алфавит: 505 иероглифов + 7 спецсимволов ($%^&*#@). Посимвольное кодирование, минимальное целое число байт.\n• Биография — 117 байт на пользователя.\n• Биометрия — 35 проекций по 6 Кбайт каждая.\n\nСколько минимум Мбайт для 10000 пользователей?",
+      "schema": {
+        "title": "Структура пользователя",
+        "fields": [
+          {
+            "name": "Пароль",
+            "slots": 28,
+            "info": "505 иероглифов + 7 спецсимволов",
+            "chars": 28,
+            "power": 512
+          },
+          {
+            "name": "Биография",
+            "slots": 117,
+            "info": "117 байт",
+            "chars": 117,
+            "power": 256
+          },
+          {
+            "name": "Биометрия",
+            "slots": 35,
+            "info": "35 × 6 Кбайт",
+            "chars": 35,
+            "power": 6144
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Алфавит",
+          "question": "Сколько символов в алфавите пароля?",
+          "answer": 512,
+          "explanation": "505 + 7 = 512.",
+          "hint": "Иероглифы + спец."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Сколько бит на один символ пароля?",
+          "answer": 9,
+          "explanation": "2⁹ = 512.",
+          "hint": "N = 512."
+        },
+        {
+          "label": "Пароль (бит)",
+          "question": "Сколько бит в пароле?",
+          "answer": 252,
+          "explanation": "28 · 9 = 252 бита.",
+          "hint": "28 символов."
+        },
+        {
+          "label": "Пароль (байт)",
+          "question": "Сколько байт в пароле (вверх)?",
+          "answer": 32,
+          "explanation": "252/8 = 31.5 → 32 байта.",
+          "hint": "Округление вверх."
+        },
+        {
+          "label": "Биометрия",
+          "question": "Сколько байт в биометрии (35·6 КБ)?",
+          "answer": 215040,
+          "explanation": "35·6·1024 = 215040 байт.",
+          "hint": "35 × 6 КБ."
+        },
+        {
+          "label": "На пользователя",
+          "question": "Сколько байт на одного пользователя?",
+          "answer": 215189,
+          "explanation": "32 + 117 + 215040 = 215189 байт.",
+          "hint": "Пароль + биография + биометрия."
+        },
+        {
+          "label": "Всего байт",
+          "question": "Сколько байт на 10000 пользователей?",
+          "answer": 2151890000,
+          "explanation": "10000 · 215189 = 2151890000.",
+          "hint": "Умножай."
+        },
+        {
+          "label": "Мбайт",
+          "question": "Сколько это МБ (вверх)?",
+          "answer": 2053,
+          "explanation": "2151890000/1024/1024 = 2052.24 → 2053 МБ.",
+          "hint": "Округление вверх."
+        }
+      ],
+      "code": {
+        "finalAnswer": 2053,
+        "finalExplain": "2052.24 → 2053"
+      },
+      "section": "Составные записи и большие объёмы",
+      "subsection": "Необычные алфавиты и единицы измерения",
+      "subsectionOrder": 3,
+      "sectionOrder": 4,
+      "difficulty": 5,
+      "level": "Высокий",
+      "name": "Регистрация пользователя: пароль, биография, биометрия.",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "21594",
+      "short": "21594",
+      "context": "Серийный номер из 223 символов, содержит цифры, заглавные латинские буквы и символы из 32724-символьного алфавита.\nОдинаковое минимальное число байт на номер, посимвольно, минимум бит.\n17 Гбайт доступно.\n\nСколько максимум номеров можно сохранить?",
+      "schema": {
+        "title": "Структура серийного номера",
+        "fields": [
+          {
+            "name": "Номер",
+            "slots": 223,
+            "info": "10 цифр + 26 букв + 32724 спец",
+            "chars": 223,
+            "power": 32760
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Алфавит",
+          "question": "Сколько всего символов?",
+          "answer": 32760,
+          "explanation": "10 цифр + 26 букв + 32724 спец = 32760.",
+          "hint": "Сумма всех категорий."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Сколько бит на один символ?",
+          "answer": 15,
+          "explanation": "2¹⁴=16384 — мало, 2¹⁵=32768 — хватит.",
+          "hint": "N = 32760."
+        },
+        {
+          "label": "Бит на номер",
+          "question": "Сколько бит в одном номере?",
+          "answer": 3345,
+          "explanation": "223 · 15 = 3345 бит.",
+          "hint": "223 символа по 15 бит."
+        },
+        {
+          "label": "Байт на номер",
+          "question": "Сколько байт в одном номере (вверх)?",
+          "answer": 419,
+          "explanation": "3345/8 = 418.125 → 419 байт.",
+          "hint": "Округление вверх."
+        },
+        {
+          "label": "Всего байт",
+          "question": "Сколько байт в 17 ГБ?",
+          "answer": 18253611008,
+          "explanation": "17 · 1024³ = 18253611008.",
+          "hint": "ГБ → байты."
+        },
+        {
+          "label": "Номеров",
+          "question": "Сколько максимум номеров?",
+          "answer": 43564607,
+          "explanation": "18253611008/419 = 43564607.6 → 43564607.",
+          "hint": "Округление вниз."
+        }
+      ],
+      "code": {
+        "finalAnswer": 43564607,
+        "finalExplain": "43564607"
+      },
+      "section": "Составные записи и большие объёмы",
+      "subsection": "Необычные алфавиты и единицы измерения",
+      "subsectionOrder": 3,
+      "sectionOrder": 4,
+      "difficulty": 5,
+      "level": "Высокий",
+      "name": "Серийный номер из 223 символов, содержит цифры, заглавные латинские…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "28698",
+      "short": "28698",
+      "context": "Пароль из 23 символов: прописные и строчные латинские буквы + цифры + 25 спецсимволов.\nДоп. сведения — 15 байт.\n3 Мбайта выделено всего.\n\nСколько максимум пользователей?",
+      "schema": {
+        "title": "Структура пользователя",
+        "fields": [
+          {
+            "name": "Пароль",
+            "slots": 23,
+            "info": "буквы + цифры + 25 спецсимволов",
+            "chars": 23,
+            "power": 87
+          },
+          {
+            "name": "Доп",
+            "slots": 1,
+            "info": "15 байт",
+            "chars": 1,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Алфавит",
+          "question": "Сколько символов в алфавите?",
+          "answer": 87,
+          "explanation": "26+26+10+25 = 87.",
+          "hint": "Все категории."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Сколько бит на один символ?",
+          "answer": 7,
+          "explanation": "2⁶=64 — мало, 2⁷=128 — хватит.",
+          "hint": "N = 87."
+        },
+        {
+          "label": "Пароль (бит)",
+          "question": "Сколько бит в пароле?",
+          "answer": 161,
+          "explanation": "23 · 7 = 161 бит.",
+          "hint": "23 символа по 7 бит."
+        },
+        {
+          "label": "Пароль (байт)",
+          "question": "Сколько байт в пароле (вверх)?",
+          "answer": 21,
+          "explanation": "161/8 = 20.125 → 21 байт.",
+          "hint": "Округление вверх."
+        },
+        {
+          "label": "На одного",
+          "question": "Сколько байт на пользователя?",
+          "answer": 36,
+          "explanation": "21 + 15 = 36 байт.",
+          "hint": "Пароль + доп."
+        },
+        {
+          "label": "Всего байт",
+          "question": "Сколько байт в 3 МБ?",
+          "answer": 3145728,
+          "explanation": "3 · 1024 · 1024 = 3145728.",
+          "hint": "МБ → байты."
+        },
+        {
+          "label": "Пользователей",
+          "question": "Сколько максимум пользователей?",
+          "answer": 87381,
+          "explanation": "3145728/36 = 87381.",
+          "hint": "Деление."
+        }
+      ],
+      "code": {
+        "finalAnswer": 87381,
+        "finalExplain": "87381"
+      },
+      "section": "Составные записи и большие объёмы",
+      "subsection": "Необычные алфавиты и единицы измерения",
+      "subsectionOrder": 3,
+      "sectionOrder": 4,
+      "difficulty": 5,
+      "level": "Высокий",
+      "name": "Пароль из 23 символов: прописные и строчные латинские буквы + цифры…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "923",
+      "short": "923",
+      "context": "Исходный файл ДНК: 120000 символов, каждый в 1 байте (ASCII).\nПерекодировали: алфавит A, T, G, C — минимум бит на символ.\n\nСколько Кбайт сэкономит (целая часть)?",
+      "schema": {
+        "title": "Структура файла ДНК",
+        "fields": [
+          {
+            "name": "Было",
+            "slots": 120000,
+            "info": "1 байт на символ (ASCII)",
+            "chars": 120000,
+            "power": 256
+          },
+          {
+            "name": "Стало",
+            "slots": 120000,
+            "info": "2 бита на символ (ATGC)",
+            "chars": 120000,
+            "power": 4
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Бит исходно",
+          "question": "Сколько бит на символ было?",
+          "answer": 8,
+          "explanation": "1 байт = 8 бит.",
+          "hint": "ASCII."
+        },
+        {
+          "label": "Бит стало",
+          "question": "Сколько бит на символ стало?",
+          "answer": 2,
+          "explanation": "4 буквы → 2² = 4, значит 2 бита.",
+          "hint": "4 буквы."
+        },
+        {
+          "label": "Экономия на символ",
+          "question": "Сколько бит сэкономлено на одном символе?",
+          "answer": 6,
+          "explanation": "8 − 2 = 6 бит.",
+          "hint": "Разность."
+        },
+        {
+          "label": "Всего бит",
+          "question": "Сколько всего бит сэкономлено?",
+          "answer": 720000,
+          "explanation": "120000 · 6 = 720000 бит.",
+          "hint": "Умножай."
+        },
+        {
+          "label": "Байт",
+          "question": "Сколько это байт?",
+          "answer": 90000,
+          "explanation": "720000/8 = 90000 байт.",
+          "hint": "Деление на 8."
+        },
+        {
+          "label": "Кбайт",
+          "question": "Сколько это Кбайт (целая часть)?",
+          "answer": 87,
+          "explanation": "90000/1024 = 87.89 → 87.",
+          "hint": "Деление на 1024."
+        }
+      ],
+      "code": {
+        "finalAnswer": 87,
+        "finalExplain": "90000/1024 = 87.89 → 87"
+      },
+      "section": "Сравнение и сложные задачи",
+      "subsection": "Перекодирование и экономия памяти",
+      "subsectionOrder": 1,
+      "sectionOrder": 5,
+      "difficulty": 2,
+      "level": "Базовый",
+      "name": "Исходный файл ДНК: 120000 символов, каждый в 1 байте (ASCII).",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "17697",
+      "short": "17697",
+      "context": "Алфавит из 33 символов (в т.ч. «:», «)», «😀»). Символ «😀» встречается 15 раз, всего 1000 символов.\nАльтернатива: алфавит из 32 символов, «😀» заменён на «:)».\n\nЧто выгоднее (А — 33, Б — 32) и разница в битах?",
+      "schema": {
+        "title": "Структура сообщения",
+        "fields": [
+          {
+            "name": "Способ А",
+            "slots": 1000,
+            "info": "33 символа",
+            "chars": 1000,
+            "power": 33
+          },
+          {
+            "name": "Способ Б",
+            "slots": 1015,
+            "info": "32 символа, «😀» → «:)»",
+            "chars": 1015,
+            "power": 32
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "k для 33",
+          "question": "Сколько бит на символ при 33-символьном алфавите?",
+          "answer": 6,
+          "explanation": "2⁵=32 — мало, 2⁶=64 — хватит.",
+          "hint": "N = 33."
+        },
+        {
+          "label": "Размер A",
+          "question": "Сколько всего бит при алфавите 33?",
+          "answer": 6000,
+          "explanation": "1000 · 6 = 6000 бит.",
+          "hint": "1000 символов по 6 бит."
+        },
+        {
+          "label": "k для 32",
+          "question": "Сколько бит на символ при 32-символьном алфавите?",
+          "answer": 5,
+          "explanation": "2⁵ = 32.",
+          "hint": "N = 32."
+        },
+        {
+          "label": "Символов стало",
+          "question": "Сколько символов в новом тексте?",
+          "answer": 1015,
+          "explanation": "15 «😀» → 30 символов «:)». Остальные 985 → 1000−15+30 = 1015.",
+          "hint": "Заменили 15 на 30."
+        },
+        {
+          "label": "Размер Б",
+          "question": "Сколько бит при алфавите 32?",
+          "answer": 5075,
+          "explanation": "1015 · 5 = 5075 бит.",
+          "hint": "1015 символов по 5 бит."
+        },
+        {
+          "label": "Разница",
+          "question": "Сколько бит разница?",
+          "answer": 925,
+          "explanation": "6000 − 5075 = 925 бит. Способ Б выгоднее → ответ Б925.",
+          "hint": "6000−5075."
+        }
+      ],
+      "code": {
+        "finalAnswer": 925,
+        "finalExplain": "6000 − 5075 = 925"
+      },
+      "section": "Сравнение и сложные задачи",
+      "subsection": "Перекодирование и экономия памяти",
+      "subsectionOrder": 1,
+      "sectionOrder": 5,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "Алфавит из 33 символов (в т.ч. «:», «)», «😀»). Символ «😀» встречаетс…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "19155",
+      "short": "19155",
+      "context": "Серийный номер из 157 символов. Одинаковое минимальное число байт на номер. Посимвольное кодирование, минимум бит на символ.\n233700 номеров занимают от 30 до 31 Мбайт.\n\nСколько возможных мощностей алфавита?",
+      "schema": {
+        "title": "Структура серийного номера",
+        "fields": [
+          {
+            "name": "Номер",
+            "slots": 157,
+            "info": "мощность алфавита ?",
+            "chars": 157,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "30 МБ в байт",
+          "question": "Сколько байт в 30 Мбайтах?",
+          "answer": 31457280,
+          "explanation": "30 · 1024 · 1024 = 31457280 байт.",
+          "hint": "МБ → байты."
+        },
+        {
+          "label": "31 МБ в байт",
+          "question": "Сколько байт в 31 МБ?",
+          "answer": 32505856,
+          "explanation": "31 · 1024 · 1024 = 32505856 байт.",
+          "hint": "МБ → байты."
+        },
+        {
+          "label": "Мин. байт на номер",
+          "question": "Минимальное число байт на номер?",
+          "answer": 135,
+          "explanation": "31457280/233700 = 134.6 → округление вверх до целого байта. Минимум = 135.",
+          "hint": "Всего / количество."
+        },
+        {
+          "label": "Макс. байт на номер",
+          "question": "Максимальное число байт на номер?",
+          "answer": 139,
+          "explanation": "32505856/233700 = 139.1 → максимум = 139.",
+          "hint": "Всего / количество."
+        },
+        {
+          "label": "Мощностей",
+          "question": "Сколько мощностей алфавита подходит?",
+          "answer": 64,
+          "explanation": "Перебор: k ∈ [7..7], все m подходят → 64.",
+          "hint": "Решение даёт 64 варианта m."
+        }
+      ],
+      "code": {
+        "finalAnswer": 64,
+        "finalExplain": "64 варианта"
+      },
+      "section": "Сравнение и сложные задачи",
+      "subsection": "Ограничения и диапазоны",
+      "subsectionOrder": 2,
+      "sectionOrder": 5,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "Серийный номер из 157 символов. Одинаковое минимальное число байт на…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "28700",
+      "short": "28700",
+      "context": "Серийный номер из 123 символов. Одинаковое минимальное число байт на номер.\n65536 номеров занимают ≥ 13.5 Мбайт.\n\nМинимальная мощность алфавита?",
+      "schema": {
+        "title": "Структура серийного номера",
+        "fields": [
+          {
+            "name": "Номер",
+            "slots": 123,
+            "info": "мощность алфавита ?",
+            "chars": 123,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Всего байт",
+          "question": "Сколько байт в 13.5 МБ?",
+          "answer": 14155776,
+          "explanation": "13.5 · 1024 · 1024 = 14155776.",
+          "hint": "МБ → байты."
+        },
+        {
+          "label": "Байт на номер",
+          "question": "Минимум байт на один номер?",
+          "answer": 216,
+          "explanation": "14155776/65536 = 216 байт (ровно).",
+          "hint": "Всего / количество."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Минимум бит на один символ?",
+          "answer": 14,
+          "explanation": "123k ≥ 216·8 = 1728 → k ≥ 14.05 → 14 бит.",
+          "hint": "123 символа."
+        },
+        {
+          "label": "Мощность",
+          "question": "Минимальная мощность алфавита?",
+          "answer": 16384,
+          "explanation": "2¹⁴ = 16384.",
+          "hint": "Возведи 2 в степень."
+        }
+      ],
+      "code": {
+        "finalAnswer": 16384,
+        "finalExplain": "2¹⁴ = 16384"
+      },
+      "section": "Сравнение и сложные задачи",
+      "subsection": "Ограничения и диапазоны",
+      "subsectionOrder": 2,
+      "sectionOrder": 5,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "Серийный номер из 123 символов. Одинаковое минимальное число байт на…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "31357",
+      "short": "31357",
+      "context": "Серийный номер содержит цифры и символы из 120-символьного спец. алфавита.\nОдинаковое минимальное число байт на номер, посимвольно, минимум бит.\n12755226 номеров занимают ≤ 5 Гбайт.\n\nОпределите максимально допустимую длину номера.",
+      "schema": {
+        "title": "Структура серийного номера",
+        "fields": [
+          {
+            "name": "Номер",
+            "slots": 420,
+            "info": "10 цифр + 120 спецсимволов",
+            "chars": "?",
+            "power": 130
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Алфавит",
+          "question": "Сколько всего символов в алфавите?",
+          "answer": 130,
+          "explanation": "10 цифр + 120 спец = 130.",
+          "hint": "Цифры + спец."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Сколько бит на один символ?",
+          "answer": 8,
+          "explanation": "2⁷=128 — мало, 2⁸=256 — хватит.",
+          "hint": "N = 130."
+        },
+        {
+          "label": "Всего байт",
+          "question": "Сколько байт в 5 ГБ?",
+          "answer": 5368709120,
+          "explanation": "5 · 1024³ = 5368709120.",
+          "hint": "ГБ → байты."
+        },
+        {
+          "label": "Байт на номер",
+          "question": "Сколько байт на номер (≤ 5 ГБ)?",
+          "answer": 420,
+          "explanation": "5368709120/12755226 = 420.8 → 420.",
+          "hint": "Округление вниз."
+        },
+        {
+          "label": "Длина",
+          "question": "Максимальная длина номера (символов)?",
+          "answer": 420,
+          "explanation": "8 бит = 1 байт на символ. 420/1 = 420.",
+          "hint": "Бит на символ = 8 → 1 байт."
+        }
+      ],
+      "code": {
+        "finalAnswer": 420,
+        "finalExplain": "420"
+      },
+      "section": "Сравнение и сложные задачи",
+      "subsection": "Ограничения и диапазоны",
+      "subsectionOrder": 2,
+      "sectionOrder": 5,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "Серийный номер содержит цифры и символы из 120-символьного спец. алф…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "31508",
+      "short": "31508",
+      "context": "Серийный номер из 157 символов. Одинаковое минимальное целое число байт на номер. Посимвольно, минимум бит.\n12450 номеров занимают ≤ 955 Кбайт.\n\nОпределите максимально возможную мощность алфавита.",
+      "schema": {
+        "title": "Структура серийного номера",
+        "fields": [
+          {
+            "name": "Номер",
+            "slots": 157,
+            "info": "мощность алфавита ?",
+            "chars": 157,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Всего байт",
+          "question": "Сколько байт в 955 КБ?",
+          "answer": 977920,
+          "explanation": "955·1024 = 977920 байт.",
+          "hint": "КБ → байты."
+        },
+        {
+          "label": "Байт на номер",
+          "question": "Максимум байт на один номер?",
+          "answer": 78,
+          "explanation": "977920/12450 = 78.55 → 78.",
+          "hint": "Округление вниз."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Максимум бит на один символ?",
+          "answer": 3,
+          "explanation": "157k ≤ 624 → k ≤ 3.97 → 3 бита.",
+          "hint": "157 символов."
+        },
+        {
+          "label": "Мощность",
+          "question": "Максимальная мощность алфавита?",
+          "answer": 8,
+          "explanation": "2³ = 8.",
+          "hint": "Возведи 2 в степень k."
+        }
+      ],
+      "code": {
+        "finalAnswer": 8,
+        "finalExplain": "2³ = 8"
+      },
+      "section": "Сравнение и сложные задачи",
+      "subsection": "Ограничения и диапазоны",
+      "subsectionOrder": 2,
+      "sectionOrder": 5,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "Серийный номер из 157 символов. Одинаковое минимальное целое число б…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "31219",
+      "short": "31219",
+      "context": "Серийный номер содержит цифры и символы из 510-символьного спец. алфавита.\nОдинаковое минимальное число байт на номер, посимвольно, минимум бит.\n18982657 номеров занимают ≥ 9379 Мбайт.\n\nОпределите минимально допустимую длину номера.",
+      "schema": {
+        "title": "Структура серийного номера",
+        "fields": [
+          {
+            "name": "Номер",
+            "slots": 415,
+            "info": "10 цифр + 510 спецсимволов",
+            "chars": "?",
+            "power": 520
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Алфавит",
+          "question": "Сколько символов в алфавите?",
+          "answer": 520,
+          "explanation": "10+510 = 520.",
+          "hint": "Цифры + спец."
+        },
+        {
+          "label": "Бит на символ",
+          "question": "Сколько бит на один символ?",
+          "answer": 10,
+          "explanation": "2⁹=512 — мало, 2¹⁰=1024 — хватит.",
+          "hint": "N = 520."
+        },
+        {
+          "label": "Всего байт",
+          "question": "Сколько байт в 9379 МБ?",
+          "answer": 9833574400,
+          "explanation": "9379 · 1024 · 1024.",
+          "hint": "МБ → байты."
+        },
+        {
+          "label": "Байт на номер",
+          "question": "Минимум байт на номер (≥ 9379 МБ)?",
+          "answer": 519,
+          "explanation": "9833574400/18982657 = 518.0 → 519 (округление вверх, чтобы выполнить ≥).",
+          "hint": "Строго ≥."
+        },
+        {
+          "label": "Длина",
+          "question": "Минимальная длина номера?",
+          "answer": 415,
+          "explanation": "ceil(10L/8) ≥ 519 → L ≥ 415.",
+          "hint": "Проверь L=414 и L=415."
+        }
+      ],
+      "code": {
+        "finalAnswer": 415,
+        "finalExplain": "L = 415"
+      },
+      "section": "Сравнение и сложные задачи",
+      "subsection": "Ограничения и диапазоны",
+      "subsectionOrder": 2,
+      "sectionOrder": 5,
+      "difficulty": 5,
+      "level": "Высокий",
+      "name": "Серийный номер содержит цифры и символы из 510-символьного спец. алф…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "2119",
+      "short": "2119",
+      "context": "ID фиксированной длины из алфавита: цифры, строчные и заглавные буквы (62 символа).\nКаждый символ кодируется минимум бит. Все биты пишутся подряд и округляются до целого байта.\n\nСколько максимум различных ID можно создать, если 1000 ID занимают 4 Кбайт?",
+      "schema": {
+        "title": "Структура ID",
+        "fields": [
+          {
+            "name": "ID",
+            "slots": 5,
+            "info": "62 символа, длина ?",
+            "chars": "?",
+            "power": 62
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Всего байт",
+          "question": "Сколько байт в 4 КБ?",
+          "answer": 4096,
+          "explanation": "4·1024 = 4096 байт.",
+          "hint": "КБ → байты."
+        },
+        {
+          "label": "Байт на ID",
+          "question": "Сколько байт на один ID?",
+          "answer": 4,
+          "explanation": "4096/1000 = 4.096 → 4 байта.",
+          "hint": "Округление вниз."
+        },
+        {
+          "label": "Бит на ID",
+          "question": "Сколько бит на ID?",
+          "answer": 32,
+          "explanation": "4·8 = 32 бита.",
+          "hint": "Байты в биты."
+        },
+        {
+          "label": "Длина",
+          "question": "Максимальная длина ID?",
+          "answer": 5,
+          "explanation": "6 бит на символ. 32/6 = 5.33 → 5.",
+          "hint": "62 символа → 6 бит."
+        },
+        {
+          "label": "Всего ID",
+          "question": "Сколько всего различных ID?",
+          "answer": 916132832,
+          "explanation": "62⁵ = 916132832.",
+          "hint": "Возведи мощность алфавита в длину."
+        }
+      ],
+      "code": {
+        "finalAnswer": 916132832,
+        "finalExplain": "62⁵ = 916132832"
+      },
+      "section": "Сравнение и сложные задачи",
+      "subsection": "Сложные задачи с несколькими условиями",
+      "subsectionOrder": 3,
+      "sectionOrder": 5,
+      "difficulty": 4,
+      "level": "Продвинутый",
+      "name": "ID фиксированной длины из алфавита: цифры, строчные и заглавные букв…",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    },
+    {
+      "id": "29071",
+      "short": "29071",
+      "context": "Пароли двух типов:\n• X: 11 символов, всего 1024 пароля.\n• Y: 13 символов, всего 256 паролей.\nОдин алфавит мощности N, каждый пароль — минимальное целое число байт, каждый символ — минимум бит.\nСуммарно 22 Кбайт.\n\nСколько максимум символов в алфавите N?",
+      "schema": {
+        "title": "Структура паролей",
+        "fields": [
+          {
+            "name": "X",
+            "slots": 11,
+            "info": "1024 пароля",
+            "chars": 11,
+            "power": "?"
+          },
+          {
+            "name": "Y",
+            "slots": 13,
+            "info": "256 паролей",
+            "chars": 13,
+            "power": "?"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "Всего байт",
+          "question": "Сколько байт в 22 КБ?",
+          "answer": 22528,
+          "explanation": "22·1024 = 22528 байт.",
+          "hint": "КБ → байты."
+        },
+        {
+          "label": "Бит на X",
+          "question": "Бит на символ у X-пароля?",
+          "answer": 12,
+          "explanation": "Подбираем k = бит на символ.",
+          "hint": "k = ceil(log2(N))."
+        },
+        {
+          "label": "X байт",
+          "question": "Сколько байт на один X-пароль (при k=12)?",
+          "answer": 17,
+          "explanation": "ceil(11·12/8) = ceil(16.5) = 17 байт.",
+          "hint": "11 символов по 12 бит."
+        },
+        {
+          "label": "Y байт",
+          "question": "Сколько байт на один Y-пароль (при k=12)?",
+          "answer": 20,
+          "explanation": "ceil(13·12/8) = ceil(19.5) = 20 байт.",
+          "hint": "13 символов по 12 бит."
+        },
+        {
+          "label": "Проверка",
+          "question": "Уложится ли k=12 в 22 КБ?",
+          "answer": 22528,
+          "explanation": "1024·17 + 256·20 = 17408+5120 = 22528 = ровно 22 КБ ✓",
+          "hint": "Умножь и сложи."
+        },
+        {
+          "label": "Мощность",
+          "question": "Какова мощность алфавита при k=12?",
+          "answer": 4096,
+          "explanation": "2¹² = 4096.",
+          "hint": "Возведи 2 в k."
+        }
+      ],
+      "code": {
+        "finalAnswer": 4096,
+        "finalExplain": "2¹² = 4096"
+      },
+      "section": "Сравнение и сложные задачи",
+      "subsection": "Сложные задачи с несколькими условиями",
+      "subsectionOrder": 3,
+      "sectionOrder": 5,
+      "difficulty": 5,
+      "level": "Высокий",
+      "name": "Пароли двух типов:",
+      "source": "Исходная задача из 11-ТРЕНАЖЕР-ЛАСТ.html"
+    }
+  ],
+  "sectionOrder": [
+    "Основы кодирования информации",
+    "Посимвольное кодирование",
+    "Непосимвольное кодирование",
+    "Составные записи и большие объёмы",
+    "Сравнение и сложные задачи"
+  ]
+}</script>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const MAIN_SECTIONS = ['Основы кодирования информации','Посимвольное кодирование','Непосимвольное кодирование','Составные записи и большие объёмы','Сравнение и сложные задачи'];
+let appData;
+try { appData = JSON.parse($('embedded-state').textContent); } catch(e) { appData = {tasks:[],students:[{id:'student_default',name:'Ученик 1'}],progress:{},sectionOrder:MAIN_SECTIONS}; }
+if(!Array.isArray(appData.tasks)) appData.tasks=[];
+if(!Array.isArray(appData.students)||!appData.students.length) appData.students=[{id:'student_default',name:'Ученик 1'}];
+if(!appData.progress||typeof appData.progress!=='object') appData.progress={};
+appData.sectionOrder = Array.isArray(appData.sectionOrder)?appData.sectionOrder:MAIN_SECTIONS;
+let TASKS = appData.tasks;
+let currentTaskId = appData.currentTaskId && TASKS.some(t=>String(t.id)===String(appData.currentTaskId)) ? appData.currentTaskId : (TASKS[0]?.id ?? null);
+let currentStudentId = null;
+let isTeacher = false;
+let editingTaskId = null;
+let editingNew = false;
+let editBaseTask = null;
+let isMenuOpen = false;
+
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function renderContext(v){return esc(v).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');}
+function safeJson(o){return JSON.stringify(o,null,2).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');}
+function currentStudent(){return appData.students.find(s=>s.id===currentStudentId)||null;}
+function taskIndex(id=currentTaskId){return TASKS.findIndex(t=>String(t.id)===String(id));}
+function currentTask(){return TASKS[taskIndex()]||null;}
+function ensureStudentProgress(studentId){if(!appData.progress[studentId])appData.progress[studentId]={};return appData.progress[studentId];}
+function blankTaskProgress(){return {status:'notStarted',solutionMode:null,hintUsed:false,hintsViewed:{},stepIndex:0,answers:{},stepSolved:{},attempts:{},outputs:{},finalInput:'',directMode:false,finalAttempts:[],runs:[],startedAt:null,completedAt:null,runNo:1};}
+function getProgress(taskId=currentTaskId, studentId=currentStudentId){if(!studentId)return blankTaskProgress();const store=ensureStudentProgress(studentId);if(!store[taskId])store[taskId]=blankTaskProgress();else{const d=blankTaskProgress();store[taskId]={...d,...store[taskId],answers:store[taskId].answers||{},stepSolved:store[taskId].stepSolved||{},attempts:store[taskId].attempts||{},outputs:store[taskId].outputs||{},hintsViewed:store[taskId].hintsViewed||{},runs:store[taskId].runs||[],finalAttempts:store[taskId].finalAttempts||[]};}return store[taskId];}
+function markStarted(p){if(!p.startedAt)p.startedAt=new Date().toISOString();if(p.status==='notStarted')p.status='inProgress';}
+function currentSolvedCount(){if(!currentStudentId)return 0;return TASKS.filter(t=>getProgress(t.id).status==='complete').length;}
+function countModes(studentId=currentStudentId){const result={complete:0,independent:0,hinted:0,inProgress:0,none:0};for(const t of TASKS){const p=getProgress(t.id,studentId);if(p.status==='complete'){result.complete++;if(p.solutionMode==='independent')result.independent++;else result.hinted++;}else if(p.status==='inProgress')result.inProgress++;else result.none++;}return result;}
+function powerValues(n){return Array.from({length:n+1},(_,k)=>({k,val:2**k}));}
+const powRows=powerValues(32);
+function focusedPowers(task){const focus=new Set();for(const f of (task?.schema?.fields||[])){const n=Number(f.power);if(Number.isFinite(n)&&n>1){const k=Math.ceil(Math.log2(n));focus.add(k);if(k>0)focus.add(k-1);}}return focus;}
+function renderPowers(){const f=focusedPowers(currentTask());$('powersList').innerHTML=powRows.map(p=>`<div class="pow-row ${f.has(p.k)?'focus':''}" title="${p.val}"><span class="pow">2<sup>${p.k}</sup></span><span class="val">${p.val}</span></div>`).join('');}
+function closeMenu(){isMenuOpen=false;$('menuPanel').classList.remove('open');$('menuBackdrop').classList.remove('open');}
+function renderStudentSelects(){const options=appData.students.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');const savedChoice=appData.currentStudentId&&appData.students.some(s=>s.id===appData.currentStudentId)?appData.currentStudentId:appData.students[0]?.id;const top=$('studentSelect'),start=$('startStudentSelect');top.innerHTML=options;start.innerHTML=options;top.value=currentStudentId&&appData.students.some(s=>s.id===currentStudentId)?currentStudentId:(savedChoice||'');start.value=savedChoice||'';}
+function renderHeader(){renderStudentSelects();$('teacherBtn').textContent=isTeacher?'✓ Режим учителя':'Режим учителя';$('teacherBtn').classList.toggle('amber',!isTeacher);$('teacherBtn').classList.toggle('green',isTeacher);$('teacherMenuTools').hidden=!isTeacher;const counts=countModes();$('progressLabel').textContent=`${counts.complete} / ${TASKS.length} решено`; $('progressFill').style.width=(TASKS.length?counts.complete/TASKS.length*100:0)+'%';$('prevBtn').disabled=taskIndex()<=0;$('nextBtn').disabled=taskIndex()>=TASKS.length-1;}
+function sectionNames(){const names=[...appData.sectionOrder];for(const t of TASKS)if(!names.includes(t.section))names.push(t.section);return names;}
+function renderMenu(){const box=$('taskMenu');let html='';for(const section of sectionNames()){
+ const sectionTasks=TASKS.filter(t=>t.section===section);if(!sectionTasks.length)continue;
+ const subs=[];for(const t of sectionTasks){if(!subs.includes(t.subsection||'Без подраздела'))subs.push(t.subsection||'Без подраздела');}
+ html+=`<details class="section-group" open><summary><span>${esc(section)}</span><span class="section-count">${sectionTasks.length}</span></summary>`;
+ for(const sub of subs){html+=`<div class="subheading">${esc(sub)}</div>`;for(const t of sectionTasks.filter(x=>(x.subsection||'Без подраздела')===sub)){
+ const p=currentStudentId?getProgress(t.id):blankTaskProgress();let icon=p.status==='complete'?(p.solutionMode==='independent'?'✓':'💡'):p.status==='inProgress'?'…':'○';
+ html+=`<button type="button" class="task-nav ${String(t.id)===String(currentTaskId)?'active':''}" data-task-id="${esc(t.id)}"><span class="nav-code">${esc(t.short||t.id)}</span><span class="nav-title">${esc(t.name||t.short||t.id)}</span><span class="nav-status" title="${p.status==='complete'?(p.solutionMode==='independent'?'Решено самостоятельно':'Решено с подсказкой'):p.status==='inProgress'?'В процессе':'Не решено'}">${icon}</span></button>`;
+ }}html+='</details>';
+ }
+ box.innerHTML=html;
+ box.querySelectorAll('[data-task-id]').forEach(btn=>btn.addEventListener('click',()=>{currentTaskId=btn.dataset.taskId;closeMenu();renderAll();$('mainPanel').scrollTo({top:0,behavior:'smooth'});}));
+}
+function statusPill(p){if(p.status==='complete'&&p.solutionMode==='independent')return '<span class="status-pill independent">✓ Самостоятельно</span>';if(p.status==='complete')return '<span class="status-pill hinted">💡 С подсказкой</span>';if(p.status==='inProgress')return '<span class="status-pill progress">В процессе</span>';return '<span class="status-pill none">Не начато</span>';}
+function renderSchema(task){const fields=task.schema?.fields||[];if(!fields.length)return '';return `<div class="field-grid">${fields.map(f=>`<div class="field-card"><div class="field-name">${esc(f.name)}</div><div class="field-info">${esc(f.info||'')}</div>${f.chars!==undefined&&f.chars!==null?`<div class="field-meta">Количество: ${esc(f.chars)}</div>`:''}${f.power!==undefined&&f.power!==null?`<div class="field-meta">Вариантов: ${esc(f.power)}</div>`:''}</div>`).join('')}</div>`;}
+function fmtDate(s){if(!s)return '—';try{return new Date(s).toLocaleString('ru-RU',{dateStyle:'short',timeStyle:'short'});}catch(e){return s;}}
+function renderHistory(p){if(!p.runs?.length)return '';return `<details style="margin-top:9px"><summary style="cursor:pointer;font-size:11px;font-weight:800;color:#475569">Предыдущие попытки: ${p.runs.length}</summary><div style="margin-top:6px">${p.runs.map((r,i)=>`<div style="border-top:1px solid #dbe3ee;padding:6px 0;font-size:10.5px">${i+1}. ${r.solutionMode==='independent'?'Самостоятельно':r.solutionMode==='hinted'?'С подсказкой':'Не завершено'} · подсказки: ${r.hintUsed?'да':'нет'} · ${esc(fmtDate(r.completedAt||r.startedAt))}</div>`).join('')}</div></details>`;}
+function renderCompleted(task,p){const modeText=p.solutionMode==='independent'?'Самостоятельно, без подсказок':'С использованием подсказки';const rows=task.steps.map((s,i)=>`<tr><td>${i+1}. ${esc(s.label)}</td><td>${esc(p.answers?.[i]??'—')}</td><td>${p.stepSolved?.[i]?'✓ верно':(p.directMode?'не заполнялся':'—')}</td><td>${esc(p.outputs?.[i]||'')}</td></tr>`).join('');return `<div class="complete-banner"><h3>✅ Задача решена</h3><p><b>Результат:</b> ${esc(task.code?.finalAnswer??task.steps.at(-1)?.answer??'—')}</p><p><b>Способ:</b> ${esc(modeText)}.</p><p><b>Подсказки в этой попытке:</b> ${p.hintUsed?'использовались':'не использовались'}.</p><p><b>Завершено:</b> ${esc(fmtDate(p.completedAt))}</p><table class="result-table"><thead><tr><th>Шаг</th><th>Ответ ученика</th><th>Статус</th><th>Сохранённый вывод</th></tr></thead><tbody>${rows}</tbody></table>${renderHistory(p)}</div><div class="task-actions-bottom"><button class="btn primary" id="retryTaskBtn" type="button">↻ Пройти заново</button><button class="btn" id="showAnswerBtn" type="button">Показать итог и решение</button></div><div id="solutionReveal" class="feedback-panel">${esc(task.code?.finalExplain||'')}</div>`;}
+function renderTask(){const task=currentTask();if(!task){$('currentTask').innerHTML='<div class="task-card">Нет задач. Включите режим учителя и добавьте карточку.</div>';return;}
+ const p=currentStudentId?getProgress(task.id):blankTaskProgress();const i=taskIndex();$('breadcrumb').textContent=`${task.section}  /  ${task.subsection}`;
+ let taskTop=`<div class="task-card"><div class="task-title-row"><span class="task-id">${esc(task.short||task.id)}</span><div class="task-heading">${esc(task.name||`Задача ${task.id}`)}</div><span class="difficulty">${esc(task.level||'Уровень '+(task.difficulty||1))} · ${'★'.repeat(Math.max(1,Math.min(5,Number(task.difficulty)||1)))}</span></div><div class="task-context"><span class="panel-label">Условие</span>${renderContext(task.context||'Условие пока не заполнено.')}</div>${renderSchema(task)}<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">${statusPill(p)}<span style="font-size:10px;color:#64748b">Задача ${i+1} из ${TASKS.length} · попытка ${p.runNo||1}</span></div>`;
+ if(p.status==='complete'){
+   $('currentTask').innerHTML=taskTop+renderCompleted(task,p)+(isTeacher?teacherTaskTools():'')+'</div>';bindCompleted(task,p);renderPowers();return;
+ }
+ const steps=Array.isArray(task.steps)?task.steps:[];if(!steps.length){$('currentTask').innerHTML=taskTop+'<div class="feedback-panel show bad">В карточке нет шагов. Откройте режим учителя и отредактируйте JSON задачи.</div>'+(isTeacher?teacherTaskTools():'')+'</div>';return;}
+ let stepIndex=Math.max(0,Math.min(Number(p.stepIndex)||0,steps.length-1));p.stepIndex=stepIndex;const step=steps[stepIndex];const solved=!!p.stepSolved?.[stepIndex];const answerValue=p.directMode?(p.finalInput||''):(p.answers?.[stepIndex]||'');
+ const dots=steps.map((_,j)=>`<span class="step-dot ${p.stepSolved?.[j]?'done':''} ${j===stepIndex?'current':''}"></span>`).join('');
+ let working='';
+ if(p.directMode){working=`<div class="question-box"><div class="question-label">Самостоятельная проверка</div><div class="question-text">Вычисли полный ответ и введи итоговый результат задачи.</div><div class="answer-row"><input id="answerInput" class="answer-input" autocomplete="off" spellcheck="false" value="${esc(answerValue)}" placeholder="Можешь тут что-нибудь посчитать — введи выражение, и я посчитаю…"><button class="btn primary" id="checkAnswerBtn" type="button">Проверить итог</button></div><div id="calcPreview" class="calc-preview"></div><div class="input-help">Можно ввести число или арифметическое выражение: <code>ceil(27/8)</code>, <code>2^10</code>, <code>5*3+4</code>.</div></div><div id="hintBox" class="hint-panel ${p.hintUsed?'show':''}"><span class="panel-label">💡 Подсказка к текущему шагу</span>${esc(step.hint||'Подсказки для этого шага нет.')}</div><div id="feedbackBox" class="feedback-panel ${p.finalAttempts?.length?'show':''}">${esc(p.outputs?.final||'')}</div><div class="question-actions"><button class="btn" id="backToStepsBtn" type="button">← Вернуться к шагам</button><button class="btn amber" id="directHintBtn" type="button">💡 Показать подсказку</button></div>`;}
+ else if(solved){working=`<div class="question-box"><div class="question-label">Шаг ${stepIndex+1} из ${steps.length} · ${esc(step.label)}</div><div class="question-text">${esc(step.question)}</div><div class="feedback-panel show"><span class="panel-label">✓ Ответ принят</span><b>${esc(p.answers?.[stepIndex]??step.answer)}</b><br>${esc(step.explanation||'')}</div><div class="question-actions"><button class="btn primary" id="advanceStepBtn" type="button">${stepIndex===steps.length-1?'Завершить задачу':'Следующий шаг →'}</button></div></div>`;}
+ else {working=`<div class="step-progress"><span class="step-progress-title">Шаг ${stepIndex+1} из ${steps.length}</span><div class="step-dots">${dots}</div></div><div class="question-box"><div class="question-label">${esc(step.label||'Вопрос')}</div><div class="question-text">${esc(step.question)}</div><div class="answer-row"><input id="answerInput" class="answer-input ${p.outputs?.[stepIndex]?.startsWith('✗')?'wrong':''}" autocomplete="off" spellcheck="false" value="${esc(answerValue)}" placeholder="Можешь тут что-нибудь посчитать — введи выражение, и я посчитаю…"><button class="btn primary" id="checkAnswerBtn" type="button">Проверить</button></div><div id="calcPreview" class="calc-preview"></div><div class="input-help">Введи ответ числом или выражением. Примеры: <code>ceil(log2(2100))</code>, <code>5*3+3*4</code>, <code>2^10</code>. Результат вычисления появится ниже.</div><div id="feedbackBox" class="feedback-panel ${p.outputs?.[stepIndex]?'show '+(p.outputs?.[stepIndex]?.startsWith('✗')?'bad':''):''}">${esc(p.outputs?.[stepIndex]||'')}</div><div id="hintBox" class="hint-panel ${p.hintsViewed?.[stepIndex]?'show':''}"><span class="panel-label">💡 Подсказка</span>${esc(step.hint||'Для этого шага нет подсказки.')}</div><div class="question-actions"><button class="btn amber" id="hintStepBtn" type="button">💡 Подсказка</button><button class="btn" id="directModeBtn" type="button">Знаю итог — проверить сразу</button></div></div>`;}
+ $('currentTask').innerHTML=taskTop+working+(isTeacher?teacherTaskTools():'')+'</div>';
+ if(solved){$('advanceStepBtn').addEventListener('click',advanceStep);}
+ else if(p.directMode){bindExpressionInput(task,p,'final');$('checkAnswerBtn').addEventListener('click',()=>checkFinal(task,p));$('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkFinal(task,p)});$('backToStepsBtn').addEventListener('click',()=>{p.directMode=false;saveMemory();renderTask()});$('directHintBtn').addEventListener('click',()=>showHint(task,p,stepIndex));}
+ else {bindExpressionInput(task,p,stepIndex);$('checkAnswerBtn').addEventListener('click',()=>checkStep(task,p,stepIndex));$('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkStep(task,p,stepIndex)});$('hintStepBtn').addEventListener('click',()=>showHint(task,p,stepIndex));$('directModeBtn').addEventListener('click',()=>{p.directMode=true;markStarted(p);saveMemory();renderTask();});}
+ renderPowers();
+}
+function teacherTaskTools(){return `<div class="teacher-tools-inline"><button class="btn amber" id="editTaskBtn" type="button">✎ Редактировать карточку</button><button class="btn" id="duplicateTaskBtn" type="button">▣ Дублировать</button><button class="btn danger" id="deleteTaskBtn" type="button">Удалить задачу</button></div>`;}
+function bindTeacherTaskTools(){const edit=$('editTaskBtn');if(edit)edit.addEventListener('click',()=>openEditor(currentTaskId,false));const dup=$('duplicateTaskBtn');if(dup)dup.addEventListener('click',()=>duplicateCurrentTask());const del=$('deleteTaskBtn');if(del)del.addEventListener('click',()=>deleteCurrentTask());}
+function bindCompleted(task,p){const retry=$('retryTaskBtn');if(retry)retry.addEventListener('click',()=>retryTask(task,p));const show=$('showAnswerBtn');if(show)show.addEventListener('click',()=>{$('solutionReveal').classList.toggle('show');$('solutionReveal').textContent=task.code?.finalExplain||('Итоговый ответ: '+task.code?.finalAnswer);});}
+function bindExpressionInput(task,p,key){const input=$('answerInput'),preview=$('calcPreview');if(!input||!preview)return;function refresh(){const raw=input.value;const value=evaluateExpression(raw);if(value===null){preview.textContent=raw.trim()?'Проверь запись выражения или продолжи ввод…':'';preview.className='calc-preview'+(raw.trim()?' bad':'');}else{preview.textContent='Результат выражения: '+value;preview.className='calc-preview good';}if(key==='final')p.finalInput=raw;else p.answers[key]=raw;markStarted(p);saveMemory();}input.addEventListener('input',refresh);if(input.value)refresh();}
+function evaluateExpression(raw){let s=String(raw??'').trim();if(!s)return null;s=s.replace(/,/g,'.').replace(/[×·]/g,'*').replace(/[−–]/g,'-').replace(/\^/g,'**');const funcs={ceil:'Math.ceil',floor:'Math.floor',log2:'Math.log2',log10:'Math.log10',log:'Math.log',abs:'Math.abs',sqrt:'Math.sqrt',min:'Math.min',max:'Math.max'};s=s.replace(/\b(ceil|floor|log2|log10|log|abs|sqrt|min|max)\b/g,(m)=>funcs[m]);const stripped=s.replace(/Math\.(ceil|floor|log2|log10|log|abs|sqrt|min|max)/g,'');if(!/^[0-9+\-*/().\s,]*$/.test(stripped))return null;try{const value=Function('"use strict";return ('+s+')')();return typeof value==='number'&&Number.isFinite(value)?value:null;}catch(e){return null;}}
+function checkStep(task,p,idx){const input=$('answerInput');if(!input)return;const raw=input.value;const value=evaluateExpression(raw);p.answers[idx]=raw;p.attempts[idx]=(p.attempts[idx]||0)+1;markStarted(p);if(value===null){p.outputs[idx]='✗ Не удалось вычислить выражение. Проверь скобки и операторы.';saveMemory();$('feedbackBox').textContent=p.outputs[idx];$('feedbackBox').className='feedback-panel show bad';input.classList.add('wrong');return;}const expected=Number(task.steps[idx].answer);if(Math.abs(value-expected)<1e-9){p.stepSolved[idx]=true;p.outputs[idx]=`✓ Верно. ${task.steps[idx].explanation||('Ответ: '+expected)}`;p.lastCorrectAt=new Date().toISOString();saveMemory();renderAll();}else{p.outputs[idx]=`✗ Получилось ${value}, это не тот ответ. Попробуй ещё раз.`;saveMemory();$('feedbackBox').textContent=p.outputs[idx];$('feedbackBox').className='feedback-panel show bad';input.classList.add('wrong');}}
+function checkFinal(task,p){const input=$('answerInput');if(!input)return;const value=evaluateExpression(input.value);p.finalInput=input.value;p.finalAttempts=p.finalAttempts||[];p.finalAttempts.push({input:input.value,value,at:new Date().toISOString(),correct:value!==null&&Math.abs(value-Number(task.code?.finalAnswer??task.steps.at(-1).answer))<1e-9});markStarted(p);if(value!==null&&Math.abs(value-Number(task.code?.finalAnswer??task.steps.at(-1).answer))<1e-9){p.outputs.final=`✓ Итоговый ответ принят: ${value}. ${task.code?.finalExplain||''}`;completeTask(task,p,'final');renderAll();}else{p.outputs.final=value===null?'✗ Не удалось вычислить выражение. Проверь запись.':`✗ Получилось ${value}. Попробуй ещё раз.`;saveMemory();$('feedbackBox').textContent=p.outputs.final;$('feedbackBox').className='feedback-panel show bad';input.classList.add('wrong');}}
+function advanceStep(){const task=currentTask(),p=getProgress();if(p.stepIndex>=task.steps.length-1){completeTask(task,p,'steps');renderAll();return;}p.stepIndex++;p.directMode=false;saveMemory();renderAll();$('mainPanel').scrollTo({top:0,behavior:'smooth'});}
+function completeTask(task,p,method){p.status='complete';p.solutionMode=p.hintUsed?'hinted':'independent';p.completionMethod=method;p.completedAt=new Date().toISOString();p.output=p.outputs?.final||task.code?.finalExplain||'';saveMemory();renderAll();}
+function showHint(task,p,idx){if(p.status==='complete')return;if(typeof idx==='number'&&p.stepSolved?.[idx])return;p.hintUsed=true;p.hintsViewed=p.hintsViewed||{};p.hintsViewed[idx]=true;markStarted(p);saveMemory();const h=$('hintBox');if(h)h.classList.add('show');const box=$('feedbackBox');if(box&&!p.outputs?.[idx]&&idx!=='final')box.classList.remove('show');}
+function retryTask(task,p){if(!confirm('Начать эту задачу заново? История предыдущих попыток останется в отчёте.'))return;p.runs=p.runs||[];if(p.status==='complete'||Object.keys(p.attempts||{}).length||p.hintUsed){p.runs.push({status:p.status,solutionMode:p.solutionMode||null,hintUsed:!!p.hintUsed,startedAt:p.startedAt,completedAt:p.completedAt,answers:p.answers||{},outputs:p.outputs||{},runNo:p.runNo||1});}const oldRuns=p.runs;p.runNo=(p.runNo||1)+1;Object.assign(p,blankTaskProgress(),{runs:oldRuns,runNo:p.runNo});saveMemory();renderAll();}
+function saveMemory(){if(currentStudentId)appData.currentStudentId=currentStudentId;if(currentTaskId!==null&&currentTaskId!==undefined)appData.currentTaskId=currentTaskId;appData.updatedAt=new Date().toISOString();}
+function renderAll(){saveMemory();renderHeader();renderMenu();renderTask();bindTeacherTaskTools();}
+function selectStudent(id){if(!appData.students.some(s=>s.id===id))return;currentStudentId=id;appData.currentStudentId=id;$('studentOverlay').hidden=true;renderAll();}
+$('studentSelect').addEventListener('change',e=>{selectStudent(e.target.value)});
+$('startBtn').addEventListener('click',()=>selectStudent($('startStudentSelect').value));
+$('menuToggle').addEventListener('click',()=>{isMenuOpen=!isMenuOpen;$('menuPanel').classList.toggle('open',isMenuOpen);$('menuBackdrop').classList.toggle('open',isMenuOpen)});
+$('menuBackdrop').addEventListener('click',closeMenu);
+$('teacherBtn').addEventListener('click',()=>{isTeacher=!isTeacher;renderAll();});
+$('hintBottomBtn').addEventListener('click',()=>{const task=currentTask();if(!task||!currentStudentId)return;const p=getProgress();const idx=p.directMode?'final':p.stepIndex;showHint(task,p,idx);const box=$('hintBox');if(box)box.scrollIntoView({behavior:'smooth',block:'nearest'});});
+$('prevBtn').addEventListener('click',()=>{const i=taskIndex();if(i>0){currentTaskId=TASKS[i-1].id;closeMenu();renderAll();$('mainPanel').scrollTo({top:0,behavior:'smooth'});}});
+$('nextBtn').addEventListener('click',()=>{const i=taskIndex();if(i<TASKS.length-1){currentTaskId=TASKS[i+1].id;closeMenu();renderAll();$('mainPanel').scrollTo({top:0,behavior:'smooth'});}});
+$('topBtn').addEventListener('click',()=>$('mainPanel').scrollTo({top:0,behavior:'smooth'}));
+$('addStudentBtn').addEventListener('click',()=>{if(!isTeacher)return;const name=prompt('Имя ученика:');if(!name||!name.trim())return;const id='student_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6);appData.students.push({id,name:name.trim()});ensureStudentProgress(id);selectStudent(id);renderStudentSelects();});
+$('removeStudentBtn').addEventListener('click',()=>{if(!isTeacher)return;const s=currentStudent();if(!s)return;if(appData.students.length<=1){alert('Нельзя удалить последнего ученика.');return;}if(!confirm(`Удалить ученика «${s.name}» и его прогресс из текущих данных приложения?`))return;appData.students=appData.students.filter(x=>x.id!==s.id);delete appData.progress[s.id];currentStudentId=appData.students[0].id;selectStudent(currentStudentId);});
+$('resetProgressBtn').addEventListener('click',()=>{if(!isTeacher||!currentStudentId)return;if(!confirm('Сбросить весь прогресс выбранного ученика?'))return;appData.progress[currentStudentId]={};renderAll();});
+$('addTaskBtn').addEventListener('click',()=>{if(!isTeacher)return;const id='new-'+Date.now();const t={id,short:'Новая',name:'Новая задача',section:'Основы кодирования информации',subsection:'Новые задания',sectionOrder:1,subsectionOrder:99,difficulty:1,level:'Начальный',source:'Создано учителем',context:'Введи условие задачи.',schema:{title:'Дано',fields:[]},steps:[{label:'Ответ',question:'Введи ответ.',answer:0,explanation:'Объяснение решения.',hint:'Подсказка.'}],code:{finalAnswer:0,finalExplain:'Ответ: 0'}};TASKS.push(t);appData.tasks=TASKS;currentTaskId=id;openEditor(id,true);renderAll();});
+function openEditor(id,isNew){if(!isTeacher)return;const t=TASKS.find(x=>String(x.id)===String(id));if(!t)return;editingTaskId=id;editingNew=!!isNew;editBaseTask=JSON.parse(JSON.stringify(t));$('editDialogTitle').textContent=isNew?'Создание задачи':'Редактирование задачи';$('taskJsonEditor').value=JSON.stringify(t,null,2);$('editOverlay').hidden=false;}
+$('cancelEditBtn').addEventListener('click',()=>{if(editingNew){TASKS=TASKS.filter(t=>String(t.id)!==String(editingTaskId));appData.tasks=TASKS;if(currentTaskId===editingTaskId)currentTaskId=TASKS[0]?.id||null;}$('editOverlay').hidden=true;renderAll();});
+$('saveEditBtn').addEventListener('click',()=>{try{const t=JSON.parse($('taskJsonEditor').value);if(!t||typeof t!=='object'||!t.id||!Array.isArray(t.steps)||!t.steps.length||!t.code||t.code.finalAnswer===undefined||typeof t.context!=='string')throw new Error('Нужны поля id, context, непустой массив steps и code.finalAnswer.');if(TASKS.some(x=>String(x.id)===String(t.id)&&String(x.id)!==String(editingTaskId)))throw new Error('Такой ID уже есть. Укажи уникальный ID.');if(String(t.id)!==String(editingTaskId)){for(const stu of appData.students){const pr=appData.progress[stu.id]||{};if(pr[editingTaskId]){pr[t.id]=pr[editingTaskId];delete pr[editingTaskId];}}}
+ const idx=TASKS.findIndex(x=>String(x.id)===String(editingTaskId));if(idx>=0)TASKS[idx]=t;else TASKS.push(t);appData.tasks=TASKS;currentTaskId=t.id;if(!appData.sectionOrder.includes(t.section))appData.sectionOrder.push(t.section);$('editOverlay').hidden=true;saveMemory();renderAll();}catch(e){alert('Не удалось сохранить карточку: '+e.message);}});
+function duplicateCurrentTask(){if(!isTeacher)return;const t=JSON.parse(JSON.stringify(currentTask()));t.id='copy-'+Date.now();t.short='Копия';t.name=(t.name||'Задача')+' — копия';t.source='Копия учительской карточки';TASKS.push(t);appData.tasks=TASKS;currentTaskId=t.id;openEditor(t.id,true);renderAll();}
+function deleteCurrentTask(){if(!isTeacher)return;const t=currentTask();if(!t||!confirm(`Удалить задачу ${t.short||t.id}?`))return;const idx=taskIndex();TASKS=TASKS.filter(x=>String(x.id)!==String(t.id));appData.tasks=TASKS;currentTaskId=TASKS[Math.min(idx,TASKS.length-1)]?.id||null;renderAll();}
+function saveApplication(){if(!currentStudentId){alert('Сначала выберите ученика.');return;}if(!$('editOverlay').hidden){alert('Сначала сохраните карточку или закройте редактор.');return;}saveMemory();appData.savedAt=new Date().toISOString();const store=$('embedded-state');store.textContent=safeJson(appData);const doc='<!DOCTYPE html>\n'+document.documentElement.outerHTML;const blob=new Blob([doc],{type:'text/html;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='11_тренажер_сохраненный.html';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);alert('Скачан новый HTML с банком задач, учениками, редакторскими изменениями и прогрессом. Откройте именно этот файл, чтобы продолжить с сохранённого состояния.');}
+$('saveBtn').addEventListener('click',saveApplication);
+function buildReportForStudent(student){const prog=appData.progress[student.id]||{};const summary={total:TASKS.length,complete:0,independent:0,hinted:0,inProgress:0,none:0};const sectionData=[];for(const sec of sectionNames()){const items=TASKS.filter(t=>t.section===sec);if(!items.length)continue;const rows=items.map(t=>{const p=prog[t.id]||blankTaskProgress();if(p.status==='complete'){summary.complete++;if(p.solutionMode==='independent')summary.independent++;else summary.hinted++;}else if(p.status==='inProgress')summary.inProgress++;else summary.none++;const status=p.status==='complete'?(p.solutionMode==='independent'?'Решено самостоятельно':'Решено с подсказкой'):p.status==='inProgress'?'В процессе':'Не решено';const answers=Object.keys(p.answers||{}).filter(k=>String(p.answers[k]??'').trim()).sort((a,b)=>Number(a)-Number(b)).map(k=>`${Number(k)+1}) ${p.answers[k]}${p.stepSolved?.[k]?' ✓':''}`).join('; ');const history=(p.runs||[]).map((r,i)=>`${i+1}: ${r.solutionMode==='independent'?'самостоятельно':r.solutionMode==='hinted'?'с подсказкой':'не завершена'}`).join(', ');return `<tr><td><b>${esc(t.short||t.id)}</b> — ${esc(t.name||'')}<div class="report-task-detail">${esc(t.subsection||'')} · уровень ${esc(t.difficulty||'—')}</div></td><td>${esc(status)}<div class="report-task-detail">Подсказки: ${p.hintUsed?'да':'нет'}; попытка №${esc(p.runNo||1)}</div></td><td>${esc(p.completedAt?fmtDate(p.completedAt):'—')}</td><td>${esc(p.directMode?(p.finalInput||(p.status==='complete'?(t.code?.finalAnswer??t.steps.at(-1)?.answer):'—')):(p.status==='complete'?(t.code?.finalAnswer??t.steps.at(-1)?.answer):'—'))}<div class="report-task-detail">${esc(answers||'')}</div>${history?`<div class="report-task-detail">История: ${esc(history)}</div>`:''}</td></tr>`;});sectionData.push(`<section class="report-section"><h2>${esc(sec)}</h2><table class="report-table"><thead><tr><th>Задача</th><th>Результат</th><th>Дата</th><th>Ответ и сохранённая работа</th></tr></thead><tbody>${rows.join('')}</tbody></table></section>`);}return {summary,html:`<div class="report-title"><h1>Отчёт по тренажёру ЕГЭ · задание 11</h1><p>Ученик: <b>${esc(student.name)}</b></p><p>Сформирован: ${esc(new Date().toLocaleString('ru-RU'))}</p><p>Фиксируется решение с подсказками и без подсказок.</p></div><div class="report-summary"><div class="report-stat"><b>${summary.complete}</b><span>Решено</span></div><div class="report-stat"><b>${summary.independent}</b><span>Самостоятельно</span></div><div class="report-stat"><b>${summary.hinted}</b><span>С подсказками</span></div><div class="report-stat"><b>${summary.inProgress}</b><span>В процессе</span></div></div>${sectionData.join('')}`};}
+$('reportBtn').addEventListener('click',()=>{if(!currentStudentId){alert('Сначала выберите ученика.');return;}$('reportScope').value='current';$('reportOverlay').hidden=false;});
+$('cancelReportBtn').addEventListener('click',()=>$('reportOverlay').hidden=true);
+$('makeReportBtn').addEventListener('click',()=>{const scope=$('reportScope').value;const students=scope==='all'?appData.students:[currentStudent()];const reports=students.filter(Boolean).map(s=>({s,r:buildReportForStudent(s)}));$('reportView').innerHTML=reports.map(({s,r},i)=>`${i?'<div style="break-before:page"></div>':''}${r.html}`).join('');$('reportOverlay').hidden=true;document.body.classList.add('printing-report');setTimeout(()=>window.print(),180);});
+window.addEventListener('afterprint',()=>{document.body.classList.remove('printing-report');$('reportView').innerHTML='';});
+// Keyboard handling keeps the drawer usable on phones.
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenu();if(!$('editOverlay').hidden)$('editOverlay').hidden=true;if(!$('reportOverlay').hidden)$('reportOverlay').hidden=true;}});
+// Начальный выбор ученика обязателен; браузерное хранилище не используется.
+function boot(){renderStudentSelects();$('startStudentSelect').value=appData.currentStudentId&&appData.students.some(s=>s.id===appData.currentStudentId)?appData.currentStudentId:appData.students[0].id;currentTaskId=TASKS[0]?.id??null;renderAll();$('studentOverlay').hidden=false;}
+boot();
+</script>
+</body>
+</html>

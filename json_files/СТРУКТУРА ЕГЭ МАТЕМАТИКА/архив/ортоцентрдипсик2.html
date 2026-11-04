@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Ортоцентр: Интерактивная Геометрия</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0a0c10;
+    --panel: rgba(21, 26, 33, 0.7);
+    --panel-border: rgba(255, 255, 255, 0.1);
+    --text: #f0f4f8;
+    --muted: #8b9bb4;
+    --accent: #00f3ff; /* Cyan */
+    --accent2: #ff00ea; /* Magenta */
+    --accent3: #ffcc00; /* Yellow */
+    --danger: #ff4757;
+    --success: #2ed573;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 var(--font);
+    overflow: hidden;
+  }
+
+  /* Layout */
+  .layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    height: 100vh;
+  }
+
+  /* Sidebar */
+  aside {
+    background: var(--panel);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid var(--panel-border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    z-index: 10;
+  }
+  .logo {
+    padding: 24px 20px;
+    font-size: 20px;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    border-bottom: 1px solid var(--panel-border);
+    letter-spacing: -0.5px;
+  }
+  .menu-group { padding: 15px 10px; }
+  .menu-group h3 {
+    font-size: 11px; text-transform: uppercase; color: var(--muted);
+    letter-spacing: 1.5px; margin: 10px 15px;
+  }
+  .fact-btn {
+    display: block; width: 100%; text-align: left;
+    background: transparent; border: 1px solid transparent;
+    color: var(--text); padding: 12px 15px; border-radius: 12px;
+    cursor: pointer; margin: 4px 0; transition: all 0.2s;
+    font-family: var(--font); font-size: 14px;
+  }
+  .fact-btn:hover { background: rgba(255,255,255,0.05); }
+  .fact-btn.active {
+    background: linear-gradient(90deg, rgba(0, 243, 255, 0.15), transparent);
+    border-left: 3px solid var(--accent);
+    font-weight: 600;
+  }
+
+  /* Main Area */
+  main { position: relative; display: flex; flex-direction: column; }
+  
+  .top-bar {
+    position: absolute; top: 20px; left: 20px; right: 20px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    pointer-events: none; z-index: 5;
+  }
+  .fact-card {
+    background: var(--panel); backdrop-filter: blur(20px);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px; padding: 20px; pointer-events: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    max-width: 450px;
+    transition: transform 0.3s;
+  }
+  .fact-card h2 { margin: 0 0 8px; font-size: 20px; font-weight: 700; }
+  .fact-card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .controls {
+    display: flex; gap: 10px; pointer-events: auto;
+    background: var(--panel); backdrop-filter: blur(20px);
+    padding: 10px; border-radius: 12px; border: 1px solid var(--panel-border);
+  }
+  .btn {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--panel-border);
+    color: var(--text); padding: 8px 16px; border-radius: 8px;
+    cursor: pointer; font-family: var(--font); font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: rgba(255,255,255,0.1); }
+  .btn.primary {
+    background: var(--accent); color: #000; border: none;
+    font-weight: 700; box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+  }
+  .btn.primary:hover { background: #fff; box-shadow: 0 0 25px rgba(0, 243, 255, 0.6); }
+
+  /* Scene */
+  .scene-container {
+    flex: 1; position: relative; overflow: hidden;
+    background: radial-gradient(circle at 50% 50%, #131824 0%, #050608 100%);
+  }
+  .scene { width: 100%; height: 100%; touch-action: none; }
+  
+  /* SVG styles */
+  .vertex { fill: #fff; stroke: var(--accent); stroke-width: 3; cursor: grab; transition: r 0.2s, stroke-width 0.2s; }
+  .vertex:hover { r: 9; stroke-width: 5; }
+  .vertex:active { cursor: grabbing; }
+  .edge { stroke: rgba(255,255,255,0.3); stroke-width: 2; fill: none; transition: all 0.3s; }
+  .edge.highlight { stroke: var(--accent3); stroke-width: 3; filter: drop-shadow(0 0 5px var(--accent3)); }
+  .alt { stroke: var(--danger); stroke-width: 2; fill: none; stroke-dasharray: 6 6; transition: all 0.3s; }
+  .alt.highlight { stroke: var(--accent3); stroke-dasharray: none; filter: drop-shadow(0 0 5px var(--accent3)); }
+  .aux { stroke: var(--accent); stroke-width: 1.5; fill: none; transition: all 0.3s; }
+  .circ { stroke: rgba(255,255,255,0.1); stroke-width: 1.5; fill: none; stroke-dasharray: 4 4; }
+  .circ.highlight { stroke: var(--accent); filter: drop-shadow(0 0 8px var(--accent)); }
+  
+  text { font-family: var(--font); fill: #fff; font-size: 16px; font-weight: 600; paint-order: stroke; stroke: #000; stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+  
+  /* Modal */
+  dialog {
+    background: rgba(15, 20, 28, 0.95); backdrop-filter: blur(30px);
+    color: var(--text); border: 1px solid var(--panel-border);
+    border-radius: 20px; max-width: 700px; width: 90%; padding: 30px;
+    box-shadow: 0 30px 100px rgba(0,0,0,0.8);
+  }
+  dialog::backdrop { background: rgba(0,0,0,0.6); }
+  dialog h2 { margin-top: 0; color: var(--accent); }
+  .proof-step {
+    background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px;
+    margin-bottom: 10px; border-left: 3px solid transparent;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .proof-step:hover {
+    background: rgba(0, 243, 255, 0.1);
+    border-left-color: var(--accent);
+    transform: translateX(5px);
+  }
+  .close-modal { position: absolute; top: 20px; right: 20px; }
+
+  /* Stats bar */
+  .stats-bar {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 10px; background: var(--panel); backdrop-filter: blur(10px);
+    padding: 10px 20px; border-radius: 30px; border: 1px solid var(--panel-border);
+    white-space: nowrap; pointer-events: none;
+  }
+  .stat { font-size: 14px; color: var(--muted); }
+  .stat b { color: var(--text); }
+
+  /* 11th Fact Controls */
+  .sub-controls {
+    position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+    display: none; background: var(--panel); backdrop-filter: blur(10px);
+    padding: 10px; border-radius: 12px; border: 1px solid var(--panel-border);
+    gap: 10px; pointer-events: auto;
+  }
+
+  @media(max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    aside { display: none; position: absolute; width: 100%; height: 100%; z-index: 100; }
+    aside.open { display: flex; }
+    .top-bar { flex-direction: column; gap: 10px; }
+    .fact-card { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <aside id="sidebar">
+    <div class="logo">GEOMETRY.X</div>
+    <div id="menu"></div>
+  </aside>
+  
+  <main>
+    <div class="top-bar">
+      <div class="fact-card">
+        <h2 id="factTitle">Загрузка...</h2>
+        <p id="factShort"></p>
+        <button class="btn primary" id="showProofBtn" style="margin-top: 15px;">Доказательство →</button>
+      </div>
+      <div class="controls">
+        <button class="btn" id="menuBtn" style="display:none;">☰ Меню</button>
+        <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-size:13px;">
+          <input type="checkbox" id="toggleAux" checked> Чертеж
+        </label>
+        <span style="font-size:13px;">Масштаб</span>
+        <input id="zoom" type="range" min=".5" max="2" step=".05" value="1" style="width:80px;">
+        <button class="btn" id="reset">Сброс</button>
+      </div>
+    </div>
+
+    <div class="scene-container">
+      <svg id="scene" class="scene" viewBox="0 0 800 600">
+        <defs>
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+        <!-- SVG содержимое генерируется JS -->
+      </svg>
+    </div>
+
+    <!-- Контролы для 11 факта -->
+    <div class="sub-controls" id="fact11Controls">
+      <button class="btn primary" id="modeSide">Диаметр = Сторона</button>
+      <button class="btn" id="modeVertex">Диаметр = VH</button>
+      <button class="btn" id="toggleAllQuads">Показать все 6</button>
+    </div>
+
+    <div class="stats-bar" id="stats"></div>
+  </main>
+</div>
+
+<dialog id="modal">
+  <button class="btn close-modal" id="closeModal">✕</button>
+  <h2 id="modalTitle"></h2>
+  <p id="modalDetail" style="color:var(--muted); margin-bottom:20px;"></p>
+  <div id="modalProof"></div>
+</dialog>
+
+<script>
+// --- ДАННЫЕ ФАКТОВ ---
+const facts = [
+  {
+    id: 1, level: "Базовые", title: "1. Пересечение высот", 
+    short: "Высоты треугольника (или их продолжения) пересекаются в одной точке — ортоцентре H.",
+    detail: "Высота — перпендикуляр из вершины к противоположной стороне. Все три высоты всегда пересекаются в одной точке.",
+    steps: [
+      { text: "Проведем две высоты: из вершины A (AH_a) и из B (BH_b). Они пересекаются в точке H.", highlight: ["altA", "altB", "pointH"] },
+      { text: "Соединим C и H. Докажем, что CH ⟂ AB.", highlight: ["lineCH"] },
+      { text: "Рассмотрим четырехугольник AHB_c. Углы при H_a и H_b прямые.", highlight: ["quadAHBC"] },
+      { text: "Сумма углов четырехугольника 360°. Значит, ∠C + ∠AHB_c = 180°. Следовательно, CH — третья высота.", highlight: ["altC"] }
+    ]
+  },
+  {
+    id: 2, level: "Базовые", title: "2. Угол при ортоцентре", 
+    short: "Для остроугольного треугольника ∠AHB = 180° − ∠C.",
+    detail: "Так как AH ⟂ BC и BH ⟂ AC, углы между перпендикулярными прямыми дополняют угол C до 180°.",
+    steps: [
+      { text: "Рассмотрим четырехугольник CDHE, где D и E — основания высот.", highlight: ["quadCDHE"] },
+      { text: "Углы ∠CDH и ∠CEH равны 90°.", highlight: ["altA", "altB"] },
+      { text: "Сумма углов четырехугольника 360°. Тогда ∠DHE + ∠C = 180°.", highlight: ["angleC", "angleDHE"] },
+      { text: "Углы ∠DHE и ∠AHB вертикальные. Значит, ∠AHB = 180° - ∠C.", highlight: ["angleAHB"] }
+    ]
+  },
+  {
+    id: 3, level: "Средние", title: "3. Прямая Эйлера", 
+    short: "Центр описанной окружности O, центроид M и ортоцентр H лежат на одной прямой; HM : OM = 2 : 1.",
+    detail: "Прямая, проходящая через эти три точки, называется прямой Эйлера.",
+    steps: [
+      { text: "Рассмотрим гомотетию с центром в M (центроид) и коэффициентом k = -1/2.", highlight: ["pointM"] },
+      { text: "При этой гомотетии вершины переходят в середины противоположных сторон.", highlight: ["medians"] },
+      { text: "Описанная окружность переходит в окружность 9 точек.", highlight: ["circumcircle"] },
+      { text: "Ортоцентр H отображается на точку O. Значит, O, M, H лежат на одной прямой.", highlight: ["eulerLine"] }
+    ]
+  },
+  {
+    id: 4, level: "Средние", title: "4. Отражение H (сторона)", 
+    short: "Отражение ортоцентра H относительно любой стороны лежит на описанной окружности.",
+    detail: "Если отразить H относительно стороны AB, получится точка H_ab на описанной окружности ABC.",
+    steps: [
+      { text: "Отразим H относительно стороны AB, получим точку H'.", highlight: ["reflectH"] },
+      { text: "∠AH'B = ∠AHB (в силу симметрии).", highlight: ["angleAHB", "angleAHB_prime"] },
+      { text: "В остроугольном треугольнике ∠AHB = 180° - ∠C.", highlight: ["angleC"] },
+      { text: "Сумма противоположных углов ACBH' равна 180°. Следовательно, ACBH' — вписанный.", highlight: ["circumcircle"] }
+    ]
+  },
+  {
+    id: 5, level: "Средние", title: "5. Окружность 9 точек", 
+    short: "Середины сторон, основания высот и середины отрезков AH, BH, CH лежат на одной окружности.",
+    detail: "Радиус этой окружности равен R/2, а центр N — середина отрезка OH.",
+    steps: [
+      { text: "Гомотетия с центром в H и коэффициентом 1/2.", highlight: ["pointH"] },
+      { text: "Вершины A, B, C переходят в середины отрезков AH, BH, CH.", highlight: ["midAH", "midBH", "midCH"] },
+      { text: "Основания высот остаются на месте.", highlight: ["feet"] },
+      { text: "Описанная окружность ABC переходит в окружность 9 точек.", highlight: ["ninePointCircle"] }
+    ]
+  },
+  {
+    id: 6, level: "Продвинутые", title: "6. Ортотреугольник", 
+    short: "Соедини основания высот — получишь ортотреугольник; H — центр его вписанной окружности.",
+    detail: "Для остроугольного треугольника ABC ортоцентр H является инцентром (центром вписанной окружности) ортотреугольника DEF.",
+    steps: [
+      { text: "Пусть D, E, F — основания высот. Соединим их.", highlight: ["ortho"] },
+      { text: "Треугольники AEF и ABC подобны (по двум углам).", highlight: ["similarTriangles"] },
+      { text: "Биссектрисы углов ортотреугольника совпадают с высотами исходного.", highlight: ["altA", "altB", "altC"] },
+      { text: "Следовательно, H — точка пересечения биссектрис, то есть инцентр DEF.", highlight: ["pointH"] }
+    ]
+  },
+  {
+    id: 7, level: "Продвинутые", title: "7. Шесть вписанных четырёхугольников", 
+    short: "Два варианта построения: диаметр — сторона или диаметр VH.",
+    detail: "Вписанность доказывается по прямым углам: противоположные углы четырёхугольника в сумме дают 180°.",
+    steps: [
+      { text: "Постройте две высоты. Их пересечение — H.", highlight: ["pointH"] },
+      { text: "Опустите перпендикуляры из H на стороны. Получите точки.", highlight: ["feet"] },
+      { text: "Четырехугольник с двумя прямыми углами вписан в окружность с диаметром CH.", highlight: ["cyclicCircle"] },
+      { text: "Аналогично строятся четырехугольники для других вершин.", highlight: ["allCyclic"] }
+    ]
+  },
+  {
+    id: 8, level: "Спец", title: "8. Вырожденные случаи", 
+    short: "Что происходит с ортоцентром в прямоугольном и тупоугольном треугольниках?",
+    detail: "В прямоугольном треугольнике ортоцентр совпадает с вершиной прямого угла. В тупоугольном — выходит за пределы треугольника.",
+    steps: [
+      { text: "Прямоугольный треугольник: высоты из катетов совпадают с катетами. H совпадает с C.", highlight: ["rightTriangle"] },
+      { text: "Тупоугольный треугольник: две высоты падают на продолжения сторон.", highlight: ["obtuseTriangle"] },
+      { text: "Ортоцентр H всегда лежит на пересечении прямых, содержащих высоты.", highlight: ["pointH"] }
+    ]
+  }
+];
+
+// --- ГЕОМЕТРИЯ И МАТЕМАТИКА ---
+const NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('scene');
+let A = {x: 250, y: 450}, B = {x: 550, y: 450}, C = {x: 400, y: 150};
+let O, H, M, D, E, F, R;
+let currentFact = 0;
+let zoom = 1, panX = 0, panY = 0;
+let dragTarget = null;
+let showAux = true;
+
+// Векторная математика
+const sub = (a,b) => ({x: a.x - b.x, y: a.y - b.y});
+const add = (a,b) => ({x: a.x + b.x, y: a.y + b.y});
+const mul = (a,k) => ({x: a.x * k, y: a.y * k});
+const dot = (a,b) => a.x * b.x + a.y * b.y;
+const dist = (a,b) => Math.hypot(a.x - b.x, a.y - b.y);
+const mid = (a,b) => ({x: (a.x + b.x)/2, y: (a.y + b.y)/2});
+const norm = (a) => { let l = Math.hypot(a.x, a.y); return l === 0 ? {x:0,y:0} : {x:a.x/l, y:a.y/l}; };
+const perp = (a) => ({x: -a.y, y: a.x});
+
+function intersect(p1, p2, p3, p4) {
+  let d = (p1.x-p2.x)*(p3.y-p4.y) - (p1.y-p2.y)*(p3.x-p4.x);
+  if (Math.abs(d) < 1e-6) return {x: 0, y: 0};
+  let a = p1.x*p2.y - p1.y*p2.x, b = p3.x*p4.y - p3.y*p4.x;
+  return {
+    x: (a*(p3.x-p4.x) - (p1.x-p2.x)*b) / d,
+    y: (a*(p3.y-p4.y) - (p1.y-p2.y)*b) / d
+  };
+}
+
+function foot(P, U, V) {
+  let d = sub(V, U);
+  let t = dot(sub(P, U), d) / dot(d, d);
+  return add(U, mul(d, Math.max(-2, Math.min(3, t)))); // Ограничение для вырожденных
+}
+
+function updateGeometry() {
+  D = foot(A, B, C); // Основание из A
+  E = foot(B, C, A); // Основание из B
+  F = foot(C, A, B); // Основание из C
+  
+  let d = 2 * (A.x*(B.y-C.y) + B.x*(C.y-A.y) + C.x*(A.y-B.y));
+  if (Math.abs(d) < 1e-6) {
+    O = {x: (A.x+B.x+C.x)/3, y: (A.y+B.y+C.y)/3}; // Вырожденный
+    R = 0;
+  } else {
+    let aa = dot(A,A), bb = dot(B,B), cc = dot(C,C);
+    O = {
+      x: (aa*(B.y-C.y) + bb*(C.y-A.y) + cc*(A.y-B.y)) / d,
+      y: (aa*(C.x-B.x) + bb*(A.x-C.x) + cc*(B.x-A.x)) / d
+    };
+    R = dist(O, A);
+  }
+  
+  // H = A + B + C - 2O
+  H = {x: A.x + B.x + C.x - 2*O.x, y: A.y + B.y + C.y - 2*O.y};
+  M = {x: (A.x+B.x+C.x)/3, y: (A.y+B.y+C.y)/3};
+}
+
+// --- РЕНДЕРИНГ ---
+function el(tag, attrs, parent = svg, text = '') {
+  let e = document.createElementNS(NS, tag);
+  for (let k in attrs) e.setAttribute(k, attrs[k]);
+  if (text) e.textContent = text;
+  parent.appendChild(e);
+  return e;
+}
+
+function render() {
+  updateGeometry();
+  svg.innerHTML = '<defs><filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter></defs>';
+  
+  let g = el('g', {transform: `translate(${panX} ${panY}) translate(400 300) scale(${zoom}) translate(-400 -300)`});
+
+  // Рисуем базовую описанную окружность
+  if (currentFact !== 7) { // В 7 факте свои окружности
+    el('circle', {cx: O.x, cy: O.y, r: R, class: 'circ', id: 'circumcircle'}, g);
+  }
+
+  // Треугольник
+  el('polygon', {points: `${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`, class: 'edge', id: 'triangle'}, g);
+
+  // Логика для каждого факта
+  if (currentFact === 0) {
+    // Высоты
+    el('line', {x1: A.x, y1: A.y, x2: D.x, y2: D.y, class: 'alt', id: 'altA'}, g);
+    el('line', {x1: B.x, y1: B.y, x2: E.x, y2: E.y, class: 'alt', id: 'altB'}, g);
+    el('line', {x1: C.x, y1: C.y, x2: F.x, y2: F.y, class: 'alt', id: 'altC'}, g);
+    // Прямые углы (упрощенно)
+    [ [D,B,C], [E,C,A], [F,A,B] ].forEach(([P,U,V]) => {
+      let u = norm(sub(V,U)), n = perp(u), r = 12;
+      let p1 = add(P, mul(u,r)), p2 = add(p1, mul(n,r)), p3 = add(P, mul(n,r));
+      el('polyline', {points: `${P.x},${P.y} ${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}`, fill:'none', stroke:'var(--accent3)', 'stroke-width':2}, g);
+    });
+  } 
+  else if (currentFact === 1) {
+    // Углы
+    el('line', {x1: A.x, y1: A.y, x2: D.x, y2: D.y, class: 'alt'}, g);
+    el('line', {x1: B.x, y1: B.y, x2: E.x, y2: E.y, class: 'alt'}, g);
+    drawAngle(H, A, B, 40, 'var(--accent3)', '180° - C', g);
+    drawAngle(C, A, B, 30, 'var(--success)', 'C', g);
+  }
+  else if (currentFact === 2) {
+    // Эйлер
+    el('line', {x1: O.x, y1: O.y, x2: H.x, y2: H.y, class: 'aux', id: 'eulerLine'}, g);
+    [A,B,C].forEach(P => el('line', {x1: O.x, y1: O.y, x2: P.x, y2: P.y, class: 'aux', 'stroke-dasharray': '4 4'}, g));
+    [ [A,mid(B,C)], [B,mid(C,A)], [C,mid(A,B)] ].forEach(([P,Q]) => el('line', {x1: P.x, y1: P.y, x2: Q.x, y2: Q.y, class: 'aux', 'stroke-dasharray': '4 4'}, g));
+    el('circle', {cx: O.x, cy: O.y, r: 5, fill: 'var(--accent)'}, g);
+    el('text', {x: O.x+12, y: O.y+5}, g).textContent = 'O';
+    el('circle', {cx: M.x, cy: M.y, r: 5, fill: 'var(--success)'}, g);
+    el('text', {x: M.x+12, y: M.y+5}, g).textContent = 'M';
+  }
+  else if (currentFact === 3) {
+    // Отражение H
+    let Hab = add(mul(D, 2), mul(H, -1)); // H' = 2D - H
+    el('line', {x1: H.x, y1: H.y, x2: Hab.x, y2: Hab.y, class: 'aux', id: 'reflectH'}, g);
+    el('line', {x1: A.x, y1: A.y, x2: Hab.x, y2: Hab.y, class: 'aux', 'stroke-dasharray': '4 4'}, g);
+    el('line', {x1: B.x, y1: B.y, x2: Hab.x, y2: Hab.y, class: 'aux', 'stroke-dasharray': '4 4'}, g);
+    el('circle', {cx: Hab.x, cy: Hab.y, r: 6, fill: 'var(--accent)'}, g);
+    el('text', {x: Hab.x+10, y: Hab.y-10}, g).textContent = "H'";
+  }
+  else if (currentFact === 4) {
+    // Окружность 9 точек
+    let N = mid(O, H);
+    let r9 = R / 2;
+    el('circle', {cx: N.x, cy: N.y, r: r9, class: 'aux', id: 'ninePointCircle'}, g);
+    let pts = [mid(A,B), mid(B,C), mid(C,A), D, E, F, mid(A,H), mid(B,H), mid(C,H)];
+    pts.forEach(P => el('circle', {cx: P.x, cy: P.y, r: 4, fill: 'var(--accent3)', id: 'feet'}, g));
+    el('text', {x: N.x+10, y: N.y-10}, g).textContent = 'N';
+  }
+  else if (currentFact === 5) {
+    // Ортотреугольник
+    el('polygon', {points: `${D.x},${D.y} ${E.x},${E.y} ${F.x},${F.y}`, fill: 'rgba(0, 243, 255, 0.1)', stroke: 'var(--accent)', 'stroke-width': 2, id: 'ortho'}, g);
+    [A,B,C].forEach((P, i) => el('line', {x1: P.x, y1: P.y, x2: H.x, y2: H.y, class: 'alt', 'stroke-dasharray': '4 4'}, g));
+  }
+  else if (currentFact === 6) {
+    // Вписанные четырехугольники
+    renderCyclicQuads(g);
+  }
+  else if (currentFact === 7) {
+    // Вырожденные
+    if (dot(sub(B,A), sub(C,A)) < 0) { // Тупоугольный при A
+      el('text', {x: 400, y: 50, fill: 'var(--danger)', 'font-size': '20px', 'text-anchor': 'middle', 'stroke': 'none'}, g).textContent = "Тупоугольный: H снаружи";
+    }
+  }
+
+  // Точки (поверх всего)
+  [[A,'A'],[B,'B'],[C,'C']].forEach(([P, name]) => {
+    el('circle', {cx: P.x, cy: P.y, r: 12, fill: 'transparent', class: 'vertex', 'data-v': name}, g)
+      .addEventListener('pointerdown', startDrag);
+  });
+  
+  el('circle', {cx: H.x, cy: H.y, r: 6, fill: 'var(--danger)', filter: 'url(#glow)', id: 'pointH'}, g);
+  el('text', {x: H.x+12, y: H.y-10, fill: 'var(--danger)'}, g).textContent = 'H';
+
+  // Подписи вершин
+  [[A,'A'],[B,'B'],[C,'C']].forEach(([P, name]) => {
+    el('text', {x: P.x+15, y: P.y-15}, g).textContent = name;
+  });
+
+  updateStats();
+}
+
+function drawAngle(center, p1, p2, r, color, label, parent) {
+  let a1 = Math.atan2(p1.y - center.y, p1.x - center.x);
+  let a2 = Math.atan2(p2.y - center.y, p2.x - center.x);
+  let da = a2 - a1;
+  if (da > Math.PI) da -= 2 * Math.PI;
+  if (da < -Math.PI) da += 2 * Math.PI;
+  
+  let sx = center.x + r * Math.cos(a1), sy = center.y + r * Math.sin(a1);
+  let ex = center.x + r * Math.cos(a2), ey = center.y + r * Math.sin(a2);
+  let large = Math.abs(da) > Math.PI ? 1 : 0;
+  let sweep = da > 0 ? 1 : 0;
+  
+  el('path', {d: `M ${sx} ${sy} A ${r} ${r} 0 ${large} ${sweep} ${ex} ${ey}`, fill: 'none', stroke: color, 'stroke-width': 3}, parent);
+  
+  let midA = a1 + da / 2;
+  el('text', {x: center.x + (r+20)*Math.cos(midA), y: center.y + (r+20)*Math.sin(midA), fill: color, 'text-anchor': 'middle'}, parent).textContent = label;
+}
+
+let cyclicMode = 'side';
+function renderCyclicQuads(g) {
+  const pairs = [[A,B,C], [B,C,A], [C,A,B]];
+  
+  pairs.forEach(([V, U, W], idx) => {
+    let footU = foot(H, V, U); // Проекция H на VU
+    let footW = foot(H, V, W); // Проекция H на VW
+    
+    if (cyclicMode === 'side') {
+      // Окружность на стороне VU (диаметр)
+      let center = mid(V, U);
+      let radius = dist(V, U) / 2;
+      el('circle', {cx: center.x, cy: center.y, r: radius, fill: 'none', stroke: 'var(--accent2)', 'stroke-width': 1.5, 'stroke-dasharray': '4 4', opacity: 0.5}, g);
+      
+      let quad = [V, U, footU, footW];
+      el('polygon', {points: quad.map(p => `${p.x},${p.y}`).join(' '), fill: 'rgba(255, 0, 234, 0.1)', stroke: 'var(--accent2)', 'stroke-width': 1}, g);
+    } else {
+      // Окружность на VH (диаметр)
+      let center = mid(V, H);
+      let radius = dist(V, H) / 2;
+      el('circle', {cx: center.x, cy: center.y, r: radius, fill: 'none', stroke: 'var(--success)', 'stroke-width': 1.5, 'stroke-dasharray': '4 4', opacity: 0.5}, g);
+      
+      let quad = [V, H, footU, footW];
+      el('polygon', {points: quad.map(p => `${p.x},${p.y}`).join(' '), fill: 'rgba(46, 213, 115, 0.1)', stroke: 'var(--success)', 'stroke-width': 1}, g);
+    }
+  });
+}
+
+function updateStats() {
+  let a = dist(B,C), b = dist(A,C), c = dist(A,B);
+  let area = Math.abs((B.x-A.x)*(C.y-A.y) - (C.x-A.x)*(B.y-A.y)) / 2;
+  let str = `S = <b>${area.toFixed(0)}</b> · R = <b>${R.toFixed(0)}</b>`;
+  if (currentFact === 2) str += ` · HM:OM = <b>2:1</b>`;
+  if (currentFact === 4) str += ` · r₉ = <b>${(R/2).toFixed(1)}</b>`;
+  document.getElementById('stats').innerHTML = str;
+}
+
+// --- ИНТЕРАКЦИЯ ---
+function getMousePos(e) {
+  let rect = svg.getBoundingClientRect();
+  let x = (e.clientX - rect.left) / rect.width * 800;
+  let y = (e.clientY - rect.top) / rect.height * 600;
+  return {
+    x: (x - panX - 400) / zoom + 400,
+    y: (y - panY - 300) / zoom + 300
+  };
+}
+
+function startDrag(e) {
+  e.preventDefault();
+  let name = e.target.dataset.v;
+  dragTarget = name;
+  svg.setPointerCapture(e.pointerId);
+}
+
+svg.addEventListener('pointermove', e => {
+  if (dragTarget) {
+    let p = getMousePos(e);
+    if (dragTarget === 'A') A = p;
+    if (dragTarget === 'B') B = p;
+    if (dragTarget === 'C') C = p;
+    render();
+  } else if (e.buttons === 1 && e.ctrlKey) {
+    // Панорамирование
+    panX += e.movementX;
+    panY += e.movementY;
+    render();
+  }
+});
+
+svg.addEventListener('pointerup', () => dragTarget = null);
+svg.addEventListener('pointercancel', () => dragTarget = null);
+
+// --- UI ЛОГИКА ---
+function selectFact(index) {
+  currentFact = index;
+  document.querySelectorAll('.fact-btn').forEach((b, i) => b.classList.toggle('active', i === index));
+  let f = facts[index];
+  document.getElementById('factTitle').textContent = f.title;
+  document.getElementById('factShort').textContent = f.short;
+  
+  // Настройка контролов 11 факта
+  document.getElementById('fact11Controls').style.display = (index === 6) ? 'flex' : 'none';
+  
+  render();
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+function showProof() {
+  let f = facts[currentFact];
+  document.getElementById('modalTitle').textContent = f.title;
+  document.getElementById('modalDetail').textContent = f.detail;
+  
+  let proofHtml = '';
+  f.steps.forEach((step, i) => {
+    proofHtml += `<div class="proof-step" data-step="${i}">
+      <b>Шаг ${i+1}.</b> ${step.text}
+    </div>`;
+  });
+  document.getElementById('modalProof').innerHTML = proofHtml;
+  document.getElementById('modal').showModal();
+  
+  // Добавляем интерактивность шагам
+  document.querySelectorAll('.proof-step').forEach(el => {
+    el.onmouseenter = () => highlightElements(f.steps[el.dataset.step].highlight);
+    el.onmouseleave = () => clearHighlights();
+  });
+}
+
+function highlightElements(ids) {
+  if (!ids) return;
+  ids.forEach(id => {
+    let el = document.getElementById(id);
+    if (el) el.classList.add('highlight');
+  });
+}
+function clearHighlights() {
+  document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+}
+
+// Инициализация меню
+let menuEl = document.getElementById('menu');
+['Базовые', 'Средние', 'Продвинутые', 'Спец'].forEach(level => {
+  let group = document.createElement('div');
+  group.className = 'menu-group';
+  group.innerHTML = `<h3>${level}</h3>`;
+  facts.forEach((f, i) => {
+    if (f.level !== level) return;
+    let b = document.createElement('button');
+    b.className = 'fact-btn';
+    b.innerHTML = f.title;
+    b.onclick = () => selectFact(i);
+    group.appendChild(b);
+  });
+  menuEl.appendChild(group);
+});
+
+// События
+document.getElementById('showProofBtn').onclick = showProof;
+document.getElementById('closeModal').onclick = () => {
+  document.getElementById('modal').close();
+  clearHighlights();
+};
+document.getElementById('reset').onclick = () => {
+  A = {x: 250, y: 450}; B = {x: 550, y: 450}; C = {x: 400, y: 150};
+  panX = 0; panY = 0; zoom = 1;
+  document.getElementById('zoom').value = 1;
+  render();
+};
+document.getElementById('zoom').oninput = e => { zoom = +e.target.value; render(); };
+document.getElementById('toggleAux').onchange = e => { showAux = e.target.checked; render(); };
+
+// Контролы 11 факта
+document.getElementById('modeSide').onclick = (e) => {
+  cyclicMode = 'side';
+  e.target.classList.add('primary');
+  document.getElementById('modeVertex').classList.remove('primary');
+  render();
+};
+document.getElementById('modeVertex').onclick = (e) => {
+  cyclicMode = 'vertex';
+  e.target.classList.add('primary');
+  document.getElementById('modeSide').classList.remove('primary');
+  render();
+};
+
+// Мобильное меню
+document.getElementById('menuBtn').onclick = () => document.getElementById('sidebar').classList.add('open');
+if (window.innerWidth < 900) document.getElementById('menuBtn').style.display = 'block';
+
+// Старт
+selectFact(0);
+</script>
+</body>
+</html>

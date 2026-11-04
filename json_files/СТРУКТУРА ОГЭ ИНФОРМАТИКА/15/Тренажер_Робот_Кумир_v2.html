@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Исполнитель Робот — тренажёр</title>
+<style>
+:root{--bg:#edf2f7;--card:#fff;--ink:#172235;--muted:#64748b;--line:#d8e1ec;--navy:#101b2e;--navy2:#182740;--blue:#3267d5;--green:#168957;--yellow:#f4d36c;--orange:#ed9b38;--red:#d6434d;--soft:#f4f7fb;--shadow:0 5px 18px #14243d12}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}
+header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;background:var(--navy);color:#f5f7fb;box-shadow:0 4px 16px #0b142533}
+.brand{font-size:18px;font-weight:850;letter-spacing:-.02em;margin-right:auto}.brand span{color:#78dda9}.topbtn{border:1px solid #52647f;background:#1b2a43;color:#f5f7fb;border-radius:9px;padding:8px 11px;font-weight:700}.topbtn:hover{background:#263b5b}.topbtn.active{background:#e3edff;color:#1e438f;border-color:#b9ceff}.topbtn.primary{background:#2869d8;border-color:#2869d8}.topbtn.warn{border-color:#d78d34;color:#ffce7a}
+.app{max-width:1700px;margin:auto;padding:12px}.layout{display:grid;grid-template-columns:255px minmax(370px,1.08fr) minmax(370px,.92fr);gap:12px;align-items:start}.card{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}.side{padding:12px;position:sticky;top:68px;max-height:calc(100vh - 82px);overflow:auto}.side h3{font-size:14px;margin:0 0 8px}.muted{color:var(--muted)}.tiny{font-size:11px}.tasklist{display:flex;flex-direction:column;gap:6px}.taskpick{display:flex;align-items:center;gap:8px;width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);text-align:left;padding:8px;border-radius:9px}.taskpick:hover{background:#f5f8fc}.taskpick.active{border-color:#6c92e8;background:#edf4ff;box-shadow:inset 3px 0 var(--blue)}.num{width:30px;height:30px;display:grid;place-items:center;flex:none;border-radius:8px;background:#edf2f9;font-weight:850}.taskmeta{min-width:0}.taskmeta b{display:block;font-size:12px;line-height:1.2}.taskmeta small{display:block;color:var(--muted);font-size:10px;line-height:1.25;margin-top:3px}.pill{margin-left:auto;flex:none;font-size:10px;font-weight:800;border-radius:20px;padding:3px 6px;background:#edf2f7;color:#617188}.pill.ok{background:#dcfce9;color:#087143}.pill.bad{background:#fee2e2;color:#a61d2c}
+hr{border:0;border-top:1px solid var(--line);margin:12px 0}.fieldlabel{display:block;font-size:11px;font-weight:800;color:#65758b;margin:8px 0 4px}.studentrow{display:flex;gap:6px}.studentrow input,.textinput,.textarea,.numberinput{width:100%;min-width:0;border:1px solid #cbd6e4;border-radius:8px;padding:8px;background:#fff;color:var(--ink)}.textinput:focus,.textarea:focus,.studentrow input:focus,.numberinput:focus{outline:2px solid #94b7ff;outline-offset:1px}.sidebuttons{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.btn{border:1px solid var(--line);background:#fff;color:#26364d;border-radius:8px;padding:8px 10px;font-weight:700}.btn:hover{background:#f3f7fc}.btn.blue{background:#2869d8;border-color:#2869d8;color:#fff}.btn.green{background:#13875a;border-color:#13875a;color:#fff}.btn.red{border-color:#e9a5aa;color:#b42331}.btn.small{padding:6px 8px;font-size:12px}.studentbar{background:#f4f7fb;border-radius:9px;padding:8px;margin-top:8px;font-size:12px}
+.panel{padding:13px;min-width:0}.panelhead{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}.panel h2{font-size:17px;margin:0}.dims{font-size:11px;color:var(--muted);padding:4px 8px;background:#f2f5fa;border-radius:20px}.taskdesc{border:1px solid #dce5ef;background:#f5f8fc;border-radius:10px;padding:9px;margin-bottom:10px;color:#455872;white-space:pre-wrap}.teacher-fields{display:none;margin-bottom:10px}.teacher-fields.show{display:block}.teacher-fields .textarea{min-height:55px;resize:vertical}.sizefields{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.sizefields .numberinput{width:70px}
+.boardtools{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}.toolbtn{border:1px solid #cbd7e5;background:#fff;border-radius:8px;padding:7px 9px;font-size:12px;font-weight:750;color:#344760}.toolbtn.active{border-color:#2f6bda;background:#eaf2ff;color:#214d9d}.toolbtn:disabled{opacity:.4}.boardwrap{position:relative;height:min(61vh,690px);min-height:390px;border-radius:12px;overflow:hidden;border:1px solid #a2b7aa;background:#176f3d}.boardwrap canvas{width:100%;height:100%;display:block;touch-action:manipulation}.legend{display:flex;gap:12px;flex-wrap:wrap;padding:8px 2px;color:#64748b;font-size:11px}.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px;border:1px solid #6b728044}.toolhint{font-size:11px;color:#697990;min-height:18px}.controls{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.action{border:1px solid #cbd6e4;border-radius:9px;padding:9px 11px;background:#fff;color:#24364f;font-weight:750}.action:hover{background:#f4f7fb}.action.primary{background:#2465d2;color:#fff;border-color:#2465d2}.action.green{background:#148657;color:#fff;border-color:#148657}.action.red{background:#c63e49;color:#fff;border-color:#c63e49}.action:disabled{opacity:.42}.status{background:#f1f5fa;color:#40536e;border-radius:9px;padding:9px 11px;margin-top:8px;min-height:38px;font-size:12px}.status.ok{background:#e5f8ed;color:#12633d}.status.bad{background:#fff0f0;color:#a42331}.status.run{background:#fff7e7;color:#865a0b}
+.programhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.programhead .muted{font-size:11px}.insertrow{display:grid;grid-template-columns:1.1fr 1fr 1.2fr;gap:7px;margin-bottom:9px}.insertbtn{position:relative;min-width:0}.insertbtn>button{width:100%;min-height:40px;padding:8px 7px}.menu{position:absolute;z-index:25;left:0;top:calc(100% + 5px);min-width:210px;width:max-content;max-width:calc(100vw - 34px);max-height:320px;overflow:auto;background:#fff;border:1px solid #cdd8e5;border-radius:11px;padding:6px;box-shadow:0 12px 30px #10182833;display:none}.menu.open{display:block}.menu button{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:7px;padding:8px 10px;color:#25364d}.menu button:hover{background:#edf4ff}.menuhead{font-size:10px;text-transform:uppercase;font-weight:850;color:#73839a;padding:7px 9px 4px}.editor{height:min(55vh,570px);min-height:300px;overflow:auto;background:#101a2e;color:#eef4ff;border-radius:11px;padding:9px;font:14px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;scrollbar-color:#52637f #17243a}.line{display:flex;gap:9px;align-items:flex-start;min-height:24px;padding:1px 6px;border-radius:5px;cursor:pointer;white-space:pre}.line:hover{background:#1b2d4b}.line.selected{background:#223d65;outline:1px solid #4e79b6}.line.active{background:#5a471c;outline:1px solid #d9aa40}.ln{width:22px;flex:none;text-align:right;color:#8090a9;user-select:none}.code{white-space:pre;flex:1}.editorhelp{font-size:11px;color:#697a91;margin:7px 0 0}.editcontrols{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.teacher-solution{margin-top:12px;border:1px solid #d7e1ed;border-radius:10px;padding:9px;background:#fbfcfe}.teacher-solution h3{font-size:13px;margin:0 0 5px}.teacher-solution textarea{width:100%;min-height:105px;resize:vertical;background:#fff;color:#24364f;border:1px solid #cbd6e4;border-radius:8px;padding:8px;font:12px/1.5 ui-monospace,Consolas,monospace}.teacher-solution .smallnote{font-size:11px;color:#6b7b92;margin:5px 0}.solution-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.hidden{display:none!important}
+.modal{position:fixed;inset:0;z-index:60;background:#07101fcc;display:flex;align-items:center;justify-content:center;padding:16px}.modal[hidden]{display:none!important}.modalbox{background:#fff;color:#182235;border-radius:15px;width:min(720px,96vw);max-height:90vh;overflow:auto;padding:18px;box-shadow:0 20px 60px #0005}.modalbox h2{margin:0 0 10px;font-size:18px}.modalbox p{color:#5f7088;font-size:13px}.modalbox input{padding:9px;border:1px solid #cad5e4;border-radius:8px;width:100%;margin:5px 0}.modalbox pre{white-space:pre-wrap;background:#101a2e;color:#f4f7ff;border-radius:9px;padding:12px;max-height:45vh;overflow:auto;font:13px/1.55 ui-monospace,Consolas,monospace}.modalactions{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+@media(max-width:1150px){.layout{grid-template-columns:220px minmax(0,1fr)}.codepanel{grid-column:1/-1}.editor{height:360px}}
+@media(max-width:720px){header{padding:9px}.brand{width:100%}.app{padding:7px}.layout{display:flex;flex-direction:column}.side{position:static;max-height:none;width:100%}.tasklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.boardwrap{height:53vh;min-height:330px}.panel{width:100%;padding:10px}.editor{height:320px;min-height:260px}.insertrow{grid-template-columns:1fr 1fr 1fr}.sidebuttons{grid-template-columns:1fr 1fr}}
+@media print{body{background:#fff}.app{padding:0}.layout{display:block}.side,header,.boardtools,.controls,.insertrow,.editcontrols,.teacher-fields,.teacher-solution,.editorhelp,.toolhint{display:none!important}.panel{box-shadow:none;border:0;padding:5px;break-inside:avoid}.boardwrap{height:400px;min-height:0}.editor{height:auto;max-height:none;overflow:visible}.codepanel{margin-top:8px}.taskdesc{background:#fff;color:#111}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Исполнитель <span>РОБОТ</span> · тренажёр</div>
+  <button class="topbtn" id="studentMode">Ученик</button>
+  <button class="topbtn active" id="teacherMode">Учитель</button>
+  <button class="topbtn" id="solutionBtn">Готовый алгоритм 🔒</button>
+  <button class="topbtn" id="reportBtn">Отчёт ученика</button>
+  <button class="topbtn" id="printBtn">Печать / PDF</button>
+  <button class="topbtn primary" id="saveHtmlBtn">Сохранить приложение</button>
+</header>
+<div class="app"><div class="layout">
+  <aside class="card side">
+    <h3>Обстановки</h3>
+    <div class="muted tiny">Выберите поле для выполнения программы</div>
+    <div class="tasklist" id="taskList"></div>
+    <div class="teacher-fields show" id="environmentManage">
+      <hr><h3>Управление обстановками</h3>
+      <div class="sidebuttons">
+        <button class="btn small" id="newEnvBtn">＋ Новая</button>
+        <button class="btn small" id="duplicateEnvBtn">Дублировать</button>
+        <button class="btn small" id="importFilBtn">Загрузить .fil</button>
+        <button class="btn small" id="exportFilBtn">Скачать .fil</button>
+        <button class="btn small" id="exportJsonBtn">Резервная копия</button>
+        <button class="btn small" id="importJsonBtn">Восстановить копию</button>
+        <button class="btn small red" id="deleteEnvBtn">Удалить поле</button>
+      </div>
+    </div>
+    <hr>
+    <h3>Ученик</h3>
+    <label class="fieldlabel" for="studentName">Имя для отчёта</label>
+    <div class="studentrow"><input id="studentName" placeholder="Введите имя ученика"></div>
+    <div class="studentbar" id="progressText">Прогресс и запуски сохраняются в этом браузере.</div>
+    <button class="btn red" id="clearLogsBtn" style="width:100%;margin-top:8px">Очистить журнал запусков</button>
+    <input type="file" id="filInput" accept=".fil,text/plain" hidden>
+    <input type="file" id="jsonInput" accept=".json,application/json" hidden>
+  </aside>
+
+  <main class="card panel boardpanel">
+    <div class="panelhead"><div><h2 id="taskTitle">Обстановка</h2><div class="muted tiny" id="taskSub"></div></div><span class="dims" id="dims"></span></div>
+    <div class="taskdesc" id="taskPrompt">Составьте программу из предложенных команд и запустите Робота.</div>
+    <div class="teacher-fields" id="taskEditor">
+      <label class="fieldlabel" for="envName">Название обстановки</label><input class="textinput" id="envName" placeholder="Название">
+      <label class="fieldlabel" for="envTask">Условие / что требуется закрасить</label><textarea class="textarea" id="envTask" placeholder="Опишите цель задания. Целевые клетки отметьте на поле инструментом «Цель»." rows="3"></textarea>
+      <div class="sizefields"><span class="fieldlabel" style="margin:0">Размер поля:</span><label class="tiny">Ширина <input class="numberinput" type="number" id="fieldW" min="2" max="128"></label><label class="tiny">Высота <input class="numberinput" type="number" id="fieldH" min="2" max="128"></label><button class="btn small" id="applySizeBtn">Применить</button></div>
+    </div>
+    <div class="boardtools" id="boardTools">
+      <button class="toolbtn active" data-tool="view">Просмотр</button>
+      <button class="toolbtn" data-tool="target">Целевые клетки</button>
+      <button class="toolbtn" data-tool="wall">Стены</button>
+      <button class="toolbtn" data-tool="robot">Старт Робота</button>
+      <button class="toolbtn" data-tool="paint">Исходная закраска</button>
+    </div>
+    <div class="boardwrap"><canvas id="board" aria-label="Поле исполнителя Робот"></canvas></div>
+    <div class="legend">
+      <span><i style="background:#f4d36c"></i>стены</span>
+      <span><i style="background:#f8dc88"></i>целевая клетка</span>
+      <span><i style="background:#58d88a"></i>закрашено программой</span>
+      <span><i style="background:#73bb83"></i>было закрашено в .fil</span>
+      <span><i style="background:#df4751"></i>авария</span>
+      <span>×2 — повторная закраска</span>
+    </div>
+    <div class="toolhint" id="toolHint">Режим просмотра. Переключитесь в режим учителя, чтобы редактировать поле.</div>
+    <div class="controls">
+      <button class="action primary" id="runBtn">▶ Запуск (Shift+F9)</button>
+      <button class="action" id="stepBtn">Шаг (F8)</button>
+      <button class="action red" id="stopBtn">■ Стоп (Esc)</button>
+      <button class="action" id="restartBtn">↺ С начала</button>
+    </div>
+    <div class="status" id="status">Робот готов. Добавьте команды и запустите программу.</div>
+  </main>
+
+  <section class="card panel codepanel">
+    <div class="programhead"><h2>Программа</h2><span class="muted">Выберите строку, затем вставьте команду</span></div>
+    <div class="insertrow">
+      <div class="insertbtn"><button class="action primary" id="moveBtn">↔ Движение ▾</button><div class="menu" id="moveMenu">
+        <div class="menuhead">Перемещение на одну клетку</div>
+        <button data-move="вверх">↑ вверх</button><button data-move="вниз">↓ вниз</button><button data-move="влево">← влево</button><button data-move="вправо">→ вправо</button>
+      </div></div>
+      <button class="action green" id="paintBtn">▧ Закрасить</button>
+      <div class="insertbtn"><button class="action" id="loopBtn">↻ Вставить цикл ▾</button><div class="menu" id="loopMenu">
+        <div class="menuhead">Цикл «нц пока … кц»</div>
+        <div class="menuhead">Пока направление свободно</div>
+        <button data-cond="сверху свободно">нц пока сверху свободно</button><button data-cond="снизу свободно">нц пока снизу свободно</button><button data-cond="слева свободно">нц пока слева свободно</button><button data-cond="справа свободно">нц пока справа свободно</button>
+        <div class="menuhead">Пока перед Роботом стена</div>
+        <button data-cond="не сверху свободно">нц пока не сверху свободно</button><button data-cond="не снизу свободно">нц пока не снизу свободно</button><button data-cond="не слева свободно">нц пока не слева свободно</button><button data-cond="не справа свободно">нц пока не справа свободно</button>
+      </div></div>
+    </div>
+    <div class="editor" id="editor" aria-label="Редактор программы"></div>
+    <div class="editcontrols">
+      <button class="btn small" id="indentBtn">Отступ +</button><button class="btn small" id="outdentBtn">Отступ −</button><button class="btn small" id="deleteLineBtn">Удалить строку</button><button class="btn small" id="undoBtn">↶ Отменить</button><button class="btn small" id="clearProgramBtn">Сначала</button><button class="btn small" id="downloadCodeBtn">Скачать .kum</button>
+    </div>
+    <div class="editorhelp">Команды вводить с клавиатуры не требуется. Нажмите на строку программы, чтобы выбрать место вставки. Цикл автоматически создаёт место для команд и закрывается строкой «кц».</div>
+    <div class="teacher-solution teacher-fields show" id="solutionEditorPanel">
+      <h3>Эталонный алгоритм для выбранной обстановки</h3>
+      <div class="smallnote">Учитель может вставить сюда проверенный алгоритм или нажать «Взять текущую программу». Ученик увидит его только после ввода пароля 31415.</div>
+      <textarea id="solutionEditor" spellcheck="false" placeholder="использовать Робот&#10;алг&#10;нач&#10;  ...&#10;кон"></textarea>
+      <div class="solution-actions"><button class="btn small" id="copyCurrentSolutionBtn">Взять текущую программу</button><button class="btn small green" id="saveSolutionBtn">Сохранить эталон</button><span class="tiny muted" id="solutionStatus"></span></div>
+    </div>
+  </section>
+</div></div>
+
+<div class="modal" id="solutionModal" hidden><div class="modalbox">
+  <h2>Готовый алгоритм</h2><p>Введите пароль, чтобы открыть эталонный алгоритм для текущей обстановки.</p>
+  <label class="fieldlabel" for="solutionPassword">Пароль</label><input id="solutionPassword" type="password" inputmode="numeric" autocomplete="off" placeholder="Пароль">
+  <button class="btn blue" id="unlockSolutionBtn">Открыть алгоритм</button>
+  <div id="solutionResult" class="hidden"><p class="tiny muted" id="solutionFor"></p><pre id="solutionCode"></pre><div class="modalactions"><button class="btn" id="insertSolutionBtn">Вставить в программу</button></div></div>
+  <div class="modalactions"><button class="btn" id="closeSolutionBtn">Закрыть</button></div>
+</div></div>
+
+<script id="embeddedData">window.__ROBOT_DATA__=window.__ROBOT_DATA__||null;</script>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const DEFAULT_DATA={"environments":[{"id":"37","name":"Лесенка 37","desc":"V-образная обстановка с лестничными стенками","w":16,"h":10,"robot":[6,1],"walls":{"5,1":4,"6,1":1,"3,2":6,"4,2":8,"1,3":2,"2,3":12,"3,4":8,"4,4":5,"5,4":4,"5,5":2,"6,5":4,"7,6":10,"9,6":4,"8,7":8,"10,7":5,"11,8":8},"initialPaint":[],"targets":[],"program":["использовать Робот","алг","нач"," ","кон"],"solution":""},{"id":"38","name":"Лесенка 38","desc":"Лестничные стенки и дополнительные перегородки","w":16,"h":10,"robot":[3,2],"walls":{"3,2":4,"11,2":2,"1,3":8,"2,3":8,"4,3":5,"12,3":1,"4,4":2,"12,4":1,"5,5":8,"6,5":1,"11,5":9,"6,6":10,"7,6":4,"9,6":2,"10,6":8,"8,7":7,"9,7":8},"initialPaint":[],"targets":[],"program":["использовать Робот","алг","нач"," ","кон"],"solution":""},{"id":"39","name":"Лесенка 39","desc":"Ломаная лестничная обстановка","w":16,"h":10,"robot":[2,6],"walls":{"5,3":4,"6,3":11,"5,4":1,"7,4":10,"3,5":6,"4,5":8,"8,5":8,"9,5":1,"2,6":4,"3,6":1,"9,6":8,"10,6":5,"1,7":8,"11,7":5,"12,7":4},"initialPaint":[],"targets":[],"program":["использовать Робот","алг","нач"," ","кон"],"solution":""},{"id":"40","name":"Над стеной и под стеной с отступом","desc":"Исходно закрашенные клетки и горизонтальная стена","w":16,"h":10,"robot":[0,0],"walls":{"2,4":4,"3,4":4,"4,4":4,"5,4":4,"6,4":4,"7,4":4,"8,4":4,"9,4":4,"10,4":4,"11,4":4,"12,4":4},"initialPaint":["2,2","4,2","6,2","8,2","10,2","12,2","2,3","4,3","6,3","8,3","10,3","12,3","2,6","4,6","6,6","8,6","10,6","12,6"],"targets":[],"program":["использовать Робот","алг","нач"," ","кон"],"solution":""},{"id":"41","name":"По камешкам","desc":"Диагональная цепочка стен","w":17,"h":10,"robot":[2,2],"walls":{"12,1":4,"11,2":4,"2,3":4,"3,4":4,"9,4":4,"10,4":8,"4,5":4,"8,5":4,"5,6":4,"7,6":4,"6,7":4},"initialPaint":[],"targets":[],"program":["использовать Робот","алг","нач"," ","кон"],"solution":""}],"logs":[],"accessLog":[],"studentName":""};
+const INITIAL_CODE=['использовать Робот','алг','нач',' ','кон'];
+const DIRS={
+  'вверх':{dx:0,dy:-1,bit:1,opp:2},
+  'вниз':{dx:0,dy:1,bit:2,opp:1},
+  'влево':{dx:-1,dy:0,bit:4,opp:8},
+  'вправо':{dx:1,dy:0,bit:8,opp:4}
+};
+function clone(x){return JSON.parse(JSON.stringify(x));}
+function loadData(){
+  try{if(window.__ROBOT_DATA__&&Array.isArray(window.__ROBOT_DATA__.environments))return clone(window.__ROBOT_DATA__);}catch(e){}
+  try{const raw=localStorage.getItem('robotTrainerDataV2');if(raw){const x=JSON.parse(raw);if(Array.isArray(x.environments))return x;}}catch(e){}
+  return clone(DEFAULT_DATA);
+}
+let data=loadData();
+if(!Array.isArray(data.logs))data.logs=[];if(!Array.isArray(data.accessLog))data.accessLog=[];
+data.environments.forEach((e,i)=>{e.id=String(e.id??i+1);e.targets=Array.isArray(e.targets)?e.targets:[];e.initialPaint=Array.isArray(e.initialPaint)?e.initialPaint:[];e.walls=e.walls||{};e.robot=e.robot||[0,0];e.program=Array.isArray(e.program)?e.program:[...INITIAL_CODE];e.solution=typeof e.solution==='string'?e.solution:'';e.taskText=e.taskText||'';});
+let selectedIndex=0,mode='teacher',tool='view',program=[...INITIAL_CODE],selectedLine=3,history=[],world=null,currentRun=null,timer=null,stepNo=0,view={};
+const DIRECTIONS=Object.keys(DIRS);
+function currentEnv(){return data.environments[selectedIndex];}
+function currentKey(){return currentEnv().id;}
+function persist(){
+  try{data.studentName=$('#studentName').value.trim();localStorage.setItem('robotTrainerDataV2',JSON.stringify(data));$('#progressText').textContent=`Обстановок: ${data.environments.length} · запусков: ${data.logs.length} · прогресс сохраняется автоматически.`;}
+  catch(e){$('#progressText').textContent='Автосохранение браузером недоступно. Используйте «Сохранить приложение» или «Резервная копия».';}
+}
+function getProgram(env=currentEnv()){return Array.isArray(env.program)?env.program:[...INITIAL_CODE];}
+function wallMask(x,y){return Number(currentEnv().walls[`${x},${y}`]||0);}
+function makeWorld(env){return {w:env.w,h:env.h,robot:{x:env.robot[0],y:env.robot[1]},walls:clone(env.walls||{}),painted:new Set(env.initialPaint||[]),paintCounts:Object.fromEntries((env.initialPaint||[]).map(k=>[k,1])),programPaintCounts:{},crash:null};}
+function resetWorld(){world=makeWorld(currentEnv());drawBoard();}
+function setStatus(t,kind=''){const el=$('#status');el.textContent=t;el.className='status'+(kind?' '+kind:'');}
+function renderTaskList(){const host=$('#taskList');host.innerHTML='';data.environments.forEach((e,i)=>{const b=document.createElement('button');b.className='taskpick'+(i===selectedIndex?' active':'');const logs=data.logs.filter(x=>String(x.envId)===String(e.id));const last=logs[logs.length-1];let p='Не запускали';if(last)p=last.outcome==='crash'?'Авария':last.outcome==='finished'?'Запуск завершён':last.outcome==='stopped'?'Остановлено':'Есть ошибки';b.innerHTML=`<span class="num">${escapeHtml(e.id)}</span><span class="taskmeta"><b>${escapeHtml(e.name)}</b><small>${escapeHtml(e.desc||'Своя обстановка')} · ${logs.length?logs.length+' зап.':'без запусков'}</small></span><span class="pill ${last?.outcome==='crash'?'bad':last?.outcome==='finished'?'ok':''}">${last?'●':'·'}</span>`;b.title=p;b.onclick=()=>selectEnvironment(i);host.append(b);});}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function selectEnvironment(i){stopRun(false,false);selectedIndex=i;const e=currentEnv();program=[...getProgram(e)];selectedLine=Math.min(3,program.length-2);history=[];$('#envName').value=e.name;$('#envTask').value=e.taskText||'';$('#fieldW').value=e.w;$('#fieldH').value=e.h;$('#solutionEditor').value=e.solution||'';$('#solutionStatus').textContent=e.solution?'Эталон сохранён':'Эталон пока не задан';$('#taskTitle').textContent=e.name;$('#taskSub').textContent=`Файл поля · ${e.w} × ${e.h}`;$('#dims').textContent=`${e.w} × ${e.h}`;$('#taskPrompt').textContent=e.taskText||'Условие пока не заполнено. Учитель может описать цель и отметить нужные клетки на поле.';resetWorld();renderCode();renderTaskList();setStatus('Робот готов. Выберите команды и запустите программу.');setTool('view');persist();}
+function canvasMetrics(){const c=$('#board'),rect=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const width=Math.max(1,rect.width),height=Math.max(1,rect.height);if(c.width!==Math.round(width*d)||c.height!==Math.round(height*d)){c.width=Math.round(width*d);c.height=Math.round(height*d);}const ctx=c.getContext('2d');ctx.setTransform(d,0,0,d,0,0);let e=currentEnv(),pad=22,cell=Math.min((width-pad*2)/e.w,(height-pad*2)/e.h),ox=(width-cell*e.w)/2,oy=(height-cell*e.h)/2;view={width,height,d,cell,ox,oy};return {ctx,width,height,d,cell,ox,oy};}
+function drawBoard(){if(!world)return;const {ctx,width,height,d,cell,ox,oy}=canvasMetrics(),env=currentEnv();ctx.clearRect(0,0,width,height);ctx.fillStyle='#176f3e';ctx.fillRect(0,0,width,height);
+  const targets=new Set(env.targets||[]),initial=new Set(env.initialPaint||[]);
+  for(let y=0;y<world.h;y++)for(let x=0;x<world.w;x++){const k=`${x},${y}`,px=ox+x*cell,py=oy+y*cell,count=world.paintCounts[k]||0,painted=world.painted.has(k),target=targets.has(k),was=initial.has(k);let fill='#23854b';if(target&&!painted)fill='#f2d276';else if(painted&&count>0)fill='#52d886';else if(was)fill='#6fc081';else if(painted)fill='#78bd82';ctx.fillStyle=fill;ctx.fillRect(px+1,py+1,cell-2,cell-2);if(target&&!painted){ctx.fillStyle='rgba(255,255,255,.16)';ctx.fillRect(px+cell*.18,py+cell*.18,cell*.64,cell*.64);}ctx.strokeStyle='rgba(241,255,243,.28)';ctx.lineWidth=0.7;ctx.strokeRect(px,py,cell,cell);if(count>=2){const bx=px+cell-3,by=py+3,r=Math.max(8,cell*.19);ctx.fillStyle='#a51e29';ctx.beginPath();ctx.arc(bx-r*.2,by+r*.2,r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font=`bold ${Math.max(9,cell*.22)}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('×'+count,bx-r*.2,by+r*.2);}}
+  // Wall bits in .fil: 1 top, 2 bottom, 4 left, 8 right.
+  ctx.strokeStyle='#f5d36b';ctx.lineWidth=Math.max(2.4,Math.min(5,cell*.075));ctx.lineCap='square';ctx.beginPath();
+  for(const [key,mask0] of Object.entries(world.walls)){const mask=Number(mask0)||0,[xs,ys]=key.split(',').map(Number);if(!Number.isFinite(xs)||!Number.isFinite(ys))continue;const px=ox+xs*cell,py=oy+ys*cell;if(mask&1){ctx.moveTo(px,py);ctx.lineTo(px+cell,py);}if(mask&2){ctx.moveTo(px,py+cell);ctx.lineTo(px+cell,py+cell);}if(mask&4){ctx.moveTo(px,py);ctx.lineTo(px,py+cell);}if(mask&8){ctx.moveTo(px+cell,py);ctx.lineTo(px+cell,py+cell);}}
+  ctx.stroke();ctx.strokeStyle='#f5d36a';ctx.lineWidth=Math.max(2.5,cell*.08);ctx.strokeRect(ox,oy,cell*world.w,cell*world.h);
+  // Crash marker is drawn exactly on the edge the robot tried to cross.
+  if(world.crash){const {x,y,dir}=world.crash,dv=DIRS[dir],cx=ox+(x+.5)*cell,cy=oy+(y+.5)*cell,ix=cx+dv.dx*cell*.49,iy=cy+dv.dy*cell*.49;ctx.save();ctx.strokeStyle='#ff2636';ctx.lineWidth=Math.max(4,cell*.12);ctx.beginPath();ctx.moveTo(ix-cell*.12,iy-cell*.12);ctx.lineTo(ix+cell*.12,iy+cell*.12);ctx.moveTo(ix+cell*.12,iy-cell*.12);ctx.lineTo(ix-cell*.12,iy+cell*.12);ctx.stroke();ctx.fillStyle='#c92735';ctx.beginPath();ctx.arc(ix,iy,Math.max(9,cell*.2),0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font=`bold ${Math.max(10,cell*.22)}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('!',ix,iy);ctx.restore();}
+  const rx=ox+(world.robot.x+.5)*cell,ry=oy+(world.robot.y+.5)*cell;ctx.save();ctx.translate(rx,ry);ctx.rotate(Math.PI/4);ctx.fillStyle=world.crash?'#ff636b':'#f8fbff';ctx.strokeStyle=world.crash?'#9d131e':'#1d3a2b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-cell*.29);ctx.lineTo(cell*.22,0);ctx.lineTo(0,cell*.29);ctx.lineTo(-cell*.22,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+  if(mode==='teacher'&&tool!=='view'){ctx.save();ctx.fillStyle='rgba(6,19,35,.7)';ctx.fillRect(8,8,Math.min(width-16,260),27);ctx.fillStyle='#fff';ctx.font='600 12px system-ui';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(toolLabel(tool),17,21);ctx.restore();}
+}
+function toolLabel(t){return ({target:'Выделите целевые клетки',wall:'Щёлкните по границе, чтобы добавить/убрать стену',robot:'Выберите клетку для старта Робота',paint:'Отметьте клетки, закрашенные изначально'})[t]||'Просмотр';}
+function renderCode(){const ed=$('#editor');ed.innerHTML='';program.forEach((s,i)=>{const row=document.createElement('div');row.className='line'+(i===selectedLine?' selected':'')+(currentRun&&currentRun.pcLine===i?' active':'');const n=document.createElement('span');n.className='ln';n.textContent=i+1;const code=document.createElement('span');code.className='code';code.textContent=s;row.append(n,code);row.onclick=()=>{selectedLine=i;renderCode();};ed.append(row);});currentEnv().program=[...program];persist();}
+function snapshot(){history.push([...program]);if(history.length>100)history.shift();}
+function lineIndent(s){return (s.match(/^ */)||[''])[0].length;}
+function insertionContext(){let line=program[selectedLine]??'',trim=line.trim(),ind=lineIndent(line),at=selectedLine+1,replace=false;if(trim==='кон'){at=selectedLine;ind=1;}else if(trim==='нач'||trim.startsWith('нц пока')){ind++;}else if(trim==='кц'){ind++;at=selectedLine;}else if(trim===''){replace=true;}return {ind,at,replace};}
+function addCommand(cmd){if(currentRun){setStatus('Сначала остановите выполнение программы.','bad');return;}snapshot();const {ind,at,replace}=insertionContext(),v=' '.repeat(ind)+cmd;if(replace){program[selectedLine]=v;}else{program.splice(at,0,v);selectedLine=at;}renderCode();}
+function addCycle(cond){if(currentRun){setStatus('Сначала остановите выполнение программы.','bad');return;}snapshot();const {ind,at,replace}=insertionContext();const block=[' '.repeat(ind)+'нц пока '+cond,' '.repeat(ind+1),' '.repeat(ind)+'кц'];if(replace){program.splice(selectedLine,1,...block);selectedLine=selectedLine+1;}else{program.splice(at,0,...block);selectedLine=at+1;}renderCode();}
+function hideMenus(){document.querySelectorAll('.menu').forEach(x=>x.classList.remove('open'));}
+$('#moveBtn').onclick=()=>{$('#moveMenu').classList.toggle('open');$('#loopMenu').classList.remove('open');};
+$('#loopBtn').onclick=()=>{$('#loopMenu').classList.toggle('open');$('#moveMenu').classList.remove('open');};
+$('#moveMenu').onclick=e=>{const b=e.target.closest('[data-move]');if(b){addCommand(b.dataset.move);hideMenus();}};
+$('#loopMenu').onclick=e=>{const b=e.target.closest('[data-cond]');if(b){addCycle(b.dataset.cond);hideMenus();}};
+document.addEventListener('click',e=>{if(!e.target.closest('.insertbtn'))hideMenus();});
+$('#paintBtn').onclick=()=>addCommand('закрасить');
+$('#indentBtn').onclick=()=>{if(selectedLine<=2||selectedLine>=program.length-1)return;snapshot();program[selectedLine]=' '+program[selectedLine];renderCode();};
+$('#outdentBtn').onclick=()=>{if(selectedLine<=2||selectedLine>=program.length-1)return;snapshot();program[selectedLine]=program[selectedLine].replace(/^ /,'');renderCode();};
+$('#deleteLineBtn').onclick=()=>{if(selectedLine<=2||selectedLine>=program.length-1)return;snapshot();program.splice(selectedLine,1);selectedLine=Math.max(3,selectedLine-1);renderCode();};
+$('#undoBtn').onclick=()=>{if(history.length){program=history.pop();selectedLine=Math.min(selectedLine,program.length-2);renderCode();}};
+$('#clearProgramBtn').onclick=()=>{if(currentRun)stopRun(false);snapshot();program=[...INITIAL_CODE];selectedLine=3;renderCode();};
+function compileCode(lines){
+  const start=lines.findIndex(x=>x.trim()==='нач');if(start<0)throw Error('В программе отсутствует строка «нач».');const end=lines.findIndex((x,i)=>i>start&&x.trim()==='кон');if(end<0)throw Error('В программе отсутствует строка «кон».');const body=lines.slice(start+1,end),ins=[],stack=[];
+  for(let i=0;i<body.length;i++){const s=body[i].trim();if(!s)continue;const line=start+1+i;
+    if(s.startsWith('нц пока ')){const cond=s.slice(8).trim();if(!isAllowedCondition(cond))throw Error('Неизвестное условие цикла в строке '+(line+1)+'.');const ix=ins.length;ins.push({t:'while',cond,line,end:null});stack.push(ix);}
+    else if(s==='кц'){if(!stack.length)throw Error('Строка «кц» без соответствующего «нц пока» (строка '+(line+1)+').');const ix=ins.length,begin=stack.pop();ins.push({t:'endwhile',line,start:begin});ins[begin].end=ix;}
+    else if(DIRS[s]||s==='закрасить')ins.push({t:'cmd',cmd:s,line});
+    else throw Error('Неизвестная команда или лишняя конструкция: «'+s+'» (строка '+(line+1)+'). Используйте только движение, «закрасить» и цикл «нц пока … кц».');
+  }
+  if(stack.length)throw Error('Не закрыт цикл. Добавьте «кц».');
+  for(let i=0;i<ins.length;i++)if(ins[i].t==='while'&&ins[i].end===null)throw Error('Не закрыт цикл.');
+  return ins;
+}
+function isAllowedCondition(c){const allowed=[];for(const d of ['сверху','снизу','слева','справа']){allowed.push(d+' свободно','не '+d+' свободно');}return allowed.includes(c);}
+function free(x,y,dir,w=world){const d=DIRS[dir],nx=x+d.dx,ny=y+d.dy;if(nx<0||ny<0||nx>=w.w||ny>=w.h)return false;const a=Number(w.walls[`${x},${y}`]||0),b=Number(w.walls[`${nx},${ny}`]||0);return !(a&d.bit)&&!(b&d.opp);}
+function conditionEval(expr){expr=expr.trim();if(expr.startsWith('не '))return !conditionEval(expr.slice(3));const m=expr.match(/^(сверху|снизу|слева|справа) свободно$/);if(!m)throw Error('Не удалось проверить условие «'+expr+'».');const dir=({'сверху':'вверх','снизу':'вниз','слева':'влево','справа':'вправо'})[m[1]];return free(world.robot.x,world.robot.y,dir);}
+function envSnapshot(){const e=currentEnv();return {id:e.id,name:e.name,taskText:e.taskText||'',w:e.w,h:e.h,robot:[...e.robot],walls:clone(e.walls),initialPaint:[...e.initialPaint],targets:[...e.targets]};}
+function newSession(){return {envId:currentEnv().id,envName:currentEnv().name,taskText:currentEnv().taskText||'',student:$('#studentName').value.trim()||(mode==='teacher'?'Проверка учителя':''),startedAt:new Date().toISOString(),program:[...program],envSnapshot:envSnapshot(),trace:[],steps:0};}
+function pushTrace(item){if(currentRun?.session?.trace?.length<20000)currentRun.session.trace.push(item);else if(currentRun?.session)currentRun.session.traceTruncated=true;}
+function runStart(){if(!$('#studentName').value.trim()&&mode==='student'){setStatus('Введите имя ученика — оно будет указано в отчёте.','bad');$('#studentName').focus();return false;}stopRun(false,false);resetWorld();let ins;try{ins=compileCode(program);}catch(err){data.logs.push({envId:currentEnv().id,envName:currentEnv().name,taskText:currentEnv().taskText||'',student:$('#studentName').value.trim()||(mode==='teacher'?'Проверка учителя':''),startedAt:new Date().toISOString(),endedAt:new Date().toISOString(),outcome:'compile_error',message:err.message,program:[...program],steps:0,trace:[],envSnapshot:envSnapshot(),finalPosition:[...currentEnv().robot]});persist();renderTaskList();setStatus(err.message,'bad');return false;}
+  currentRun={ins,pc:0,pcLine:-1,session:newSession()};stepNo=0;$('#runBtn').disabled=true;$('#stepBtn').disabled=false;setStatus('Программа запущена.','run');return true;}
+function paintCell(){const x=world.robot.x,y=world.robot.y,k=`${x},${y}`,n=(world.paintCounts[k]||0)+1;world.paintCounts[k]=n;world.programPaintCounts[k]=(world.programPaintCounts[k]||0)+1;world.painted.add(k);return n;}
+function targetStats(){const targets=currentEnv().targets||[],painted=world.painted;let hit=0;for(const k of targets)if(painted.has(k))hit++;const extra=targets.length?[...Object.keys(world.programPaintCounts).filter(k=>world.programPaintCounts[k]>0&&!targets.includes(k))]:[];const missed=targets.filter(k=>!painted.has(k));const repeated=Object.entries(world.paintCounts).filter(([k,n])=>n>=2).map(([k,n])=>({cell:k,count:n}));return {total:targets.length,hit,missed,extra,repeated,complete:targets.length>0&&hit===targets.length};}
+function finishSession(outcome,message){if(!currentRun?.session)return;clearInterval(timer);timer=null;const s=currentRun.session;s.endedAt=new Date().toISOString();s.outcome=outcome;s.message=message||'';s.steps=stepNo;s.finalPosition=[world.robot.x,world.robot.y];s.crash=world.crash?clone(world.crash):null;s.targetStats=targetStats();s.finalPainted=[...world.painted];s.paintCounts=clone(world.paintCounts);s.programPaintCounts=clone(world.programPaintCounts);s.trace=s.trace||[];if(s.envSnapshot){s.envSnapshot.finalPainted=[...world.painted];s.envSnapshot.finalPosition=[world.robot.x,world.robot.y];s.envSnapshot.crash=world.crash?clone(world.crash):null;}
+  data.logs.push(s);currentRun=null;$('#runBtn').disabled=false;$('#stepBtn').disabled=false;persist();renderTaskList();renderCode();
+  if(outcome==='crash')setStatus(message,'bad');else if(outcome==='finished'&&s.targetStats.complete)setStatus('Алгоритм завершён. Все целевые клетки закрашены.','ok');else if(outcome==='finished'&&s.targetStats.total)setStatus(`Выполнение завершено без аварии. Закрашено целевых клеток: ${s.targetStats.hit} из ${s.targetStats.total}.`,'ok');else if(outcome==='finished')setStatus('Выполнение завершено без аварии. Целевые клетки пока не отмечены учителем.','ok');else setStatus(message||'Выполнение остановлено. Результат записан в отчёт.','run');updateProgress();drawBoard();}
+function updateProgress(){const n=data.logs.filter(x=>x.outcome==='finished').length,cr=data.logs.filter(x=>x.outcome==='crash').length;$('#progressText').textContent=`Обстановок: ${data.environments.length} · запусков: ${data.logs.length} · завершено: ${n} · аварий: ${cr}.`}
+function performOne(){if(!currentRun)return;const pc=currentRun.pc;if(pc>=currentRun.ins.length){finishSession('finished','Алгоритм завершён.');return;}const q=currentRun.ins[pc];currentRun.pcLine=q.line;const before=[world.robot.x,world.robot.y];let action='';
+  try{
+    if(q.t==='cmd'){
+      action=q.cmd;
+      if(q.cmd==='закрасить'){const count=paintCell();pushTrace({step:stepNo+1,line:q.line+1,action,before,after:[...before],result:count>=2?'Повторная закраска ×'+count:'Закрашено'});currentRun.pc++;}
+      else{if(!free(world.robot.x,world.robot.y,q.cmd)){world.crash={x:world.robot.x,y:world.robot.y,dir:q.cmd};pushTrace({step:stepNo+1,line:q.line+1,action,before,after:[...before],result:'АВАРИЯ: стена или край поля'});stepNo++;drawBoard();finishSession('crash',`Робот разбился: попытка пройти ${q.cmd} из клетки (${before[0]}; ${before[1]}). Удар отмечен на поле.`);return;}const d=DIRS[q.cmd];world.robot.x+=d.dx;world.robot.y+=d.dy;pushTrace({step:stepNo+1,line:q.line+1,action,before,after:[world.robot.x,world.robot.y],result:'Переход'});currentRun.pc++;}
+    }else if(q.t==='while'){const ok=conditionEval(q.cond);action='проверка цикла: '+q.cond+' → '+(ok?'да':'нет');pushTrace({step:stepNo+1,line:q.line+1,action,before,after:[...before],result:ok?'Продолжить цикл':'Выйти из цикла'});currentRun.pc=ok?pc+1:q.end+1;}
+    else if(q.t==='endwhile'){action='кц';pushTrace({step:stepNo+1,line:q.line+1,action,before,after:[...before],result:'Возврат к условию цикла'});currentRun.pc=q.start;}
+    stepNo++;if(stepNo>20000){finishSession('limit','Остановлено: достигнут лимит 20 000 шагов. Вероятно, цикл не завершается.');return;}
+    drawBoard();renderCode();setStatus(`Шаг ${stepNo} · ${action} · Робот: (${world.robot.x}; ${world.robot.y})`,'run');if(currentRun&&currentRun.pc>=currentRun.ins.length)finishSession('finished','Алгоритм завершён.');
+  }catch(err){finishSession('error',err.message);}
+}
+function stopRun(show=true,saveSession=true){if(timer){clearInterval(timer);timer=null;}if(currentRun&&saveSession){finishSession('stopped','Выполнение остановлено пользователем. Частичный результат записан в отчёт.');return;}currentRun=null;$('#runBtn').disabled=false;$('#stepBtn').disabled=false;if(show)setStatus('Выполнение остановлено. Робот остался в текущей клетке.','run');}
+$('#runBtn').onclick=()=>{if(runStart())timer=setInterval(()=>{for(let i=0;i<4&&currentRun;i++)performOne();},100);};
+$('#stepBtn').onclick=()=>{if(!currentRun){if(!runStart())return;}performOne();};
+$('#stopBtn').onclick=()=>stopRun(true,true);
+$('#restartBtn').onclick=()=>{stopRun(false,true);resetWorld();setStatus('Робот возвращён в исходное положение.');};
+document.addEventListener('keydown',e=>{if(e.key==='F8'){e.preventDefault();$('#stepBtn').click();}if(e.key==='Escape'){stopRun(true,true);}if(e.shiftKey&&e.key==='F9'){e.preventDefault();$('#runBtn').click();}});
+$('#studentName').value=data.studentName||'';$('#studentName').addEventListener('change',persist);$('#studentName').addEventListener('input',persist);
+$('#studentMode').onclick=()=>setMode('student');$('#teacherMode').onclick=()=>setMode('teacher');
+function setMode(m){mode=m;$('#studentMode').classList.toggle('active',m==='student');$('#teacherMode').classList.toggle('active',m==='teacher');$('#environmentManage').classList.toggle('show',m==='teacher');$('#taskEditor').classList.toggle('show',m==='teacher');$('#solutionEditorPanel').classList.toggle('show',m==='teacher');$('#boardTools').classList.toggle('hidden',m!=='teacher');if(m!=='teacher')setTool('view');else setTool(tool);renderCode();}
+function setTool(t){tool=t;document.querySelectorAll('.toolbtn').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));$('#toolHint').textContent=mode!=='teacher'?'Режим ученика: обстановка заблокирована для редактирования.':t==='view'?'Режим просмотра.':toolLabel(t);drawBoard();}
+document.querySelectorAll('.toolbtn').forEach(b=>b.onclick=()=>{if(mode==='teacher')setTool(b.dataset.tool);});
+$('#envName').addEventListener('input',()=>{currentEnv().name=$('#envName').value||'Без названия';$('#taskTitle').textContent=currentEnv().name;renderTaskList();persist();});
+$('#envTask').addEventListener('input',()=>{currentEnv().taskText=$('#envTask').value;$('#taskPrompt').textContent=currentEnv().taskText||'Условие пока не заполнено.';persist();});
+$('#applySizeBtn').onclick=()=>{const e=currentEnv(),w=Math.max(2,Math.min(128,Number($('#fieldW').value)||e.w)),h=Math.max(2,Math.min(128,Number($('#fieldH').value)||e.h));e.w=w;e.h=h;e.walls=Object.fromEntries(Object.entries(e.walls).filter(([k])=>{const [x,y]=k.split(',').map(Number);return x>=0&&y>=0&&x<w&&y<h;}));e.initialPaint=e.initialPaint.filter(k=>{const [x,y]=k.split(',').map(Number);return x<w&&y<h;});e.targets=e.targets.filter(k=>{const [x,y]=k.split(',').map(Number);return x<w&&y<h;});e.robot=[Math.min(e.robot[0],w-1),Math.min(e.robot[1],h-1)];$('#dims').textContent=`${w} × ${h}`;$('#taskSub').textContent=`Файл поля · ${w} × ${h}`;resetWorld();persist();};
+function updateCell(x,y,wall,painted){const e=currentEnv(),k=`${x},${y}`,m=Number(e.walls[k]||0);if(wall!==undefined){if(wall)e.walls[k]=wall;else delete e.walls[k];}if(painted!==undefined){if(painted){if(!e.initialPaint.includes(k))e.initialPaint.push(k);}else e.initialPaint=e.initialPaint.filter(v=>v!==k);}}
+function toggleWall(x,y,side){const dirs={top:{bit:1,opp:2,dx:0,dy:-1},bottom:{bit:2,opp:1,dx:0,dy:1},left:{bit:4,opp:8,dx:-1,dy:0},right:{bit:8,opp:4,dx:1,dy:0}},d=dirs[side],e=currentEnv(),nx=x+d.dx,ny=y+d.dy;if(nx<0||ny<0||nx>=e.w||ny>=e.h){setStatus('Внешняя граница поля уже является стеной.','run');return;}const k=`${x},${y}`,nk=`${nx},${ny}`,a=Number(e.walls[k]||0),b=Number(e.walls[nk]||0),add=!(a&d.bit);let na=add?(a|d.bit):(a&~d.bit),nb=add?(b|d.opp):(b&~d.opp);if(na)e.walls[k]=na;else delete e.walls[k];if(nb)e.walls[nk]=nb;else delete e.walls[nk];}
+$('#board').addEventListener('click',e=>{if(mode!=='teacher'||tool==='view'||currentRun)return;const r=e.currentTarget.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,{cell,ox,oy}=view,env=currentEnv();const gx=Math.floor((x-ox)/cell),gy=Math.floor((y-oy)/cell);if(gx<0||gy<0||gx>=env.w||gy>=env.h)return;const k=`${gx},${gy}`;
+  if(tool==='target'){if(env.targets.includes(k))env.targets=env.targets.filter(v=>v!==k);else env.targets.push(k);}
+  else if(tool==='robot'){env.robot=[gx,gy];$('#toolHint').textContent=`Старт Робота установлен: (${gx}; ${gy}).`;}
+  else if(tool==='paint'){if(env.initialPaint.includes(k))env.initialPaint=env.initialPaint.filter(v=>v!==k);else env.initialPaint.push(k);}
+  else if(tool==='wall'){const cx=ox+(gx+.5)*cell,cy=oy+(gy+.5)*cell,dx=x-cx,dy=y-cy,ax=Math.abs(dx),ay=Math.abs(dy);let side;if(ay>ax)side=dy<0?'top':'bottom';else side=dx<0?'left':'right';toggleWall(gx,gy,side);}
+  resetWorld();persist();});
+function newEnvObject(id,name){return {id,name,desc:'Новая обстановка',taskText:'',w:16,h:10,robot:[1,1],walls:{},initialPaint:[],targets:[],program:[...INITIAL_CODE],solution:''};}
+$('#newEnvBtn').onclick=()=>{const id='new_'+Date.now();data.environments.push(newEnvObject(id,'Новая обстановка'));selectEnvironment(data.environments.length-1);};
+$('#duplicateEnvBtn').onclick=()=>{const cp=clone(currentEnv());cp.id='copy_'+Date.now();cp.name=currentEnv().name+' — копия';cp.program=[...program];data.environments.push(cp);selectEnvironment(data.environments.length-1);};
+$('#deleteEnvBtn').onclick=()=>{if(data.environments.length<=1){alert('Нельзя удалить последнюю обстановку.');return;}if(!confirm('Удалить выбранную обстановку? Записи отчёта останутся.'))return;data.environments.splice(selectedIndex,1);selectedIndex=Math.max(0,selectedIndex-1);selectEnvironment(selectedIndex);};
+$('#importFilBtn').onclick=()=>$('#filInput').click();
+$('#filInput').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const env=parseFil(await f.text(),f.name);data.environments.push(env);selectEnvironment(data.environments.length-1);setStatus('Обстановка загружена из .fil. Стены и начальная закраска прочитаны из исходного файла.','ok');}catch(err){setStatus('Не удалось прочитать .fil: '+err.message,'bad');}e.target.value='';};
+function parseFil(text,name){const rows=text.replace(/^\uFEFF/,'').split(/\r?\n/).map(x=>x.trim()).filter(x=>x&&!x.startsWith(';')).map(x=>x.split(/\s+/));if(rows.length<2)throw Error('В файле нет размеров поля или позиции Робота.');const wh=rows[0].map(Number),rp=rows[1].map(Number);if(wh.length<2||rp.length<2||!Number.isFinite(wh[0])||!Number.isFinite(wh[1]))throw Error('Неверный заголовок файла.');const w=wh[0],h=wh[1];if(w<2||h<2||w>128||h>128)throw Error('Размеры поля должны быть от 2 до 128.');const walls={},initialPaint=[];for(const row of rows.slice(2)){if(row.length<4)continue;const [x,y,wall,color]=row.slice(0,4).map(Number);if(![x,y,wall,color].every(Number.isFinite))continue;if(x<0||y<0||x>=w||y>=h)continue;const k=`${x},${y}`;if(wall)walls[k]=wall;if(color)initialPaint.push(k);}return {id:'fil_'+Date.now(),name:name.replace(/\.fil$/i,''),desc:'Импортировано из файла .fil',taskText:'',w,h,robot:[Math.max(0,Math.min(w-1,rp[0])),Math.max(0,Math.min(h-1,rp[1]))],walls,initialPaint,targets:[],program:[...INITIAL_CODE],solution:''};}
+$('#exportFilBtn').onclick=()=>{const e=currentEnv(),entries=[];for(const [k,w] of Object.entries(e.walls)){const [x,y]=k.split(',').map(Number);entries.push([x,y,Number(w)||0,e.initialPaint.includes(k)?1:0]);}for(const k of e.initialPaint){if(!e.walls[k]){const [x,y]=k.split(',').map(Number);if(!entries.some(r=>r[0]===x&&r[1]===y))entries.push([x,y,0,1]);}}entries.sort((a,b)=>a[1]-b[1]||a[0]-b[0]);const lines=[`; Field Size: x, y`,`${e.w} ${e.h}`,`; Robot position: x, y`,`${e.robot[0]} ${e.robot[1]}`,`; A set of special Fields: x, y, Wall, Color, Radiation, Temperature, Symbol, Symbol1, Point`];for(const [x,y,w,c] of entries)lines.push(`${x} ${y} ${w} ${c} 0.000000 0.000000 $ $ 0`);lines.push('; End Of File');downloadText(lines.join('\n')+'\n',`${safeFilename(e.name)}.fil`,'text/plain;charset=utf-8');};
+function safeFilename(s){return String(s||'robot').replace(/[^\p{L}\p{N}_-]+/gu,'_').slice(0,60)||'robot';}
+function downloadText(text,name,type){const blob=new Blob([text],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1200);}
+$('#exportJsonBtn').onclick=()=>{currentEnv().program=[...program];persist();downloadText(JSON.stringify(data,null,2),'robot_trainer_backup.json','application/json;charset=utf-8');};
+$('#importJsonBtn').onclick=()=>$('#jsonInput').click();
+$('#jsonInput').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!Array.isArray(x.environments))throw Error('В копии нет списка обстановок.');data=x;data.logs=data.logs||[];data.accessLog=data.accessLog||[];selectedIndex=0;$('#studentName').value=data.studentName||'';selectEnvironment(0);setStatus('Резервная копия восстановлена.','ok');}catch(err){setStatus('Ошибка восстановления: '+err.message,'bad');}e.target.value='';};
+
+$('#copyCurrentSolutionBtn').onclick=()=>{$('#solutionEditor').value=program.join('\n');$('#solutionStatus').textContent='Текущая программа скопирована в поле эталона. Нажмите «Сохранить эталон».';};
+$('#saveSolutionBtn').onclick=()=>{const val=$('#solutionEditor').value.trim();if(!val){currentEnv().solution='';persist();$('#solutionStatus').textContent='Эталон удалён.';return;}const lines=val.split(/\r?\n/);try{compileCode(lines);}catch(err){$('#solutionStatus').textContent='Не сохранено: '+err.message;return;}currentEnv().solution=val;persist();$('#solutionStatus').textContent='Эталонный алгоритм сохранён.';};
+$('#solutionBtn').onclick=()=>{$('#solutionPassword').value='';$('#solutionResult').classList.add('hidden');$('#solutionModal').hidden=false;$('#solutionPassword').focus();};
+$('#closeSolutionBtn').onclick=()=>$('#solutionModal').hidden=true;
+let unlockedSolution='';
+$('#unlockSolutionBtn').onclick=()=>{if($('#solutionPassword').value!=='31415'){setStatus('Неверный пароль.','bad');return;}const e=currentEnv();if(!e.solution){$('#solutionResult').classList.remove('hidden');$('#solutionFor').textContent=e.name;$('#solutionCode').textContent='Эталонный алгоритм для этой обстановки ещё не добавлен учителем. В исходных .fil есть геометрия поля, но нет формулировки цели и проверенного решения. В режиме учителя можно собрать алгоритм и сохранить его как эталон.';$('#insertSolutionBtn').classList.add('hidden');data.accessLog.push({at:new Date().toISOString(),student:$('#studentName').value.trim(),envId:e.id,envName:e.name,result:'попытка открыть: эталон не настроен'});persist();return;}unlockedSolution=e.solution;$('#solutionResult').classList.remove('hidden');$('#solutionFor').textContent='Эталон: '+e.name;$('#solutionCode').textContent=e.solution;$('#insertSolutionBtn').classList.remove('hidden');data.accessLog.push({at:new Date().toISOString(),student:$('#studentName').value.trim(),envId:e.id,envName:e.name,result:'открыт'});persist();};
+$('#insertSolutionBtn').onclick=()=>{const lines=unlockedSolution.split(/\r?\n/);program=[...lines];selectedLine=Math.max(3,program.findIndex(x=>x.trim()==='нач')+1);renderCode();$('#solutionModal').hidden=true;setStatus('Эталонный алгоритм вставлен в программу.','run');};
+$('#saveHtmlBtn').onclick=()=>{currentEnv().program=[...program];data.studentName=$('#studentName').value.trim();persist();let json=JSON.stringify(data).replace(/</g,'\\u003c');let source=document.documentElement.outerHTML.replace('window.__ROBOT_DATA__=window.__ROBOT_DATA__||null;','window.__ROBOT_DATA__='+json+';');downloadText(source,'Тренажёр_Робот_Кумир.html','text/html;charset=utf-8');};
+$('#downloadCodeBtn').onclick=()=>downloadText(program.join('\n')+'\n',`robot_${safeFilename(currentEnv().name)}.kum`,'text/plain;charset=utf-8');
+$('#printBtn').onclick=()=>window.print();
+function snapshotSvg(snap,log){const w=snap.w,h=snap.h,cell=24,pad=8,W=w*cell+pad*2,H=h*cell+pad*2,painted=new Set(log.finalPainted||[]),initial=new Set(snap.initialPaint||[]),targets=new Set(snap.targets||[]),counts=log.paintCounts||{};let s=[`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">`,`<rect width="100%" height="100%" fill="#176f3e"/>`];for(let y=0;y<h;y++)for(let x=0;x<w;x++){let k=`${x},${y}`,fill=targets.has(k)&&!painted.has(k)?'#f2d276':painted.has(k)&&!initial.has(k)?'#52d886':initial.has(k)?'#73bb83':'#23854b';s.push(`<rect x="${pad+x*cell}" y="${pad+y*cell}" width="${cell}" height="${cell}" fill="${fill}" stroke="#b8d7bd" stroke-opacity=".35"/>`);if((counts[k]||0)>=2)s.push(`<circle cx="${pad+(x+1)*cell-3}" cy="${pad+y*cell+4}" r="8" fill="#a51e29"/><text x="${pad+(x+1)*cell-3}" y="${pad+y*cell+7}" fill="white" font-size="8" text-anchor="middle">${counts[k]}</text>`);}
+  const walls=snap.walls||{};for(const [k,m0] of Object.entries(walls)){const [x,y]=k.split(',').map(Number),m=Number(m0),px=pad+x*cell,py=pad+y*cell;if(m&1)s.push(`<path d="M${px} ${py}h${cell}"/>`);if(m&2)s.push(`<path d="M${px} ${py+cell}h${cell}"/>`);if(m&4)s.push(`<path d="M${px} ${py}v${cell}"/>`);if(m&8)s.push(`<path d="M${px+cell} ${py}v${cell}"/>`);}s.push(`<rect x="${pad}" y="${pad}" width="${w*cell}" height="${h*cell}" fill="none" stroke="#f5d36a" stroke-width="3"/>`);s.push(`<g stroke="#f5d36a" stroke-width="3" stroke-linecap="square" fill="none">${s.slice(1).filter(x=>x.startsWith('<path')).join('')}</g>`);
+  const pos=log.finalPosition||snap.robot,[rx,ry]=pos;s.push(`<path d="M${pad+(rx+.5)*cell} ${pad+(ry+.28)*cell}l${cell*.22} ${cell*.22}l-${cell*.22} ${cell*.22}l-${cell*.22}-${cell*.22}z" fill="${log.crash?'#ff636b':'#fff'}" stroke="#193927" stroke-width="1.5"/>`);if(log.crash){let d=DIRS[log.crash.dir],x=pad+(log.crash.x+.5+d.dx*.48)*cell,y=pad+(log.crash.y+.5+d.dy*.48)*cell;s.push(`<circle cx="${x}" cy="${y}" r="9" fill="#c92735"/><text x="${x}" y="${y+3}" font-size="11" font-weight="bold" text-anchor="middle" fill="white">!</text>`);}s.push('</svg>');return s.join('');}
+function formatDate(s){try{return new Date(s).toLocaleString('ru-RU');}catch(e){return s||'';}}
+function reportDoc(){const name=$('#studentName').value.trim(),logs=data.logs.filter(x=>!x.student||x.student===name),attempts=logs.map((l,i)=>{const st=l.targetStats||{total:0,hit:0,missed:[],extra:[],repeated:[]},state={finished:'Завершён без аварии',crash:'Авария: столкновение со стеной или границей',stopped:'Остановлен учеником',limit:'Превышен лимит шагов',error:'Ошибка выполнения',compile_error:'Ошибка в программе'}[l.outcome]||l.outcome;const trace=(l.trace||[]).map(t=>`<tr><td>${t.step}</td><td>${t.line}</td><td>${escapeHtml(t.action)}</td><td>(${t.before?.join('; ')}) → (${t.after?.join('; ')})</td><td>${escapeHtml(t.result)}</td></tr>`).join('');return `<article class="attempt"><h2>${i+1}. ${escapeHtml(l.envName||l.envId)} — ${escapeHtml(state)}</h2><div class="meta">Начало: ${escapeHtml(formatDate(l.startedAt))} · Конец: ${escapeHtml(formatDate(l.endedAt))} · Шагов: ${l.steps||0}</div><p><b>Условие:</b> ${escapeHtml(l.taskText||'Не задано')}</p><p><b>Итог:</b> ${escapeHtml(l.message||'—')}</p>${l.envSnapshot?`<div class="map">${snapshotSvg(l.envSnapshot,l)}</div>`:''}<p><b>Целевые клетки:</b> ${st.total?`${st.hit} из ${st.total}; осталось: ${st.missed.map(escapeHtml).join(', ')||'нет'}`:'не отмечены учителем'}</p>${st.extra?.length?`<p><b>Лишняя закраска:</b> ${st.extra.map(escapeHtml).join(', ')}</p>`:''}${st.repeated?.length?`<p><b>Повторная закраска:</b> ${st.repeated.map(x=>escapeHtml(x.cell)+' ×'+x.count).join(', ')}</p>`:''}${l.crash?`<p class="crash"><b>Место аварии:</b> клетка (${l.crash.x}; ${l.crash.y}), направление — ${escapeHtml(l.crash.dir)}.</p>`:''}<h3>Алгоритм ученика</h3><pre>${escapeHtml((l.program||[]).join('\n'))}</pre><details open><summary>Пошаговый протокол (${(l.trace||[]).length} записей${l.traceTruncated?' · часть длинного журнала сокращена':''})</summary><table><thead><tr><th>Шаг</th><th>Строка</th><th>Команда / проверка</th><th>Положение</th><th>Результат</th></tr></thead><tbody>${trace}</tbody></table></details></article>`;}).join('');const accesses=data.accessLog.filter(x=>!x.student||x.student===name).map(x=>`<li>${escapeHtml(formatDate(x.at))}: ${escapeHtml(x.envName)} — ${escapeHtml(x.result)}</li>`).join('');return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Отчёт — ${escapeHtml(name)}</title><style>body{font:13px/1.5 Arial,sans-serif;color:#172235;margin:24px}.head{border-bottom:2px solid #223b63;padding-bottom:10px;margin-bottom:18px}.head h1{margin:0 0 5px;font-size:22px}.meta{font-size:11px;color:#65758b}.attempt{border:1px solid #d5deea;border-radius:10px;padding:14px;margin:0 0 18px;break-inside:avoid}.attempt h2{font-size:16px;margin:0 0 4px}.attempt h3{font-size:13px;margin:12px 0 5px}.map{overflow:auto;background:#176f3e;display:inline-block;padding:3px;border-radius:6px;max-width:100%}.map svg{max-width:100%;height:auto}.crash{color:#b42332}pre{white-space:pre-wrap;background:#101a2e;color:#f4f7ff;border-radius:7px;padding:10px;font:12px/1.5 Consolas,monospace}table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #d7e0eb;padding:4px;text-align:left;vertical-align:top}th{background:#edf2f8}details{margin-top:8px}summary{cursor:pointer;font-weight:bold}@media print{body{margin:10mm}.attempt{break-inside:auto}pre,svg,table{break-inside:avoid}details{break-inside:auto}}</style></head><body><div class="head"><h1>Отчёт о работе ученика: ${escapeHtml(name)}</h1><div>Исполнитель Робот · тренажёр по образцу Кумира</div><div class="meta">Сформирован: ${escapeHtml(formatDate(new Date().toISOString()))} · Всего записей о запусках: ${logs.length}</div></div>${attempts||'<p>Для этого ученика пока нет сохранённых запусков.</p>'}<h2>Доступ к готовым алгоритмам</h2><ul>${accesses||'<li>Нет записей.</li>'}</ul><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),350));<\/script></body></html>`;}
+$('#reportBtn').onclick=()=>{const name=$('#studentName').value.trim();if(!name){setStatus('Введите имя ученика перед созданием отчёта.','bad');$('#studentName').focus();return;}const w=window.open('','_blank');if(!w){setStatus('Браузер заблокировал окно отчёта. Разрешите всплывающие окна для этого файла.','bad');return;}w.document.open();w.document.write(reportDoc());w.document.close();};
+$('#clearLogsBtn').onclick=()=>{if(!confirm('Удалить журнал всех запусков?'))return;data.logs=[];data.accessLog=[];persist();renderTaskList();setStatus('Журнал запусков очищен.','ok');};
+function init(){renderTaskList();$('#studentName').value=data.studentName||'';selectEnvironment(0);setMode('teacher');updateProgress();}
+window.__robotTrainer={get data(){return data;},get world(){return world;},get program(){return program;},get tool(){return tool;},get mode(){return mode;},get view(){return view;},compileCode,free,parseFil,selectEnvironment,runStart,performOne,finishSession,toggleWall};
+init();
+</script>
+</body></html>

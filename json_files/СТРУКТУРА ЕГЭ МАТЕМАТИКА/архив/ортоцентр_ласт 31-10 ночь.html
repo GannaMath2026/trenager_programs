@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ортоцентр: интерактивные факты</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0d10;--panel:#151a21;--panel2:#1c232c;--line:#303a46;--text:#edf2f7;--muted:#a8b3c2;--red:#ff5656;--yellow:#ffd34e;--blue:#65b7ff;--green:#65d6a1}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}header{padding:18px 24px;border-bottom:1px solid var(--line);font-size:22px;font-weight:750;letter-spacing:.2px}.layout{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:calc(100vh - 65px)}aside{border-right:1px solid var(--line);padding:18px 12px;background:#10141a}.group{margin:8px 0 18px}.group h3{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin:12px}.factbtn{display:block;width:100%;text-align:left;background:transparent;border:1px solid transparent;color:var(--text);padding:10px 12px;border-radius:9px;cursor:pointer;margin:3px 0}.factbtn:hover{background:var(--panel2)}.factbtn.active{background:#2b2022;border-color:#6f3538;color:#fff}.factbtn small{display:block;color:var(--muted);font-size:11px}main{padding:22px;min-width:0}.factcard{background:linear-gradient(135deg,#1b222b,#141920);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px;display:flex;gap:20px;align-items:center;justify-content:space-between}.factcard h2{margin:0 0 7px;font-size:21px}.factcard p{margin:0;color:#d2dbe5}.btn{border:1px solid #536171;background:#26313d;color:white;padding:10px 14px;border-radius:9px;cursor:pointer;white-space:nowrap}.btn:hover{background:#344252}.sceneWrap{position:relative;border:1px solid var(--line);border-radius:14px;background:#0e1217;overflow:hidden}.sceneHead{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);color:var(--muted);font-size:15px}.scene{display:block;width:100%;height:min(62vh,620px);min-height:360px;touch-action:none}.scene text{font-family:system-ui,sans-serif;fill:#f4f7fa;font-size:15px;paint-order:stroke;stroke:#0e1217;stroke-width:3px;stroke-linejoin:round}.scene .vertex{fill:#fff;stroke:#111;stroke-width:2;cursor:grab}.scene .vertex:active{cursor:grabbing}.scene .edge{stroke:#dce4ec;stroke-width:2.2;fill:none}.scene .alt{stroke:var(--red);stroke-width:1.8;fill:none}.scene .aux{stroke:var(--blue);stroke-width:1.5;fill:none}.scene .circ{stroke:#8c9aa9;stroke-width:1.4;fill:none}.scene .section{fill:#ffd34e22;stroke:var(--yellow);stroke-width:2}.stats{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}.stat{background:#1b232c;border:1px solid #303b47;border-radius:8px;padding:6px 10px;font-size:15px;color:#dbe5ef}.controls{display:flex;align-items:center;gap:10px}.controls input{width:130px}.bottom{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}.note{font-size:14px;color:var(--muted)}dialog{background:#171e26;color:var(--text);border:1px solid #465362;border-radius:14px;max-width:650px;width:calc(100% - 32px);padding:24px;box-shadow:0 20px 80px #0009}dialog::backdrop{background:#000a}dialog h2{margin-top:0}dialog p{color:#d8e1ea}.close{float:right}.mobileMenu{display:none}
+@media(max-width:800px){.layout{grid-template-columns:1fr}aside{display:none;border:0}.layout.menuopen aside{display:block}.mobileMenu{display:inline-block;margin-right:12px}main{padding:12px}.factcard{align-items:flex-start;flex-direction:column}.scene{height:55vh;min-height:300px}.bottom{grid-template-columns:1fr}.controls{justify-content:space-between}}
+</style></head><body>
+<header><button class="btn mobileMenu" id="menuBtn">☰</button>Ортоцентр: интерактивные факты</header>
+<div class="layout" id="layout"><aside id="menu"></aside><main>
+<section class="factcard"><div><h2 id="factTitle"></h2><p id="factShort"></p></div><button class="btn" id="detailsBtn">Подробнее →</button></section>
+<section class="sceneWrap"><div class="sceneHead"><span>Перетаскивайте вершины A, B, C · Ctrl + перетаскивание — двигать сцену</span><span class="controls"><button class="btn" id="reset">Сбросить вершины</button> Масштаб <input id="zoom" type="range" min=".5" max="2.5" step=".05" value="1"><b id="zoomVal">1.00×</b></span></div>
+<svg id="scene" class="scene" viewBox="0 0 800 520" role="img" aria-label="Интерактивная геометрическая сцена"></svg>
+<div class="stats" id="stats"></div>
+<div class="stats" id="angleControls" style="display:none;align-items:center">
+<b>Выберите вершину:</b>
+<button class="btn angle-chip active" data-v="C">C</button>
+<button class="btn angle-chip" data-v="A">A</button>
+<button class="btn angle-chip" data-v="B">B</button>
+</div>
+<div class="stats" id="reflectControls" style="display:none;align-items:center"><b>Отражение H относительно противоположной стороны</b><span class="note">Выберите вершину:</span><button class="btn reflect-chip" data-v="A">A · BC</button><button class="btn reflect-chip" data-v="B">B · CA</button><button class="btn reflect-chip" data-v="C">C · AB</button></div>
+<div class="stats" id="cyclicControls" style="display:none;align-items:center;flex-wrap:wrap">
+<b>6 вписанных четырёхугольников</b>
+<button class="btn cyclic-mode active" data-mode="side">Диаметр — сторона</button>
+<button class="btn cyclic-mode" data-mode="vh">Диаметр — вершина и H</button>
+<button class="btn cyclic-mode" data-mode="allSide">Все 3 на сторонах</button>
+<button class="btn cyclic-mode" data-mode="allVH">Все 3 с H</button>
+<button class="btn cyclic-mode" data-mode="all">Все 6</button>
+<span class="note">Выберите вершину A, B или C для одного построения.</span>
+<button class="btn cyclic-vertex active" data-v="A">A</button><button class="btn cyclic-vertex" data-v="B">B</button><button class="btn cyclic-vertex" data-v="C">C</button>
+</div>
+<div class="stats" id="midControls" style="display:none;align-items:center;flex-wrap:wrap">
+<b>Отражение относительно середины противоположной стороны</b><span class="note">Активная вершина:</span>
+<button class="btn mid-chip active" data-v="A">A</button><button class="btn mid-chip" data-v="B">B</button><button class="btn mid-chip" data-v="C">C</button>
+</div>
+<div class="stats" id="radiusAngleControls" style="display:none;align-items:center;flex-wrap:wrap"><b>Угол и радиусы</b><span class="note">Выберите вершину:</span><button class="btn radius-chip active" data-v="A">A</button><button class="btn radius-chip" data-v="B">B</button><button class="btn radius-chip" data-v="C">C</button></div>
+<div class="stats" id="orthAnglesControls" style="display:none;align-items:center"><b>Активная вершина:</b><button class="btn orth-chip active" data-v="C">C</button><button class="btn orth-chip" data-v="A">A</button><button class="btn orth-chip" data-v="B">B</button><button class="btn" id="orthAll">Все вершины</button></div>
+<div class="stats" id="nineControls" style="display:none;align-items:center"><b>Показать:</b><label><input type="checkbox" id="nineAlt"> Высоты</label><label><input type="checkbox" id="nineMedian"> Медианы</label></div>
+<div class="stats" id="eulerControls" style="display:none;align-items:center">
+<b>Показать построения:</b>
+<label><input type="checkbox" id="showAlt" checked> Высоты</label>
+<label><input type="checkbox" id="showMedian" checked> Медианы</label>
+<label><input type="checkbox" id="showRadius" checked> Радиусы</label>
+</div></section>
+</main></div>
+<dialog id="modal"><button class="btn close" id="close">Закрыть ✕</button><div id="detailContent"></div></dialog>
+<script>
+const facts=[
+{id:1,level:"Базовые",title:"1. Ортоцентр — пересечение высот",short:"Высоты треугольника (или их продолжения) пересекаются в одной точке — ортоцентре H.",detail:"Высота треугольника — перпендикуляр, проведённый из вершины к прямой, содержащей противоположную сторону. Три высоты пересекаются в одной точке H. В остроугольном треугольнике H внутри, в прямоугольном — в вершине прямого угла, в тупоугольном — вне треугольника.",scene:"alt"},
+{id:2,level:"Базовые",title:"2. Угол при ортоцентре",short:"Для остроугольного треугольника угол между двумя высотами равен 180° минус угол третьей вершины.",detail:"Например, ∠BHC = 180° − ∠A. При выборе другой вершины A, B или C построение переключается на соответствующую пару высот.",scene:"angle"},
+{id:3,level:"Базовые",title:"3. Шесть вписанных четырёхугольников",short:"Три четырёхугольника имеют сторонy треугольника в качестве диаметра, ещё три — отрезок от вершины до H.",detail:"Для сторон BC, CA и AB строятся три вписанных четырёхугольника с диаметром, равным стороне. Ещё три строятся с диаметрами AH, BH и CH. Переключайте отдельные варианты или показывайте все шесть одновременно.",scene:"cyclic"},
+{id:4,level:"Средние",title:"4. Отражение H относительно стороны",short:"Отражение ортоцентра относительно стороны лежит на описанной окружности.",detail:"Выберите вершину: отражаем H относительно противоположной стороны и показываем дельтоид и связанные углы. Для A, B и C построение аналогично.",scene:"reflect"},
+{id:5,level:"Средние",title:"5. Отражение H относительно середины стороны",short:"M — середина стороны и отрезка HM₁; M₁ лежит на описанной окружности.",detail:"Для выбранной вершины отмечаем середину M противоположной стороны и строим M₁, симметричную H относительно M. HM = MM₁. Показываются параллелограмм B–H–C–M₁ и прямые углы ABM₁ и ACM₁.",scene:"midreflect"},
+{id:6,level:"Средние",title:"6. Угол между стороной и высотой",short:"Показываем угол между стороной и высотой, радиусы описанной окружности и связанные углы.",detail:"Для выбранной вершины C строим высоту CC₁, радиусы OC и OA. Отмечаем ∠BCC₁ = α, ∠CBC₁ = 90° − α, ∠COA = 180° − 2α и равные углы ∠OCA = ∠OAC = α. Для A и B построение аналогично.",scene:"radiusAngle"},
+{id:7,level:"Средние",title:"7. Расстояние до ортоцентра",short:"Для вершины C расстояние CH вдвое больше расстояния от O до стороны AB.",detail:"Если E — основание перпендикуляра из O на AB, то CH = 2·OE. Аналогичные соотношения выполняются для каждой вершины и противоположной стороны.",scene:"distance"},
+{id:8,level:"Средние",title:"8. Касательная, дуга и высота",short:"Угол между касательной в вершине и стороной равен вписанному углу, опирающемуся на ту же дугу.",detail:"Для выбранной вершины проводим касательную к описанной окружности, выделяем угол между касательной и стороной, соответствующую дугу и равный вписанный угол. Также строим высоту из выбранной вершины.",scene:"tangent"},
+{id:9,level:"Средние",title:"9. Прямая Эйлера",short:"Ортоцентр H, центр описанной окружности O и центр тяжести M лежат на одной прямой.",detail:"Прямая Эйлера проходит через H, O и M. Центр тяжести делит отрезок OH в отношении OM:MH = 1:2.",scene:"euler"},
+{id:13,level:"Продвинутые",title:"10. Сумма квадратов",short:"AH² + BC² = 4R², где R — радиус описанной окружности.",detail:"Квадрат расстояния от вершины до ортоцентра плюс квадрат противоположной стороны равен квадрату диаметра описанной окружности: AH² + BC² = (2R)².",scene:"squares"},
+{id:13,level:"Продвинутые",title:"11. Ортотреугольник",short:"Основания высот исходного треугольника образуют ортотреугольник.",detail:"Основания высот исходного треугольника образуют ортотреугольник. Для остроугольного ABC ортоцентр H является центром вписанной окружности ортотреугольника; для тупоугольного случая — центром одной из вневписанных окружностей.",scene:"orth"},
+{id:13,level:"Продвинутые",title:"12. Подобие отсечённого треугольника",short:"Отсечённый треугольник подобен исходному с коэффициентом |cos B|.",detail:"При AD ⟂ BC и BE ⟂ AC отсечённый треугольник DEC подобен исходному ABC. Коэффициент подобия равен |cos ∠B|.",scene:"similar"},
+{id:14,level:"Продвинутые",title:"13. Подобие прямоугольных треугольников",short:"CB₁H ∼ AB₁B; коэффициент подобия |cot α|.",detail:"Треугольники CB₁H и AB₁B подобны. При активной вершине C выделяются углы C₁CH = C₁BA = α. Коэффициент подобия равен модулю котангенса угла при активной вершине.",scene:"cotSimilar"},
+{id:15,level:"Продвинутые",title:"14. Окружность девяти точек",short:"Середины сторон, основания высот и середины отрезков AH, BH, CH лежат на одной окружности.",detail:"Центр окружности девяти точек N — середина OH, а её радиус равен R/2.",scene:"nine"},
+{id:16,level:"Продвинутые",title:"15. Равные углы ортотреугольника",short:"Углы, образованные сторонами исходного и ортотреугольника, равны; ортотреугольник выделен.",detail:"Для активной вершины C цветом выделяются равные углы B₁C₁C = A₁C₁C = B₁BC = A₁AC. Можно выбрать A, B, C или показать равенства для всех вершин.",scene:"orthAngles"}
+];
+const svg=document.getElementById('scene'), ns='http://www.w3.org/2000/svg';let current=0,zoom=1,drag=null,pan={x:0,y:0},panDrag=null,angleVertex='C',activeVertex='A',cyclicMode='side',cyclicChoice='A',reflectVertices=['A'],orthAll=false,nineAlt=false,nineMedian=false;
+function scenePoint(e){
+  const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;
+  const q=p.matrixTransform(svg.getScreenCTM().inverse());
+  return {x:(q.x-pan.x-400)/zoom+400,y:(q.y-pan.y-260)/zoom+260};
+}
+function vertexPoint(name){return name==='A'?A:name==='B'?B:C}
+function setVertex(name,p){if(name==='A')A=p;else if(name==='B')B=p;else C=p}
+
+let A={x:250,y:390},B={x:570,y:390},C={x:400,y:105};const initial=()=>{A={x:250,y:390};B={x:570,y:390};C={x:400,y:105}};
+const add=(tag,attrs={},parent=svg,text='')=>{let e=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(text)e.textContent=text;parent.appendChild(e);return e};
+const plus=(a,b)=>({x:a.x+b.x,y:a.y+b.y}),sub=(a,b)=>({x:a.x-b.x,y:a.y-b.y}),mul=(a,k)=>({x:a.x*k,y:a.y*k}),dot=(a,b)=>a.x*b.x+a.y*b.y,dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function lineIntersection(p,v,q,w){let cross=(a,b)=>a.x*b.y-a.y*b.x,den=cross(v,w);if(Math.abs(den)<1e-8)return{x:400,y:260};return plus(p,mul(v,cross(sub(q,p),w)/den))}
+function foot(P,U,V){let d=sub(V,U),t=dot(sub(P,U),d)/dot(d,d);return plus(U,mul(d,t))}
+function circum(){let d=2*(A.x*(B.y-C.y)+B.x*(C.y-A.y)+C.x*(A.y-B.y));if(Math.abs(d)<1e-6)return{x:400,y:260};let aa=dot(A,A),bb=dot(B,B),cc=dot(C,C);return{x:(aa*(B.y-C.y)+bb*(C.y-A.y)+cc*(A.y-B.y))/d,y:(aa*(C.x-B.x)+bb*(A.x-C.x)+cc*(B.x-A.x))/d}}
+function ortho(O){return{x:A.x+B.x+C.x-2*O.x,y:A.y+B.y+C.y-2*O.y}}
+function midpoint(P,Q){return mul(plus(P,Q),.5)}function reflect(P,U,V){let F=foot(P,U,V);return sub(mul(F,2),P)}
+function fmt(n){return Number.isFinite(n)?n.toFixed(1):"—"}function angle(P,Q,R){let u=sub(P,Q),v=sub(R,Q);return Math.acos(Math.max(-1,Math.min(1,dot(u,v)/(dist(P,Q)*dist(R,Q)))))*180/Math.PI}
+function syncVertexButtons(){
+  document.querySelectorAll('.angle-chip,.reflect-chip,.mid-chip,.radius-chip').forEach(b=>b.classList.toggle('active',b.dataset.v===activeVertex));
+}
+function render(){
+  const sceneKey=facts[current]?.scene;
+  document.getElementById('nineControls').style.display=sceneKey==='nine'?'flex':'none';
+  document.getElementById('angleControls').style.display=sceneKey==='angle'?'flex':'none';
+  document.getElementById('reflectControls').style.display=sceneKey==='reflect'?'flex':'none';
+  document.getElementById('midControls').style.display=sceneKey==='midreflect'?'flex':'none';
+  document.getElementById('radiusAngleControls').style.display=['radiusAngle','tangent'].includes(sceneKey)?'flex':'none';
+  document.getElementById('cyclicControls').style.display=sceneKey==='cyclic'?'flex':'none';
+  document.getElementById('eulerControls').style.display=sceneKey==='euler'?'flex':'none';
+  document.getElementById('orthAnglesControls').style.display=['orthAngles','cotSimilar'].includes(sceneKey)?'flex':'none';
+  syncVertexButtons();
+  svg.innerHTML='';let g=add('g',{transform:`translate(${pan.x} ${pan.y}) translate(400 260) scale(${zoom}) translate(-400 -260)`});
+  const el=(tag,attrs,text)=>add(tag,attrs,g,text), edge=(P,Q,cls='edge',dash='')=>{if(cls==='alt'&&!dash)dash='6 5';return el('line',{x1:P.x,y1:P.y,x2:Q.x,y2:Q.y,class:cls,...(dash?{ 'stroke-dasharray':dash}:{})})};
+  const polygon=(pts,stroke='#65b7ff',dash='5 5')=>el('polygon',{points:pts.map(P=>`${P.x},${P.y}`).join(' '),fill:'none',stroke,'stroke-width':1.7,'stroke-dasharray':dash});
+  const label=(P,t,color='#f4f7fa')=>el('text',{x:P.x+9,y:P.y-10,fill:color,'font-size':14},t);
+  const angleArc=(P,Q,T,r,label,color='#ffd34e',width=2.2)=>{
+    const a1=Math.atan2(Q.y-P.y,Q.x-P.x),a2=Math.atan2(T.y-P.y,T.x-P.x);
+    let delta=((a2-a1+Math.PI*3)%(Math.PI*2))-Math.PI;
+    const pts=[];for(let i=0;i<=32;i++){const a=a1+delta*i/32;pts.push({x:P.x+r*Math.cos(a),y:P.y+r*Math.sin(a)});}
+    el('polyline',{points:pts.map(Q=>`${Q.x},${Q.y}`).join(' '),fill:'none',stroke:color,'stroke-width':width});
+    const am=a1+delta/2;el('text',{x:P.x+(r+16)*Math.cos(am),y:P.y+(r+16)*Math.sin(am),fill:color,'font-size':15,'text-anchor':'middle'},label);
+  };
+let O=circum(),H=ortho(O),M={x:(A.x+B.x+C.x)/3,y:(A.y+B.y+C.y)/3};
+let D=foot(A,B,C),E=foot(B,C,A),F=foot(C,A,B);
+let R=dist(O,A);
+if(!['alt','angle','cyclic','nine'].includes(sceneKey))el('circle',{cx:O.x,cy:O.y,r:R,class:'circ'});
+edge(A,B);edge(B,C);edge(C,A);
+const alt=(P,Q,T)=>{let Fp=foot(P,Q,T);edge(P,Fp,'alt');if(Fp.x<Q.x||Fp.x>T.x||Fp.y<Q.y||Fp.y>T.y){edge(Fp,plus(Fp,mul(sub(Q,T),.35)),'alt','5 5')}};
+if(['alt','angle','cyclic','reflect','midreflect'].includes(sceneKey) || (sceneKey==='euler'&&document.getElementById('showAlt').checked)){
+  // Высоты идут от вершин через H к основаниям; продолжения показаны пунктиром.
+  [[A,H,D],[B,H,E],[C,H,F]].forEach(([P,Q,T])=>{edge(P,Q,'alt','6 5');edge(Q,T,'alt','6 5');});
+  [[D,B,C],[E,C,A],[F,A,B]].forEach(([P,U,V])=>{
+    const d=sub(V,U),den=dot(d,d)||1,t=dot(sub(P,U),d)/den;
+    if(t<0)edge(U,P,'edge','6 5');else if(t>1)edge(V,P,'edge','6 5');
+  });
+}
+// Right-angle marks at altitude feet are visible; Euler controls can hide them with the altitudes.
+const rightMark=(P,U,V,altTarget)=>{
+  const unit=(v)=>{const n=Math.hypot(v.x,v.y)||1;return {x:v.x/n,y:v.y/n}};
+  const side=unit(sub(midpoint(U,V),P));
+  const alt=unit(sub(altTarget,P));
+  const r=9;
+  const p1=plus(P,mul(side,r)),p2=plus(p1,mul(alt,r)),p3=plus(P,mul(alt,r));
+  el('polyline',{points:[p1,p2,p3].map(Q=>`${Q.x},${Q.y}`).join(' '),fill:'none',stroke:'#ffd34e','stroke-width':1.8,'stroke-linejoin':'round'});
+};
+if(sceneKey!=='euler'||document.getElementById('showAlt').checked){rightMark(D,B,C,A);rightMark(E,C,A,B);rightMark(F,A,B,C);}
+if(sceneKey==='angle'){
+  const V={A,B,C},opp={A:[B,C],B:[C,A],C:[A,B]},name=activeVertex,[U,W]=opp[name];
+  const greek={A:'α',B:'β',C:'γ'}[name];
+  angleArc(V[name],U,W,25,greek);
+  angleArc(H,U,W,31,`180° − ${greek}`);
+}
+if(sceneKey==='tangent'){
+  const V={A,B,C},name=activeVertex,opp={A:['C','B'],B:['A','C'],C:['A','B']},[uName,wName]=opp[name],P=V[name],U=V[uName],W=V[wName];
+  const O3=circum(),RR=dist(O3,P);
+  el('circle',{cx:O3.x,cy:O3.y,r:RR,class:'circ'});
+  // Tangent MN through the active vertex, oriented left-to-right on screen.
+  let tv={x:-(P.y-O3.y),y:P.x-O3.x};if(tv.x<0)tv={x:-tv.x,y:-tv.y};
+  const tn=Math.hypot(tv.x,tv.y)||1;tv={x:tv.x/tn,y:tv.y/tn};
+  const Mtan=plus(P,mul(tv,-260)),Ntan=plus(P,mul(tv,260));
+  edge(Mtan,Ntan,'aux');label(Mtan,'M');label(Ntan,'N');
+  // All three altitudes and their feet.
+  [[A,D,'A₁'],[B,E,'B₁'],[C,F,'C₁']].forEach(([X,Y,n])=>{edge(X,Y,'alt','5 6');label(Y,n,'#ff8585');});
+  // Tangent-chord angle N P W = alpha.
+  angleArc(P,Ntan,W,30,'α','#ffd34e');
+  // The minor arc from the active vertex to W is highlighted yellow and marked alpha.
+  const aP=Math.atan2(P.y-O3.y,P.x-O3.x),aW=Math.atan2(W.y-O3.y,W.x-O3.x);
+  let delta=((aW-aP+Math.PI*3)%(Math.PI*2))-Math.PI;
+  const arcPts=[];for(let k=0;k<=64;k++){let a=aP+delta*k/64;arcPts.push({x:O3.x+RR*Math.cos(a),y:O3.y+RR*Math.sin(a)});}
+  el('polyline',{points:arcPts.map(X=>`${X.x},${X.y}`).join(' '),fill:'none',stroke:'#ffd34e','stroke-width':4});
+  const amid=aP+delta/2;label({x:O3.x+(RR+15)*Math.cos(amid),y:O3.y+(RR+15)*Math.sin(amid)},'α','#ffd34e');
+  // Dashed circumcircle of cyclic quadrilateral A-B1-A1-B.
+  const circum4=(P,Q,R)=>{const d=2*(P.x*(Q.y-R.y)+Q.x*(R.y-P.y)+R.x*(P.y-Q.y));if(Math.abs(d)<1e-6)return O3;const pp=dot(P,P),qq=dot(Q,Q),rr=dot(R,R);return{x:(pp*(Q.y-R.y)+qq*(R.y-P.y)+rr*(P.y-Q.y))/d,y:(pp*(R.x-Q.x)+qq*(P.x-R.x)+rr*(Q.x-P.x))/d};};
+  const Oq=circum4(A,E,D);el('circle',{cx:Oq.x,cy:Oq.y,r:dist(Oq,A),fill:'none',stroke:'#b58cff','stroke-width':1.5,'stroke-dasharray':'5 5'});
+  edge(D,E,'section','0');
+  // Equal inscribed angle at the opposite vertex.
+  angleArc(U,P,W,38,'α','#ffd34e');
+  // Active altitude angle and the two angles at A1.
+  const P1=foot(P,U,W);angleArc(P,U,P1,27,'90° − α','#65d6a1');
+  const A1=D,B1=E;
+  // At A₁: ∠B₁A₁C = α when C is active (cyclic quadrilateral).
+  if(name==='C')angleArc(B1,A1,C,66,'α','#ffd34e',3.2);
+  [['O',O3],['A',A],['B',B],['C',C]].forEach(([n,X])=>label(X,n,n==='O'?'#65b7ff':'#f4f7fa'));
+}
+
+if(sceneKey==='euler'){
+  const V={A,B,C},name=activeVertex,P=V[name],opp={A:['B','C'],B:['C','A'],C:['A','B']},[Uname,Wname]=opp[name],U=V[Uname],W=V[Wname];
+  const Q=sub(mul(O,2),P); // diametrically opposite point
+  const E0=midpoint(U,W); // median from active vertex
+  const E=midpoint(U,W); // midpoint of AB; also midpoint of QH
+  const M=plus(mul(H,1/3),mul(O,2/3)); // centroid of triangle QCH, also ABC
+  // Euler line and highlighted triangle Q-P-H.
+  // Highlight the Euler line with a thick, bright stroke.
+  el('line',{x1:Q.x,y1:Q.y,x2:P.x,y2:P.y,stroke:'#65b7ff','stroke-width':4.2,'stroke-linecap':'round'});
+  el('line',{x1:O.x,y1:O.y,x2:H.x,y2:H.y,stroke:'#65b7ff','stroke-width':4.2,'stroke-linecap':'round'});
+  polygon([Q,P,H],'#ffd34e','0');
+  edge(P,E0,'aux');edge(H,O,'aux');
+  // Median in triangle QPH: from P to midpoint of QH.
+  const N=E;edge(P,N,'aux');
+  // Mark midpoint divisions on median PN: centroid M is 2:1 from vertex P.
+  const tick=(X,Y)=>{const d=sub(Y,X),n=Math.hypot(d.x,d.y)||1,perp={x:-d.y/n,y:d.x/n},m=midpoint(X,Y);el('line',{x1:m.x-5*perp.x,y1:m.y-5*perp.y,x2:m.x+5*perp.x,y2:m.y+5*perp.y,stroke:'#ffd34e','stroke-width':2});};
+  const segLabel=(X,Y,t,offset=14)=>{const mid=midpoint(X,Y),d=sub(Y,X),n=Math.hypot(d.x,d.y)||1;el('text',{x:mid.x-offset*d.y/n,y:mid.y+offset*d.x/n,fill:'#ffd34e','font-size':15,'font-weight':'bold','text-anchor':'middle'},t);};
+  segLabel(P,M,'2x');segLabel(M,N,'x');segLabel(H,M,'2y');segLabel(M,O,'y');
+  // In triangle QCH, E is midpoint QH and O is midpoint CQ: CE and HO are medians.
+  // Their centroid M divides both medians 2:1; E is also midpoint AB, so CE is median of ABC too.
+  label(Q,`${name}₁`,'#65b7ff');label(E,'E','#65d6a1');
+  label(O,'O','#65b7ff');label(M,'M','#65d6a1');label(H,'H','#ff8585');
+  if(document.getElementById('showMedian').checked){
+    [[A,midpoint(B,C)],[B,midpoint(C,A)],[C,midpoint(A,B)]].forEach(([X,Y])=>el('line',{x1:X.x,y1:X.y,x2:Y.x,y2:Y.y,stroke:'#65d6a1','stroke-width':1.5,'stroke-dasharray':'7 5'}));
+  }
+  if(document.getElementById('showRadius').checked){
+    [A,B,C].forEach(X=>el('line',{x1:O.x,y1:O.y,x2:X.x,y2:X.y,stroke:'#65b7ff','stroke-width':1.5,'stroke-dasharray':'3 5'}));
+  }
+}
+if(sceneKey==='reflect'){
+  const V={A,B,C},opp={A:['B','C'],B:['C','A'],C:['A','B']},name=activeVertex,[Uname,Wname]=opp[name],U=V[Uname],W=V[Wname],P=V[name];
+  const Hp=reflect(H,U,W),gk='α';
+  // Дельтоид с вершинами U, H, W, H_a.
+  polygon([U,H,W,Hp],'#ffd34e','6 4');
+  edge(H,Hp,'aux','3 4');
+  el('circle',{cx:Hp.x,cy:Hp.y,r:5,fill:'#65b7ff'});label(Hp,`H_${name}`,'#65b7ff');
+  angleArc(P,U,W,26,gk);
+  angleArc(H,U,W,32,'180° − α');
+  angleArc(Hp,U,W,32,'180° − α');
+}
+if(sceneKey==='midreflect'){
+  const V={A,B,C},opp={A:['B','C'],B:['C','A'],C:['A','B']},name=activeVertex,[Uname,Wname]=opp[name],P=V[name],U=V[Uname],W=V[Wname];
+  const Mid=midpoint(U,W),M1=sub(mul(Mid,2),H);
+  // HM and MM1 lie on one dashed line; identical ticks mark equal halves.
+  edge(H,Mid,'alt','5 5');edge(Mid,M1,'alt','5 5');
+  const tick=(P1,P2)=>{const d=sub(P2,P1),n=Math.hypot(d.x,d.y)||1,perp={x:-d.y/n,y:d.x/n},m=midpoint(P1,P2),q1=plus(m,mul(perp,6)),q2=plus(m,mul(perp,-6));el('line',{x1:q1.x,y1:q1.y,x2:q2.x,y2:q2.y,stroke:'#ffd34e','stroke-width':2.2});};
+  tick(H,Mid);tick(Mid,M1);
+  // B-H-C-M1 is a parallelogram: opposite sides are perpendicular to the same sides of ABC.
+  polygon([U,H,W,M1],'#65b7ff','5 5');
+  edge(U,M1,'aux','5 5');edge(W,M1,'aux','5 5');edge(P,M1,'aux');
+  // P-M1 is a diameter of the circumcircle.
+  edge(P,M1,'aux');
+  el('circle',{cx:Mid.x,cy:Mid.y,r:4.5,fill:'#ffd34e'});label(Mid,'M','#ffd34e');
+  el('circle',{cx:M1.x,cy:M1.y,r:5,fill:'#65b7ff'});label(M1,'M₁','#65b7ff');
+  // Right angles at B and A subtending diameter P-M1.
+  // Draw the circle with diameter P-M1 to make the Thales configuration explicit.
+  const diamMid=midpoint(P,M1), diamR=dist(P,M1)/2;
+  el('circle',{cx:diamMid.x,cy:diamMid.y,r:diamR,fill:'none',stroke:'#8c9aa9','stroke-width':1.2,'stroke-dasharray':'4 5'});
+  const markAt=(V1,X1,Y1)=>{const unit=v=>{const n=Math.hypot(v.x,v.y)||1;return {x:v.x/n,y:v.y/n}};const u=unit(sub(X1,V1)),v=unit(sub(Y1,V1)),r=11,p1=plus(V1,mul(u,r)),p2=plus(p1,mul(v,r)),p3=plus(V1,mul(v,r));el('polyline',{points:[p1,p2,p3].map(Z=>`${Z.x},${Z.y}`).join(' '),fill:'none',stroke:'#ffd34e','stroke-width':2});};
+  markAt(U,P,M1);markAt(W,P,M1);
+  label(U, Uname);label(W,Wname);
+  angleArc(P,U,W,26,'α');
+  angleArc(H,U,W,32,'180° − α');
+  angleArc(M1,U,W,32,'180° − α');
+}
+if(sceneKey==='radiusAngle'){
+  const V={A,B,C},name=activeVertex,opp={A:['B','C'],B:['C','A'],C:['A','B']},[uName,wName]=opp[name],P=V[name],U=V[uName],W=V[wName];
+  const O2=circum(),footP=foot(P,U,W);
+  // Only the circumcircle of ABC, shown dashed.
+  el('circle',{cx:O2.x,cy:O2.y,r:dist(O2,A),fill:'none',stroke:'#d9e0e8','stroke-width':1.6,'stroke-dasharray':'5 5'});
+  edge(O2,P,'aux');edge(O2,U,'aux');
+  [[A,D],[B,E],[C,F]].forEach(([X,Y])=>edge(X,Y,'alt','5 6'));
+  edge(P,footP,'alt');rightMark(footP,U,W,P);
+  label(footP,`${name}₁`,'#ff8585');
+  // For active C: ∠BCC₁=α, ∠CBC₁=90°−α, ∠COA=180°−2α, ∠ACO=∠CAO=α.
+  angleArc(W,P,footP,70,'α','#ffd34e',3.4);
+  angleArc(P,W,footP,38,'90° − α','#ffd34e');
+  angleArc(P,O2,U,48,'180° − 2α','#b78cff');
+  angleArc(U,P,O2,31,'α','#ffd34e');
+  angleArc(P,U,O2,31,'α','#ffd34e');
+  [['O',O2],[name,P],[uName,U],[wName,W]].forEach(([n,X])=>label(X,n,n==='O'?'#b78cff':'#f4f7fa'));
+}
+
+if(sceneKey==='distance'){
+  const V={A,B,C},opp={A:['B','C'],B:['C','A'],C:['A','B']},name=activeVertex,[qName,rName]=opp[name],P=V[name],Q=V[qName],T=V[rName];
+  // Все высоты — бледные, чтобы основной факт оставался читаемым.
+  [[A,D],[B,E],[C,F]].forEach(([X,Y])=>edge(X,Y,'alt','4 7'));
+  const P1=sub(mul(O,2),P);edge(P,P1,'aux');label(P1,`${name}₁`,'#65b7ff');
+  edge(P,H,'edge');label(midpoint(P,H),`${name}H`);
+  const Mid=midpoint(Q,T),M1=sub(mul(Mid,2),H);edge(H,M1,'aux','4 5');
+  el('circle',{cx:Mid.x,cy:Mid.y,r:4,fill:'#ffd34e'});label(Mid,'M','#ffd34e');
+  el('circle',{cx:M1.x,cy:M1.y,r:4.5,fill:'#65b7ff'});label(M1,'M₁','#65b7ff');
+  let footO=foot(O,Q,T);edge(O,footO,'aux');
+}
+if(sceneKey==='squares'){edge(A,H,'aux');}
+if(sceneKey==='orth'){el('polygon',{points:[D,E,F].map(P=>`${P.x},${P.y}`).join(' '),class:'section'});[D,E,F].forEach(P=>el('circle',{cx:P.x,cy:P.y,r:4,fill:'#ffd34e'}))}
+if(sceneKey==='similar'){
+  const V={A,B,C},feet={A:D,B:E,C:F},name=activeVertex;
+  const other=({A:['B','C'],B:['C','A'],C:['A','B']})[name];
+  const P=V[name],U=V[other[0]],W=V[other[1]],U1=feet[other[0]],W1=feet[other[1]];
+  // Highlight the cut-off triangle and the segment joining the two other altitude feet.
+  el('polygon',{points:[P,U1,W1].map(X=>`${X.x},${X.y}`).join(' '),fill:'#65b7ff','fill-opacity':'.10',stroke:'none'});
+  [[A,D],[B,E],[C,F]].forEach(([X,Y])=>edge(X,Y,'alt','5 6'));
+  edge(U1,W1,'section','0');
+  // Inscribed quadrilateral angle equalities at active vertex and opposite feet.
+  angleArc(U1,P,W1,28,'','#ffd34e');
+  angleArc(U,P,W,28,'','#ffd34e');
+  angleArc(W1,P,U1,39,'','#65d6a1');
+  angleArc(W,U,P,39,'','#65d6a1');
+  [['A',A],['B',B],['C',C],['A₁',D],['B₁',E],['C₁',F]].forEach(([n,X])=>label(X,n));
+}
+if(sceneKey==='cotSimilar'){
+  const V={A,B,C},feet={A:D,B:E,C:F},name=activeVertex;
+  const [u,w]=({A:['B','C'],B:['C','A'],C:['A','B']})[name];
+  const P=V[name],U=V[u],W=V[w],U1=feet[u],W1=feet[w];
+  // Highlight the two right triangles sharing the active altitude foot.
+  el('polygon',{points:[P,U1,H].map(X=>`${X.x},${X.y}`).join(' '),fill:'#ffd34e','fill-opacity':'.22',stroke:'#ffd34e','stroke-width':2});
+  el('polygon',{points:[W,U1,U].map(X=>`${X.x},${X.y}`).join(' '),fill:'#65d6a1','fill-opacity':'.20',stroke:'#65d6a1','stroke-width':2});
+  [[A,D],[B,E],[C,F]].forEach(([X,Y])=>edge(X,Y,'alt','5 5'));
+  edge(U1,H,'section');edge(U1,U,'section');edge(P,U1,'section');
+  // For active C: ∠A₁CH = ∠A₁AB = α.
+  angleArc(U1,P,H,34,'α','#ffd34e');
+  angleArc(U1,A,B,34,'α','#ffd34e');
+  [['A',A],['B',B],['C',C],['A₁',D],['B₁',E],['C₁',F]].forEach(([n,X])=>label(X,n));
+}
+if(sceneKey==='nine'){
+  const pts=[midpoint(A,B),midpoint(B,C),midpoint(C,A),D,E,F,midpoint(A,H),midpoint(B,H),midpoint(C,H)],N=midpoint(O,H),rr=dist(N,pts[0]);
+  el('circle',{cx:N.x,cy:N.y,r:rr,stroke:'#65d6a1','stroke-width':2.4,fill:'none'});
+  pts.forEach((P,i)=>el('circle',{cx:P.x,cy:P.y,r:3.5,fill:'#ffd34e'}));
+  if(nineAlt)[[A,D],[B,E],[C,F]].forEach(([P,Q])=>edge(P,Q,'alt','5 5'));
+  if(nineMedian)[[A,midpoint(B,C)],[B,midpoint(C,A)],[C,midpoint(A,B)]].forEach(([P,Q])=>edge(P,Q,'aux','6 5'));
+}
+
+if(sceneKey==='orthAngles'){
+  const names=['A','B','C'],verts={A,B,C},feet={A:D,B:E,C:F};
+  const chosen=orthAll?names:[activeVertex];
+  el('polygon',{points:[D,E,F].map(P=>`${P.x},${P.y}`).join(' '),fill:'#65b7ff','fill-opacity':'.12',stroke:'#65b7ff','stroke-width':1.8});
+  const colors={A:'#ff6b6b',B:'#65d6a1',C:'#b58cff'};
+  chosen.forEach(v=>{
+    const [u,w]=({A:['B','C'],B:['C','A'],C:['A','B']})[v];
+    const V=verts[v],U=verts[u],W=verts[w],fv=feet[v],fu=feet[u],fw=feet[w],color=colors[v];
+    angleArc(fv,fu,V,36,'',color,4.8);
+    angleArc(fv,fw,V,45,'',color,4.8);
+    angleArc(U,fu,V,36,'',color,4.8);
+    angleArc(W,fw,V,36,'',color,4.8);
+  });
+  [[A,D],[B,E],[C,F]].forEach(([X,Y])=>edge(X,Y,'alt','5 5'));
+  [[D,'A₁'],[E,'B₁'],[F,'C₁']].forEach(([P,t])=>label(P,t,'#ff8585'));
+}
+
+if(sceneKey==='cyclic'){
+  // Altitudes and their continuations stay red and dashed.
+  [[A,H,D],[B,H,E],[C,H,F]].forEach(([P,Q,T])=>{edge(P,Q,'alt','5 5');edge(Q,T,'alt','5 5'); const last=svg.lastElementChild; if(last){last.setAttribute('stroke','#a65a5a');last.setAttribute('stroke-opacity','.38');}});
+  const feet={A:D,B:E,C:F},verts={A,B,C};
+  const sideQuads={A:[A,E,D,B],B:[B,F,E,C],C:[C,D,F,A]};
+  const vhQuads={A:[A,E,H,F],B:[B,F,H,D],C:[C,E,H,D]};
+  const circles=[];
+  if(cyclicMode==='side'||cyclicMode==='vh')circles.push([cyclicChoice,cyclicMode]);
+  else if(cyclicMode==='allSide')['A','B','C'].forEach(n=>circles.push([n,'side']));
+  else if(cyclicMode==='allVH')['A','B','C'].forEach(n=>circles.push([n,'vh']));
+  else ['A','B','C'].forEach(n=>{circles.push([n,'side']);circles.push([n,'vh'])});
+  circles.forEach(([name,mode])=>{
+    const quad=mode==='side'?sideQuads[name]:vhQuads[name];
+    const dp=mode==='side'?(name==='A'?A:name==='B'?B:C):(name==='A'?A:name==='B'?B:C);
+    const dq=mode==='side'?(name==='A'?B:name==='B'?C:A):H;
+    const center=midpoint(dp,dq),radius=dist(dp,dq)/2;
+    el('circle',{cx:center.x,cy:center.y,r:radius,fill:'none',stroke:mode==='side'?'#65b7ff':'#ffd34e','stroke-width':1.5,'stroke-dasharray':'5 5'});
+    polygon(quad,mode==='side'?'#65b7ff':'#ffd34e');
+    edge(dp,dq,mode==='side'?'aux':'section','4 4');
+  });
+  [['A',A],['B',B],['C',C]].forEach(([n,P])=>label(P,n));
+  [['A1',D],['B1',E],['C1',F]].forEach(([n,P])=>label(P,n));
+}
+[['A',A],['B',B],['C',C],['H',H],['O',O],['M',M]].forEach(([name,P])=>{
+  if(name==='O'&&!['euler','reflect','midreflect','distance','similar','nine'].includes(sceneKey))return;
+  if(name==='M'&&sceneKey!=='euler')return;
+  if(sceneKey==='cyclic'&&(name==='O'||name==='M'))return;
+  if(sceneKey==='radiusAngle'&&name==='O')return;
+  el('circle',{cx:P.x,cy:P.y,r:name==='A'||name==='B'||name==='C'?7:4,class:name==='A'||name==='B'||name==='C'?'vertex':'',fill:name==='H'?'#ff5656':name==='O'?'#65b7ff':'#65d6a1'});
+  el('text',{x:P.x+9,y:P.y-10},name);
+});
+[['A',A],['B',B],['C',C]].forEach(([name,P])=>{
+  let c=el('circle',{cx:P.x,cy:P.y,r:14,class:'vertex','data-v':name,style:'cursor:grab;touch-action:none;pointer-events:all'});
+  c.addEventListener('pointerdown',e=>{
+    e.preventDefault();e.stopPropagation();
+    angleVertex=name;activeVertex=name;reflectVertices=[name];syncVertexButtons();
+    const pointer=scenePoint(e),vertex=vertexPoint(name);
+    drag={name,pointerId:e.pointerId,offset:{x:vertex.x-pointer.x,y:vertex.y-pointer.y}};
+    try{svg.setPointerCapture(e.pointerId)}catch(_){}
+  });
+});
+
+let alpha=angle(B,A,C),beta=angle(A,B,C),gamma=angle(A,C,B),a=dist(B,C),c=dist(A,B),h=dist(A,H);
+let stat=`∠A ${fmt(alpha)}°`;
+if(sceneKey==='euler')stat+=` · HM:MO = 2:1 · CM:ME = 2:1`;
+if(sceneKey==='distance')stat+=` · CH = ${fmt(dist(C,H))}`;
+if(sceneKey==='squares')stat+=` · AH² + a² = ${fmt(h*h+a*a)} · 4R² = ${fmt(4*R*R)}`;
+if(sceneKey==='similar'){const ang=activeVertex==='A'?alpha:activeVertex==='B'?beta:gamma;stat+=` · k = |cos ${activeVertex}| = ${fmt(Math.abs(Math.cos(ang*Math.PI/180)))}`;}
+if(sceneKey==='cotSimilar'){const ang=activeVertex==='A'?alpha:activeVertex==='B'?beta:gamma;stat+=` · k = |cot ${activeVertex}| = ${fmt(Math.abs(1/Math.tan(ang*Math.PI/180)))}`;}
+if(sceneKey==='nine')stat+=` · R = ${fmt(R)} · r₉ = ${fmt(R/2)}`;
+if(['alt','angle','cyclic','reflect','midreflect'].includes(sceneKey))stat='';
+document.getElementById('stats').innerHTML='';
+}
+svg.addEventListener('pointerdown',e=>{
+  if(!e.ctrlKey)return;
+  e.preventDefault();panDrag={pointerId:e.pointerId,start:{x:e.clientX,y:e.clientY},base:{...pan}};
+  try{svg.setPointerCapture(e.pointerId)}catch(_){}
+});
+svg.addEventListener('pointermove',e=>{
+  if(!panDrag||e.pointerId!==panDrag.pointerId)return;
+  const r=svg.getBoundingClientRect();
+  pan={x:panDrag.base.x+(e.clientX-panDrag.start.x)*800/r.width,y:panDrag.base.y+(e.clientY-panDrag.start.y)*520/r.height};
+  render();
+});
+function stopPan(e){if(panDrag&&(!e||e.pointerId===panDrag.pointerId))panDrag=null}
+svg.addEventListener('pointerup',stopPan);svg.addEventListener('pointercancel',stopPan);
+svg.addEventListener('pointermove',e=>{
+  if(!drag||e.pointerId!==drag.pointerId)return;
+  e.preventDefault();
+  const p=scenePoint(e);
+  setVertex(drag.name,{x:p.x+drag.offset.x,y:p.y+drag.offset.y});
+  render();
+});
+function stopDrag(e){if(drag&&(!e||e.pointerId===drag.pointerId)){drag=null}}
+svg.addEventListener('pointerup',stopDrag);
+svg.addEventListener('pointercancel',stopDrag);
+svg.addEventListener('lostpointercapture',stopDrag);
+function select(i){
+  if(!facts[i])return;
+  initial();zoom=1;pan={x:0,y:0};activeVertex=facts[i].scene==='angle'?'C':'A';angleVertex=activeVertex;cyclicChoice='A';cyclicMode='side';reflectVertices=['A'],orthAll=false,nineAlt=false,nineMedian=false;
+  document.querySelectorAll('.cyclic-mode').forEach(b=>b.classList.toggle('active',b.dataset.mode==='side'));
+  document.querySelectorAll('.cyclic-vertex').forEach(b=>b.classList.toggle('active',b.dataset.v==='A'));
+  current=i;
+  document.querySelectorAll('.factbtn').forEach(b=>b.classList.toggle('active',Number(b.dataset.index)===i));
+  document.getElementById('factTitle').textContent=facts[i].title;
+  document.getElementById('factShort').textContent=facts[i].short;
+  document.getElementById('detailContent').innerHTML=`<h2>${facts[i].title}</h2><p>${facts[i].detail}</p>`;
+  render();document.getElementById('layout').classList.remove('menuopen');
+}
+let menu=document.getElementById('menu');
+['Базовые','Средние','Продвинутые','Факты'].forEach(level=>{
+  let group=document.createElement('div');group.className='group';group.innerHTML=`<h3>${level}</h3>`;
+  facts.forEach((f,i)=>{if(f.level!==level)return;let b=document.createElement('button');b.className='factbtn';b.dataset.index=i;b.innerHTML=`${f.title}<small>${level}</small>`;b.onclick=()=>select(Number(b.dataset.index));group.appendChild(b)});
+  if(group.querySelector('.factbtn'))menu.appendChild(group);
+});
+document.getElementById('detailsBtn').onclick=()=>document.getElementById('modal').showModal();
+document.getElementById('close').onclick=()=>document.getElementById('modal').close();
+document.getElementById('zoom').oninput=e=>{zoom=+e.target.value;document.getElementById('zoomVal').textContent=zoom.toFixed(2)+'×';render()};
+document.getElementById('reset').onclick=()=>{initial();pan={x:0,y:0};zoom=1;document.getElementById('zoom').value=1;document.getElementById('zoomVal').textContent='1.00×';render()};
+document.getElementById('menuBtn').onclick=()=>document.getElementById('layout').classList.toggle('menuopen');
+document.querySelectorAll('.angle-chip,.reflect-chip,.mid-chip,.radius-chip').forEach(btn=>btn.onclick=()=>{activeVertex=btn.dataset.v;angleVertex=activeVertex;reflectVertices=[activeVertex];syncVertexButtons();render()});
+document.querySelectorAll('.cyclic-mode').forEach(btn=>btn.onclick=()=>{cyclicMode=btn.dataset.mode;document.querySelectorAll('.cyclic-mode').forEach(b=>b.classList.toggle('active',b===btn));render()});
+document.querySelectorAll('.cyclic-vertex').forEach(btn=>btn.onclick=()=>{cyclicChoice=btn.dataset.v;document.querySelectorAll('.cyclic-vertex').forEach(b=>b.classList.toggle('active',b===btn));if(cyclicMode.startsWith('all')){cyclicMode='side';document.querySelectorAll('.cyclic-mode').forEach(b=>b.classList.toggle('active',b.dataset.mode==='side'));}render()});
+['showAlt','showMedian','showRadius'].forEach(id=>document.getElementById(id).onchange=render);
+syncVertexButtons();select(0);
+</script></body></html>
+<script>
+document.querySelectorAll('.orth-chip').forEach(b=>b.addEventListener('click',()=>{orthAll=false,nineAlt=false,nineMedian=false;activeVertex=b.dataset.v;document.querySelectorAll('.orth-chip').forEach(x=>x.classList.toggle('active',x===b));render();}));
+document.getElementById('orthAll').addEventListener('click',()=>{orthAll=true;document.querySelectorAll('.orth-chip').forEach(x=>x.classList.remove('active'));render();});
+</script>
+
+<script>
+document.getElementById('nineAlt').addEventListener('change',e=>{nineAlt=e.target.checked;render();});
+document.getElementById('nineMedian').addEventListener('change',e=>{nineMedian=e.target.checked;render();});
+</script>

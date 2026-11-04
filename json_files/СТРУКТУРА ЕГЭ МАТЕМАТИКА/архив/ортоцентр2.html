@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ортоцентр: интерактивные факты</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0d10;--panel:#151a21;--panel2:#1c232c;--line:#303a46;--text:#edf2f7;--muted:#a8b3c2;--red:#ff5656;--yellow:#ffd34e;--blue:#65b7ff;--green:#65d6a1}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}header{padding:18px 24px;border-bottom:1px solid var(--line);font-size:22px;font-weight:750;letter-spacing:.2px}.layout{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:calc(100vh - 65px)}aside{border-right:1px solid var(--line);padding:18px 12px;background:#10141a}.group{margin:8px 0 18px}.group h3{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin:12px}.factbtn{display:block;width:100%;text-align:left;background:transparent;border:1px solid transparent;color:var(--text);padding:10px 12px;border-radius:9px;cursor:pointer;margin:3px 0}.factbtn:hover{background:var(--panel2)}.factbtn.active{background:#2b2022;border-color:#6f3538;color:#fff}.factbtn small{display:block;color:var(--muted);font-size:11px}main{padding:22px;min-width:0}.factcard{background:linear-gradient(135deg,#1b222b,#141920);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px;display:flex;gap:20px;align-items:center;justify-content:space-between}.factcard h2{margin:0 0 7px;font-size:21px}.factcard p{margin:0;color:#d2dbe5}.btn{border:1px solid #536171;background:#26313d;color:white;padding:10px 14px;border-radius:9px;cursor:pointer;white-space:nowrap}.btn:hover{background:#344252}.sceneWrap{position:relative;border:1px solid var(--line);border-radius:14px;background:#0e1217;overflow:hidden}.sceneHead{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);color:var(--muted);font-size:15px}.scene{display:block;width:100%;height:min(62vh,620px);min-height:360px;touch-action:none}.scene text{font-family:system-ui,sans-serif;fill:#f4f7fa;font-size:15px;paint-order:stroke;stroke:#0e1217;stroke-width:3px;stroke-linejoin:round}.scene .vertex{fill:#fff;stroke:#111;stroke-width:2;cursor:grab}.scene .vertex:active{cursor:grabbing}.scene .edge{stroke:#dce4ec;stroke-width:2.2;fill:none}.scene .alt{stroke:var(--red);stroke-width:1.8;fill:none}.scene .aux{stroke:var(--blue);stroke-width:1.5;fill:none}.scene .circ{stroke:#8c9aa9;stroke-width:1.4;fill:none}.scene .section{fill:#ffd34e22;stroke:var(--yellow);stroke-width:2}.stats{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}.stat{background:#1b232c;border:1px solid #303b47;border-radius:8px;padding:6px 10px;font-size:15px;color:#dbe5ef}.controls{display:flex;align-items:center;gap:10px}.controls input{width:130px}.bottom{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}.note{font-size:14px;color:var(--muted)}dialog{background:#171e26;color:var(--text);border:1px solid #465362;border-radius:14px;max-width:650px;width:calc(100% - 32px);padding:24px;box-shadow:0 20px 80px #0009}dialog::backdrop{background:#000a}dialog h2{margin-top:0}dialog p{color:#d8e1ea}.close{float:right}.mobileMenu{display:none}
+@media(max-width:800px){.layout{grid-template-columns:1fr}aside{display:none;border:0}.layout.menuopen aside{display:block}.mobileMenu{display:inline-block;margin-right:12px}main{padding:12px}.factcard{align-items:flex-start;flex-direction:column}.scene{height:55vh;min-height:300px}.bottom{grid-template-columns:1fr}.controls{justify-content:space-between}}
+</style></head><body>
+<header><button class="btn mobileMenu" id="menuBtn">☰</button>Ортоцентр: интерактивные факты</header>
+<div class="layout" id="layout"><aside id="menu"></aside><main>
+<section class="factcard"><div><h2 id="factTitle"></h2><p id="factShort"></p></div><button class="btn" id="detailsBtn">Подробнее →</button></section>
+<section class="sceneWrap"><div class="sceneHead"><span>Перетаскивайте вершины A, B, C · Ctrl + перетаскивание — двигать сцену</span><span class="controls">Масштаб <input id="zoom" type="range" min=".5" max="2.5" step=".05" value="1"><b id="zoomVal">1.00×</b></span></div>
+<svg id="scene" class="scene" viewBox="0 0 800 520" role="img" aria-label="Интерактивная геометрическая сцена"></svg>
+<div class="stats" id="stats"></div>
+<div class="stats" id="angleControls" style="display:none;align-items:center">
+<b>Выберите вершину:</b>
+<button class="btn angle-chip active" data-v="C">C</button>
+<button class="btn angle-chip" data-v="A">A</button>
+<button class="btn angle-chip" data-v="B">B</button>
+</div>
+<div class="stats" id="reflectControls" style="display:none;align-items:center"><b>Отражение H относительно противоположной стороны</b><span class="note">Выберите вершину:</span><button class="btn reflect-chip" data-v="A">A · BC</button><button class="btn reflect-chip" data-v="B">B · CA</button><button class="btn reflect-chip" data-v="C">C · AB</button><button class="btn" id="reflectAll">Все вершины</button></div>
+<div class="stats" id="cyclicControls" style="display:none;align-items:center;flex-wrap:wrap">
+<b>6 вписанных четырёхугольников</b>
+<button class="btn cyclic-mode active" data-mode="side">Диаметр — сторона</button>
+<button class="btn cyclic-mode" data-mode="vh">Диаметр — вершина и H</button>
+<button class="btn cyclic-mode" data-mode="allSide">Все 3 на сторонах</button>
+<button class="btn cyclic-mode" data-mode="allVH">Все 3 с H</button>
+<button class="btn cyclic-mode" data-mode="all">Все 6</button>
+<span class="note">Выберите вершину A, B или C для одного построения.</span>
+<button class="btn cyclic-vertex active" data-v="A">A</button><button class="btn cyclic-vertex" data-v="B">B</button><button class="btn cyclic-vertex" data-v="C">C</button>
+</div>
+<div class="stats" id="eulerControls" style="display:none;align-items:center">
+<b>Показать построения:</b>
+<label><input type="checkbox" id="showAlt" checked> Высоты</label>
+<label><input type="checkbox" id="showMedian" checked> Медианы</label>
+<label><input type="checkbox" id="showRadius" checked> Радиусы</label>
+</div><div class="bottom"><span class="note">Для тупоугольного треугольника высоты продолжаются пунктиром. Избегайте вырожденного треугольника.</span><button class="btn" id="reset">Сбросить вершины</button></div></section>
+</main></div>
+<dialog id="modal"><button class="btn close" id="close">Закрыть ✕</button><div id="detailContent"></div></dialog>
+<script>
+const facts=[
+{id:1,level:"Базовые",title:"1. Ортоцентр — пересечение высот",short:"Высоты треугольника (или их продолжения) пересекаются в одной точке — ортоцентре H.",detail:"Высота треугольника — перпендикуляр, проведённый из вершины к прямой, содержащей противоположную сторону. Три высоты пересекаются в одной точке H. В остроугольном треугольнике H внутри, в прямоугольном — в вершине прямого угла, в тупоугольном — вне треугольника.",scene:"alt"},
+{id:2,level:"Базовые",title:"2. Угол при ортоцентре",short:"Для остроугольного треугольника ∠AHB = 180° − ∠C.",detail:"Так как AH ⟂ BC и BH ⟂ AC, углы между соответствующими перпендикулярными прямыми дополняют угол C до 180°. Аналогично: ∠BHC = 180° − ∠A; ∠CHA = 180° − ∠B.",scene:"angle"},
+{id:3,level:"Базовые",title:"3. 6 вписанных четырёхугольников",short:"Шесть вписанных четырёхугольников образуются из оснований высот и диаметра.",detail:"Для каждого треугольника можно построить шесть вписанных четырёхугольников: три с диаметром, равным стороне, и три с диаметром, соединяющим вершину с ортоцентром H.",scene:"cyclic"},
+{id:4,level:"Средние",title:"4. Отражение H относительно стороны",short:"Отражение ортоцентра H относительно любой стороны лежит на описанной окружности.",detail:"Если отразить H относительно стороны, например AB, получится точка Hₐᵦ на описанной окружности ABC. Это следует из равенства углов, образованных высотами и сторонами треугольника.",scene:"reflect"},
+{id:5,level:"Средние",title:"5. Отражение H относительно середины стороны",short:"Отражение H относительно середины стороны лежит на описанной окружности и диаметрально противоположно вершине напротив этой стороны.",detail:"Пусть D — середина AB. Точка H′, симметричная H относительно D, лежит на описанной окружности; отрезок CH′ является диаметром. Следовательно, D — середина HH′ и одновременно середина AB.",scene:"midreflect"},
+{id:6,level:"Средние",title:"6. Расстояние до ортоцентра",short:"Расстояние от вершины до H вдвое больше расстояния от O до противоположной стороны.",detail:"Для вершины C и стороны AB: CH = 2·OE, где O — центр описанной окружности, а OE ⟂ AB. Аналогичные соотношения выполняются для других вершин.",scene:"distance"},
+{id:7,level:"Средние",title:"7. Сумма квадратов",short:"AH² + a² = 4R², где a = BC, а R — радиус описанной окружности.",detail:"Квадрат расстояния от вершины до ортоцентра плюс квадрат противоположной стороны равен квадрату диаметра описанной окружности: AH² + BC² = (2R)². Формула следует из прямоугольных треугольников, связанных с диаметром и высотой.",scene:"squares"},
+{id:8,level:"Продвинутые",title:"8. Ортотреугольник",short:"Соедини основания высот — получишь ортотреугольник; в остроугольном случае H — центр его вписанной окружности.",detail:"Основания высот исходного треугольника образуют ортотреугольник. Для остроугольного ABC ортоцентр H является центром вписанной окружности ортотреугольника; для тупоугольного случая — центром одной из вневписанных окружностей.",scene:"orth"},
+{id:9,level:"Продвинутые",title:"9. Подобие отсечённого треугольника",short:"Если AD и BE — высоты, то △DEC подобен △ABC с коэффициентом |cos ∠B|.",detail:"При AD ⟂ BC и BE ⟂ AC, отсечённый треугольник DEC подобен исходному ABC. Коэффициент подобия равен |cos ∠B|. На чертеже выделены оба треугольника и соответствующие углы.",scene:"similar"},
+{id:10,level:"Продвинутые",title:"10. Окружность девяти точек",short:"Середины сторон, основания высот и середины отрезков AH, BH, CH лежат на одной окружности.",detail:"Окружность девяти точек проходит через девять отмеченных точек. Её центр N — середина OH, а радиус равен R/2. Она связывает ортоцентр, центр описанной окружности и прямую Эйлера.",scene:"nine"},
+{id:11,level:"Факты",title:"1. Шесть вписанных четырёхугольников",short:"Два варианта построения вписанного четырёхугольника: диаметр — сторона или диаметр VH.",detail:"Вписанность доказывается по прямым углам: противоположные углы четырёхугольника в сумме дают 180°. Переключайте варианты диаметра и выбирайте вершину A, B или C.",scene:"cyclic"}
+];
+const cyclicFact=facts.splice(10,1)[0];facts.splice(2,0,cyclicFact);
+facts.forEach((f,i)=>{f.title=f.title.replace(/^\\d+\\./,`${i+1}.`);});
+const svg=document.getElementById('scene'), ns='http://www.w3.org/2000/svg';let current=0,zoom=1,drag=null,pan={x:0,y:0},panDrag=null,angleVertex='C',cyclicMode='side',selectedVertices=['C'],reflectVertices=['A'];
+function scenePoint(e){
+  const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;
+  const q=p.matrixTransform(svg.getScreenCTM().inverse());
+  return {x:(q.x-pan.x-400)/zoom+400,y:(q.y-pan.y-260)/zoom+260};
+}
+function vertexPoint(name){return name==='A'?A:name==='B'?B:C}
+function setVertex(name,p){if(name==='A')A=p;else if(name==='B')B=p;else C=p}
+
+let A={x:250,y:390},B={x:570,y:390},C={x:400,y:105};const initial=()=>{A={x:250,y:390};B={x:570,y:390};C={x:400,y:105}};
+const add=(tag,attrs={},parent=svg,text='')=>{let e=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(text)e.textContent=text;parent.appendChild(e);return e};
+const plus=(a,b)=>({x:a.x+b.x,y:a.y+b.y}),sub=(a,b)=>({x:a.x-b.x,y:a.y-b.y}),mul=(a,k)=>({x:a.x*k,y:a.y*k}),dot=(a,b)=>a.x*b.x+a.y*b.y,dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function lineIntersection(p,v,q,w){let cross=(a,b)=>a.x*b.y-a.y*b.x,den=cross(v,w);if(Math.abs(den)<1e-8)return{x:400,y:260};return plus(p,mul(v,cross(sub(q,p),w)/den))}
+function foot(P,U,V){let d=sub(V,U),t=dot(sub(P,U),d)/dot(d,d);return plus(U,mul(d,t))}
+function circum(){let d=2*(A.x*(B.y-C.y)+B.x*(C.y-A.y)+C.x*(A.y-B.y));if(Math.abs(d)<1e-6)return{x:400,y:260};let aa=dot(A,A),bb=dot(B,B),cc=dot(C,C);return{x:(aa*(B.y-C.y)+bb*(C.y-A.y)+cc*(A.y-B.y))/d,y:(aa*(C.x-B.x)+bb*(A.x-C.x)+cc*(B.x-A.x))/d}}
+function ortho(O){return{x:A.x+B.x+C.x-2*O.x,y:A.y+B.y+C.y-2*O.y}}
+function midpoint(P,Q){return mul(plus(P,Q),.5)}function reflect(P,U,V){let F=foot(P,U,V);return sub(mul(F,2),P)}
+function fmt(n){return Number.isFinite(n)?n.toFixed(1):"—"}function angle(P,Q,R){let u=sub(P,Q),v=sub(R,Q);return Math.acos(Math.max(-1,Math.min(1,dot(u,v)/(dist(P,Q)*dist(R,Q)))))*180/Math.PI}
+function render(){document.getElementById('reflectControls').style.display=current===4?'flex':'none';document.getElementById('cyclicControls').style.display=facts[current]?.scene==='cyclic'?'flex':'none';document.getElementById('eulerControls').style.display=facts[current]?.scene==='euler'?'flex':'none';svg.innerHTML='';let g=add('g',{transform:`translate(${pan.x} ${pan.y}) translate(400 260) scale(${zoom}) translate(-400 -260)`});
+const el=(tag,attrs,text)=>add(tag,attrs,g,text), edge=(P,Q,cls='edge',dash='')=>{if(cls==='alt'&&!dash)dash='6 5';return el('line',{x1:P.x,y1:P.y,x2:Q.x,y2:Q.y,class:cls,...(dash?{ 'stroke-dasharray':dash}:{})})};
+let O=circum(),H=ortho(O),M={x:(A.x+B.x+C.x)/3,y:(A.y+B.y+C.y)/3};
+let D=foot(A,B,C),E=foot(B,C,A),F=foot(C,A,B);
+let R=dist(O,A);
+if(!['alt','angle'].includes(facts[current]?.scene))el('circle',{cx:O.x,cy:O.y,r:R,class:'circ'});
+edge(A,B);edge(B,C);edge(C,A);
+const alt=(P,Q,T)=>{let Fp=foot(P,Q,T);edge(P,Fp,'alt');if(Fp.x<Q.x||Fp.x>T.x||Fp.y<Q.y||Fp.y>T.y){edge(Fp,plus(Fp,mul(sub(Q,T),.35)),'alt','5 5')}};
+if(current!==2){
+  // Every altitude is dashed from vertex through H to its foot (including outside parts).
+  [[A,H,D],[B,H,E],[C,H,F]].forEach(([P,Q,T])=>{
+    edge(P,Q,'alt','6 5');edge(Q,T,'alt','6 5');
+  });
+  // Dashed extensions of opposite sides whenever an altitude foot lies outside the side.
+  [[D,B,C],[E,C,A],[F,A,B]].forEach(([P,U,V])=>{
+    const d=sub(V,U),den=dot(d,d)||1,t=dot(sub(P,U),d)/den;
+    if(t<0)edge(U,P,'edge','6 5');
+    else if(t>1)edge(V,P,'edge','6 5');
+  });
+}
+// Right-angle marks at altitude feet are always visible.
+const rightMark=(P,U,V,altTarget)=>{
+  const unit=(v)=>{const n=Math.hypot(v.x,v.y)||1;return {x:v.x/n,y:v.y/n}};
+  const side=unit(sub(midpoint(U,V),P));
+  const alt=unit(sub(altTarget,P));
+  const r=9;
+  const p1=plus(P,mul(side,r)),p2=plus(p1,mul(alt,r)),p3=plus(P,mul(alt,r));
+  el('polyline',{points:[p1,p2,p3].map(Q=>`${Q.x},${Q.y}`).join(' '),fill:'none',stroke:'#ffd34e','stroke-width':1.8,'stroke-linejoin':'round'});
+};
+rightMark(D,B,C,A);rightMark(E,C,A,B);rightMark(F,A,B,C);
+if(current===1){
+  const cfg={A:{V:A,U:B,W:C,atH:[B,C]},B:{V:B,U:C,W:A,atH:[C,A]},C:{V:C,U:A,W:B,atH:[A,B]}}[angleVertex];
+  const {V,U,W,atH}=cfg;
+  const angleArc=(P,Q,T,r,label)=>{
+    const a1=Math.atan2(Q.y-P.y,Q.x-P.x),a2=Math.atan2(T.y-P.y,T.x-P.x);
+    let delta=((a2-a1+Math.PI*3)%(Math.PI*2))-Math.PI;
+    const pts=[];for(let i=0;i<=24;i++){const a=a1+delta*i/24;pts.push({x:P.x+r*Math.cos(a),y:P.y+r*Math.sin(a)})}
+    el('polyline',{points:pts.map(Q=>`${Q.x},${Q.y}`).join(' '),fill:'none',stroke:'#ffd34e','stroke-width':2});
+    const am=a1+delta/2;el('text',{x:P.x+(r+13)*Math.cos(am),y:P.y+(r+13)*Math.sin(am),fill:'#ffd34e','font-size':15,'text-anchor':'middle'},label);
+  };
+  angleArc(V,U,W,24,angleVertex==='A'?'α':angleVertex==='B'?'β':'γ');
+  angleArc(H,atH[0],atH[1],27,`180° − ${angleVertex==='A'?'α':angleVertex==='B'?'β':'γ'}`);
+}
+if(current===3){edge(O,H,'aux');edge(O,M,'aux');}
+if(current===3){
+  // Euler line stays vivid; auxiliary families are independently shown/hidden.
+  if(document.getElementById('showAlt').checked){
+    [[A,H,D],[B,H,E],[C,H,F]].forEach(([P,Q,T])=>{edge(P,Q,'alt','6 5');edge(Q,T,'alt','6 5')});
+  }
+  if(document.getElementById('showMedian').checked){
+    [[A,midpoint(B,C)],[B,midpoint(C,A)],[C,midpoint(A,B)]].forEach(([P,Q])=>el('line',{x1:P.x,y1:P.y,x2:Q.x,y2:Q.y,stroke:'#65d6a1','stroke-width':1.8,'stroke-dasharray':'7 5'}));
+  }
+  if(document.getElementById('showRadius').checked){
+    [A,B,C].forEach(P=>el('line',{x1:O.x,y1:O.y,x2:P.x,y2:P.y,stroke:'#65b7ff','stroke-width':1.7,'stroke-dasharray':'3 5'}));
+  }
+  edge(O,H,'aux','2 5');
+  el('text',{x:O.x+8,y:O.y+18,fill:'#65b7ff'},'O');
+  el('text',{x:M.x+8,y:M.y+18,fill:'#65d6a1'},'M');
+}
+if(current===4){
+ const V={A,B,C},opp={A:[B,C],B:[C,A],C:[A,B]},chosen=reflectVertices.length===3?['A','B','C']:reflectVertices;
+ chosen.forEach(name=>{const [U,W]=opp[name],Hp=reflect(H,U,W);edge(U,H,'aux','5 4');edge(H,W,'aux','5 4');edge(W,Hp,'aux','5 4');edge(Hp,U,'aux','5 4');edge(H,Hp,'alt','5 4');el('circle',{cx:Hp.x,cy:Hp.y,r:5,fill:'#65b7ff'});el('text',{x:Hp.x+9,y:Hp.y-9,fill:'#65b7ff'},`H_${name}`);const F=foot(H,U,W);el('circle',{cx:F.x,cy:F.y,r:3.5,fill:'#ffd34e'});});
+}
+if(current===5){let mid=midpoint(A,B),P=sub(mul(mid,2),H);edge(C,P,'aux','5 5');el('circle',{cx:P.x,cy:P.y,r:5,fill:'#65b7ff'})}
+if(current===6){let mid=foot(O,A,B);edge(O,mid,'aux');edge(C,H,'alt');}
+if(current===7){edge(A,H,'aux');}
+if(current===8){el('polygon',{points:[D,E,F].map(P=>`${P.x},${P.y}`).join(' '),class:'section'});[D,E,F].forEach(P=>el('circle',{cx:P.x,cy:P.y,r:4,fill:'#ffd34e'}))}
+if(current===9){let D1=foot(A,B,C),E1=foot(B,C,A);el('polygon',{points:[D1,E1,C].map(P=>`${P.x},${P.y}`).join(' '),class:'section'});}
+if(current===10){let pts=[midpoint(A,B),midpoint(B,C),midpoint(C,A),D,E,F,midpoint(A,H),midpoint(B,H),midpoint(C,H)],N=midpoint(O,H);let rr=dist(N,pts[0]);el('circle',{cx:N.x,cy:N.y,r:rr,class:'aux'});pts.forEach(P=>el('circle',{cx:P.x,cy:P.y,r:3.5,fill:'#ffd34e'}));}
+// Auxiliary constructions are displayed by the relevant fact, not all at once.
+
+if(current===2){
+  // Altitudes and their continuations stay red and dashed.
+  [[A,H,D],[B,H,E],[C,H,F]].forEach(([P,Q,T])=>{edge(P,Q,'alt','5 5');edge(Q,T,'alt','5 5')});
+  const feet={A:D,B:E,C:F},verts={A,B,C};
+  const sideQuads={A:[A,E,D,B],B:[B,F,E,C],C:[C,D,F,A]};
+  const vhQuads={A:[A,E,H,F],B:[B,F,H,D],C:[C,E,H,D]};
+  const circles=[];
+  if(cyclicMode==='side'||cyclicMode==='vh')circles.push([cyclicChoice,cyclicMode]);
+  else if(cyclicMode==='allSide')['A','B','C'].forEach(n=>circles.push([n,'side']));
+  else if(cyclicMode==='allVH')['A','B','C'].forEach(n=>circles.push([n,'vh']));
+  else ['A','B','C'].forEach(n=>{circles.push([n,'side']);circles.push([n,'vh'])});
+  circles.forEach(([name,mode])=>{
+    const quad=mode==='side'?sideQuads[name]:vhQuads[name];
+    const dp=mode==='side'?(name==='A'?A:name==='B'?B:C):(name==='A'?A:name==='B'?B:C);
+    const dq=mode==='side'?(name==='A'?B:name==='B'?C:A):H;
+    const center=midpoint(dp,dq),radius=dist(dp,dq)/2;
+    el('circle',{cx:center.x,cy:center.y,r:radius,fill:'none',stroke:mode==='side'?'#65b7ff':'#ffd34e','stroke-width':1.5,'stroke-dasharray':'5 5'});
+    polygon(quad,mode==='side'?'#65b7ff':'#ffd34e','5 5');
+    edge(dp,dq,mode==='side'?'aux':'section','4 4');
+  });
+  [['A',A],['B',B],['C',C]].forEach(([n,P])=>label(P,n));
+  [['A1',D],['B1',E],['C1',F]].forEach(([n,P])=>label(P,n));
+}
+[['A',A],['B',B],['C',C],['H',H],['O',O],['M',M]].forEach(([name,P])=>{if(name==='O'&&current!==2&&current!==5&&current!==6&&current!==9)return;if(name==='M'&&current!==2)return;el('circle',{cx:P.x,cy:P.y,r:name==='A'||name==='B'||name==='C'?7:4, class:name==='A'||name==='B'||name==='C'?'vertex':'',fill:name==='H'?'#ff5656':name==='O'?'#65b7ff':'#65d6a1'});el('text',{x:P.x+9,y:P.y-10},name)});
+[['A',A],['B',B],['C',C]].forEach(([name,P])=>{
+  let c=el('circle',{cx:P.x,cy:P.y,r:14,class:'vertex','data-v':name,style:'cursor:grab;touch-action:none;pointer-events:all'});
+  c.addEventListener('pointerdown',e=>{
+    e.preventDefault();e.stopPropagation();
+    angleVertex=name;const pointer=scenePoint(e),vertex=vertexPoint(name);
+    drag={name,pointerId:e.pointerId,offset:{x:vertex.x-pointer.x,y:vertex.y-pointer.y}};
+    try{svg.setPointerCapture(e.pointerId)}catch(_){}
+  });
+});
+
+let alpha=angle(B,A,C),beta=angle(A,B,C),gamma=angle(A,C,B),a=dist(B,C),c=dist(A,B),h=dist(A,H);
+let stat=`∠A ${fmt(alpha)}°`;if(facts[current]?.scene==='euler')stat+=` · HM/OM = ${fmt(dist(H,M)/Math.max(1e-9,dist(O,M)))}`;if(current===6)stat+=` · CH = ${fmt(dist(C,H))}`;if(current===7)stat+=` · AH² + a² = ${fmt(h*h+a*a)} · 4R² = ${fmt(4*R*R)}`;if(current===9)stat+=` · |cos B| = ${fmt(Math.abs(Math.cos(beta*Math.PI/180)))}`;if(current===10)stat+=` · R = ${fmt(R)} · r₉ = ${fmt(R/2)}`;
+if(current===0||current===1||facts[current]?.scene==='cyclic')stat='';document.getElementById('stats').innerHTML=stat.split(' · ').map(s=>`<span class="stat">${s}</span>`).join('');
+}
+svg.addEventListener('pointerdown',e=>{
+  if(!e.ctrlKey)return;
+  e.preventDefault();panDrag={pointerId:e.pointerId,start:{x:e.clientX,y:e.clientY},base:{...pan}};
+  try{svg.setPointerCapture(e.pointerId)}catch(_){}
+});
+svg.addEventListener('pointermove',e=>{
+  if(!panDrag||e.pointerId!==panDrag.pointerId)return;
+  const r=svg.getBoundingClientRect();
+  pan={x:panDrag.base.x+(e.clientX-panDrag.start.x)*800/r.width,y:panDrag.base.y+(e.clientY-panDrag.start.y)*520/r.height};
+  render();
+});
+function stopPan(e){if(panDrag&&(!e||e.pointerId===panDrag.pointerId))panDrag=null}
+svg.addEventListener('pointerup',stopPan);svg.addEventListener('pointercancel',stopPan);
+svg.addEventListener('pointermove',e=>{
+  if(!drag||e.pointerId!==drag.pointerId)return;
+  e.preventDefault();
+  const p=scenePoint(e);
+  setVertex(drag.name,{x:p.x+drag.offset.x,y:p.y+drag.offset.y});
+  render();
+});
+function stopDrag(e){if(drag&&(!e||e.pointerId===drag.pointerId)){drag=null}}
+svg.addEventListener('pointerup',stopDrag);
+svg.addEventListener('pointercancel',stopDrag);
+svg.addEventListener('lostpointercapture',stopDrag);
+function select(i){initial();zoom=1;pan={x:0,y:0};angleVertex='C';cyclicChoice='A';cyclicMode='side';document.querySelectorAll('.angle-chip').forEach(b=>b.classList.toggle('active',b.dataset.v==='C'));document.querySelectorAll('.cyclic-mode').forEach(b=>b.classList.toggle('active',b.dataset.mode==='side'));document.querySelectorAll('.cyclic-vertex').forEach(b=>b.classList.toggle('active',b.dataset.v==='A'));current=i;document.querySelectorAll('.factbtn').forEach((b,j)=>b.classList.toggle('active',j===i));document.getElementById('factTitle').textContent=facts[i].title;document.getElementById('factShort').textContent=facts[i].short;document.getElementById('detailContent').innerHTML=`<h2>${facts[i].title}</h2><p>${facts[i].detail}</p>`;render();document.getElementById('layout').classList.remove('menuopen')}
+let menu=document.getElementById('menu');['Базовые','Средние','Продвинутые','Факты'].forEach(level=>{let group=document.createElement('div');group.className='group';group.innerHTML=`<h3>${level}</h3>`;facts.forEach((f,i)=>{if(f.level!==level)return;let b=document.createElement('button');b.className='factbtn';b.innerHTML=`${f.title}<small>${level}</small>`;b.onclick=()=>select(i);group.appendChild(b)});menu.appendChild(group)});
+document.getElementById('detailsBtn').onclick=()=>document.getElementById('modal').showModal();document.getElementById('close').onclick=()=>document.getElementById('modal').close();document.getElementById('zoom').oninput=e=>{zoom=+e.target.value;document.getElementById('zoomVal').textContent=zoom.toFixed(2)+'×';render()};document.getElementById('reset').onclick=()=>{initial();pan={x:0,y:0};zoom=1;document.getElementById('zoom').value=1;document.getElementById('zoomVal').textContent='1.00×';render()};document.getElementById('menuBtn').onclick=()=>document.getElementById('layout').classList.toggle('menuopen');
+document.querySelectorAll('.angle-chip').forEach(btn=>btn.onclick=()=>{angleVertex=btn.dataset.v;document.querySelectorAll('.angle-chip').forEach(b=>b.classList.toggle('active',b===btn));render()});
+document.querySelectorAll('.cyclic-mode').forEach(btn=>btn.onclick=()=>{cyclicMode=btn.dataset.mode;document.querySelectorAll('.cyclic-mode').forEach(b=>b.classList.toggle('active',b===btn));render()});
+document.querySelectorAll('.cyclic-vertex').forEach(btn=>btn.onclick=()=>{cyclicChoice=btn.dataset.v;document.querySelectorAll('.cyclic-vertex').forEach(b=>b.classList.toggle('active',b===btn));if(cyclicMode.startsWith('all')){cyclicMode='side';document.querySelectorAll('.cyclic-mode').forEach(b=>b.classList.toggle('active',b.dataset.mode==='side'));}render()});
+document.querySelectorAll('.reflect-chip').forEach(btn=>btn.onclick=()=>{const v=btn.dataset.v;reflectVertices=reflectVertices.length===3?[v]:reflectVertices.includes(v)?reflectVertices.filter(x=>x!==v):[...reflectVertices,v];document.querySelectorAll('.reflect-chip').forEach(b=>b.classList.toggle('active',reflectVertices.includes(b.dataset.v)));select(3)});
+document.getElementById('reflectAll').onclick=()=>{reflectVertices=['A','B','C'];document.querySelectorAll('.reflect-chip').forEach(b=>b.classList.add('active'));select(3)};
+document.getElementById('diamSide').onclick=()=>{cyclicMode='side';select(10)};
+document.getElementById('diamVH').onclick=()=>{cyclicMode='vertex';select(10)};
+document.querySelectorAll('.vertex-chip').forEach(btn=>btn.onclick=()=>{
+  const v=btn.dataset.v;
+  selectedVertices=selectedVertices.length===3?[v]:selectedVertices.includes(v)?selectedVertices.filter(x=>x!==v):[...selectedVertices,v];
+  document.querySelectorAll('.vertex-chip').forEach(b=>b.classList.toggle('active',selectedVertices.includes(b.dataset.v)));
+  select(10);
+});
+document.getElementById('allVertices').onclick=()=>{selectedVertices=['A','B','C'];document.querySelectorAll('.vertex-chip').forEach(b=>b.classList.add('active'));select(10)};
+['showAlt','showMedian','showRadius'].forEach(id=>document.getElementById(id).onchange=render);
+document.querySelectorAll('.reflect-chip').forEach(b=>b.classList.toggle('active',reflectVertices.includes(b.dataset.v)));select(0);
+</script></body></html>
