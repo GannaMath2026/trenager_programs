@@ -1,4 +1,15 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.calcgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:12px}.calcgrid button{padding:12px 4px;border:1px solid #d1d5db;border-radius:9px;background:#fff;font:600 16px inherit}.calcdisplay{width:100%;box-sizing:border-box;font:22px ui-monospace,monospace;padding:12px;border:1px solid #9ca3af;border-radius:10px}.calcresult{min-height:26px;margin-top:8px;font:18px ui-monospace,monospace;overflow-wrap:anywhere}.calcmodal .sheet{width:min(560px,94vw)}.graphmodal .sheet{width:98vw;max-width:none;height:96vh;max-height:96vh;display:flex;flex-direction:column}.graphframe{width:100%;flex:1;border:0;border-radius:10px;background:white;min-height:350px}@media(max-width:600px){.calcgrid button{padding:10px 2px;font-size:14px}}
+
+/* Указатель учителя: удалённый маркер поверх рабочей области, не перехватывает ввод. */
+#teacherPointerOverlay{position:absolute;z-index:28;left:0;top:0;pointer-events:none;display:block;transform:translate(-50%,-50%);width:28px;height:28px}
+#teacherPointerOverlay[hidden]{display:none!important}
+#teacherPointerOverlay .tp-ring{position:absolute;inset:0;border:3px solid #ffb02e;border-radius:50%;background:rgba(255,176,46,.18);box-shadow:0 0 0 4px rgba(255,176,46,.18),0 0 18px rgba(255,176,46,.65),inset 0 0 8px rgba(255,255,255,.4)}
+#teacherPointerOverlay .tp-ring:after{content:"";position:absolute;width:6px;height:6px;left:8px;top:8px;border-radius:50%;background:#fff;box-shadow:0 0 4px #fff}
+#teacherPointerOverlay .tp-label{position:absolute;left:20px;top:20px;white-space:nowrap;padding:4px 9px;border-radius:7px;background:#9a5b08;color:#fff;font:700 12px/1.25 system-ui,-apple-system,sans-serif;box-shadow:0 3px 12px #0005;border:1px solid rgba(255,255,255,.45)}
+#teacherPointerBtn{font-size:18px;border:1px solid transparent}
+#teacherPointerBtn[hidden]{display:none!important}
+#teacherPointerBtn[aria-pressed="true"]{background:#f0a52a;color:#251708;box-shadow:0 0 0 2px #f0a52a55,inset 0 1px 0 #fff8}
+#teacherPointerBtn[aria-pressed="false"]{color:var(--muted)}
 </style><link rel="icon" type="image/png" sizes="64x64" href="data:image/png;base64,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">
 </head><body>
 <title>Sibir.doska — исправленные направления обхода вершин</title>
@@ -290,7 +301,7 @@ label.sw input{position:absolute;inset:-6px;opacity:0;width:40px;height:40px;cur
       <button class="ib" id="myAppsTopBtn" title="Мои приложения" aria-label="Мои приложения">▦</button><button class="ib" id="backupBtn" title="Сохранение, экспорт и очистка" aria-label="Сохранение и экспорт">💾</button><button class="ib" id="lookBtn" title="Оформление и настройки" aria-label="Оформление и настройки"></button>
       <button class="ib" id="gridBtn" title="Фон: клетка, точки, чистый" aria-label="Фон доски"></button>
       <button class="ib" id="keysBtn" title="Горячие клавиши (?)" aria-label="Горячие клавиши"></button>
-      <button class="ib" id="shareBtn" title="Совместная работа: поделиться доской по ссылке" aria-label="Поделиться доской"></button>
+      <button class="ib" id="shareBtn" title="Совместная работа: поделиться доской по ссылке" aria-label="Поделиться доской"></button><button class="ib" id="teacherPointerBtn" type="button" title="Указатель учителя: показать ученикам" aria-label="Указатель учителя" aria-pressed="false" hidden>🎯</button>
       <button class="ib" id="exportBtn" title="Сохранить доску как картинку" aria-label="Сохранить как картинку"></button>
       <button class="ib" id="clearBtn" title="Очистить доску" aria-label="Очистить доску"></button><button class="ib" id="calcBtn" title="Инженерный калькулятор" aria-label="Инженерный калькулятор">ƒx</button><button class="ib" id="simpleCalcBtn" title="Простой калькулятор: клавиша C" aria-label="Простой калькулятор">C</button><button class="ib" id="graphBtn" title="График Desmos" aria-label="График">∿</button><button class="ib" id="fullscreenBtn" title="Полноэкранный режим" aria-label="Полноэкранный режим"></button>
     </div>
@@ -303,6 +314,7 @@ label.sw input{position:absolute;inset:-6px;opacity:0;width:40px;height:40px;cur
   <div id="sheen"></div>
   <div id="vidLayer"></div>
   <canvas id="oc"></canvas>
+  <div id="teacherPointerOverlay" hidden aria-hidden="true"><span class="tp-ring"></span><span class="tp-label">Учитель</span></div>
   <div class="vbar" id="vbar" hidden><button class="vb" id="vLive" type="button">Управлять видео</button><a class="vb" id="vOpen" target="_blank" rel="noopener noreferrer">Открыть ссылку ↗</a></div>
   <div class="props" id="props" hidden>
     <div class="grp" id="pColors" style="gap:8px"></div>
@@ -840,6 +852,7 @@ function render(){
     ctx.strokeRect(Math.min(a.x,b.x),Math.min(a.y,b.y),Math.abs(b.x-a.x),Math.abs(b.y-a.y));
   }
   if(share.on)drawRemoteCursors();
+  drawTeacherPointer();
   ctx=mc;
   if(editing)positionEditor();
 }
@@ -1310,7 +1323,7 @@ canvas.addEventListener('pointerdown',function(e){
 });
 canvas.addEventListener('pointermove',function(e){
   if(share.on)shareCursor(e);
-  var p=pos(e);pointer={x:p.x,y:p.y,over:true};
+  var p=pos(e);if(teacherPointerOn)teacherPointerMove(p);pointer={x:p.x,y:p.y,over:true};
   if(pointers.has(e.pointerId))pointers.set(e.pointerId,p);
   if(g&&g.kind==='pinch'){doPinch();return;}
   if(!g){if(draft&&draft.kind==='polyline'){draft.hover=s2w(p.x,p.y);dirty=true;}hoverCursor(p);return;}
@@ -2192,6 +2205,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSolidMe
 var FB_CONFIG={apiKey:"AIzaSyDY2pset-eI8bnf2zs-R6ZGbqYyAbw6Wlo",authDomain:"ganna-math-board.firebaseapp.com",databaseURL:"https://ganna-math-board-default-rtdb.europe-west1.firebasedatabase.app",projectId:"ganna-math-board",storageBucket:"ganna-math-board.firebasestorage.app",messagingSenderId:"631293914047",appId:"1:631293914047:web:d09cc154323f7c48a70f0a"};
 var FB_VER='10.14.1';
 var cloud={meta:{},user:null,au:null,auth:null,metaSeen:false,metaPrev:false,roToast:0,fb:null,db:null,p:null,rec:null,unsubs:[],known:{},zmap:{},assetsUp:{},peers:{},gen:0,k:0,hb:null,online:false,name:'',hue:Math.floor(Math.random()*360),cid:'c'+Math.random().toString(36).slice(2,9),err:''};
+var teacherPointerOn=false,teacherPointerLast=0,teacherPointerRemote=null,teacherPointerWarned=false;
 try{cloud.name=localStorage.getItem('doska.name')||'';}catch(e){}
 function myName(){return cloud.name.trim()||'Гость';}
 function loadFirebase(){
@@ -2248,14 +2262,16 @@ function cloudDetach(){
   cloud.unsubs.forEach(function(u){try{u();}catch(e){}});cloud.unsubs=[];
   clearInterval(cloud.hb);cloud.hb=null;
   if(cloud.rec&&cloud.fb){try{cloud.fb.remove(cref('live/'+cloud.cid));cloud.fb.remove(cref('draft/'+cloud.cid));}catch(e){}}
+  if(cloud.rec&&cloud.fb&&cloudIsOwner()){try{cloud.fb.remove(cref('teacherPointer'));}catch(e){}}
   cloud.rec=null;cloud.known={};cloud.zmap={};cloud.peers={};cloud.online=false;cloud.err='';cloud.meta={};cloud.metaSeen=false;cloud.metaPrev=false;
+  teacherPointerOn=false;teacherPointerRemote=null;updateTeacherPointerUI();
   share.on=false;share.cur={};share.remote={};share.remoteIds={};share.n=1;share.liveSent=false;
 }
 function cloudFail(msg){
   var had=cloud.rec;cloud.gen++;
   cloud.unsubs.forEach(function(u){try{u();}catch(e){}});cloud.unsubs=[];
   clearInterval(cloud.hb);cloud.hb=null;
-  share.on=false;cloud.err=msg;if(had)cloud.rec=had;
+  share.on=false;teacherPointerOn=false;teacherPointerRemote=null;updateTeacherPointerUI();cloud.err=msg;if(had)cloud.rec=had;
   shareUI();toast(msg);
 }
 function cloudAttach(rec){
@@ -2315,13 +2331,14 @@ function cloudListen(gen){
     cloud.peers[sn.key]=Date.now();share.cur[sn.key]={x:v.x||0,y:v.y||0,name:v.n||'Гость',hue:v.h||200,t:Date.now()};cloudCount();dirty=true;};
   add(fb.onChildAdded(lref,onLive));add(fb.onChildChanged(lref,onLive));
   add(fb.onChildRemoved(lref,function(sn){delete cloud.peers[sn.key];delete share.cur[sn.key];delete share.remote[sn.key];cloudCount();dirty=true;}));
+  add(fb.onValue(cref('teacherPointer'),function(sn){if(gen!==cloud.gen)return;var v=sn.val();teacherPointerRemote=v&&v.visible?{x:+v.x||0,y:+v.y||0,name:v.name||'Учитель',id:v.id||'',t:+v.t||Date.now()}:null;dirty=true;}));
   var onDraft=function(sn){if(gen!==cloud.gen||sn.key===cloud.cid)return;try{share.remote[sn.key]=JSON.parse(sn.val());}catch(e){}dirty=true;};
   add(fb.onChildAdded(dref,onDraft));add(fb.onChildChanged(dref,onDraft));
   add(fb.onChildRemoved(dref,function(sn){delete share.remote[sn.key];dirty=true;}));
   add(fb.onValue(fb.ref(cloud.db,'.info/connected'),function(sn){
     cloud.online=!!sn.val();
     if(cloud.online&&gen===cloud.gen){
-      try{fb.onDisconnect(cref('live/'+cloud.cid)).remove();fb.onDisconnect(cref('draft/'+cloud.cid)).remove();}catch(e){}
+      try{fb.onDisconnect(cref('live/'+cloud.cid)).remove();fb.onDisconnect(cref('draft/'+cloud.cid)).remove();if(cloudIsOwner())fb.onDisconnect(cref('teacherPointer')).remove();}catch(e){}
       cloudHeartbeat();shareFlush();
     }
     shareUI();
@@ -2331,7 +2348,7 @@ function cloudListen(gen){
 function cloudHeartbeat(){
   if(!cloud.rec||!cloud.online)return;
   var w=share.lastPos||{x:0,y:0};
-  cloud.fb.set(cref('live/'+cloud.cid),{n:myName(),h:cloud.hue,x:w.x,y:w.y,k:++cloud.k}).catch(function(){});
+  cloud.fb.set(cref('live/'+cloud.cid),{n:myName(),h:cloud.hue,x:w.x,y:w.y,owner:cloudIsOwner()?1:0,k:++cloud.k}).catch(function(){});
 }
 function cloudCount(){
   var now=Date.now(),n=1;
@@ -2412,15 +2429,53 @@ function shareCursor(e){
   var p=pos(e),w=s2w(p.x,p.y);share.lastPos={x:Math.round(w.x),y:Math.round(w.y)};
   if(!cloud.online)return;
   var t=Date.now();if(t-share.lastCur<100)return;share.lastCur=t;
-  cloud.fb.set(cref('live/'+cloud.cid),{n:myName(),h:cloud.hue,x:share.lastPos.x,y:share.lastPos.y,k:++cloud.k}).catch(function(){});
+  cloud.fb.set(cref('live/'+cloud.cid),{n:myName(),h:cloud.hue,x:share.lastPos.x,y:share.lastPos.y,owner:cloudIsOwner()?1:0,k:++cloud.k}).catch(function(){});
 }
+function updateTeacherPointerUI(){
+  var b=$('#teacherPointerBtn');if(!b)return;
+  var allowed=!!(share.on&&cloud.rec&&cloud.online&&cloudIsOwner());
+  b.hidden=!allowed;b.setAttribute('aria-pressed',teacherPointerOn?'true':'false');
+  b.title=teacherPointerOn?'Скрыть указатель учителя у учеников':'Показать ученикам указатель учителя';
+  b.textContent=teacherPointerOn?'🎯':'◎';
+}
+function publishTeacherPointer(x,y,visible){
+  if(!cloud.rec||!cloud.online||!cloudIsOwner()||!cloud.fb)return;
+  var w=s2w(x,y),payload={visible:!!visible,x:Math.round(w.x*100)/100,y:Math.round(w.y*100)/100,name:myName()||'Учитель',id:cloud.cid,t:Date.now(),k:++cloud.k};
+  cloud.fb.set(cref('teacherPointer'),payload).catch(function(e){
+    if(!teacherPointerWarned){teacherPointerWarned=true;toast('Не удалось передать указатель. Проверьте доступ к Realtime Database.');}
+  });
+}
+function teacherPointerMove(p){
+  if(!teacherPointerOn||!share.on||!cloudIsOwner()||!cloud.online)return;
+  var now=Date.now();if(now-teacherPointerLast<45)return;teacherPointerLast=now;
+  publishTeacherPointer(p.x,p.y,true);
+}
+function teacherPointerHide(){
+  if(!teacherPointerOn||!cloud.rec||!cloud.online||!cloudIsOwner())return;
+  cloud.fb.remove(cref('teacherPointer')).catch(function(){});
+}
+function drawTeacherPointer(){
+  var el=$('#teacherPointerOverlay');if(!el)return;
+  if(!share.on||!cloud.rec||cloudIsOwner()||!teacherPointerRemote){el.hidden=true;return;}
+  var p=w2s(teacherPointerRemote.x,teacherPointerRemote.y);
+  if(!Number.isFinite(p.x)||!Number.isFinite(p.y)){el.hidden=true;return;}
+  el.hidden=false;el.style.left=p.x+'px';el.style.top=p.y+'px';
+  var label=el.querySelector('.tp-label');if(label)label.textContent=teacherPointerRemote.name||'Учитель';
+} 
+$('#teacherPointerBtn').addEventListener('click',function(){
+  if(!share.on||!cloud.rec||!cloudIsOwner()){toast('Указатель доступен владельцу общей доски');return;}
+  teacherPointerOn=!teacherPointerOn;teacherPointerWarned=false;updateTeacherPointerUI();
+  if(!teacherPointerOn)teacherPointerHide();else toast('Указатель учителя включён. Двигай курсор по доске — ученик увидит его.');
+});
+canvas.addEventListener('pointerleave',function(){if(teacherPointerOn)teacherPointerHide();});
+
 function drawRemoteLive(){
   Object.keys(share.remote).forEach(function(id){try{drawObj(ctx,share.remote[id]);}catch(e){}});
 }
 function drawRemoteCursors(){
   var now=Date.now(),keep=false;
   Object.keys(share.cur).forEach(function(id){
-    var c=share.cur[id];if(now-c.t>8000)return;keep=true;
+    var c=share.cur[id];if(teacherPointerRemote&&teacherPointerRemote.id===id)return;if(now-c.t>8000)return;keep=true;
     var p=w2s(c.x,c.y),col='hsl('+c.hue+' 85% 55%)';
     ctx.fillStyle=col;ctx.strokeStyle='#fff';ctx.lineWidth=1.5;
     ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+4,p.y+16);ctx.lineTo(p.x+8,p.y+11);ctx.lineTo(p.x+15,p.y+10);ctx.closePath();ctx.fill();ctx.stroke();
@@ -2475,6 +2530,7 @@ function shareUI(){
   var b=$('#shareBtn');
   b.classList.toggle('sharing',share.on);
   if(share.on)b.dataset.n=share.n;else delete b.dataset.n;
+  updateTeacherPointerUI();
   if(!$('#smodal').hidden)renderShare();
 }
 function shareLink(){return location.href.split('#')[0]+'#b='+(boards[bi]&&boards[bi].cloud);}
