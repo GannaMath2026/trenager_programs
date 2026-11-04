@@ -2344,7 +2344,7 @@ function cloudListen(gen){
     if(gen!==cloud.gen)return;
     var v=sn.val();
     teacherPointerRemote=v&&v.visible?{x:+v.x||0,y:+v.y||0,id:v.id||'',hue:Number.isFinite(+v.h)?+v.h:200,t:+v.t||Date.now()}:null;
-    teacherFollowTarget=(teacherPointerRemote&&teacherPointerRemote.id!==cloud.cid)?{x:teacherPointerRemote.x,y:teacherPointerRemote.y}:null;
+    teacherFollowTarget=teacherPointerRemote?{x:teacherPointerRemote.x,y:teacherPointerRemote.y}:null;
     dirty=true;
   }));
   var onDraft=function(sn){if(gen!==cloud.gen||sn.key===cloud.cid)return;try{share.remote[sn.key]=JSON.parse(sn.val());}catch(e){}dirty=true;};
@@ -2487,7 +2487,7 @@ function teacherPointerHide(){
 function applyTeacherFollow(){
   // Экран ученика непрерывно следует за мировой координатой пера учителя.
   // Сам масштаб ученика не меняем: перемещается только камера.
-  if(!share.on||!cloud.rec||!teacherPointerRemote||teacherPointerRemote.id===cloud.cid||!teacherFollowTarget)return false;
+  if(!share.on||!cloud.rec||cloudIsOwner()||!teacherFollowTarget)return false;
   var z=Math.max(.1,cam.z||1);
   // Держим перо немного выше центра, чтобы видеть область работы вокруг него.
   var targetScreenX=view.w*.50,targetScreenY=view.h*.44;
@@ -2496,13 +2496,13 @@ function applyTeacherFollow(){
   var dx=tx-cam.x,dy=ty-cam.y;
   if(Math.abs(dx)<.015&&Math.abs(dy)<.015){cam.x=tx;cam.y=ty;return false;}
   // Мягкое постоянное сопровождение без рывков.
-  var k=.38;
+  var k=.22;
   cam.x+=dx*k;cam.y+=dy*k;
   return true;
 }
 function drawTeacherPointer(){
   var el=$('#teacherPointerOverlay');if(!el)return;
-  if(!share.on||!cloud.rec||!teacherPointerRemote||teacherPointerRemote.id===cloud.cid){el.hidden=true;return;}
+  if(!share.on||!cloud.rec||cloudIsOwner()||!teacherPointerRemote){el.hidden=true;return;}
   // Положение пера рассчитывается уже после автоматического перемещения камеры.
   var p=w2s(teacherPointerRemote.x,teacherPointerRemote.y);
   if(!Number.isFinite(p.x)||!Number.isFinite(p.y)){el.hidden=true;return;}
