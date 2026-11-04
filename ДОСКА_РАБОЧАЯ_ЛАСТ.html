@@ -304,7 +304,7 @@ label.sw input{position:absolute;inset:-6px;opacity:0;width:40px;height:40px;cur
       <button class="ib" id="myAppsTopBtn" title="Мои приложения" aria-label="Мои приложения">▦</button><button class="ib" id="backupBtn" title="Сохранение, экспорт и очистка" aria-label="Сохранение и экспорт">💾</button><button class="ib" id="lookBtn" title="Оформление и настройки" aria-label="Оформление и настройки"></button>
       <button class="ib" id="gridBtn" title="Фон: клетка, точки, чистый" aria-label="Фон доски"></button>
       <button class="ib" id="keysBtn" title="Горячие клавиши (?)" aria-label="Горячие клавиши"></button>
-      <button class="ib" id="shareBtn" title="Совместная работа: поделиться доской по ссылке" aria-label="Поделиться доской"></button><button class="ib" id="teacherPointerBtn" type="button" title="Указатель учителя — сначала создайте общую доску" aria-label="Указатель учителя" aria-pressed="false">🎯</button>
+      <button class="ib" id="shareBtn" title="Совместная работа: поделиться доской по ссылке" aria-label="Поделиться доской"></button><button class="ib" id="teacherPointerBtn" type="button" title="Перо учителя — сначала создайте общую доску" aria-label="Указатель учителя" aria-pressed="false">✎</button>
       <button class="ib" id="exportBtn" title="Сохранить доску как картинку" aria-label="Сохранить как картинку"></button>
       <button class="ib" id="clearBtn" title="Очистить доску" aria-label="Очистить доску"></button><button class="ib" id="calcBtn" title="Инженерный калькулятор" aria-label="Инженерный калькулятор">ƒx</button><button class="ib" id="simpleCalcBtn" title="Простой калькулятор: клавиша C" aria-label="Простой калькулятор">C</button><button class="ib" id="graphBtn" title="График Desmos" aria-label="График">∿</button><button class="ib" id="fullscreenBtn" title="Полноэкранный режим" aria-label="Полноэкранный режим"></button>
     </div>
@@ -2337,10 +2337,10 @@ function cloudListen(gen){
   }));
   var lref=cref('live'),dref=cref('draft');
   var onLive=function(sn){if(gen!==cloud.gen||sn.key===cloud.cid)return;var v=sn.val();if(!v)return;
-    cloud.peers[sn.key]=Date.now();share.cur[sn.key]={x:v.x||0,y:v.y||0,name:v.n||'Гость',hue:v.h||200,t:Date.now()};cloudCount();dirty=true;};
+    cloud.peers[sn.key]=Date.now();share.cur[sn.key]={x:v.x||0,y:v.y||0,name:v.n||'Гость',hue:v.h||200,active:!!v.a,t:Date.now()};cloudCount();dirty=true;};
   add(fb.onChildAdded(lref,onLive));add(fb.onChildChanged(lref,onLive));
   add(fb.onChildRemoved(lref,function(sn){delete cloud.peers[sn.key];delete share.cur[sn.key];delete share.remote[sn.key];cloudCount();dirty=true;}));
-  add(fb.onValue(cref('teacherPointer'),function(sn){if(gen!==cloud.gen)return;var v=sn.val();teacherPointerRemote=v&&v.visible?{x:+v.x||0,y:+v.y||0,name:v.name||'Учитель',id:v.id||'',hue:Number.isFinite(+v.h)?+v.h:200,t:+v.t||Date.now()}:null;dirty=true;}));
+  add(fb.onValue(cref('teacherPointer'),function(sn){if(gen!==cloud.gen)return;var v=sn.val();teacherPointerRemote=v&&v.visible?{x:+v.x||0,y:+v.y||0,id:v.id||'',hue:Number.isFinite(+v.h)?+v.h:200,t:+v.t||Date.now()}:null;dirty=true;}));
   var onDraft=function(sn){if(gen!==cloud.gen||sn.key===cloud.cid)return;try{share.remote[sn.key]=JSON.parse(sn.val());}catch(e){}dirty=true;};
   add(fb.onChildAdded(dref,onDraft));add(fb.onChildChanged(dref,onDraft));
   add(fb.onChildRemoved(dref,function(sn){delete share.remote[sn.key];dirty=true;}));
@@ -2357,7 +2357,7 @@ function cloudListen(gen){
 function cloudHeartbeat(){
   if(!cloud.rec||!cloud.online)return;
   var w=share.lastPos||{x:0,y:0};
-  cloud.fb.set(cref('live/'+cloud.cid),{n:myName(),h:cloud.hue,x:w.x,y:w.y,owner:cloudIsOwner()?1:0,k:++cloud.k}).catch(function(){});
+  cloud.fb.set(cref('live/'+cloud.cid),{n:myName(),h:cloud.hue,x:w.x,y:w.y,owner:cloudIsOwner()?1:0,a:0,k:++cloud.k}).catch(function(){});
 }
 function cloudCount(){
   var now=Date.now(),n=1;
@@ -2438,7 +2438,7 @@ function shareCursor(e){
   var p=pos(e),w=s2w(p.x,p.y);share.lastPos={x:Math.round(w.x),y:Math.round(w.y)};
   if(!cloud.online)return;
   var t=Date.now();if(t-share.lastCur<100)return;share.lastCur=t;
-  cloud.fb.set(cref('live/'+cloud.cid),{n:myName(),h:cloud.hue,x:share.lastPos.x,y:share.lastPos.y,owner:cloudIsOwner()?1:0,k:++cloud.k}).catch(function(){});
+  cloud.fb.set(cref('live/'+cloud.cid),{n:myName(),h:cloud.hue,x:share.lastPos.x,y:share.lastPos.y,owner:cloudIsOwner()?1:0,a:1,k:++cloud.k}).catch(function(){});
 }
 function updateTeacherPointerUI(){
   var b=$('#teacherPointerBtn');if(!b)return;
@@ -2449,9 +2449,9 @@ function updateTeacherPointerUI(){
   b.classList.toggle('tp-unavailable',!allowed);
   b.setAttribute('aria-pressed',teacherPointerOn?'true':'false');
   b.setAttribute('aria-disabled',allowed?'false':'true');
-  b.textContent='🎯';
+  b.textContent='✎';
   if(teacherPointerOn){
-    b.title='Указатель включён — нажми, чтобы скрыть его у учеников';
+    b.title='Перо включено — нажми, чтобы скрыть его у учеников';
   }else if(!share.on||!cloud.rec){
     b.title='Сначала создай общую доску через кнопку совместной работы';
   }else if(!cloud.online){
@@ -2459,12 +2459,12 @@ function updateTeacherPointerUI(){
   }else if(!cloudIsOwner()){
     b.title='Указатель может включать создатель общей доски';
   }else{
-    b.title='Показать ученикам перо-указатель твоего цвета';
+    b.title='Показать ученикам перо твоего цвета';
   }
 }
 function publishTeacherPointer(x,y,visible){
   if(!cloud.rec||!cloud.online||!cloudIsOwner()||!cloud.fb)return;
-  var w=s2w(x,y),payload={visible:!!visible,x:Math.round(w.x*100)/100,y:Math.round(w.y*100)/100,name:myName()||'Учитель',id:cloud.cid,h:cloud.hue,t:Date.now(),k:++cloud.k};
+  var w=s2w(x,y),payload={visible:!!visible,x:Math.round(w.x*100)/100,y:Math.round(w.y*100)/100,id:cloud.cid,h:cloud.hue,t:Date.now(),k:++cloud.k};
   cloud.fb.set(cref('teacherPointer'),payload).catch(function(e){
     if(!teacherPointerWarned){teacherPointerWarned=true;toast('Не удалось передать указатель. Проверьте доступ к Realtime Database.');}
   });
@@ -2494,29 +2494,50 @@ function drawTeacherPointer(){
 } 
 $('#teacherPointerBtn').addEventListener('click',function(){
   if(!share.on||!cloud.rec){toast('Сначала создай общую доску: нажми кнопку совместной работы и получи ссылку.');updateTeacherPointerUI();return;}
-  if(!cloud.online){toast('Firebase ещё подключается. Подожди несколько секунд и нажми 🎯 ещё раз.');updateTeacherPointerUI();return;}
+  if(!cloud.online){toast('Firebase ещё подключается. Подожди несколько секунд и нажми ✎ ещё раз.');updateTeacherPointerUI();return;}
   if(!cloudIsOwner()){toast('Указатель может включать создатель этой общей доски. Открой доску из аккаунта учителя-владельца.');updateTeacherPointerUI();return;}
   teacherPointerOn=!teacherPointerOn;teacherPointerWarned=false;updateTeacherPointerUI();
-  if(!teacherPointerOn)teacherPointerHide();else toast('Указатель включён. Ученик увидит небольшое перо твоего индивидуального цвета. Его экран не будет двигаться.');
+  if(!teacherPointerOn)teacherPointerHide();else toast('Перо включено. Ученики видят только небольшое перо твоего цвета; их экран не перемещается.');
 });
 canvas.addEventListener('pointerleave',function(){if(teacherPointerOn)teacherPointerHide();});
 
 function drawRemoteLive(){
   Object.keys(share.remote).forEach(function(id){try{drawObj(ctx,share.remote[id]);}catch(e){}});
 }
+function drawRemotePen(c,p,color){
+  c.save();c.translate(p.x,p.y);c.rotate(-.22);
+  c.lineJoin='round';c.lineCap='round';
+  c.fillStyle=color;c.strokeStyle='rgba(25,35,45,.72)';c.lineWidth=1;
+  c.beginPath();c.moveTo(-2,-13);c.lineTo(3,-15);c.lineTo(8,-10);c.lineTo(1,8);c.lineTo(-4,4);c.closePath();c.fill();c.stroke();
+  c.fillStyle='#f5f1e8';c.strokeStyle='rgba(25,35,45,.55)';
+  c.beginPath();c.moveTo(-4,4);c.lineTo(1,8);c.lineTo(-7,12);c.closePath();c.fill();c.stroke();
+  c.restore();
+}
+function drawRemoteInitial(c,p,name,hue){
+  var ch=(String(name||'Гость').trim().charAt(0)||'Г').toLocaleUpperCase('ru-RU');
+  var col='hsl('+(((Number(hue)||200)%360+360)%360)+' 22% 48%)';
+  c.save();c.beginPath();c.arc(p.x,p.y,9,0,Math.PI*2);
+  c.fillStyle='rgba(245,247,249,.94)';c.fill();c.strokeStyle=col;c.lineWidth=1.2;c.stroke();
+  c.fillStyle='rgba(50,62,72,.86)';c.font='600 10px Onest, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(ch,p.x,p.y+.3);
+  c.restore();
+}
 function drawRemoteCursors(){
   var now=Date.now(),keep=false;
   Object.keys(share.cur).forEach(function(id){
-    var c=share.cur[id];if(teacherPointerRemote&&teacherPointerRemote.id===id)return;if(now-c.t>8000)return;keep=true;
-    var p=w2s(c.x,c.y),col='hsl('+c.hue+' 85% 55%)';
-    ctx.fillStyle=col;ctx.strokeStyle='#fff';ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+4,p.y+16);ctx.lineTo(p.x+8,p.y+11);ctx.lineTo(p.x+15,p.y+10);ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.font='600 12px Onest, sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';
-    var w=ctx.measureText(c.name).width+12;
-    ctx.fillStyle=col;ctx.fillRect(p.x+14,p.y+16,w,18);
-    ctx.fillStyle='#fff';ctx.fillText(c.name,p.x+20,p.y+25.5);
+    var c=share.cur[id];
+    if(teacherPointerRemote&&teacherPointerRemote.id===id)return;
+    if(now-c.t>16000)return;
+    keep=true;
+    var p=w2s(c.x,c.y);if(!Number.isFinite(p.x)||!Number.isFinite(p.y))return;
+    // Пока человек двигает мышь/перо, остальные видят только маленькое перо.
+    // Когда он перестаёт двигаться, остаётся спокойный кружок с первой буквой имени.
+    if(c.active&&now-c.t<1400){
+      drawRemotePen(ctx,p,'hsl('+(((Number(c.hue)||200)%360+360)%360)+' 52% 54%)');
+    }else{
+      drawRemoteInitial(ctx,p,c.name,c.hue);
+    }
   });
-  if(keep)setTimeout(function(){dirty=true;},1500);
+  if(keep)setTimeout(function(){dirty=true;},900);
 }
 function newCloudId(){
   var a=new Uint8Array(20);(window.crypto||window.msCrypto).getRandomValues(a);
