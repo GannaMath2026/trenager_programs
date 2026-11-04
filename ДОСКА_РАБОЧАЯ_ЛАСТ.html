@@ -1,6 +1,6 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.calcgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:12px}.calcgrid button{padding:12px 4px;border:1px solid #d1d5db;border-radius:9px;background:#fff;font:600 16px inherit}.calcdisplay{width:100%;box-sizing:border-box;font:22px ui-monospace,monospace;padding:12px;border:1px solid #9ca3af;border-radius:10px}.calcresult{min-height:26px;margin-top:8px;font:18px ui-monospace,monospace;overflow-wrap:anywhere}.calcmodal .sheet{width:min(560px,94vw)}.graphmodal .sheet{width:98vw;max-width:none;height:96vh;max-height:96vh;display:flex;flex-direction:column}.graphframe{width:100%;flex:1;border:0;border-radius:10px;background:white;min-height:350px}@media(max-width:600px){.calcgrid button{padding:10px 2px;font-size:14px}}
 
-/* Указатель учителя: маленькое цветное перо. Не перехватывает ввод и не двигает камеру ученика. */
+/* Указатель учителя: маленькое цветное перо. Камера ученика непрерывно следует за ним. */
 #teacherPointerOverlay{position:absolute;z-index:28;left:0;top:0;pointer-events:none;display:block;width:22px;height:26px;transform:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.45))}
 #teacherPointerOverlay[hidden]{display:none!important}
 #teacherPointerOverlay svg{display:block;width:22px;height:26px;overflow:visible}
@@ -865,7 +865,7 @@ function render(){
   ctx=mc;
   if(editing)positionEditor();
 }
-function loop(){if(dirty)render();requestAnimationFrame(loop);}
+function loop(){if(applyTeacherFollow())dirty=true;if(dirty)render();requestAnimationFrame(loop);}
 
 /* ---------- история и сохранение ---------- */
 var hist=[],hi=-1;
@@ -2214,7 +2214,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSolidMe
 var FB_CONFIG={apiKey:"AIzaSyDY2pset-eI8bnf2zs-R6ZGbqYyAbw6Wlo",authDomain:"ganna-math-board.firebaseapp.com",databaseURL:"https://ganna-math-board-default-rtdb.europe-west1.firebasedatabase.app",projectId:"ganna-math-board",storageBucket:"ganna-math-board.firebasestorage.app",messagingSenderId:"631293914047",appId:"1:631293914047:web:d09cc154323f7c48a70f0a"};
 var FB_VER='10.14.1';
 var cloud={meta:{},user:null,au:null,auth:null,metaSeen:false,metaPrev:false,roToast:0,fb:null,db:null,p:null,rec:null,unsubs:[],known:{},zmap:{},assetsUp:{},peers:{},gen:0,k:0,hb:null,online:false,name:'',hue:Math.floor(Math.random()*360),cid:'c'+Math.random().toString(36).slice(2,9),err:''};
-var teacherPointerOn=false,teacherPointerLast=0,teacherPointerRemote=null,teacherPointerWarned=false;
+var teacherPointerOn=false,teacherPointerLast=0,teacherPointerRemote=null,teacherPointerWarned=false,teacherFollowTarget=null;
 try{cloud.name=localStorage.getItem('doska.name')||'';}catch(e){}
 function myName(){return cloud.name.trim()||'Гость';}
 function loadFirebase(){
@@ -2273,14 +2273,14 @@ function cloudDetach(){
   if(cloud.rec&&cloud.fb){try{cloud.fb.remove(cref('live/'+cloud.cid));cloud.fb.remove(cref('draft/'+cloud.cid));}catch(e){}}
   if(cloud.rec&&cloud.fb&&cloudIsOwner()){try{cloud.fb.remove(cref('teacherPointer'));}catch(e){}}
   cloud.rec=null;cloud.known={};cloud.zmap={};cloud.peers={};cloud.online=false;cloud.err='';cloud.meta={};cloud.metaSeen=false;cloud.metaPrev=false;
-  teacherPointerOn=false;teacherPointerRemote=null;updateTeacherPointerUI();
+  teacherPointerOn=false;teacherPointerRemote=null;teacherFollowTarget=null;updateTeacherPointerUI();
   share.on=false;share.cur={};share.remote={};share.remoteIds={};share.n=1;share.liveSent=false;
 }
 function cloudFail(msg){
   var had=cloud.rec;cloud.gen++;
   cloud.unsubs.forEach(function(u){try{u();}catch(e){}});cloud.unsubs=[];
   clearInterval(cloud.hb);cloud.hb=null;
-  share.on=false;teacherPointerOn=false;teacherPointerRemote=null;updateTeacherPointerUI();cloud.err=msg;if(had)cloud.rec=had;
+  share.on=false;teacherPointerOn=false;teacherPointerRemote=null;teacherFollowTarget=null;updateTeacherPointerUI();cloud.err=msg;if(had)cloud.rec=had;
   shareUI();toast(msg);
 }
 function cloudAttach(rec){
@@ -2340,7 +2340,13 @@ function cloudListen(gen){
     cloud.peers[sn.key]=Date.now();share.cur[sn.key]={x:v.x||0,y:v.y||0,name:v.n||'Гость',hue:v.h||200,active:!!v.a,t:Date.now()};cloudCount();dirty=true;};
   add(fb.onChildAdded(lref,onLive));add(fb.onChildChanged(lref,onLive));
   add(fb.onChildRemoved(lref,function(sn){delete cloud.peers[sn.key];delete share.cur[sn.key];delete share.remote[sn.key];cloudCount();dirty=true;}));
-  add(fb.onValue(cref('teacherPointer'),function(sn){if(gen!==cloud.gen)return;var v=sn.val();teacherPointerRemote=v&&v.visible?{x:+v.x||0,y:+v.y||0,id:v.id||'',hue:Number.isFinite(+v.h)?+v.h:200,t:+v.t||Date.now()}:null;dirty=true;}));
+  add(fb.onValue(cref('teacherPointer'),function(sn){
+    if(gen!==cloud.gen)return;
+    var v=sn.val();
+    teacherPointerRemote=v&&v.visible?{x:+v.x||0,y:+v.y||0,id:v.id||'',hue:Number.isFinite(+v.h)?+v.h:200,t:+v.t||Date.now()}:null;
+    teacherFollowTarget=teacherPointerRemote?{x:teacherPointerRemote.x,y:teacherPointerRemote.y}:null;
+    dirty=true;
+  }));
   var onDraft=function(sn){if(gen!==cloud.gen||sn.key===cloud.cid)return;try{share.remote[sn.key]=JSON.parse(sn.val());}catch(e){}dirty=true;};
   add(fb.onChildAdded(dref,onDraft));add(fb.onChildChanged(dref,onDraft));
   add(fb.onChildRemoved(dref,function(sn){delete share.remote[sn.key];dirty=true;}));
@@ -2478,11 +2484,26 @@ function teacherPointerHide(){
   if(!teacherPointerOn||!cloud.rec||!cloud.online||!cloudIsOwner())return;
   cloud.fb.remove(cref('teacherPointer')).catch(function(){});
 }
+function applyTeacherFollow(){
+  // Экран ученика непрерывно следует за мировой координатой пера учителя.
+  // Сам масштаб ученика не меняем: перемещается только камера.
+  if(!share.on||!cloud.rec||cloudIsOwner()||!teacherFollowTarget)return false;
+  var z=Math.max(.1,cam.z||1);
+  // Держим перо немного выше центра, чтобы видеть область работы вокруг него.
+  var targetScreenX=view.w*.50,targetScreenY=view.h*.44;
+  var tx=teacherFollowTarget.x-targetScreenX/z;
+  var ty=teacherFollowTarget.y-targetScreenY/z;
+  var dx=tx-cam.x,dy=ty-cam.y;
+  if(Math.abs(dx)<.015&&Math.abs(dy)<.015){cam.x=tx;cam.y=ty;return false;}
+  // Мягкое постоянное сопровождение без рывков.
+  var k=.22;
+  cam.x+=dx*k;cam.y+=dy*k;
+  return true;
+}
 function drawTeacherPointer(){
   var el=$('#teacherPointerOverlay');if(!el)return;
   if(!share.on||!cloud.rec||cloudIsOwner()||!teacherPointerRemote){el.hidden=true;return;}
-  // Координаты переводятся только в локальную систему экрана ученика.
-  // Масштаб, положение камеры и прокрутка ученика не меняются.
+  // Положение пера рассчитывается уже после автоматического перемещения камеры.
   var p=w2s(teacherPointerRemote.x,teacherPointerRemote.y);
   if(!Number.isFinite(p.x)||!Number.isFinite(p.y)){el.hidden=true;return;}
   var hue=((Number(teacherPointerRemote.hue)||0)%360+360)%360;
@@ -2497,7 +2518,7 @@ $('#teacherPointerBtn').addEventListener('click',function(){
   if(!cloud.online){toast('Firebase ещё подключается. Подожди несколько секунд и нажми ✎ ещё раз.');updateTeacherPointerUI();return;}
   if(!cloudIsOwner()){toast('Указатель может включать создатель этой общей доски. Открой доску из аккаунта учителя-владельца.');updateTeacherPointerUI();return;}
   teacherPointerOn=!teacherPointerOn;teacherPointerWarned=false;updateTeacherPointerUI();
-  if(!teacherPointerOn)teacherPointerHide();else toast('Перо включено. Ученики видят только небольшое перо твоего цвета; их экран не перемещается.');
+  if(!teacherPointerOn)teacherPointerHide();else toast('Перо включено. Экран учеников будет автоматически следовать за твоим пером.');
 });
 canvas.addEventListener('pointerleave',function(){if(teacherPointerOn)teacherPointerHide();});
 
