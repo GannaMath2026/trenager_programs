@@ -1,0 +1,2819 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Неравенства: разбор по шагам</title>
+<style>
+:root{
+  --bg:#f0f4f8;--cd:#fff;--tx:#1e293b;--mu:#64748b;--ac:#3b82f6;
+  --ok:#10b981;--bad:#ef4444;--wa:#f59e0b;--br:#e2e8f0;
+  --axis:#475569;--ans:#3b82f6;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px)
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f172a;--cd:#1e293b;--tx:#f1f5f9;--mu:#94a3b8;--ac:#60a5fa;
+    --ok:#34d399;--bad:#f87171;--wa:#fbbf24;--br:#334155;
+    --axis:#cbd5e1;--ans:#60a5fa;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f172a;--cd:#1e293b;--tx:#f1f5f9;--mu:#94a3b8;--ac:#60a5fa;
+  --ok:#34d399;--bad:#f87171;--wa:#fbbf24;--br:#334155;
+  --axis:#cbd5e1;--ans:#60a5fa;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;gap:8px;align-items:center;padding:10px 16px;background:var(--cd);border-bottom:1px solid var(--br);flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+header h1{flex:1;margin:0;font-size:18px;min-width:200px;font-weight:800;letter-spacing:-0.5px}
+main{max-width:1100px;margin:auto;padding:16px}
+button,select,input,textarea{font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--br);border-radius:10px;padding:8px 12px;transition:.15s}
+button{cursor:pointer}
+button:hover{background:var(--br)}
+button.on,button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+button.pri:hover{filter:brightness(1.1)}
+button.ghost{background:transparent}
+
+/* Кнопки шапки */
+.btn-theory{background:#8b5cf6;color:#fff;border-color:#8b5cf6}
+.btn-add{background:#10b981;color:#fff;border-color:#10b981}
+.btn-import{background:#f59e0b;color:#fff;border-color:#f59e0b}
+.btn-export{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+.btn-print{background:#64748b;color:#fff;border-color:#64748b}
+.btn-theme{background:#475569;color:#fff;border-color:#475569}
+.btn-theory:hover,.btn-add:hover,.btn-import:hover,.btn-export:hover,.btn-print:hover,.btn-theme:hover{filter:brightness(1.1)}
+
+.card{background:var(--cd);border:1px solid var(--br);border-radius:16px;padding:16px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.02)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.meta{font-size:13px;color:var(--mu)}
+.tag{font-size:12px;border:1px solid var(--br);border-radius:8px;padding:2px 8px;color:var(--mu);background:var(--bg)}
+.tx{margin:8px 0;overflow-x:auto}
+.eq{font-size:1.5em;overflow-x:auto;overflow-y:hidden;padding:12px 0;text-align:center;background:var(--bg);border-radius:10px;margin:8px 0}
+.q{font-weight:600;margin:0 0 12px;font-size:17px}
+.op{display:block;width:100%;text-align:left;margin-bottom:8px;padding:12px 14px;border-radius:12px;font-size:15px;line-height:1.4}
+.op.g{background:var(--ok);color:#fff;border-color:var(--ok)}
+.op.r{background:var(--bad);color:#fff;border-color:var(--bad)}
+.op .tx{color:inherit;margin:0}
+.op.g .tx, .op.r .tx{color:inherit}
+#fb{color:var(--mu);margin-top:8px;font-size:14px}
+#fb.bad{color:var(--bad)}
+#fb.good{color:var(--ok);font-weight:600}
+.row.done{border-left:6px solid var(--ok);background:color-mix(in srgb,var(--ok) 10%,var(--cd))}
+.row.hw{border-right:4px solid var(--wa)}
+.stk{display:inline-block;background:var(--ok);color:#fff;font-weight:800;font-size:12px;letter-spacing:.5px;padding:3px 10px;border-radius:8px;transform:rotate(-3deg);box-shadow:0 2px 4px rgba(0,0,0,.1);margin-left:8px}
+.d-basic{color:var(--ok);font-weight:600}.d-medium{color:var(--wa);font-weight:600}.d-hard{color:var(--bad);font-weight:600}
+details{margin-top:10px;background:var(--bg);border-radius:10px;padding:8px}
+summary{cursor:pointer;color:var(--mu);font-weight:500;outline:none}
+.h{padding:6px 0;overflow-x:auto;text-align:center}
+
+/* Оси и интервалы */
+.opt-ax{display:flex;flex-direction:column;gap:8px}
+.opt-ax-btn{padding:8px 12px;text-align:left;width:100%;border-radius:12px}
+.opt-ax-btn.g{background:color-mix(in srgb,var(--ok) 15%,var(--cd));border-color:var(--ok)}
+.opt-ax-btn.r{background:color-mix(in srgb,var(--bad) 15%,var(--cd));border-color:var(--bad)}
+.opt-ax-btn .cap{font-size:14px;margin-top:4px;color:var(--mu)}
+.opt-ax-btn.g .cap{color:var(--ok)}
+.opt-ax-btn.r .cap{color:var(--bad)}
+.axwrap{overflow-x:auto;padding:2px 0;pointer-events:none}
+.axsvg{display:block;width:100%;height:70px}
+.ax-label{font:13px system-ui,sans-serif;fill:var(--mu)}
+.ax-num{font:13px ui-monospace,monospace;fill:var(--tx)}
+.ax-check{font:16px system-ui,sans-serif;fill:var(--ok)}
+
+/* Теория - стикеры */
+.theory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:16px}
+.sticker{padding:16px;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.05);border:2px solid transparent}
+.sticker h3{margin:0 0 10px 0;font-size:16px;display:flex;align-items:center;gap:8px;font-weight:700}
+.sticker p{margin:6px 0;font-size:14px;line-height:1.5}
+.sticker .ex{margin-top:10px;padding:8px 12px;background:rgba(255,255,255,.6);border-radius:8px;font-size:14px;font-family:ui-monospace,monospace;overflow-x:auto}
+.st-blue{background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a}
+.st-blue .ex{color:#1e40af}
+.st-green{background:#ecfdf5;border-color:#a7f3d0;color:#064e3b}
+.st-green .ex{color:#065f46}
+.st-yellow{background:#fefce8;border-color:#fef08a;color:#713f12}
+.st-yellow .ex{color:#854d0e}
+.st-purple{background:#faf5ff;border-color:#e9d5ff;color:#4c1d95}
+.st-purple .ex{color:#5b21b6}
+.st-orange{background:#fff7ed;border-color:#fed7aa;color:#7c2d12}
+.st-orange .ex{color:#9a3412}
+.st-red{background:#fef2f2;border-color:#fecaca;color:#7f1d1d}
+.st-red .ex{color:#991b1b}
+.st-cyan{background:#ecfeff;border-color:#a5f3fc;color:#164e63}
+.st-cyan .ex{color:#155e75}
+
+/* Модальное окно */
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000;backdrop-filter:blur(2px)}
+.modal-box{background:var(--cd);border-radius:16px;padding:20px;width:100%;max-width:800px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 10px 25px rgba(0,0,0,.2)}
+.modal-box h3{margin:0 0 16px 0;font-size:18px}
+.modal-box textarea{flex:1;min-height:300px;font-family:ui-monospace,Consolas,monospace;font-size:13px;resize:none;background:var(--bg);color:var(--tx);border:1px solid var(--br);border-radius:8px;padding:12px;margin-bottom:12px}
+.modal-box .bar{margin:0;justify-content:flex-end}
+
+/* Печать */
+@media print {
+  header, .bar, .btn-theory, .btn-add, .btn-import, .btn-export, .btn-print, .btn-theme, #btnTheory, #btnAdd, #btnImport, #btnExport, #btnPrint, #btnTheme, .row .bar, .modal, button {
+    display: none !important;
+  }
+  body { background: #fff; color: #000; }
+  main { max-width: 100%; padding: 0; }
+  .card { box-shadow: none; border: none; padding: 0; margin-bottom: 24px; page-break-inside: avoid; }
+  .row { border: none !important; margin-bottom: 30px; padding: 0; background: none !important; }
+  .row .tag, .row .meta { display: none; }
+  .row .tx { font-size: 16px; }
+  h3 { font-size: 20px; margin-bottom: 8px; }
+}
+
+
+.solution-answer{padding:14px 16px;border:1px solid var(--br);border-left:5px solid var(--ok);border-radius:12px;background:color-mix(in srgb,var(--ok) 7%,var(--cd));line-height:1.55}
+.solution-axis{padding:12px 0;pointer-events:auto}
+.solution-axis .axsvg{height:100px;min-width:340px}
+.step-navigator{padding:12px 16px}
+.step-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.step-head button{white-space:nowrap}
+#stepSlider{display:block;width:100%;padding:0;margin:14px 0 4px;accent-color:var(--ac);cursor:pointer}
+.step-scale{display:flex;justify-content:space-between;color:var(--mu);font-size:12px}
+@media(max-width:520px){.step-head button{padding:7px 9px;font-size:13px}.step-head b{font-size:14px}}
+
+@media (max-width: 600px) {
+  .theory-grid{grid-template-columns:1fr}
+  .eq{font-size:1.2em}
+  main{padding:12px}
+  header h1{font-size:16px}
+}
+</style>
+<script>
+window.MathJax={
+  tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},
+  svg:{fontCache:'global'},
+  startup:{typeset:false}
+};
+</script>
+<script async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+<style type="text/css">.CtxtMenu_InfoClose {  top:.2em; right:.2em;}
+.CtxtMenu_InfoContent {  overflow:auto; text-align:left; font-size:80%;  padding:.4em .6em; border:1px inset; margin:1em 0px;  max-height:20em; max-width:30em; background-color:#EEEEEE;  white-space:normal;}
+.CtxtMenu_Info.CtxtMenu_MousePost {outline:none;}
+.CtxtMenu_Info {  position:fixed; left:50%; width:auto; text-align:center;  border:3px outset; padding:1em 2em; background-color:#DDDDDD;  color:black;  cursor:default; font-family:message-box; font-size:120%;  font-style:normal; text-indent:0; text-transform:none;  line-height:normal; letter-spacing:normal; word-spacing:normal;  word-wrap:normal; white-space:nowrap; float:none; z-index:201;  border-radius: 15px;                     /* Opera 10.5 and IE9 */  -webkit-border-radius:15px;               /* Safari and Chrome */  -moz-border-radius:15px;                  /* Firefox */  -khtml-border-radius:15px;                /* Konqueror */  box-shadow:0px 10px 20px #808080;         /* Opera 10.5 and IE9 */  -webkit-box-shadow:0px 10px 20px #808080; /* Safari 3 & Chrome */  -moz-box-shadow:0px 10px 20px #808080;    /* Forefox 3.5 */  -khtml-box-shadow:0px 10px 20px #808080;  /* Konqueror */  filter:progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color="gray", Positive="true"); /* IE */}
+</style><style type="text/css">.CtxtMenu_MenuClose {  position:absolute;  cursor:pointer;  display:inline-block;  border:2px solid #AAA;  border-radius:18px;  -webkit-border-radius: 18px;             /* Safari and Chrome */  -moz-border-radius: 18px;                /* Firefox */  -khtml-border-radius: 18px;              /* Konqueror */  font-family: "Courier New", Courier;  font-size:24px;  color:#F0F0F0}
+.CtxtMenu_MenuClose span {  display:block; background-color:#AAA; border:1.5px solid;  border-radius:18px;  -webkit-border-radius: 18px;             /* Safari and Chrome */  -moz-border-radius: 18px;                /* Firefox */  -khtml-border-radius: 18px;              /* Konqueror */  line-height:0;  padding:8px 0 6px     /* may need to be browser-specific */}
+.CtxtMenu_MenuClose:hover {  color:white!important;  border:2px solid #CCC!important}
+.CtxtMenu_MenuClose:hover span {  background-color:#CCC!important}
+.CtxtMenu_MenuClose:hover:focus {  outline:none}
+</style><style type="text/css">.CtxtMenu_Menu {  position:absolute;  background-color:white;  color:black;  width:auto; padding:5px 0px;  border:1px solid #CCCCCC; margin:0; cursor:default;  font: menu; text-align:left; text-indent:0; text-transform:none;  line-height:normal; letter-spacing:normal; word-spacing:normal;  word-wrap:normal; white-space:nowrap; float:none; z-index:201;  border-radius: 5px;                     /* Opera 10.5 and IE9 */  -webkit-border-radius: 5px;             /* Safari and Chrome */  -moz-border-radius: 5px;                /* Firefox */  -khtml-border-radius: 5px;              /* Konqueror */  box-shadow:0px 10px 20px #808080;         /* Opera 10.5 and IE9 */  -webkit-box-shadow:0px 10px 20px #808080; /* Safari 3 & Chrome */  -moz-box-shadow:0px 10px 20px #808080;    /* Forefox 3.5 */  -khtml-box-shadow:0px 10px 20px #808080;  /* Konqueror */}
+.CtxtMenu_MenuItem {  padding: 1px 2em;  background:transparent;}
+.CtxtMenu_MenuArrow {  position:absolute; right:.5em; padding-top:.25em; color:#666666;  font-family: null; font-size: .75em}
+.CtxtMenu_MenuActive .CtxtMenu_MenuArrow {color:white}
+.CtxtMenu_MenuArrow.CtxtMenu_RTL {left:.5em; right:auto}
+.CtxtMenu_MenuCheck {  position:absolute; left:.7em;  font-family: null}
+.CtxtMenu_MenuCheck.CtxtMenu_RTL { right:.7em; left:auto }
+.CtxtMenu_MenuRadioCheck {  position:absolute; left: .7em;}
+.CtxtMenu_MenuRadioCheck.CtxtMenu_RTL {  right: .7em; left:auto}
+.CtxtMenu_MenuInputBox {  padding-left: 1em; right:.5em; color:#666666;  font-family: null;}
+.CtxtMenu_MenuInputBox.CtxtMenu_RTL {  left: .1em;}
+.CtxtMenu_MenuComboBox {  left:.1em; padding-bottom:.5em;}
+.CtxtMenu_MenuSlider {  left: .1em;}
+.CtxtMenu_SliderValue {  position:absolute; right:.1em; padding-top:.25em; color:#333333;  font-size: .75em}
+.CtxtMenu_SliderBar {  outline: none; background: #d3d3d3}
+.CtxtMenu_MenuLabel {  padding: 1px 2em 3px 1.33em;  font-style:italic}
+.CtxtMenu_MenuRule {  border-top: 1px solid #DDDDDD;  margin: 4px 3px;}
+.CtxtMenu_MenuDisabled {  color:GrayText}
+.CtxtMenu_MenuActive {  background-color: #606872;  color: white;}
+.CtxtMenu_MenuDisabled:focus {  background-color: #E8E8E8}
+.CtxtMenu_MenuLabel:focus {  background-color: #E8E8E8}
+.CtxtMenu_ContextMenu:focus {  outline:none}
+.CtxtMenu_ContextMenu .CtxtMenu_MenuItem:focus {  outline:none}
+.CtxtMenu_SelectionMenu {  position:relative; float:left;  border-bottom: none; -webkit-box-shadow:none; -webkit-border-radius:0px; }
+.CtxtMenu_SelectionItem {  padding-right: 1em;}
+.CtxtMenu_Selection {  right: 40%; width:50%; }
+.CtxtMenu_SelectionBox {  padding: 0em; max-height:20em; max-width: none;  background-color:#FFFFFF;}
+.CtxtMenu_SelectionDivider {  clear: both; border-top: 2px solid #000000;}
+.CtxtMenu_Menu .CtxtMenu_MenuClose {  top:-10px; left:-10px}
+</style><style id="MJX-SVG-styles">
+mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+  min-height: 1px;
+  min-width: 1px;
+}
+
+mjx-container[jax="SVG"] > svg a {
+  fill: blue;
+  stroke: blue;
+}
+
+mjx-assistive-mml {
+  position: absolute !important;
+  top: 0px;
+  left: 0px;
+  clip: rect(1px, 1px, 1px, 1px);
+  padding: 1px 0px 0px 0px !important;
+  border: 0px !important;
+  display: block !important;
+  width: auto !important;
+  overflow: hidden !important;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+mjx-assistive-mml[display="block"] {
+  width: 100% !important;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][display="true"][width="full"] {
+  display: flex;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line], svg[data-table] > g > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame], svg[data-table] > g > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed, svg[data-table] > g > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted, svg[data-table] > g > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > g > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"] path[data-c], mjx-container[jax="SVG"] use[data-c] {
+  stroke-width: 3;
+}
+</style></head>
+<body>
+<header>
+  <h1>Неравенства</h1>
+  <button id="btnTheory" class="btn-theory" title="Шпаргалка">💡 Теория</button>
+  <button id="btnAdd" class="btn-add" title="Добавить задачу">➕ Добавить</button>
+  <button id="btnImport" class="btn-import" title="Загрузить JSON">📥 Импорт</button>
+  <button id="btnExport" class="btn-export" title="Скачать JSON">💾 JSON</button>
+  <button id="btnSaveApp" class="btn-export" title="Сохранить приложение целиком">⬇️ Сохранить приложение</button>
+  <button id="btnPrint" class="btn-print" title="Печать задач">🖨 Печать</button>
+  <button id="btnTheme" class="btn-theme" title="Сменить тему">🌗</button>
+</header>
+<main id="app">
+      <div class="card">
+        <div class="bar">
+          <select id="fSec">
+            <option value="">Все разделы</option>
+            <option>01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ</option><option>01 · ПОКАЗАТЕЛЬНЫЕ</option>
+          </select>
+          <select id="fDf">
+            <option value="">Любая сложность</option>
+            <option value="basic">базовый</option><option value="medium">средний</option><option value="hard">сложный</option>
+          </select>
+          <input id="fQ" placeholder="Поиск по номеру или тексту" value="" style="flex:1;min-width:140px">
+        </div>
+        <div class="bar" id="chips" style="margin:0"><button class="on" data-st="all">Все · 7</button><button class="" data-st="new">Не разобраны · 7</button><button class="" data-st="done">Разобраны · 0</button><button class="" data-st="hw">ДЗ · 0</button><button class="" data-st="fav">Избранное · 0</button></div>
+      </div>
+      <div id="rows"><div class="card row  ">
+        <div class="bar" style="margin:0">
+          <b>№ 001</b>
+          <span class="tag">01 · ПОКАЗАТЕЛЬНЫЕ</span>
+          <span class="tag" style="color:var(--ok);border-color:var(--ok)">✓ разбор</span>
+          <span class="d-medium">● средний</span>
+          
+          
+        </div>
+        <div class="tx" style="margin:10px 0;font-size:16px">Решите неравенство: <mjx-container class="MathJax CtxtMenu_Attached_0" jax="SVG" style="position: relative;" tabindex="0" ctxtmenu_counter="113"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="24.147ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 10673 1000" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g><g data-mml-node="mrow" transform="translate(666.7,0)"><g data-mml-node="mo"><use data-c="28" xlink:href="#MJX-TEX-N-28"></use></g><g data-mml-node="msup" transform="translate(389,0)"><g data-mml-node="mn"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use><use data-c="38" xlink:href="#MJX-TEX-N-38" transform="translate(500,0)"></use></g><g data-mml-node="TeXAtom" transform="translate(1033,393.1) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g></g></g><g data-mml-node="mo" transform="translate(2098.7,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="msup" transform="translate(3098.9,0)"><g data-mml-node="mn"><use data-c="38" xlink:href="#MJX-TEX-N-38"></use></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g></g></g><g data-mml-node="mo" transform="translate(4086.4,0)"><use data-c="29" xlink:href="#MJX-TEX-N-29"></use></g></g><g data-mml-node="mo" transform="translate(5419.8,0)"><use data-c="3E" xlink:href="#MJX-TEX-N-3E"></use></g><g data-mml-node="msup" transform="translate(6475.6,0)"><g data-mml-node="mn"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use><use data-c="32" xlink:href="#MJX-TEX-N-32" transform="translate(500,0)"></use></g><g data-mml-node="TeXAtom" transform="translate(1033,393.1) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g></g></g><g data-mml-node="mo" transform="translate(8185.3,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="msup" transform="translate(9185.5,0)"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use><use data-c="37" xlink:href="#MJX-TEX-N-37" transform="translate(500,0)"></use></g><g data-mml-node="TeXAtom" transform="translate(1033,403.1) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g></g></g></g></g></svg><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mn>2</mn><mrow data-mjx-texclass="INNER"><mo data-mjx-texclass="OPEN">(</mo><msup><mn>18</mn><mrow data-mjx-texclass="ORD"><mi>x</mi></mrow></msup><mo>+</mo><msup><mn>8</mn><mrow data-mjx-texclass="ORD"><mi>x</mi></mrow></msup><mo data-mjx-texclass="CLOSE">)</mo></mrow><mo>&gt;</mo><msup><mn>12</mn><mrow data-mjx-texclass="ORD"><mi>x</mi></mrow></msup><mo>+</mo><msup><mn>27</mn><mrow data-mjx-texclass="ORD"><mi>x</mi></mrow></msup></math></mjx-assistive-mml></mjx-container>.</div>
+        <div class="bar" style="margin:0">
+          <button class="pri" data-act="open" data-id="900001">Разбирать</button>
+          <button data-act="fav" data-id="900001">☆</button>
+          <button data-act="hw" data-id="900001">+ ДЗ</button>
+          <button data-act="edit" data-id="900001" style="margin-left:auto" title="Редактировать">✏️</button>
+          <button data-act="del" data-id="900001" style="color:var(--bad);border-color:var(--bad)" title="Удалить">🗑</button>
+        </div>
+      </div><div class="card row  ">
+        <div class="bar" style="margin:0">
+          <b>№ 003</b>
+          <span class="tag">01 · ПОКАЗАТЕЛЬНЫЕ</span>
+          <span class="tag" style="color:var(--ok);border-color:var(--ok)">✓ разбор</span>
+          <span class="d-medium">● средний</span>
+          
+          
+        </div>
+        <div class="tx" style="margin:10px 0;font-size:16px">Решите неравенство: <mjx-container class="MathJax CtxtMenu_Attached_0" jax="SVG" style="position: relative;" tabindex="0" ctxtmenu_counter="114"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="28.044ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 12395.4 1000" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g><g data-mml-node="mrow" transform="translate(666.7,0)"><g data-mml-node="mo"><use data-c="28" xlink:href="#MJX-TEX-N-28"></use></g><g data-mml-node="msup" transform="translate(389,0)"><g data-mml-node="mn"><use data-c="35" xlink:href="#MJX-TEX-N-35"></use><use data-c="30" xlink:href="#MJX-TEX-N-30" transform="translate(500,0)"></use></g><g data-mml-node="TeXAtom" transform="translate(1033,393.1) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g></g></g><g data-mml-node="mo" transform="translate(2098.7,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="msup" transform="translate(3098.9,0)"><g data-mml-node="mn"><use data-c="38" xlink:href="#MJX-TEX-N-38"></use></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g></g></g><g data-mml-node="mo" transform="translate(4086.4,0)"><use data-c="29" xlink:href="#MJX-TEX-N-29"></use></g></g><g data-mml-node="mo" transform="translate(5419.8,0)"><use data-c="3E" xlink:href="#MJX-TEX-N-3E"></use></g><g data-mml-node="msup" transform="translate(6475.6,0)"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use><use data-c="30" xlink:href="#MJX-TEX-N-30" transform="translate(500,0)"></use></g><g data-mml-node="TeXAtom" transform="translate(1033,393.1) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g></g></g><g data-mml-node="mo" transform="translate(8185.3,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(9185.5,0)"><use data-c="33" xlink:href="#MJX-TEX-N-33"></use></g><g data-mml-node="mo" transform="translate(9907.7,0)"><use data-c="22C5" xlink:href="#MJX-TEX-N-22C5"></use></g><g data-mml-node="msup" transform="translate(10408,0)"><g data-mml-node="mn"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use><use data-c="32" xlink:href="#MJX-TEX-N-32" transform="translate(500,0)"></use><use data-c="35" xlink:href="#MJX-TEX-N-35" transform="translate(1000,0)"></use></g><g data-mml-node="TeXAtom" transform="translate(1533,393.1) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g></g></g></g></g></svg><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mn>2</mn><mrow data-mjx-texclass="INNER"><mo data-mjx-texclass="OPEN">(</mo><msup><mn>50</mn><mrow data-mjx-texclass="ORD"><mi>x</mi></mrow></msup><mo>+</mo><msup><mn>8</mn><mrow data-mjx-texclass="ORD"><mi>x</mi></mrow></msup><mo data-mjx-texclass="CLOSE">)</mo></mrow><mo>&gt;</mo><msup><mn>20</mn><mrow data-mjx-texclass="ORD"><mi>x</mi></mrow></msup><mo>+</mo><mn>3</mn><mo>⋅</mo><msup><mn>125</mn><mrow data-mjx-texclass="ORD"><mi>x</mi></mrow></msup></math></mjx-assistive-mml></mjx-container>.</div>
+        <div class="bar" style="margin:0">
+          <button class="pri" data-act="open" data-id="900003">Разбирать</button>
+          <button data-act="fav" data-id="900003">☆</button>
+          <button data-act="hw" data-id="900003">+ ДЗ</button>
+          <button data-act="edit" data-id="900003" style="margin-left:auto" title="Редактировать">✏️</button>
+          <button data-act="del" data-id="900003" style="color:var(--bad);border-color:var(--bad)" title="Удалить">🗑</button>
+        </div>
+      </div><div class="card row  ">
+        <div class="bar" style="margin:0">
+          <b>№ 004</b>
+          <span class="tag">01 · ПОКАЗАТЕЛЬНЫЕ</span>
+          <span class="tag" style="color:var(--ok);border-color:var(--ok)">✓ разбор</span>
+          <span class="d-hard">● сложный</span>
+          
+          
+        </div>
+        <div class="tx" style="margin:10px 0;font-size:16px">Решите неравенство: <mjx-container class="MathJax CtxtMenu_Attached_0" jax="SVG" style="position: relative;" tabindex="0" ctxtmenu_counter="115"><svg style="vertical-align: -1.814ex;" xmlns="http://www.w3.org/2000/svg" width="28.519ex" height="5.23ex" role="img" focusable="false" viewBox="0 -1509.9 12605.4 2311.9" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mstyle"><g data-mml-node="mfrac"><g data-mml-node="mrow" transform="translate(220,676)"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g><g data-mml-node="mo" transform="translate(722.2,0)"><use data-c="22C5" xlink:href="#MJX-TEX-N-22C5"></use></g><g data-mml-node="msup" transform="translate(1222.4,0)"><g data-mml-node="mn"><use data-c="33" xlink:href="#MJX-TEX-N-33"></use></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g><g data-mml-node="mi" transform="translate(500,0)"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(1072,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(1850,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use></g></g></g><g data-mml-node="mo" transform="translate(3689.4,0)"><use data-c="2212" xlink:href="#MJX-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(4689.6,0)"><use data-c="37" xlink:href="#MJX-TEX-N-37"></use></g><g data-mml-node="mo" transform="translate(5411.8,0)"><use data-c="22C5" xlink:href="#MJX-TEX-N-22C5"></use></g><g data-mml-node="msup" transform="translate(5912,0)"><g data-mml-node="mn"><use data-c="36" xlink:href="#MJX-TEX-N-36"></use></g><g data-mml-node="mi" transform="translate(533,363) scale(0.707)"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g></g><g data-mml-node="mo" transform="translate(7121.7,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(8121.9,0)"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g><g data-mml-node="mo" transform="translate(8844.2,0)"><use data-c="22C5" xlink:href="#MJX-TEX-N-22C5"></use></g><g data-mml-node="msup" transform="translate(9344.4,0)"><g data-mml-node="mn"><use data-c="34" xlink:href="#MJX-TEX-N-34"></use></g><g data-mml-node="mi" transform="translate(533,363) scale(0.707)"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g></g></g><g data-mml-node="mrow" transform="translate(2113,-719.9)"><g data-mml-node="mn"><use data-c="33" xlink:href="#MJX-TEX-N-33"></use></g><g data-mml-node="mo" transform="translate(722.2,0)"><use data-c="22C5" xlink:href="#MJX-TEX-N-22C5"></use></g><g data-mml-node="msup" transform="translate(1222.4,0)"><g data-mml-node="mn"><use data-c="39" xlink:href="#MJX-TEX-N-39"></use></g><g data-mml-node="mi" transform="translate(533,289) scale(0.707)"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g></g><g data-mml-node="mo" transform="translate(2432.1,0)"><use data-c="2212" xlink:href="#MJX-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(3432.4,0)"><use data-c="33" xlink:href="#MJX-TEX-N-33"></use></g><g data-mml-node="mo" transform="translate(4154.6,0)"><use data-c="22C5" xlink:href="#MJX-TEX-N-22C5"></use></g><g data-mml-node="msup" transform="translate(4654.8,0)"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g><g data-mml-node="TeXAtom" transform="translate(533,289) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(572,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(1350,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use></g></g></g></g><rect width="10531.9" height="60" x="120" y="220"></rect></g></g><g data-mml-node="mo" transform="translate(11049.6,0)"><use data-c="2264" xlink:href="#MJX-TEX-N-2264"></use></g><g data-mml-node="mn" transform="translate(12105.4,0)"><use data-c="30" xlink:href="#MJX-TEX-N-30"></use></g></g></g></svg><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mn>2</mn><mo>⋅</mo><msup><mn>3</mn><mrow data-mjx-texclass="ORD"><mn>2</mn><mi>x</mi><mo>+</mo><mn>1</mn></mrow></msup><mo>−</mo><mn>7</mn><mo>⋅</mo><msup><mn>6</mn><mi>x</mi></msup><mo>+</mo><mn>2</mn><mo>⋅</mo><msup><mn>4</mn><mi>x</mi></msup></mrow><mrow><mn>3</mn><mo>⋅</mo><msup><mn>9</mn><mi>x</mi></msup><mo>−</mo><mn>3</mn><mo>⋅</mo><msup><mn>2</mn><mrow data-mjx-texclass="ORD"><mi>x</mi><mo>+</mo><mn>1</mn></mrow></msup></mrow></mfrac></mstyle><mo>≤</mo><mn>0</mn></math></mjx-assistive-mml></mjx-container>.</div>
+        <div class="bar" style="margin:0">
+          <button class="pri" data-act="open" data-id="900004">Разбирать</button>
+          <button data-act="fav" data-id="900004">☆</button>
+          <button data-act="hw" data-id="900004">+ ДЗ</button>
+          <button data-act="edit" data-id="900004" style="margin-left:auto" title="Редактировать">✏️</button>
+          <button data-act="del" data-id="900004" style="color:var(--bad);border-color:var(--bad)" title="Удалить">🗑</button>
+        </div>
+      </div><div class="card row  ">
+        <div class="bar" style="margin:0">
+          <b>№ 006</b>
+          <span class="tag">01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ</span>
+          <span class="tag" style="color:var(--ok);border-color:var(--ok)">✓ разбор</span>
+          <span class="d-hard">● сложный</span>
+          
+          
+        </div>
+        <div class="tx" style="margin:10px 0;font-size:16px">Решите неравенство: <mjx-container class="MathJax CtxtMenu_Attached_0" jax="SVG" style="position: relative;" tabindex="0" ctxtmenu_counter="116"><svg style="vertical-align: -1.991ex;" xmlns="http://www.w3.org/2000/svg" width="25.543ex" height="5.676ex" role="img" focusable="false" viewBox="0 -1628.7 11290 2508.7" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mstyle"><g data-mml-node="mfrac"><g data-mml-node="mrow" transform="translate(220,676)"><g data-mml-node="msup"><g data-mml-node="mn"><use data-c="34" xlink:href="#MJX-TEX-N-34"></use></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="msup"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mn" transform="translate(605,363) scale(0.707)"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g></g><g data-mml-node="mo" transform="translate(1008.6,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mi" transform="translate(1786.6,0)"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(2358.6,0)"><use data-c="2212" xlink:href="#MJX-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(3136.6,0)"><use data-c="34" xlink:href="#MJX-TEX-N-34"></use></g></g></g><g data-mml-node="mo" transform="translate(3376.7,0)"><use data-c="2212" xlink:href="#MJX-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(4376.9,0)"><use data-c="30" xlink:href="#MJX-TEX-N-30"></use></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(4876.9,0)"><g data-mml-node="mo"><use data-c="2C" xlink:href="#MJX-TEX-N-2C"></use></g></g><g data-mml-node="msup" transform="translate(5154.9,0)"><g data-mml-node="mn"><use data-c="35" xlink:href="#MJX-TEX-N-35"></use></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g><g data-mml-node="msup" transform="translate(500,0)"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mn" transform="translate(605,363) scale(0.707)"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g></g><g data-mml-node="mo" transform="translate(1508.6,0)"><use data-c="2212" xlink:href="#MJX-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(2286.6,0)"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g><g data-mml-node="mi" transform="translate(2786.6,0)"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(3358.6,0)"><use data-c="2212" xlink:href="#MJX-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(4136.6,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use></g></g></g></g><g data-mml-node="mrow" transform="translate(2373,-686)"><g data-mml-node="mn"><use data-c="30" xlink:href="#MJX-TEX-N-30"></use></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(500,0)"><g data-mml-node="mo"><use data-c="2C" xlink:href="#MJX-TEX-N-2C"></use></g></g><g data-mml-node="mn" transform="translate(778,0)"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g><g data-mml-node="mo" transform="translate(1500.2,0)"><use data-c="22C5" xlink:href="#MJX-TEX-N-22C5"></use></g><g data-mml-node="msup" transform="translate(2000.4,0)"><g data-mml-node="mn"><use data-c="35" xlink:href="#MJX-TEX-N-35"></use></g><g data-mml-node="mi" transform="translate(533,289) scale(0.707)"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g></g><g data-mml-node="mo" transform="translate(3210.1,0)"><use data-c="2212" xlink:href="#MJX-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(4210.4,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use></g></g><rect width="9216.4" height="60" x="120" y="220"></rect></g></g><g data-mml-node="mo" transform="translate(9734.2,0)"><use data-c="2264" xlink:href="#MJX-TEX-N-2264"></use></g><g data-mml-node="mn" transform="translate(10790,0)"><use data-c="30" xlink:href="#MJX-TEX-N-30"></use></g></g></g></svg><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><msup><mn>4</mn><mrow data-mjx-texclass="ORD"><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mi>x</mi><mo>−</mo><mn>4</mn></mrow></msup><mo>−</mo><mn>0</mn><mrow data-mjx-texclass="ORD"><mo>,</mo></mrow><msup><mn>5</mn><mrow data-mjx-texclass="ORD"><mn>2</mn><msup><mi>x</mi><mn>2</mn></msup><mo>−</mo><mn>2</mn><mi>x</mi><mo>−</mo><mn>1</mn></mrow></msup></mrow><mrow><mn>0</mn><mrow data-mjx-texclass="ORD"><mo>,</mo></mrow><mn>2</mn><mo>⋅</mo><msup><mn>5</mn><mi>x</mi></msup><mo>−</mo><mn>1</mn></mrow></mfrac></mstyle><mo>≤</mo><mn>0</mn></math></mjx-assistive-mml></mjx-container>.</div>
+        <div class="bar" style="margin:0">
+          <button class="pri" data-act="open" data-id="900006">Разбирать</button>
+          <button data-act="fav" data-id="900006">☆</button>
+          <button data-act="hw" data-id="900006">+ ДЗ</button>
+          <button data-act="edit" data-id="900006" style="margin-left:auto" title="Редактировать">✏️</button>
+          <button data-act="del" data-id="900006" style="color:var(--bad);border-color:var(--bad)" title="Удалить">🗑</button>
+        </div>
+      </div><div class="card row  ">
+        <div class="bar" style="margin:0">
+          <b>№ 007</b>
+          <span class="tag">01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ</span>
+          <span class="tag" style="color:var(--ok);border-color:var(--ok)">✓ разбор</span>
+          <span class="d-hard">● сложный</span>
+          
+          
+        </div>
+        <div class="tx" style="margin:10px 0;font-size:16px">Решите неравенство: <mjx-container class="MathJax CtxtMenu_Attached_0" jax="SVG" style="position: relative;" tabindex="0" ctxtmenu_counter="117"><svg style="vertical-align: -2.068ex;" xmlns="http://www.w3.org/2000/svg" width="31.523ex" height="5.484ex" role="img" focusable="false" viewBox="0 -1509.9 13933.1 2423.9" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mstyle"><g data-mml-node="mfrac"><g data-mml-node="mrow" transform="translate(220,676)"><g data-mml-node="msup"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use><use data-c="37" xlink:href="#MJX-TEX-N-37" transform="translate(500,0)"></use></g><g data-mml-node="mi" transform="translate(1033,403.1) scale(0.707)"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g></g><g data-mml-node="mo" transform="translate(1709.7,0)"><use data-c="2212" xlink:href="#MJX-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(2709.9,0)"><use data-c="33" xlink:href="#MJX-TEX-N-33"></use></g><g data-mml-node="mo" transform="translate(3432.1,0)"><use data-c="22C5" xlink:href="#MJX-TEX-N-22C5"></use></g><g data-mml-node="msup" transform="translate(3932.4,0)"><g data-mml-node="mn"><use data-c="39" xlink:href="#MJX-TEX-N-39"></use></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(572,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(1350,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use></g></g></g><g data-mml-node="mo" transform="translate(6045.7,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="msup" transform="translate(7045.9,0)"><g data-mml-node="mn"><use data-c="33" xlink:href="#MJX-TEX-N-33"></use></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(572,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(1350,0)"><use data-c="35" xlink:href="#MJX-TEX-N-35"></use></g></g></g><g data-mml-node="mo" transform="translate(9159.3,0)"><use data-c="2212" xlink:href="#MJX-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(10159.5,0)"><use data-c="37" xlink:href="#MJX-TEX-N-37"></use><use data-c="32" xlink:href="#MJX-TEX-N-32" transform="translate(500,0)"></use><use data-c="39" xlink:href="#MJX-TEX-N-39" transform="translate(1000,0)"></use></g></g><g data-mml-node="mrow" transform="translate(2398,-719.9)"><g data-mml-node="mn"><use data-c="35" xlink:href="#MJX-TEX-N-35"></use><use data-c="30" xlink:href="#MJX-TEX-N-30" transform="translate(500,0)"></use></g><g data-mml-node="msup" transform="translate(1000,0)"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mn" transform="translate(605,289) scale(0.707)"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g></g><g data-mml-node="mo" transform="translate(2230.8,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(3231,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use><use data-c="30" xlink:href="#MJX-TEX-N-30" transform="translate(500,0)"></use></g><g data-mml-node="mi" transform="translate(4231,0)"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(5025.2,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(6025.4,0)"><use data-c="30" xlink:href="#MJX-TEX-N-30"></use></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(6525.4,0)"><g data-mml-node="mo"><use data-c="2C" xlink:href="#MJX-TEX-N-2C"></use></g></g><g data-mml-node="mn" transform="translate(6803.4,0)"><use data-c="35" xlink:href="#MJX-TEX-N-35"></use></g></g><rect width="11859.5" height="60" x="120" y="220"></rect></g></g><g data-mml-node="mo" transform="translate(12377.3,0)"><use data-c="2264" xlink:href="#MJX-TEX-N-2264"></use></g><g data-mml-node="mn" transform="translate(13433.1,0)"><use data-c="30" xlink:href="#MJX-TEX-N-30"></use></g></g></g></svg><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><msup><mn>27</mn><mi>x</mi></msup><mo>−</mo><mn>3</mn><mo>⋅</mo><msup><mn>9</mn><mrow data-mjx-texclass="ORD"><mi>x</mi><mo>+</mo><mn>1</mn></mrow></msup><mo>+</mo><msup><mn>3</mn><mrow data-mjx-texclass="ORD"><mi>x</mi><mo>+</mo><mn>5</mn></mrow></msup><mo>−</mo><mn>729</mn></mrow><mrow><mn>50</mn><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mn>10</mn><mi>x</mi><mo>+</mo><mn>0</mn><mrow data-mjx-texclass="ORD"><mo>,</mo></mrow><mn>5</mn></mrow></mfrac></mstyle><mo>≤</mo><mn>0</mn></math></mjx-assistive-mml></mjx-container>.</div>
+        <div class="bar" style="margin:0">
+          <button class="pri" data-act="open" data-id="900007">Разбирать</button>
+          <button data-act="fav" data-id="900007">☆</button>
+          <button data-act="hw" data-id="900007">+ ДЗ</button>
+          <button data-act="edit" data-id="900007" style="margin-left:auto" title="Редактировать">✏️</button>
+          <button data-act="del" data-id="900007" style="color:var(--bad);border-color:var(--bad)" title="Удалить">🗑</button>
+        </div>
+      </div><div class="card row  ">
+        <div class="bar" style="margin:0">
+          <b>№ 008</b>
+          <span class="tag">01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ</span>
+          <span class="tag" style="color:var(--ok);border-color:var(--ok)">✓ разбор</span>
+          <span class="d-hard">● сложный</span>
+          
+          
+        </div>
+        <div class="tx" style="margin:10px 0;font-size:16px">Решите неравенство: <mjx-container class="MathJax CtxtMenu_Attached_0" jax="SVG" style="position: relative;" tabindex="0" ctxtmenu_counter="118"><svg style="vertical-align: -2.068ex;" xmlns="http://www.w3.org/2000/svg" width="31.305ex" height="5.574ex" role="img" focusable="false" viewBox="0 -1550 13836.8 2463.9" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mstyle"><g data-mml-node="mfrac"><g data-mml-node="mrow" transform="translate(220,676)"><g data-mml-node="msup"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use><use data-c="37" xlink:href="#MJX-TEX-N-37" transform="translate(500,0)"></use></g><g data-mml-node="TeXAtom" transform="translate(1033,403.1) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(572,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(1350,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use></g></g></g><g data-mml-node="mo" transform="translate(2613.4,0)"><use data-c="2212" xlink:href="#MJX-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(3613.6,0)"><use data-c="33" xlink:href="#MJX-TEX-N-33"></use></g><g data-mml-node="mo" transform="translate(4335.8,0)"><use data-c="22C5" xlink:href="#MJX-TEX-N-22C5"></use></g><g data-mml-node="msup" transform="translate(4836,0)"><g data-mml-node="mn"><use data-c="39" xlink:href="#MJX-TEX-N-39"></use></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(572,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(1350,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use></g></g></g><g data-mml-node="mo" transform="translate(6949.4,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="msup" transform="translate(7949.6,0)"><g data-mml-node="mn"><use data-c="33" xlink:href="#MJX-TEX-N-33"></use></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(572,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(1350,0)"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g></g></g><g data-mml-node="mo" transform="translate(10063,0)"><use data-c="2212" xlink:href="#MJX-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(11063.2,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use></g></g><g data-mml-node="mrow" transform="translate(2099.9,-719.9)"><g data-mml-node="mn"><use data-c="35" xlink:href="#MJX-TEX-N-35"></use><use data-c="30" xlink:href="#MJX-TEX-N-30" transform="translate(500,0)"></use></g><g data-mml-node="msup" transform="translate(1000,0)"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mn" transform="translate(605,289) scale(0.707)"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g></g><g data-mml-node="mo" transform="translate(2230.8,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(3231,0)"><use data-c="35" xlink:href="#MJX-TEX-N-35"></use><use data-c="30" xlink:href="#MJX-TEX-N-30" transform="translate(500,0)"></use></g><g data-mml-node="mi" transform="translate(4231,0)"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(5025.2,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(6025.4,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use><use data-c="32" xlink:href="#MJX-TEX-N-32" transform="translate(500,0)"></use></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(7025.4,0)"><g data-mml-node="mo"><use data-c="2C" xlink:href="#MJX-TEX-N-2C"></use></g></g><g data-mml-node="mn" transform="translate(7303.4,0)"><use data-c="35" xlink:href="#MJX-TEX-N-35"></use></g></g><rect width="11763.2" height="60" x="120" y="220"></rect></g></g><g data-mml-node="mo" transform="translate(12281,0)"><use data-c="2265" xlink:href="#MJX-TEX-N-2265"></use></g><g data-mml-node="mn" transform="translate(13336.8,0)"><use data-c="30" xlink:href="#MJX-TEX-N-30"></use></g></g></g></svg><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><msup><mn>27</mn><mrow data-mjx-texclass="ORD"><mi>x</mi><mo>+</mo><mn>1</mn></mrow></msup><mo>−</mo><mn>3</mn><mo>⋅</mo><msup><mn>9</mn><mrow data-mjx-texclass="ORD"><mi>x</mi><mo>+</mo><mn>1</mn></mrow></msup><mo>+</mo><msup><mn>3</mn><mrow data-mjx-texclass="ORD"><mi>x</mi><mo>+</mo><mn>2</mn></mrow></msup><mo>−</mo><mn>1</mn></mrow><mrow><mn>50</mn><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mn>50</mn><mi>x</mi><mo>+</mo><mn>12</mn><mrow data-mjx-texclass="ORD"><mo>,</mo></mrow><mn>5</mn></mrow></mfrac></mstyle><mo>≥</mo><mn>0</mn></math></mjx-assistive-mml></mjx-container>.</div>
+        <div class="bar" style="margin:0">
+          <button class="pri" data-act="open" data-id="900008">Разбирать</button>
+          <button data-act="fav" data-id="900008">☆</button>
+          <button data-act="hw" data-id="900008">+ ДЗ</button>
+          <button data-act="edit" data-id="900008" style="margin-left:auto" title="Редактировать">✏️</button>
+          <button data-act="del" data-id="900008" style="color:var(--bad);border-color:var(--bad)" title="Удалить">🗑</button>
+        </div>
+      </div><div class="card row  ">
+        <div class="bar" style="margin:0">
+          <b>№ 008</b>
+          <span class="tag">01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ</span>
+          <span class="tag" style="color:var(--ok);border-color:var(--ok)">✓ разбор</span>
+          <span class="d-hard">● сложный</span>
+          
+          
+        </div>
+        <div class="tx" style="margin:10px 0;font-size:16px">Решите неравенство: <mjx-container class="MathJax CtxtMenu_Attached_0" jax="SVG" style="position: relative;" tabindex="0" ctxtmenu_counter="119"><svg style="vertical-align: -2.068ex;" xmlns="http://www.w3.org/2000/svg" width="31.305ex" height="5.574ex" role="img" focusable="false" viewBox="0 -1550 13836.8 2463.9" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mstyle"><g data-mml-node="mfrac"><g data-mml-node="mrow" transform="translate(220,676)"><g data-mml-node="msup"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use><use data-c="37" xlink:href="#MJX-TEX-N-37" transform="translate(500,0)"></use></g><g data-mml-node="TeXAtom" transform="translate(1033,403.1) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(572,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(1350,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use></g></g></g><g data-mml-node="mo" transform="translate(2613.4,0)"><use data-c="2212" xlink:href="#MJX-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(3613.6,0)"><use data-c="33" xlink:href="#MJX-TEX-N-33"></use></g><g data-mml-node="mo" transform="translate(4335.8,0)"><use data-c="22C5" xlink:href="#MJX-TEX-N-22C5"></use></g><g data-mml-node="msup" transform="translate(4836,0)"><g data-mml-node="mn"><use data-c="39" xlink:href="#MJX-TEX-N-39"></use></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(572,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(1350,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use></g></g></g><g data-mml-node="mo" transform="translate(6949.4,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="msup" transform="translate(7949.6,0)"><g data-mml-node="mn"><use data-c="33" xlink:href="#MJX-TEX-N-33"></use></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(572,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(1350,0)"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g></g></g><g data-mml-node="mo" transform="translate(10063,0)"><use data-c="2212" xlink:href="#MJX-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(11063.2,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use></g></g><g data-mml-node="mrow" transform="translate(2099.9,-719.9)"><g data-mml-node="mn"><use data-c="35" xlink:href="#MJX-TEX-N-35"></use><use data-c="30" xlink:href="#MJX-TEX-N-30" transform="translate(500,0)"></use></g><g data-mml-node="msup" transform="translate(1000,0)"><g data-mml-node="mi"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mn" transform="translate(605,289) scale(0.707)"><use data-c="32" xlink:href="#MJX-TEX-N-32"></use></g></g><g data-mml-node="mo" transform="translate(2230.8,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(3231,0)"><use data-c="35" xlink:href="#MJX-TEX-N-35"></use><use data-c="30" xlink:href="#MJX-TEX-N-30" transform="translate(500,0)"></use></g><g data-mml-node="mi" transform="translate(4231,0)"><use data-c="1D465" xlink:href="#MJX-TEX-I-1D465"></use></g><g data-mml-node="mo" transform="translate(5025.2,0)"><use data-c="2B" xlink:href="#MJX-TEX-N-2B"></use></g><g data-mml-node="mn" transform="translate(6025.4,0)"><use data-c="31" xlink:href="#MJX-TEX-N-31"></use><use data-c="32" xlink:href="#MJX-TEX-N-32" transform="translate(500,0)"></use></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(7025.4,0)"><g data-mml-node="mo"><use data-c="2C" xlink:href="#MJX-TEX-N-2C"></use></g></g><g data-mml-node="mn" transform="translate(7303.4,0)"><use data-c="35" xlink:href="#MJX-TEX-N-35"></use></g></g><rect width="11763.2" height="60" x="120" y="220"></rect></g></g><g data-mml-node="mo" transform="translate(12281,0)"><use data-c="2265" xlink:href="#MJX-TEX-N-2265"></use></g><g data-mml-node="mn" transform="translate(13336.8,0)"><use data-c="30" xlink:href="#MJX-TEX-N-30"></use></g></g></g></svg><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><msup><mn>27</mn><mrow data-mjx-texclass="ORD"><mi>x</mi><mo>+</mo><mn>1</mn></mrow></msup><mo>−</mo><mn>3</mn><mo>⋅</mo><msup><mn>9</mn><mrow data-mjx-texclass="ORD"><mi>x</mi><mo>+</mo><mn>1</mn></mrow></msup><mo>+</mo><msup><mn>3</mn><mrow data-mjx-texclass="ORD"><mi>x</mi><mo>+</mo><mn>2</mn></mrow></msup><mo>−</mo><mn>1</mn></mrow><mrow><mn>50</mn><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mn>50</mn><mi>x</mi><mo>+</mo><mn>12</mn><mrow data-mjx-texclass="ORD"><mo>,</mo></mrow><mn>5</mn></mrow></mfrac></mstyle><mo>≥</mo><mn>0</mn></math></mjx-assistive-mml></mjx-container>.</div>
+        <div class="bar" style="margin:0">
+          <button class="pri" data-act="open" data-id="900008">Разбирать</button>
+          <button data-act="fav" data-id="900008">☆</button>
+          <button data-act="hw" data-id="900008">+ ДЗ</button>
+          <button data-act="edit" data-id="900008" style="margin-left:auto" title="Редактировать">✏️</button>
+          <button data-act="del" data-id="900008" style="color:var(--bad);border-color:var(--bad)" title="Удалить">🗑</button>
+        </div>
+      </div></div></main>
+<div id="modalRoot"></div>
+
+<script type="application/json" id="seed" data-snapshot="1">[
+  {
+    "id": 900001,
+    "n": "001",
+    "s": "01 · ПОКАЗАТЕЛЬНЫЕ",
+    "d": "medium",
+    "t": "Решите неравенство: \\( 2\\left(18^{x}+8^{x}\\right) > 12^{x}+27^{x} \\).",
+    "c": "Решите неравенство: \\( 2\\left(18^{x}+8^{x}\\right) > 12^{x}+27^{x} \\).",
+    "a": "Ответ: \\( \\left(-\\infty;\\ \\log_{2/3}\\tfrac{1}{2}\\right) \\).",
+    "ap": "\\left(-\\infty;\\ \\log_{2/3}\\tfrac{1}{2}\\right)",
+    "ch": [
+      {
+        "e": "2\\left(18^{x}+8^{x}\\right) > 12^{x}+27^{x}",
+        "q": "С чего начать? Степени записаны разными основаниями.",
+        "o": [
+          {
+            "t": "Расписать основания $18, 8, 12, 27$ через простые множители $2, 3$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Сразу разделить на $27^x$",
+            "ok": false,
+            "w": "Без расписывания оснований не получится удобной замены."
+          },
+          {
+            "t": "Прологарифмировать обе части",
+            "ok": false,
+            "w": "Сумма не логарифмируется: $\\log(a+b)\\ne\\log a+\\log b$."
+          }
+        ]
+      },
+      {
+        "e": "2\\left(2^{x}\\cdot 3^{2x}+2^{3x}\\right) > 2^{2x}\\cdot 3^{x}+3^{3x}",
+        "q": "Теперь основания видны. Как привести к одной замене?",
+        "o": [
+          {
+            "t": "Разделить обе части на $3^{3x}>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Разделить обе части на $2^{3x}>0$",
+            "ok": false,
+            "w": "Получим степени $(3/2)^x$, что менее удобно для замены."
+          },
+          {
+            "t": "Разделить обе части на $27^{x}$",
+            "ok": false,
+            "w": "Это даст $(2/3)^x$, но в одном слагаемом останется $(2/9)^x$ — замена неудобна."
+          }
+        ]
+      },
+      {
+        "e": "2\\left(\\left(\\tfrac{2}{3}\\right)^{x}+\\left(\\tfrac{2}{3}\\right)^{3x}\\right) > \\left(\\tfrac{2}{3}\\right)^{2x}+1",
+        "q": "Какая замена упростит неравенство?",
+        "o": [
+          {
+            "t": "$t=\\left(\\frac{2}{3}\\right)^{x}$, причём $t>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$t=\\left(\\frac{2}{3}\\right)^{3x}$",
+            "ok": false,
+            "w": "Тогда $(2/3)^x$ не выразится через $t$ целой степенью: получим $t^{1/3}$."
+          },
+          {
+            "t": "$t=2^{x}$",
+            "ok": false,
+            "w": "Основания в левой части разные; удобнее именно $(2/3)^x$."
+          },
+          {
+            "t": "$t=\\left(\\frac{2}{3}\\right)^{2x}$",
+            "ok": false,
+            "w": "Тогда $(2/3)^x=\\sqrt{t}$ — снова корень."
+          }
+        ]
+      },
+      {
+        "e": "2t+2t^{3} > t^{2}+1 \\quad \\Longleftrightarrow\\quad 2t^{3}-t^{2}+2t-1 > 0",
+        "q": "Как разложить левую часть на множители?",
+        "o": [
+          {
+            "t": "Сгруппировать: $t^{2}(2t-1)+(2t-1)=(2t-1)(t^{2}+1)$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Разделить всё на $t>0$: получим $2t^{2}-t+2-\\tfrac{1}{t}>0$",
+            "ok": false,
+            "w": "После деления на $t$ появляется $\\tfrac{1}{t}$ — не упрощает."
+          },
+          {
+            "t": "Решать как квадратное относительно $t$",
+            "ok": false,
+            "w": "Это уравнение третьей степени, для него нужна группировка."
+          }
+        ]
+      },
+      {
+        "e": "(2t-1)(t^{2}+1) > 0",
+        "q": "Что можно сказать о втором множителе?",
+        "o": [
+          {
+            "t": "$t^{2}+1>0$ при всех $t$ ($D=-4\u003c0$), поэтому $2t-1>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Найти корни $t^{2}+1=0$: $t=\\pm 1$, дальше метод интервалов",
+            "ok": false,
+            "w": "Уравнение $t^2+1=0$ действительных корней не имеет — парабола всегда выше оси $t$."
+          },
+          {
+            "t": "Разложить $t^{2}+1=(t-1)(t+1)$",
+            "ok": false,
+            "w": "Формула неверна: $t^{2}+1\\ne (t-1)(t+1)=t^{2}-1$."
+          }
+        ]
+      },
+      {
+        "e": "2t-1 > 0 \\iff t > \\tfrac{1}{2}",
+        "q": "Нарисуйте решение на числовой оси $t$.",
+        "o": [
+          {
+            "t": "Луч вправо от $1/2$, точка выколотая",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "\\frac{1}{2}",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч влево от $1/2$, точка выколотая",
+            "ok": false,
+            "w": "Знак $>$ означает, что $t$ правее $1/2$, а не левее.",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "\\frac{1}{2}",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 1,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч вправо от $1/2$, точка закрашенная",
+            "ok": false,
+            "w": "Неравенство строгое ($2t-1>0$) — точка выколотая.",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "\\frac{1}{2}",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "t > \\tfrac{1}{2}, \\quad t=\\left(\\tfrac{2}{3}\\right)^{x}",
+        "q": "Обратная замена. Какое неравенство получится для $x$?",
+        "o": [
+          {
+            "t": "$\\left(\\frac{2}{3}\\right)^{x}>\\frac{1}{2}$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$\\left(\\frac{2}{3}\\right)^{x}\u003c\\frac{1}{2}$",
+            "ok": false,
+            "w": "Получили $t>\\tfrac12$, значит $\\left(\\tfrac23\\right)^{x}>\\tfrac12$."
+          },
+          {
+            "t": "$\\left(\\frac{2}{3}\\right)^{x}\\ge\\frac{1}{2}$",
+            "ok": false,
+            "w": "Неравенство было строгим ($t>\\tfrac12$), поэтому $>$, а не $\\ge$."
+          }
+        ]
+      },
+      {
+        "e": "\\left(\\tfrac{2}{3}\\right)^{x} > \\tfrac{1}{2}",
+        "q": "Как свести к сравнимому виду, чтобы «сбросить» основания?",
+        "o": [
+          {
+            "t": "Записать $\\tfrac12=\\left(\\tfrac23\\right)^{\\log_{2/3}(1/2)}$ по основному логарифмическому тождеству",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Записать $\\tfrac12=\\left(\\tfrac23\\right)^{1}$",
+            "ok": false,
+            "w": "$\\left(\\tfrac{2}{3}\\right)^{1}=\\tfrac{2}{3}\\ne\\tfrac12$."
+          },
+          {
+            "t": "Возвести обе части в квадрат",
+            "ok": false,
+            "w": "Основания те же, а проще не стало."
+          }
+        ]
+      },
+      {
+        "e": "\\left(\\tfrac{2}{3}\\right)^{x} > \\left(\\tfrac{2}{3}\\right)^{\\log_{2/3}(1/2)}",
+        "q": "Основание степени $\\tfrac{2}{3}\u003c1$. Что происходит со знаком при сравнении показателей?",
+        "o": [
+          {
+            "t": "Знак меняется: $x\u003c\\log_{2/3}(1/2)$ — функция $y=(2/3)^t$ убывает",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Знак сохраняется: $x>\\log_{2/3}(1/2)$",
+            "ok": false,
+            "w": "Это верно только для основания $>1$. У нас $\\tfrac23\u003c1$ — знак меняется."
+          },
+          {
+            "t": "Решений нет: $\\tfrac23\u003c1$, поэтому $(2/3)^x$ всегда меньше $\\tfrac23$",
+            "ok": false,
+            "w": "При отрицательных $x$ значения больше $\\tfrac23$; решения есть."
+          }
+        ]
+      },
+      {
+        "e": "x \u003c \\log_{2/3}\\!\\left(\\tfrac{1}{2}\\right)",
+        "q": "Нарисуйте решение на числовой оси $x$.",
+        "o": [
+          {
+            "t": "Луч влево от $\\log_{2/3}\\tfrac12$, точка выколотая",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "\\log_{2/3}\\!\\frac{1}{2}",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 1,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч вправо от $\\log_{2/3}\\tfrac12$, точка выколотая",
+            "ok": false,
+            "w": "Знак $\u003c$, поэтому $x$ левее точки.",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "\\log_{2/3}\\!\\frac{1}{2}",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч влево от $\\log_{2/3}\\tfrac12$, точка закрашенная",
+            "ok": false,
+            "w": "Неравенство строгое — точка выколотая.",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "\\log_{2/3}\\!\\frac{1}{2}",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 1,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in \\left(-\\infty;\\ \\log_{2/3}\\!\\left(\\tfrac{1}{2}\\right)\\right)",
+        "q": "END"
+      }
+    ]
+  },
+  {
+    "id": 900003,
+    "n": "003",
+    "s": "01 · ПОКАЗАТЕЛЬНЫЕ",
+    "d": "medium",
+    "t": "Решите неравенство: \\( 2\\left(50^{x}+8^{x}\\right) > 20^{x}+3\\cdot 125^{x} \\).",
+    "c": "Решите неравенство: \\( 2\\left(50^{x}+8^{x}\\right) > 20^{x}+3\\cdot 125^{x} \\).",
+    "a": "Ответ: \\( x \\in (-\\infty; 0) \\).",
+    "ap": "x \\in (-\\infty; 0)",
+    "ch": [
+      {
+        "e": "2\\left(50^{x}+8^{x}\\right) > 20^{x}+3\\cdot 125^{x}",
+        "q": "С чего начать? Степени записаны разными основаниями.",
+        "o": [
+          {
+            "t": "Расписать основания $50, 8, 20, 125$ через простые множители $2, 5$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Сразу разделить на $125^x$",
+            "ok": false,
+            "w": "Без расписывания оснований не получится удобной замены."
+          },
+          {
+            "t": "Прологарифмировать обе части",
+            "ok": false,
+            "w": "Сумма не логарифмируется."
+          }
+        ]
+      },
+      {
+        "e": "2\\left(5^{2x}\\cdot 2^{x}+2^{3x}\\right) > 2^{2x}\\cdot 5^{x}+3\\cdot 5^{3x}",
+        "q": "Теперь основания видны. Как привести к одной замене?",
+        "o": [
+          {
+            "t": "Разделить обе части на $5^{3x}>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Разделить обе части на $2^{3x}>0$",
+            "ok": false,
+            "w": "Получим степени $(5/2)^x$, что менее удобно для замены."
+          },
+          {
+            "t": "Разделить обе части на $5^{2x}$",
+            "ok": false,
+            "w": "Останутся слагаемые с $5^x$ и $5^{3x}$, замена не упростит."
+          }
+        ]
+      },
+      {
+        "e": "2\\left(\\left(\\tfrac{2}{5}\\right)^{x}+\\left(\\tfrac{2}{5}\\right)^{3x}\\right) > \\left(\\tfrac{2}{5}\\right)^{2x}+3",
+        "q": "Какая замена упростит неравенство?",
+        "o": [
+          {
+            "t": "$t=\\left(\\frac{2}{5}\\right)^{x}$, причём $t>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$t=2^{x}$",
+            "ok": false,
+            "w": "В уравнении останутся степени с основанием 5."
+          },
+          {
+            "t": "$t=\\left(\\frac{5}{2}\\right)^{x}$",
+            "ok": false,
+            "w": "Тогда получим степени с отрицательными показателями, удобнее основание $2/5$."
+          }
+        ]
+      },
+      {
+        "e": "2t^{3}-t^{2}+2t-3 > 0",
+        "q": "Как разложить левую часть на множители?",
+        "o": [
+          {
+            "t": "Заметить корень $t=1$ и разделить по схеме Горнера: $(t-1)(2t^{2}+t+3)>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Сгруппировать: $t^2(2t-1)+1(2t-3)>0$",
+            "ok": false,
+            "w": "Общих скобок не появляется."
+          },
+          {
+            "t": "Решать как квадратное относительно $t$",
+            "ok": false,
+            "w": "Уравнение третьей степени."
+          }
+        ]
+      },
+      {
+        "e": "(t-1)(2t^{2}+t+3) > 0",
+        "q": "Что можно сказать о втором множителе?",
+        "o": [
+          {
+            "t": "Дискриминант $D=1-24=-23\u003c0$, корней нет — парабола всегда $>0$, значит $t-1>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Корни есть, применяем метод интервалов по трём точкам",
+            "ok": false,
+            "w": "Дискриминант отрицательный — действительных корней у $2t^2+t+3$ нет."
+          },
+          {
+            "t": "Парабола всегда $\u003c0$, значит $t-1\u003c0$",
+            "ok": false,
+            "w": "Ветви вверх и $D\u003c0$ означают, что парабола всегда выше оси $t$, то есть $>0$."
+          }
+        ]
+      },
+      {
+        "e": "t - 1 > 0 \\iff t > 1",
+        "q": "Нарисуйте решение на числовой оси $t$.",
+        "o": [
+          {
+            "t": "Луч вправо от $1$, точка выколотая",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "1",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч влево от $1$, точка выколотая",
+            "ok": false,
+            "w": "Знак $>$, значит $t$ больше 1, а не меньше.",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "1",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 1,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч вправо от $1$, точка закрашенная",
+            "ok": false,
+            "w": "Неравенство строгое, точка выколотая.",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "1",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "t > 1, \\quad t=\\left(\\tfrac{2}{5}\\right)^{x}",
+        "q": "Обратная замена. Какое неравенство получится для $x$?",
+        "o": [
+          {
+            "t": "$\\left(\\frac{2}{5}\\right)^{x}>1$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$\\left(\\frac{2}{5}\\right)^{x}\u003c1$",
+            "ok": false,
+            "w": "Получили $t>1$, значит левая часть больше 1."
+          },
+          {
+            "t": "$\\left(\\frac{2}{5}\\right)^{x}\\ge 1$",
+            "ok": false,
+            "w": "Неравенство было строгим."
+          }
+        ]
+      },
+      {
+        "e": "\\left(\\tfrac{2}{5}\\right)^{x} > 1",
+        "q": "Как записать $1$ в виде степени с основанием $2/5$, чтобы сбросить основания?",
+        "o": [
+          {
+            "t": "$1=\\left(\\frac{2}{5}\\right)^0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$1=\\left(\\frac{2}{5}\\right)^1$",
+            "ok": false,
+            "w": "$\\frac{2}{5} \\ne 1$."
+          },
+          {
+            "t": "$1=\\left(\\frac{2}{5}\\right)^{\\log_{2/5} 1}$",
+            "ok": false,
+            "w": "Это верно ($\\log_{2/5}1=0$), но проще взять просто $0$."
+          }
+        ]
+      },
+      {
+        "e": "\\left(\\tfrac{2}{5}\\right)^{x} > \\left(\\tfrac{2}{5}\\right)^{0}",
+        "q": "Основание степени $\\tfrac{2}{5}\u003c1$. Что происходит со знаком при сравнении показателей?",
+        "o": [
+          {
+            "t": "Знак меняется: $x \u003c 0$ — функция убывает",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Знак сохраняется: $x > 0$",
+            "ok": false,
+            "w": "Это верно только для основания $>1$. У нас $0 \u003c \\frac{2}{5} \u003c 1$ — знак меняется."
+          },
+          {
+            "t": "Решений нет",
+            "ok": false,
+            "w": "При отрицательных $x$ функция $>1$, решения есть."
+          }
+        ]
+      },
+      {
+        "e": "x \u003c 0",
+        "q": "Нарисуйте решение на числовой оси $x$.",
+        "o": [
+          {
+            "t": "Луч влево от нуля, точка выколотая",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "0",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч вправо от нуля, точка выколотая",
+            "ok": false,
+            "w": "Знак $\u003c$, поэтому $x$ левее нуля.",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "0",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 0,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч влево от нуля, точка закрашенная",
+            "ok": false,
+            "w": "Неравенство строгое — точка выколотая.",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "0",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in (-\\infty; 0)",
+        "q": "END"
+      }
+    ]
+  },
+  {
+    "id": 900004,
+    "n": "004",
+    "s": "01 · ПОКАЗАТЕЛЬНЫЕ",
+    "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{2\\cdot 3^{2x+1} - 7\\cdot 6^x + 2\\cdot 4^x}{3\\cdot 9^x - 3\\cdot 2^{x+1}} \\le 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{2\\cdot 3^{2x+1} - 7\\cdot 6^x + 2\\cdot 4^x}{3\\cdot 9^x - 3\\cdot 2^{x+1}} \\le 0 \\).",
+    "a": "Ответ: \\( x \\in (-\\infty;\\ -1) \\cup (1;\\ +\\infty) \\).",
+    "ap": "x \\in (-\\infty;\\ -1) \\cup (1;\\ +\\infty)",
+    "ch": [
+      {
+        "e": "\\dfrac{2\\cdot 3^{2x+1} - 7\\cdot 6^x + 2\\cdot 4^x}{3\\cdot 9^x - 3\\cdot 2^{x+1}} \\le 0",
+        "q": "Шаг 1. Избавьтесь от 'хвостов' в показателях.",
+        "o": [
+          {
+            "t": "Расписать степени: $3^{2x+1} = 3\\cdot 9^x$, $2^{x+1} = 2\\cdot 2^x$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Сразу разделить на $9^x$",
+            "ok": false,
+            "w": "Сначала нужно расписать степени, чтобы было видно общее основание."
+          },
+          {
+            "t": "Расписать степени: $3^{2x+1} = 3 + 9^x$, $2^{x+1} = 2 + 2^x$",
+            "ok": false,
+            "w": "Показатели складываются — степени умножаются."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{6\\cdot 9^x - 7\\cdot 6^x + 2\\cdot 4^x}{3\\cdot 9^x - 6\\cdot 2^x} \\le 0",
+        "q": "Шаг 5. Разделите числитель и знаменатель на $4^x > 0$, чтобы перейти к одному основанию.",
+        "o": [
+          {
+            "t": "Разделить на $4^x$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Разделить на $9^x$",
+            "ok": false,
+            "w": "Получатся основания $2/3$ и $4/9$, что неудобно."
+          },
+          {
+            "t": "Сократить на $3$",
+            "ok": false,
+            "w": "Это не избавит от разных оснований."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{6\\left(\\tfrac{3}{2}\\right)^{2x} - 7\\left(\\tfrac{3}{2}\\right)^x + 2}{3\\left(\\tfrac{3}{2}\\right)^{2x} - 6\\left(\\tfrac{3}{2}\\right)^x} \\le 0",
+        "q": "Шаг 5. Введите замену переменной.",
+        "o": [
+          {
+            "t": "$t = \\left(\\frac{3}{2}\\right)^x$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$t = 3^x$",
+            "ok": false,
+            "w": "В знаменателе останутся степени с основанием 2."
+          },
+          {
+            "t": "$t = \\left(\\frac{2}{3}\\right)^x$",
+            "ok": false,
+            "w": "Тогда степени будут с отрицательными показателями."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{6t^2 - 7t + 2}{3t^2 - 6t} \\le 0",
+        "q": "Шаг 6. Как разложить числитель и знаменатель на множители?",
+        "o": [
+          {
+            "t": "Числитель: $6(t - 1/2)(t - 2/3)$. Знаменатель: $3t(t - 2)$.",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Числитель: корни $1$ и $2$, разложение $6(t-1)(t-2)$.",
+            "ok": false,
+            "w": "Сумма корней равна $7/6$, а не $3$."
+          },
+          {
+            "t": "Знаменатель: $3t(t-6)$",
+            "ok": false,
+            "w": "Вынесли $3t$, но остаток $t - 2$, а не $t - 6$."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{6\\left(t - \\tfrac{1}{2}\\right)\\left(t - \\tfrac{2}{3}\\right)}{3t(t - 2)} \\le 0",
+        "q": "Шаг 7. Решите методом интервалов (без сокращения дроби).",
+        "o": [
+          {
+            "t": "",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "0",
+                  "type": "open"
+                },
+                {
+                  "x": 1,
+                  "label": "\\frac{1}{2}",
+                  "type": "closed"
+                },
+                {
+                  "x": 2,
+                  "label": "\\frac{2}{3}",
+                  "type": "closed"
+                },
+                {
+                  "x": 3,
+                  "label": "2",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                },
+                {
+                  "from": 0,
+                  "to": 1,
+                  "shade": true
+                },
+                {
+                  "from": 2,
+                  "to": 3,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "",
+            "ok": false,
+            "w": "Неверный интервал. Вам нужны те, где знак минус: $t \\in (0; 1/2] \\cup [2/3; 2)$.",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "0",
+                  "type": "open"
+                },
+                {
+                  "x": 1,
+                  "label": "\\frac{1}{2}",
+                  "type": "open"
+                },
+                {
+                  "x": 2,
+                  "label": "\\frac{2}{3}",
+                  "type": "open"
+                },
+                {
+                  "x": 3,
+                  "label": "2",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                },
+                {
+                  "from": 1,
+                  "to": 2,
+                  "shade": true
+                },
+                {
+                  "from": 3,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "",
+            "ok": false,
+            "w": "Неверный интервал. Знаменатель не может быть нулём.",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "0",
+                  "type": "closed"
+                },
+                {
+                  "x": 1,
+                  "label": "\\frac{1}{2}",
+                  "type": "closed"
+                },
+                {
+                  "x": 2,
+                  "label": "\\frac{2}{3}",
+                  "type": "closed"
+                },
+                {
+                  "x": 3,
+                  "label": "2",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 0,
+                  "to": 1,
+                  "shade": true
+                },
+                {
+                  "from": 2,
+                  "to": 3,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "t \\in (-\\infty; 0) \\cup \\left(0; \\tfrac{1}{2}\\right] \\cup \\left[\\tfrac{2}{3}; 2\\right)",
+        "q": "Шаг 8. Запишите полученные промежутки для $t$ в виде совокупности неравенств.",
+        "o": [
+          {
+            "t": "$\\left[ \\begin{array}{l} t \u003c 0 \\\\ 0 \u003c t \\le \\frac{1}{2} \\\\ \\frac{2}{3} \\le t \u003c 2 \\end{array} \\right.$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$\\left[ \\begin{array}{l} t \\le \\frac{1}{2} \\\\ t \u003c 2 \\end{array} \\right.$",
+            "ok": false,
+            "w": "Потеряны ограничения для $t$."
+          },
+          {
+            "t": "$\\left[ \\begin{array}{l} t > 0 \\\\ t \\ge \\frac{1}{2} \\end{array} \\right.$",
+            "ok": false,
+            "w": "Знаки перепутаны и промежутки не соответствуют оси."
+          }
+        ]
+      },
+      {
+        "e": "\\left[ \\begin{array}{l} \\left(\\tfrac{3}{2}\\right)^x \u003c 0 \\\\ 0 \u003c \\left(\\tfrac{3}{2}\\right)^x \\le \\tfrac{1}{2} \\\\ \\tfrac{2}{3} \\le \\left(\\tfrac{3}{2}\\right)^x \u003c 2 \\end{array} \\right.",
+        "q": "Шаг 9. Запишите числа $\\tfrac{1}{2}$, $\\tfrac{2}{3}$ и $2$ в виде степеней с основанием $\\tfrac{3}{2}$, чтобы перейти к сравнению показателей.",
+        "o": [
+          {
+            "t": "$\\left[ \\begin{array}{l} \\left(\\tfrac{3}{2}\\right)^x \u003c 0 \\\\ \\left(\\tfrac{3}{2}\\right)^x \\le \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(1/2)} \\\\ \\left(\\tfrac{3}{2}\\right)^{-1} \\le \\left(\\tfrac{3}{2}\\right)^x \u003c \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(2)} \\end{array} \\right.$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$\\left[ \\begin{array}{l} \\left(\\tfrac{3}{2}\\right)^x \u003c 0 \\text{ при всех } x \\\\ \\left(\\tfrac{3}{2}\\right)^x \\le \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(1/2)} \\\\ \\left(\\tfrac{3}{2}\\right)^{-1} \\le \\left(\\tfrac{3}{2}\\right)^x \u003c \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(2)} \\end{array} \\right.$",
+            "ok": false,
+            "w": "Степень с положительным основанием всегда строго больше нуля, поэтому $\u003c0$ быть не может."
+          },
+          {
+            "t": "$\\left[ \\begin{array}{l} \\left(\\tfrac{3}{2}\\right)^x \u003c 0 \\\\ \\left(\\tfrac{3}{2}\\right)^x \\ge \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(1/2)} \\\\ \\left(\\tfrac{3}{2}\\right)^{-1} \\ge \\left(\\tfrac{3}{2}\\right)^x > \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(2)} \\end{array} \\right.$",
+            "ok": false,
+            "w": "Смена знака неравенства недопустима, так как основание $3/2 > 1$ (функция возрастает)."
+          }
+        ]
+      },
+      {
+        "e": "\\left[ \\begin{array}{l} \\left(\\tfrac{3}{2}\\right)^x \u003c 0 \\\\ \\left(\\tfrac{3}{2}\\right)^x \\le \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(1/2)} \\\\ \\left(\\tfrac{3}{2}\\right)^{-1} \\le \\left(\\tfrac{3}{2}\\right)^x \u003c \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(2)} \\end{array} \\right.",
+        "q": "Шаг 10. Вспомните, что $0 \u003c \\left(\\tfrac{3}{2}\\right)^x$ всегда, и перейдите от степеней к показателям (основание $\\tfrac{3}{2} > 1$, знак сохраняется).",
+        "o": [
+          {
+            "t": "$\\left[ \\begin{array}{l} x \u003c \\log_{3/2}(1/2) \\\\ -1 \\le x \u003c \\log_{3/2}(2) \\end{array} \\right.$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$\\left[ \\begin{array}{l} x \\le \\log_{3/2}(1/2) \\\\ -1 \\le x \u003c \\log_{3/2}(2) \\end{array} \\right.$",
+            "ok": false,
+            "w": "В первом неравенстве было строгое $\u003c$, поэтому знак сохраняется."
+          },
+          {
+            "t": "$\\left[ \\begin{array}{l} x > \\log_{3/2}(1/2) \\\\ -1 > x \\ge \\log_{3/2}(2) \\end{array} \\right.$",
+            "ok": false,
+            "w": "Знак неравенства не меняется, так как основание степени больше 1."
+          }
+        ]
+      },
+      {
+        "e": "x \\in (-\\infty;\\ -1) \\cup (1;\\ +\\infty)",
+        "q": "END"
+      }
+    ]
+  },
+  {
+    "id": 900006,
+    "n": "006",
+    "s": "01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ",
+    "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{4^{x^2+x-4} - 0{,}5^{2x^2-2x-1}}{0{,}2 \\cdot 5^x - 1} \\le 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{4^{x^2+x-4} - 0{,}5^{2x^2-2x-1}}{0{,}2 \\cdot 5^x - 1} \\le 0 \\).",
+    "a": "Ответ: \\( x \\in (-\\infty;\\ -1{,}5] \\cup (1;\\ 1{,}5] \\).",
+    "ap": "x \\in (-\\infty;\\ -1{,}5] \\cup (1;\\ 1{,}5]",
+    "ch": [
+      {
+        "e": "\\dfrac{4^{x^2+x-4} - 0{,}5^{2x^2-2x-1}}{0{,}2 \\cdot 5^x - 1} \\le 0",
+        "q": "С чего начнем решение?",
+        "o": [
+          {
+            "t": "Привести степени к одинаковым основаниям: в числителе к 4, в знаменателе к 5",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Сразу выписать нули числителя и знаменателя",
+            "ok": false,
+            "w": "Пока основания разные, найти нули не получится."
+          },
+          {
+            "t": "Умножить обе части на знаменатель",
+            "ok": false,
+            "w": "Неизвестно, положительный ли знаменатель, поэтому знак неравенства может измениться."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{4^{x^2+x-4} - 0{,}5^{2x^2-2x-1}}{0{,}2 \\cdot 5^x - 1} \\le 0",
+        "q": "Преобразуем только числитель. Как записать $0{,}5^{2x^2-2x-1}$ через основание 4?",
+        "o": [
+          {
+            "t": "$0{,}5 = 2^{-1}$, поэтому $0{,}5^{2x^2-2x-1} = (2^{-1})^{2x^2-2x-1} = 2^{-2x^2+2x+1} = 4^{-x^2+x+0{,}5}$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$0{,}5 = 2$, поэтому $0{,}5^{2x^2-2x-1} = 2^{2x^2-2x-1}$",
+            "ok": false,
+            "w": "Ноль целых пять десятых — это $1/2$, а не 2."
+          },
+          {
+            "t": "Приравнять показатели: $x^2+x-4 = 2x^2-2x-1$",
+            "ok": false,
+            "w": "Основания разные, нельзя просто приравнять показатели."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{4^{x^2+x-4} - 4^{-x^2+x+0{,}5}}{0{,}2 \\cdot 5^x - 1} \\le 0",
+        "q": "Теперь преобразуем знаменатель. Как записать $0{,}2 \\cdot 5^x$ через основание 5?",
+        "o": [
+          {
+            "t": "$0{,}2 = 5^{-1}$, поэтому $0{,}2 \\cdot 5^x = 5^{-1} \\cdot 5^x = 5^{x-1}$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$0{,}2 \\cdot 5^x = 1$, откуда сразу $x=1$",
+            "ok": false,
+            "w": "Вы нашли корень уравнения, но само выражение преобразуется иначе."
+          },
+          {
+            "t": "$0{,}2 \\cdot 5^x - 1 = 1 \\cdot 5^x - 1$",
+            "ok": false,
+            "w": "$0{,}2$ — это $1/5$, а не 1."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{4^{x^2+x-4} - 4^{-x^2+x+0{,}5}}{5^{x-1} - 1} \\le 0",
+        "q": "Теперь найдем нули числителя.",
+        "o": [
+          {
+            "t": "$x^2+x-4 = -x^2+x+0{,}5 \\Rightarrow 2x^2 = 4{,}5 \\Rightarrow x^2 = 2{,}25 \\Rightarrow x = \\pm 1{,}5$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$2x^2 = 3{,}5 \\Rightarrow x = \\pm\\sqrt{1{,}75}$",
+            "ok": false,
+            "w": "Ошибка в переносе слагаемых."
+          },
+          {
+            "t": "$x = 1{,}5$ (только положительный)",
+            "ok": false,
+            "w": "Из $x^2 = 2{,}25$ извлекается два корня."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{4^{x^2+x-4} - 4^{-x^2+x+0{,}5}}{5^{x-1} - 1} \\le 0",
+        "q": "А теперь найдем нули знаменателя.",
+        "o": [
+          {
+            "t": "$5^{x-1} = 1 = 5^0 \\Rightarrow x - 1 = 0 \\Rightarrow x = 1$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$5^{x-1} = 5 \\Rightarrow x - 1 = 5 \\Rightarrow x = 6$",
+            "ok": false,
+            "w": "Единица — это $5^0$, а не $5^1$."
+          },
+          {
+            "t": "$x = 0$",
+            "ok": false,
+            "w": "При $x=0$ выражение равно $5^{-1} - 1 = 0{,}2 - 1 = -0{,}8$."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{4^{x^2+x-4} - 4^{-x^2+x+0{,}5}}{5^{x-1} - 1} \\le 0 \\quad \\text{(нули числ.: } \\pm 1{,}5; \\text{ нуль знам.: } 1 \\text{)}",
+        "q": "Отметьте точки на числовой оси и расставьте знаки дроби. (Подставляйте числа в преобразованное неравенство сверху).",
+        "o": [
+          {
+            "t": "Точки $-1{,}5$ и $1{,}5$ закрашены, точка $1$ выколота. Знаки: $-, +, -, +$.",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "-1{,}5",
+                  "type": "closed"
+                },
+                {
+                  "x": 1,
+                  "label": "1",
+                  "type": "open"
+                },
+                {
+                  "x": 2,
+                  "label": "1{,}5",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                },
+                {
+                  "from": 1,
+                  "to": 2,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Все точки выколоты. Знаки: $+, -, +, -$.",
+            "ok": false,
+            "w": "Неравенство нестрогое ($\\le 0$), нули числителя должны быть закрашены. И знаки чередуются с плюса справа."
+          },
+          {
+            "t": "Все точки закрашены. Знаки: $-, +, -, +$.",
+            "ok": false,
+            "w": "Нуль знаменателя всегда выколот, так как на ноль делить нельзя.",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "-1{,}5",
+                  "type": "closed"
+                },
+                {
+                  "x": 1,
+                  "label": "1",
+                  "type": "closed"
+                },
+                {
+                  "x": 2,
+                  "label": "1{,}5",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                },
+                {
+                  "from": 1,
+                  "to": 2,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in (-\\infty;\\ -1{,}5] \\cup (1;\\ 1{,}5]",
+        "q": "END"
+      }
+    ]
+  },
+  {
+    "id": 900007,
+    "n": "007",
+    "s": "01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ",
+    "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{27^x - 3\\cdot 9^{x+1} + 3^{x+5} - 729}{50x^2 + 10x + 0{,}5} \\le 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{27^x - 3\\cdot 9^{x+1} + 3^{x+5} - 729}{50x^2 + 10x + 0{,}5} \\le 0 \\).",
+    "a": "Ответ: \\( x \\in (-\\infty;\\ -0{,}1) \\cup (-0{,}1;\\ 2] \\).",
+    "ap": "x \\in (-\\infty;\\ -0{,}1) \\cup (-0{,}1;\\ 2]",
+    "ch": [
+      {
+        "e": "\\dfrac{27^x - 3\\cdot 9^{x+1} + 3^{x+5} - 729}{50x^2 + 10x + 0{,}5} \\le 0",
+        "q": "С чего начнем?",
+        "o": [
+          {
+            "t": "Приравнять числитель к нулю, чтобы найти его корни",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Приравнять знаменатель к нулю, чтобы найти его корни",
+            "ok": false,
+            "w": "Начинать удобнее с числителя, чтобы понять его структуру."
+          },
+          {
+            "t": "Умножить обе части на знаменатель",
+            "ok": false,
+            "w": "Неизвестно, положительный ли знаменатель, знак может измениться."
+          }
+        ]
+      },
+      {
+        "e": "27^x - 3\\cdot 9^{x+1} + 3^{x+5} - 729 = 0",
+        "q": "Как привести все степени к одному основанию 3?",
+        "o": [
+          {
+            "t": "$27^x = 3^{3x}$, $3\\cdot 9^{x+1} = 3\\cdot 3^{2x+2} = 3^{2x+3}$, $3^{x+5} = 3^{x+5}$, $729 = 3^6$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$27^x = 3^x$, $9^{x+1} = 3^{x+1}$",
+            "ok": false,
+            "w": "Не учтено, что $27=3^3$, а $9=3^2$."
+          },
+          {
+            "t": "Вынести $3^x$ за скобку",
+            "ok": false,
+            "w": "Сначала нужно расписать основания."
+          }
+        ]
+      },
+      {
+        "e": "3^{3x} - 3^{2x+3} + 3^{x+5} - 3^6 = 0",
+        "q": "Какая замена упростит уравнение?",
+        "o": [
+          {
+            "t": "$t = 3^x$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$t = 3^{2x}$",
+            "ok": false,
+            "w": "Останутся степени $x$ и $3x$."
+          },
+          {
+            "t": "$t = x$",
+            "ok": false,
+            "w": "Степени останутся."
+          }
+        ]
+      },
+      {
+        "e": "t^3 - 27t^2 + 243t - 729 = 0",
+        "q": "Как разложить кубическое уравнение на множители?",
+        "o": [
+          {
+            "t": "Заметить корень $t=9$ и разделить по схеме Горнера: $(t-9)(t^2 - 18t + 81) = 0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Сгруппировать: $t^2(t-27) + 243(t-3) = 0$",
+            "ok": false,
+            "w": "Общие скобки не появляются."
+          },
+          {
+            "t": "Разделить на $t$: $t^2 - 27t + 243 - 729/t = 0$",
+            "ok": false,
+            "w": "Появится дробь $1/t$, станет хуже."
+          }
+        ]
+      },
+      {
+        "e": "(t-9)(t^2 - 18t + 81) = 0",
+        "q": "Что можно сказать о втором множителе?",
+        "o": [
+          {
+            "t": "Это полный квадрат: $(t-9)^2$, значит все уравнение имеет вид $(t-9)^3 = 0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Дискриминант $D = 324 - 324 = 0$, значит корень один: $t=9$",
+            "ok": false,
+            "w": "Верно, но это значит, что корень $t=9$ имеет кратность 3, и это важно для знака."
+          },
+          {
+            "t": "Корней нет, так как $D \u003c 0$",
+            "ok": false,
+            "w": "$D = 0$, корень есть."
+          }
+        ]
+      },
+      {
+        "e": "(t-9)^3 = 0 \\Rightarrow t = 9 \\Rightarrow 3^x = 9 \\Rightarrow x = 2",
+        "q": "Теперь перейдем к знаменателю. Как найти его нули?",
+        "o": [
+          {
+            "t": "Приравнять к нулю: $50x^2 + 10x + 0{,}5 = 0$, разделить на 50, получить $x^2 + 0{,}2x + 0{,}01 = 0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Найти дискриминант $D = 100 - 100 = 0$, $x = -0{,}1$",
+            "ok": false,
+            "w": "Это следующий шаг, а не ответ на вопрос «как найти»."
+          },
+          {
+            "t": "Вынести $x$ за скобку",
+            "ok": false,
+            "w": "Есть свободный член $0{,}5$, так не получится."
+          }
+        ]
+      },
+      {
+        "e": "50x^2 + 10x + 0{,}5 = 0 \\Rightarrow x^2 + 0{,}2x + 0{,}01 = 0 \\Rightarrow (x+0{,}1)^2 = 0 \\Rightarrow x = -0{,}1",
+        "q": "Что означает, что корень $-0{,}1$ — это полный квадрат?",
+        "o": [
+          {
+            "t": "Корень имеет чётную кратность, поэтому при переходе через него знак неравенства не меняется",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Это значит, что в этой точке знаменатель равен нулю, и её нужно исключить (выколоть)",
+            "ok": false,
+            "w": "Да, выколоть нужно, но главное — знак не меняется."
+          },
+          {
+            "t": "Это значит, что корень $-0{,}1$ можно не отмечать на оси",
+            "ok": false,
+            "w": "Отметить нужно (выколотой точкой), иначе потеряем ограничение."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{(3^x - 9)^3}{50(x+0{,}1)^2} \\le 0",
+        "q": "Отметьте точки на числовой оси и расставьте знаки.",
+        "o": [
+          {
+            "t": "Точка $-0{,}1$ выколота (знак не меняется); точка $2$ закрашена, знак меняется с минуса на плюс. Нужны промежутки со знаком минус.",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "-0{,}1",
+                  "type": "open",
+                  "mark": "!"
+                },
+                {
+                  "x": 1,
+                  "label": "2",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                },
+                {
+                  "from": 0,
+                  "to": 1,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Точка $-0{,}1$ закрашена, так как корень чётной кратности; точка $2$ закрашена.",
+            "ok": false,
+            "w": "Знаменатель не может быть равен нулю, поэтому $-0{,}1$ всегда выколота."
+          },
+          {
+            "t": "Точка $-0{,}1$ выколота, знак меняется с плюса на минус; точка $2$ выколота.",
+            "ok": false,
+            "w": "В точке $2$ знак меняется с минуса на плюс, а сама точка закрашена, так как неравенство нестрогое.",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "-0{,}1",
+                  "type": "open"
+                },
+                {
+                  "x": 1,
+                  "label": "2",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                },
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in (-\\infty;\\ -0{,}1) \\cup (-0{,}1;\\ 2]",
+        "q": "END"
+      }
+    ]
+  },
+  {
+    "id": 900008,
+    "n": "008",
+    "s": "01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ",
+    "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0 \\).",
+    "a": "Ответ: \\( x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty) \\).",
+    "ap": "x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty)",
+    "ch": [
+      {
+        "e": "\\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0",
+        "q": "С чего начнем решение?",
+        "o": [
+          {
+            "t": "Приравняем числитель к нулю, чтобы найти его корни",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1 = 0",
+        "q": "Преобразуем первое слагаемое. Раскладываем степень с хвостом.",
+        "o": [
+          {
+            "t": "$27^{x+1} = 27^x \\cdot 27^1 = 3^{3x} \\cdot 27$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "3^{3x} \\cdot 27 - 3\\cdot 9^{x+1} + 3^{x+2} - 1 = 0",
+        "q": "Преобразуем второе слагаемое. Раскладываем степень с хвостом.",
+        "o": [
+          {
+            "t": "$3\\cdot 9^{x+1} = 3 \\cdot 9^x \\cdot 9^1 = 3 \\cdot 3^{2x} \\cdot 9 = 27 \\cdot 3^{2x}$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "3^{3x} \\cdot 27 - 27 \\cdot 3^{2x} + 3^{x+2} - 1 = 0",
+        "q": "Преобразуем третье слагаемое. Раскладываем степень с хвостом.",
+        "o": [
+          {
+            "t": "$3^{x+2} = 3^x \\cdot 3^2 = 9 \\cdot 3^x$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "27 \\cdot 3^{3x} - 27 \\cdot 3^{2x} + 9 \\cdot 3^x - 1 = 0",
+        "q": "Сделаем замену переменной \\(t = 3^x\\).",
+        "o": [
+          {
+            "t": "$t = 3^x$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "27t^3 - 27t^2 + 9t - 1 = 0",
+        "q": "Найдем корень кубического уравнения по схеме Горнера. Подбором проверяем делители свободного члена. Подходит \\( t = \\frac{1}{3} \\).",
+        "o": [
+          {
+            "t": "Заполняем таблицу:\n\n$\\begin{array}{c|cccc}\n & 27 & -27 & 9 & -1 \\\\\n\\hline\n\\frac{1}{3} & 27 & -18 & 3 & 0\n\\end{array}$\n\nПолучили остаток 0 и коэффициенты квадратного трехчлена: $27t^2 - 18t + 3$.",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "(t - \\frac{1}{3})(27t^2 - 18t + 3) = 0",
+        "q": "Упростим квадратный трехчлен, разделив на 3: \\( 9t^2 - 6t + 1 = 0 \\).",
+        "o": [
+          {
+            "t": "$(3t - 1)^2 = 0 \\Rightarrow t = \\frac{1}{3}$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "(t - \\frac{1}{3}) \\cdot (3t - 1)^2 = 0",
+        "q": "Возвращаемся к переменной \\(x\\).",
+        "o": [
+          {
+            "t": "$3^x = \\frac{1}{3} \\Rightarrow 3^x = 3^{-1} \\Rightarrow x = -1$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "50x^2 + 50x + 12{,}5 = 0",
+        "q": "Теперь найдем нули знаменателя. Для удобства разделим на 50.",
+        "o": [
+          {
+            "t": "$x^2 + x + 0{,}25 = 0$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "x^2 + x + 0{,}25 = 0",
+        "q": "Свернем по формуле квадрата суммы.",
+        "o": [
+          {
+            "t": "$(x + 0{,}5)^2 = 0 \\Rightarrow x = -0{,}5$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{(3^x - 3^{-1})^3}{50(x+0{,}5)^2} \\ge 0",
+        "q": "Переходим к методу интервалов. Корень \\(-1\\) имеет нечетную кратность (знак меняется), корень \\(-0{,}5\\) имеет четную кратность (знак не меняется). Точка \\(-1\\) закрашена, \\(-0{,}5\\) выколота.",
+        "o": [
+          {
+            "t": "Ответ: \\(x \\in [-1; -0{,}5) \\cup (-0{,}5; +\\infty)\\)",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "-1",
+                  "type": "closed"
+                },
+                {
+                  "x": 1,
+                  "label": "-0{,}5",
+                  "type": "open",
+                  "mark": "!"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 0,
+                  "to": 1,
+                  "shade": true
+                },
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty)",
+        "q": "END"
+      }
+    ]
+  },
+  {
+    "id": 900008,
+    "n": "008",
+    "s": "01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ",
+    "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0 \\).",
+    "a": "Ответ: \\( x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty) \\).",
+    "ap": "x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty)",
+    "ch": [
+      {
+        "e": "\\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0",
+        "q": "С чего начнем решение?",
+        "o": [
+          {
+            "t": "Приравняем числитель к нулю, чтобы найти его корни",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1 = 0",
+        "q": "Преобразуем первое слагаемое. Раскладываем степень с хвостом.",
+        "o": [
+          {
+            "t": "$27^{x+1} = 27^x \\cdot 27^1 = 3^{3x} \\cdot 27$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "3^{3x} \\cdot 27 - 3\\cdot 9^{x+1} + 3^{x+2} - 1 = 0",
+        "q": "Преобразуем второе слагаемое. Раскладываем степень с хвостом.",
+        "o": [
+          {
+            "t": "$3\\cdot 9^{x+1} = 3 \\cdot 9^x \\cdot 9^1 = 3 \\cdot 3^{2x} \\cdot 9 = 27 \\cdot 3^{2x}$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "3^{3x} \\cdot 27 - 27 \\cdot 3^{2x} + 3^{x+2} - 1 = 0",
+        "q": "Преобразуем третье слагаемое. Раскладываем степень с хвостом.",
+        "o": [
+          {
+            "t": "$3^{x+2} = 3^x \\cdot 3^2 = 9 \\cdot 3^x$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "27 \\cdot 3^{3x} - 27 \\cdot 3^{2x} + 9 \\cdot 3^x - 1 = 0",
+        "q": "Сделаем замену переменной \\(t = 3^x\\).",
+        "o": [
+          {
+            "t": "$t = 3^x$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "27t^3 - 27t^2 + 9t - 1 = 0",
+        "q": "Найдем корень кубического уравнения по схеме Горнера. Подбором проверяем делители свободного члена. Подходит \\( t = \\frac{1}{3} \\).",
+        "o": [
+          {
+            "t": "Заполняем таблицу:\n\n$\\begin{array}{c|cccc}\n & 27 & -27 & 9 & -1 \\\\\n\\hline\n\\frac{1}{3} & 27 & -18 & 3 & 0\n\\end{array}$\n\nПолучили остаток 0 и коэффициенты квадратного трехчлена: $27t^2 - 18t + 3$.",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "(t - \\frac{1}{3})(27t^2 - 18t + 3) = 0",
+        "q": "Упростим квадратный трехчлен, разделив на 3: \\( 9t^2 - 6t + 1 = 0 \\).",
+        "o": [
+          {
+            "t": "$(3t - 1)^2 = 0 \\Rightarrow t = \\frac{1}{3}$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "(t - \\frac{1}{3}) \\cdot (3t - 1)^2 = 0",
+        "q": "Возвращаемся к переменной \\(x\\).",
+        "o": [
+          {
+            "t": "$3^x = \\frac{1}{3} \\Rightarrow 3^x = 3^{-1} \\Rightarrow x = -1$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "50x^2 + 50x + 12{,}5 = 0",
+        "q": "Теперь найдем нули знаменателя. Для удобства разделим на 50.",
+        "o": [
+          {
+            "t": "$x^2 + x + 0{,}25 = 0$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "x^2 + x + 0{,}25 = 0",
+        "q": "Свернем по формуле квадрата суммы.",
+        "o": [
+          {
+            "t": "$(x + 0{,}5)^2 = 0 \\Rightarrow x = -0{,}5$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{(3^x - 3^{-1})^3}{50(x+0{,}5)^2} \\ge 0",
+        "q": "Переходим к методу интервалов. Корень \\(-1\\) имеет нечетную кратность (знак меняется), корень \\(-0{,}5\\) имеет четную кратность (знак не меняется). Точка \\(-1\\) закрашена, \\(-0{,}5\\) выколота.",
+        "o": [
+          {
+            "t": "Ответ: \\(x \\in [-1; -0{,}5) \\cup (-0{,}5; +\\infty)\\)",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "-1",
+                  "type": "closed"
+                },
+                {
+                  "x": 1,
+                  "label": "-0{,}5",
+                  "type": "open",
+                  "mark": "!"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 0,
+                  "to": 1,
+                  "shade": true
+                },
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty)",
+        "q": "END"
+      }
+    ]
+  }
+]</script>
+<script type="application/json" id="seed-state">{
+  "900008": {}
+}</script>
+
+<script>
+(function(){
+  'use strict';
+
+  const $ = id => document.getElementById(id);
+  const H = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const DF = {basic:'базовый', medium:'средний', hard:'сложный'};
+
+  let T = [], S = {};
+  let fl = {sec:'', st:'all', df:'', q:''};
+  let shown = 12, cur = null, ch = null, si = 0, err = 0, hist = [], ord = [], lock = 0;
+
+  try { S = JSON.parse(localStorage.getItem('ineq.v2.s')) || JSON.parse($('seed-state')?.textContent || '{}') || {}; } catch(e) { S = {}; }
+  function persistTasks(){ try { localStorage.setItem('ineq.v2.tasks', JSON.stringify(T)); } catch(e) {} }
+  function sv() { try { localStorage.setItem('ineq.v2.s', JSON.stringify(S)); } catch(e) {} }
+  function correctOption(step){ return (step && Array.isArray(step.o) ? step.o.find(o=>o && o.ok) : null) || null; }
+  function g(id) { return S[id] || (S[id] = {}); }
+  function showErr(e) { console.error(e); alert('Ошибка: ' + (e.message || e)); }
+
+  function loadSeed() {
+    try {
+      const raw = $('seed').textContent;
+      const embedded = JSON.parse(raw);
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem('ineq.v2.tasks') || 'null'); } catch(e) {}
+      T = Array.isArray(saved) && saved.length ? saved : embedded;
+      if (!Array.isArray(T)) T = [];
+    } catch(e) { T = []; showErr(e); }
+    T.sort((a,b) => String(a.n||'').localeCompare(String(b.n||''), 'ru', {numeric:true}));
+  }
+
+  function tx(el, n) {
+    n = n || 0;
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([el]).catch(e => console.warn('MathJax', e));
+    } else if (n < 80) setTimeout(() => tx(el, n + 1), 250);
+  }
+
+  function SEC() {
+    return [...new Set(T.map(t => t.s))].sort((a,b)=>String(a).localeCompare(String(b),'ru',{numeric:true}));
+  }
+  function okf(t) {
+    const x = S[t.id] || {};
+    return fl.st === 'all'
+      || (fl.st === 'new'  && !x.done)
+      || (fl.st === 'done' && x.done)
+      || (fl.st === 'hw'   && x.hw)
+      || (fl.st === 'fav'  && x.fav);
+  }
+
+  /* ---------- Список ---------- */
+  function menu() {
+    cur = null;
+    $('app').innerHTML = `
+      <div class="card">
+        <div class="bar">
+          <select id="fSec">
+            <option value="">Все разделы</option>
+            ${SEC().map(s => `<option ${fl.sec===s?'selected':''}>${H(s)}</option>`).join('')}
+          </select>
+          <select id="fDf">
+            <option value="">Любая сложность</option>
+            ${Object.keys(DF).map(k => `<option value="${k}" ${fl.df===k?'selected':''}>${DF[k]}</option>`).join('')}
+          </select>
+          <input id="fQ" placeholder="Поиск по номеру или тексту" value="${H(fl.q)}" style="flex:1;min-width:140px">
+        </div>
+        <div class="bar" id="chips" style="margin:0"></div>
+      </div>
+      <div id="rows"></div>`;
+
+    $('fSec').addEventListener('change', e => { fl.sec = e.target.value; shown = 12; rows(); });
+    $('fDf').addEventListener('change', e => { fl.df = e.target.value; shown = 12; rows(); });
+    $('fQ').addEventListener('input', e => { fl.q = e.target.value.toLowerCase(); shown = 12; rows(); });
+
+    rows();
+  }
+
+  function rows() {
+    const C = [['all','Все'],['new','Не разобраны'],['done','Разобраны'],['hw','ДЗ'],['fav','Избранное']];
+    const cnt = k => {
+      const s = fl.st; fl.st = k;
+      const r = T.filter(okf).length;
+      fl.st = s; return r;
+    };
+    const chips = $('chips');
+    if (chips) {
+      chips.innerHTML = C.map(c =>
+        `<button class="${fl.st===c[0]?'on':''}" data-st="${c[0]}">${c[1]} · ${cnt(c[0])}</button>`
+      ).join('');
+      chips.querySelectorAll('button[data-st]').forEach(b => {
+        b.addEventListener('click', () => { fl.st = b.getAttribute('data-st'); shown = 12; rows(); });
+      });
+    }
+    const L = T.filter(t =>
+      (!fl.sec || t.s === fl.sec) &&
+      (!fl.df  || t.d === fl.df) &&
+      (!fl.q   || ((t.n||'') + ' ' + (t.c||'') + ' ' + (t.s||'')).toLowerCase().includes(fl.q)) &&
+      okf(t)
+    );
+    const rowsEl = $('rows');
+    if (!rowsEl) return;
+    rowsEl.innerHTML = L.slice(0, shown).map(t => {
+      const x = S[t.id] || {};
+      return `<div class="card row ${x.done?'done':''} ${x.hw?'hw':''}">
+        <div class="bar" style="margin:0">
+          <b>№ ${H(t.n)}</b>
+          <span class="tag">${H(t.s)}</span>
+          ${t.ch && t.ch.length ? '<span class="tag" style="color:var(--ok);border-color:var(--ok)">✓ разбор</span>' : ''}
+          <span class="${'d-'+(t.d||'basic')}">● ${DF[t.d] || ''}</span>
+          ${x.done ? '<span class="stk">✓ РАЗОБРАНО</span>' : ''}
+          ${x.hw ? '<span class="meta" style="font-weight:600">ДЗ</span>' : ''}
+        </div>
+        <div class="tx" style="margin:10px 0;font-size:16px">${t.c}</div>
+        <div class="bar" style="margin:0">
+          <button class="pri" data-act="open" data-id="${t.id}">Разбирать</button>
+          <button data-act="fav" data-id="${t.id}">${x.fav?'★':'☆'}</button>
+          <button data-act="hw" data-id="${t.id}">${x.hw?'✓ ДЗ':'+ ДЗ'}</button>
+          <button data-act="edit" data-id="${t.id}" style="margin-left:auto" title="Редактировать">✏️</button>
+          <button data-act="del" data-id="${t.id}" style="color:var(--bad);border-color:var(--bad)" title="Удалить">🗑</button>
+        </div>
+      </div>`;
+    }).join('') || '<div class="card meta">Ничего не найдено</div>';
+    if (L.length > shown) {
+      rowsEl.innerHTML += `<button id="moreBtn" style="width:100%;padding:12px">Показать ещё (${L.length - shown})</button>`;
+      $('moreBtn').addEventListener('click', () => { shown += 12; rows(); });
+    }
+    rowsEl.querySelectorAll('button[data-act]').forEach(b => {
+      b.addEventListener('click', () => {
+        const id = b.getAttribute('data-id');
+        const act = b.getAttribute('data-act');
+        if (act === 'open') openT(id);
+        else if (act === 'edit') editTask(id);
+        else if (act === 'del') delTask(id);
+        else tg(id, act);
+      });
+    });
+    tx(rowsEl);
+  }
+
+  function tg(id, k) {
+    const x = g(id); x[k] = !x[k]; sv();
+    if (cur) view(); else rows();
+  }
+
+  /* ---------- Карточка ---------- */
+  function openT(id) {
+    cur = T.find(t => String(t.id) === String(id));
+    if (!cur) return;
+    ch = Array.isArray(cur.ch) ? JSON.parse(JSON.stringify(cur.ch)) : null;
+    si = 0; err = 0; hist = [];
+    shuf();
+    view();
+  }
+
+  function shuf() {
+    const s = ch && ch[si];
+    ord = s && Array.isArray(s.o) ? s.o.map((_, i) => i).sort(() => Math.random() - .5) : [];
+  }
+
+  function view() {
+    const t = cur, x = g(t.id);
+    $('app').innerHTML = `
+      <div class="card">
+        <div class="bar">
+          <button id="backBtn" class="ghost">← К списку</button>
+          <button id="favBtn">${x.fav?'★':'☆'} Избранное</button>
+          <button id="hwBtn">${x.hw?'✓ ДЗ':'+ ДЗ'}</button>
+          <button id="doneBtn">${x.done?'✓ Разобрано':'Отметить разобранным'}</button>
+          <button id="editBtn" style="margin-left:auto">✏️ Редактировать</button>
+          <button id="delBtn" style="color:var(--bad);border-color:var(--bad)">🗑 Удалить</button>
+        </div>
+        <b>№ ${H(t.n)}</b> <span class="tag">${H(t.s)}</span>
+        <div class="tx" style="font-size:1.1em;margin-top:12px">${t.t}</div>
+      </div>
+      <div id="ch"></div>`;
+    $('backBtn').addEventListener('click', menu);
+    $('favBtn').addEventListener('click', () => tg(t.id,'fav'));
+    $('hwBtn').addEventListener('click', () => tg(t.id,'hw'));
+    $('doneBtn').addEventListener('click', () => tg(t.id,'done'));
+    $('editBtn').addEventListener('click', () => editTask(t.id));
+    $('delBtn').addEventListener('click', () => delTask(t.id));
+    chain();
+    tx($('app'));
+  }
+
+  function renderOption(s, j, o) {
+    if (o.axis) {
+      return `<button class="opt-ax-btn" data-j="${j}">
+        <div class="axwrap">${axisSvg(o.axis)}</div>
+        ${o.t ? `<div class="cap">${H(o.t)}</div>` : ''}
+      </button>`;
+    }
+    if (o.display) {
+      return `<button class="op" data-j="${j}">
+        <div>${H(o.t)}</div>
+        <div class="display-op tx" style="margin-top:8px;padding:8px;background:rgba(0,0,0,.04);border-radius:8px;text-align:center">$$${H(o.display)}$$</div>
+      </button>`;
+    }
+    return `<button class="op" data-j="${j}">${H(o.t)}</button>`;
+  }
+
+  function chain() {
+    const el = $('ch');
+    if (!el) return;
+    if (!ch) {
+      el.innerHTML = '<div class="card"><p>Разбора пока нет. Нажмите «Загрузить JSON» и вставьте разбор.</p></div>';
+      return;
+    }
+    si = Math.max(0, Math.min(si, ch.length - 1));
+    const s = ch[si], fin = String(s.q||'').toUpperCase() === 'END';
+    const chosen = correctOption(s);
+    const answer = chosen ? chosen.t : '';
+    const axis = chosen && chosen.axis;
+    const total = ch.length;
+    let body = '';
+    if (fin) {
+      body = `<div class="card">
+        <b style="color:var(--ok)">✓ Ответ получен</b>
+        <div class="tx" style="font-size:1.15em;margin-top:8px">${H(cur.a || s.e || '')}</div>
+        <div class="meta" style="margin-top:8px">Ошибок: ${err}</div>
+        <div class="bar" style="margin-top:12px">
+          <button class="pri" id="redoBtn">Сначала</button>
+          <button id="nextBtn">Следующее задание →</button>
+        </div>
+      </div>`;
+    } else {
+      body = `<div class="card">
+        ${s.q ? `<p class="q">${H(s.q)}</p>` : ''}
+        ${answer ? `<div class="solution-answer">${H(answer)}</div>` : '<div class="meta">Для этого шага в JSON не найдено поле правильного ответа.</div>'}
+        ${axis ? `<div class="axwrap solution-axis">${axisSvg(axis)}</div>` : ''}
+        ${chosen && chosen.w ? `<div class="meta" style="margin-top:8px">${H(chosen.w)}</div>` : ''}
+      </div>`;
+    }
+    el.innerHTML = `
+      <div class="card step-navigator">
+        <div class="step-head">
+          <button id="prevStep" ${si===0?'disabled':''}>← Назад</button>
+          <b>Шаг ${si+1} из ${total}</b>
+          <button id="nextStep" ${si>=total-1?'disabled':''}>Вперёд →</button>
+        </div>
+        <input id="stepSlider" aria-label="Шаг решения" type="range" min="0" max="${total-1}" step="1" value="${si}">
+        <div class="step-scale"><span>Начало</span><span>${fin?'Ответ':'Можно перемещаться по шагам'}</span><span>Конец</span></div>
+      </div>
+      <div class="card">
+        <div class="meta">Промежуточное выражение</div>
+        <div class="eq">$$${H(s.e || '')}$$</div>
+      </div>
+      ${body}`;
+    $('prevStep').addEventListener('click',()=>goStep(si-1));
+    $('nextStep').addEventListener('click',()=>goStep(si+1));
+    $('stepSlider').addEventListener('change',e=>goStep(Number(e.target.value)));
+    if ($('redoBtn')) $('redoBtn').addEventListener('click', redo);
+    if ($('nextBtn')) $('nextBtn').addEventListener('click', nxt);
+    tx(el);
+  }
+
+  function goStep(n) {
+    if (!ch) return;
+    si = Math.max(0, Math.min(ch.length-1, Number(n)||0));
+    chain();
+    $('stepSlider')?.focus({preventScroll:true});
+  }
+
+  function redo() { si = 0; err = 0; hist = []; shuf(); chain(); }
+  function nxt() {
+    const i = T.findIndex(t => String(t.id) === String(cur.id));
+    const n = T[i + 1];
+    if (n) openT(n.id); else menu();
+  }
+
+  /* ---------- Ось ---------- */
+  function axisSvg(axis) {
+    if (!axis) return '';
+    const W=620, HH=100, L=34, R=586, Y=45, span=R-L;
+    const pts=(axis.points||[]).slice().sort((a,b)=>Number(a.x)-Number(b.x));
+    let vals=pts.map(p=>Number(p.x)).filter(Number.isFinite);
+    if(!vals.length) vals=[0];
+    let min=Math.min(...vals), max=Math.max(...vals);
+    if(min===max){ const pad=Math.max(1,Math.abs(min)*.5); min-=pad; max+=pad; }
+    else { const pad=(max-min)*.22; min-=pad; max+=pad; }
+    const X=v=>{
+      if(v==='-Infinity'||v===-Infinity) return L;
+      if(v==='+Infinity'||v===Infinity) return R;
+      const n=Number(v); return L+(n-min)/(max-min)*span;
+    };
+    let svg=`<svg class="axsvg" viewBox="0 0 ${W} ${HH}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Числовая ось с решением">`;
+    // выделение промежутков: прямые отрезки/лучи строго по координатам
+    for(const it of (axis.intervals||[])){
+      if(it.shade===false) continue;
+      const a=X(it.from), b=X(it.to);
+      if(Math.abs(a-b)<1){
+        svg+=`<circle cx="${a}" cy="${Y}" r="9" fill="var(--ans)" opacity=".22"/>`;
+      } else {
+        const left=Math.min(a,b), right=Math.max(a,b);
+        svg+=`<line x1="${left}" y1="${Y}" x2="${right}" y2="${Y}" stroke="var(--ans)" stroke-width="8" stroke-linecap="butt"/>`;
+        if(it.from==='-Infinity'||it.from===-Infinity||it.to==='-Infinity'||it.to===-Infinity)
+          svg+=`<path d="M ${L+1} ${Y} l 13 -7 v 14 z" fill="var(--ans)"/>`;
+        if(it.from==='+Infinity'||it.from===Infinity||it.to==='+Infinity'||it.to===Infinity)
+          svg+=`<path d="M ${R-1} ${Y} l -13 -7 v 14 z" fill="var(--ans)"/>`;
+      }
+    }
+    svg+=`<line x1="${L}" y1="${Y}" x2="${R}" y2="${Y}" stroke="var(--axis)" stroke-width="2"/>`;
+    svg+=`<path d="M ${R} ${Y} l -10 -5 v 10 z" fill="var(--axis)"/>`;
+    svg+=`<text x="${R+8}" y="${Y+5}" class="ax-label">x</text>`;
+    for(const p of pts){
+      const x=X(p.x);
+      svg+=p.type==='closed'
+        ? `<circle cx="${x}" cy="${Y}" r="6.5" fill="var(--ans)" stroke="var(--ans)" stroke-width="2"/>`
+        : `<circle cx="${x}" cy="${Y}" r="6.5" fill="var(--cd)" stroke="var(--ans)" stroke-width="2.5"/>`;
+      if(p.mark==='!') svg+=`<text x="${x}" y="${Y-14}" text-anchor="middle" font-weight="bold" font-size="17" fill="var(--bad)">!</text>`;
+      const label=String(p.label??p.x);
+      const width=190, cx=Math.max(width/2+2,Math.min(W-width/2-2,x));
+      svg+=`<foreignObject x="${cx-width/2}" y="${Y+12}" width="${width}" height="34"><div xmlns="http://www.w3.org/1999/xhtml" style="text-align:center;color:var(--tx);font:14px system-ui,sans-serif;white-space:nowrap">\\(${label}\\)</div></foreignObject>`;
+    }
+    svg+='</svg>'; return svg;
+  }
+
+  /* ---------- Экспорт / Импорт / Печать ---------- */
+  function getFiltered() {
+    return T.filter(t =>
+      (!fl.sec || t.s === fl.sec) &&
+      (!fl.df  || t.d === fl.df) &&
+      (!fl.q   || ((t.n||'') + ' ' + (t.c||'') + ' ' + (t.s||'')).toLowerCase().includes(fl.q)) &&
+      okf(t)
+    );
+  }
+
+  function exportJson() {
+    const data = getFiltered();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'inequalities_export.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function saveWholeApp(){
+    const doc=document.documentElement.cloneNode(true);
+    const seed=doc.querySelector('#seed');
+    if(seed){seed.textContent=JSON.stringify(T,null,2).replace(/</g,'\\u003c');seed.dataset.snapshot='1';}
+    let state=doc.querySelector('#seed-state');
+    if(!state){state=doc.createElement('script');state.type='application/json';state.id='seed-state';seed?.after(state);}
+    if(state) state.textContent=JSON.stringify(S,null,2).replace(/</g,'\\u003c');
+    // The saved file starts from the current task set and teacher progress,
+    // while subsequent edits continue to persist in localStorage.
+    const blob=new Blob(['<!doctype html>\n'+doc.outerHTML],{type:'text/html;charset=utf-8'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='НЕРАВЕНСТВА_сохранённое_приложение.html';
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }
+
+  function importJson() {
+    const raw = prompt('Вставьте JSON (объект одной задачи или массив задач):');
+    if (!raw) return;
+    let data;
+    try { data = JSON.parse(raw); }
+    catch(e) { alert('Ошибка JSON: ' + e.message); return; }
+    const arr = Array.isArray(data) ? data : [data];
+    let added = 0, upd = 0;
+    for (const t of arr) {
+      if (!t || typeof t !== 'object') continue;
+      if (!t.id) t.id = Date.now() + Math.floor(Math.random()*1000);
+      if (!t.n) t.n = String(T.length + 1).padStart(3,'0');
+      if (!t.s) t.s = 'Без раздела';
+      if (!t.d) t.d = 'basic';
+      if (!t.c) t.c = t.t || '';
+      const i = T.findIndex(x => String(x.id) === String(t.id));
+      if (i >= 0) { T[i] = Object.assign({}, T[i], t); upd++; }
+      else { T.push(t); added++; }
+    }
+    T.sort((a,b) => String(a.n||'').localeCompare(String(b.n||''), 'ru', {numeric:true}));
+    persistTasks();
+    alert('Добавлено: ' + added + ', обновлено: ' + upd);
+    menu();
+  }
+
+  function printTasks() {
+    // Открываем диалог настройки печати
+    const fields = {
+      condition: confirm('Печатать УСЛОВИЕ задачи? (ОК - да, Отмена - нет)'),
+      answer: confirm('Печатать ОТВЕТ?'),
+      steps: confirm('Печатать ПОЛНЫЙ РАЗБОР (шаги)?')
+    };
+    
+    // Собираем HTML для печати
+    let html = `<html><head><title>Печать задач</title>
+      <meta charset="utf-8">
+      <style>
+        body{font-family:system-ui,sans-serif;padding:20px;line-height:1.4}
+        h3{margin-top:0;margin-bottom:8px}
+        .task{margin-bottom:30px;page-break-inside:avoid}
+        .steps{margin-top:10px;font-size:14px;color:#333;padding-left:20px;border-left:2px solid #ccc}
+        .ans{margin-top:10px;font-weight:600;color:#0056b3}
+        @media print{body{padding:0}}
+      </style>
+      <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'},startup:{typeset:false}};<\/script>
+      <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"><\/script>
+    </head><body>`;
+    
+    const items = getFiltered();
+    if (items.length === 0) {
+      html += '<p>Нет задач для печати (отфильтровано).</p></body></html>';
+    } else {
+      for (const t of items) {
+        html += `<div class="task"><h3>№ ${t.n} (${t.s})</h3>`;
+        if (fields.condition) html += `<div>${t.t}</div>`;
+        if (fields.steps && t.ch && t.ch.length) {
+          html += `<div class="steps"><b>Шаги:</b><br>`;
+          t.ch.forEach((step, idx) => {
+            if (step.q === 'END') return;
+            html += `<div>${idx+1}. $${step.e}$</div>`;
+          });
+          html += `</div>`;
+        }
+        if (fields.answer) html += `<div class="ans">${t.a || ''}</div>`;
+        html += `</div>`;
+      }
+    }
+    html += `</body></html>`;
+    
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+    win.onload = () => {
+      win.print();
+    };
+  }
+
+  /* ---------- Редактирование/Добавление/Удаление ---------- */
+  function openModal(taskObj, isNew, originalId) {
+    $('modalRoot').innerHTML = `
+      <div class="modal" id="editModal">
+        <div class="modal-box">
+          <h3>${isNew ? '➕ Новая задача' : '✏️ Редактирование задачи №'+H(taskObj.n)}</h3>
+          <textarea id="editJson" spellcheck="false">${JSON.stringify(taskObj, null, 2)}</textarea>
+          <div class="bar">
+            <button class="ghost" id="cancelEdit">Отмена</button>
+            <button class="pri" id="saveEdit">Сохранить</button>
+          </div>
+        </div>
+      </div>`;
+    
+    $('cancelEdit').addEventListener('click', () => { $('modalRoot').innerHTML = ''; });
+    $('saveEdit').addEventListener('click', () => {
+      try {
+        const parsed = JSON.parse($('editJson').value);
+        if (!parsed || typeof parsed !== 'object' || !parsed.id) throw new Error('Некорректный объект (нет id)');
+        
+        if (isNew) {
+          T.push(parsed);
+        } else {
+          const idx = T.findIndex(x => String(x.id) === String(originalId));
+          if (idx >= 0) T[idx] = parsed;
+        }
+        T.sort((a,b) => String(a.n||'').localeCompare(String(b.n||''), 'ru', {numeric:true}));
+        persistTasks();
+        $('modalRoot').innerHTML = '';
+        
+        if (cur && String(cur.id) === String(parsed.id)) {
+          cur = parsed;
+          ch = Array.isArray(cur.ch) ? JSON.parse(JSON.stringify(cur.ch)) : null;
+          si = 0; err = 0; hist = [];
+          shuf();
+          view();
+        } else {
+          menu();
+        }
+      } catch(e) {
+        alert('Ошибка JSON: ' + e.message);
+      }
+    });
+  }
+
+  function editTask(id) {
+    const t = T.find(x => String(x.id) === String(id));
+    if (!t) return;
+    openModal(t, false, id);
+  }
+
+  function addTask() {
+    const newTask = {
+      id: Date.now(),
+      n: String(T.length + 1).padStart(3,'0'),
+      s: "Без раздела",
+      d: "basic",
+      t: "Условие в LaTeX",
+      c: "Условие для карточки",
+      a: "Ответ",
+      ap: "Ответ (LaTeX)",
+      ch: []
+    };
+    openModal(newTask, true, null);
+  }
+
+  function delTask(id) {
+    if (!confirm('Вы уверены, что хотите удалить эту задачу?')) return;
+    T = T.filter(x => String(x.id) !== String(id));
+    persistTasks(); delete S[id]; sv();
+    if (cur && String(cur.id) === String(id)) menu();
+    else rows();
+  }
+
+  /* ---------- Теория ---------- */
+  function theory() {
+    cur = null;
+    $('app').innerHTML = `
+      <div class="card" style="background:transparent;border:none;box-shadow:none;padding:0">
+        <button id="backBtn2" style="margin-bottom:16px">← К списку</button>
+        <h2 style="margin-top:0;font-size:24px;letter-spacing:-0.5px">📚 Шпаргалка по неравенствам</h2>
+        <div class="theory-grid">
+          
+          <div class="sticker st-blue">
+            <h3>📈 Метод интервалов</h3>
+            <p>Приводим к виду $\\frac{P(x)}{Q(x)} \\gtrless 0$. Находим нули числителя (закрашенные при $\\le, \\ge$, выколотые при $<, >$) и знаменателя (всегда выколотые).</p>
+            <p>Кратные корни чётной кратности не меняют знак — отмечаем их восклицательным знаком <b>!</b>.</p>
+            <div class="ex">$\\frac{(x-1)^2}{(x+2)(x-4)} \\le 0$</div>
+          </div>
+
+          <div class="sticker st-green">
+            <h3>🌱 Показательные</h3>
+            <p>Если $a > 1$: $a^{f} \\gtrless a^{g} \\iff f \\gtrless g$.</p>
+            <p>Если $0 < a < 1$: знак неравенства <b>меняется</b> на противоположный.</p>
+            <p>Правую часть $b > 0$ записываем как $a^{\\log_a b}$, чтобы сбросить основания.</p>
+            <div class="ex">$2^x < 8 \\Rightarrow 2^x < 2^3 \\Rightarrow x < 3$</div>
+          </div>
+
+          <div class="sticker st-purple">
+            <h3>📝 Логарифмические</h3>
+            <p>ОДЗ: аргумент $>0$, основание $>0, \\ne 1$.</p>
+            <p>При $a > 1$ знак сохраняется, при $0 < a < 1$ — меняется.</p>
+            <div class="ex">$\\log_2(x-1) < 3 \\Rightarrow 0 < x-1 < 8$</div>
+          </div>
+
+          <div class="sticker st-orange">
+            <h3>📐 Иррациональные</h3>
+            <p>$\\sqrt{A} < B \\iff \\begin{cases} A \\ge 0 \\\\ B > 0 \\\\ A < B^2 \\end{cases}$</p>
+            <p>$\\sqrt{A} > B \\iff \\left[ \\begin{array}{l} B < 0 \\\\ \\begin{cases} B \\ge 0 \\\\ A > B^2 \\end{cases} \\end{array} \\right.$</p>
+          </div>
+
+          <div class="sticker st-red">
+            <h3>⚖️ Системы и совокупности</h3>
+            <p><b>Система</b> — это <b>И</b> (пересечение): $\\begin{cases} A > 0 \\\\ B < 0 \\end{cases}$</p>
+            <p><b>Совокупность</b> — это <b>ИЛИ</b> (объединение): $\\left[ \\begin{array}{l} A = 0 \\\\ B = 0 \\end{array} \\right.$</p>
+            <p>ОДЗ добавляем к системе под общую фигурную скобку.</p>
+          </div>
+
+          <div class="sticker st-cyan">
+            <h3>🎯 Оценка знака</h3>
+            <p>Часто удобно подставить $x=0$ или $x \\to +\\infty$, чтобы определить знак на крайнем правом промежутке.</p>
+            <p>Помните: при переходе через корень <b>нечётной</b> кратности знак меняется, чётной — нет.</p>
+          </div>
+
+        </div>
+      </div>
+    `;
+    $('backBtn2').addEventListener('click', menu);
+    tx($('app'));
+  }
+
+  function th() {
+    const r = document.documentElement;
+    const d = r.dataset.theme || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+    r.dataset.theme = d === 'dark' ? 'light' : 'dark';
+  }
+
+  /* ---------- Старт ---------- */
+  function init() {
+    loadSeed();
+    if(!localStorage.getItem('ineq.v2.tasks')) persistTasks();
+    $('btnTheory').addEventListener('click', theory);
+    $('btnAdd').addEventListener('click', addTask);
+    $('btnImport').addEventListener('click', importJson);
+    $('btnExport').addEventListener('click', exportJson);
+    $('btnSaveApp').addEventListener('click', saveWholeApp);
+    $('btnPrint').addEventListener('click', printTasks);
+    $('btnTheme').addEventListener('click', th);
+    
+    // для отладки
+    window.menu = menu; window.rows = rows; window.openT = openT; window.tg = tg;
+    window.pick = pick; window.redo = redo; window.nxt = nxt;
+    window.theory = theory; window.th = th; window.importJson = importJson;
+    window.axisSvg = axisSvg; window.saveWholeApp=saveWholeApp; window.editTask = editTask; window.addTask = addTask;
+    window.delTask = delTask; window.exportJson = exportJson; window.printTasks = printTasks;
+    
+    menu();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+
+<svg style="display: none;" id="MJX-SVG-global-cache"><defs><path id="MJX-TEX-I-1D443" d="M287 628Q287 635 230 637Q206 637 199 638T192 648Q192 649 194 659Q200 679 203 681T397 683Q587 682 600 680Q664 669 707 631T751 530Q751 453 685 389Q616 321 507 303Q500 302 402 301H307L277 182Q247 66 247 59Q247 55 248 54T255 50T272 48T305 46H336Q342 37 342 35Q342 19 335 5Q330 0 319 0Q316 0 282 1T182 2Q120 2 87 2T51 1Q33 1 33 11Q33 13 36 25Q40 41 44 43T67 46Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628ZM645 554Q645 567 643 575T634 597T609 619T560 635Q553 636 480 637Q463 637 445 637T416 636T404 636Q391 635 386 627Q384 621 367 550T332 412T314 344Q314 342 395 342H407H430Q542 342 590 392Q617 419 631 471T645 554Z"></path><path id="MJX-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-TEX-I-1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path><path id="MJX-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path><path id="MJX-TEX-I-1D444" d="M399 -80Q399 -47 400 -30T402 -11V-7L387 -11Q341 -22 303 -22Q208 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435Q740 255 592 107Q529 47 461 16L444 8V3Q444 2 449 -24T470 -66T516 -82Q551 -82 583 -60T625 -3Q631 11 638 11Q647 11 649 2Q649 -6 639 -34T611 -100T557 -165T481 -194Q399 -194 399 -87V-80ZM636 468Q636 523 621 564T580 625T530 655T477 665Q429 665 379 640Q277 591 215 464T153 216Q153 110 207 59Q231 38 236 38V46Q236 86 269 120T347 155Q372 155 390 144T417 114T429 82T435 55L448 64Q512 108 557 185T619 334T636 468ZM314 18Q362 18 404 39L403 49Q399 104 366 115Q354 117 347 117Q344 117 341 117T337 118Q317 118 296 98T274 52Q274 18 314 18Z"></path><path id="MJX-TEX-N-2277" d="M83 661Q83 668 88 674T104 681Q111 679 396 560Q686 437 687 436Q694 431 694 421T687 406Q686 405 543 344T253 222T101 161Q83 163 83 180Q83 194 95 199Q96 199 130 213T232 257T361 311L621 421L357 532Q307 553 233 584Q121 631 102 640T83 661ZM673 267Q694 267 694 248Q694 237 687 232Q684 229 420 118L156 7L416 -103L683 -215Q694 -222 694 -233Q694 -251 676 -253Q670 -253 524 -192T235 -70T90 -8Q83 -1 83 7Q83 19 94 24Q97 25 378 144T667 266Q669 267 673 267Z"></path><path id="MJX-TEX-N-30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path id="MJX-TEX-N-2264" d="M674 636Q682 636 688 630T694 615T687 601Q686 600 417 472L151 346L399 228Q687 92 691 87Q694 81 694 76Q694 58 676 56H670L382 192Q92 329 90 331Q83 336 83 348Q84 359 96 365Q104 369 382 500T665 634Q669 636 674 636ZM84 -118Q84 -108 99 -98H678Q694 -104 694 -118Q694 -130 679 -138H98Q84 -131 84 -118Z"></path><path id="MJX-TEX-N-2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path><path id="MJX-TEX-N-2265" d="M83 616Q83 624 89 630T99 636Q107 636 253 568T543 431T687 361Q694 356 694 346T687 331Q685 329 395 192L107 56H101Q83 58 83 76Q83 77 83 79Q82 86 98 95Q117 105 248 167Q326 204 378 228L626 346L360 472Q291 505 200 548Q112 589 98 597T83 616ZM84 -118Q84 -108 99 -98H678Q694 -104 694 -118Q694 -130 679 -138H98Q84 -131 84 -118Z"></path><path id="MJX-TEX-N-3C" d="M694 -11T694 -19T688 -33T678 -40Q671 -40 524 29T234 166L90 235Q83 240 83 250Q83 261 91 266Q664 540 678 540Q681 540 687 534T694 519T687 505Q686 504 417 376L151 250L417 124Q686 -4 687 -5Q694 -11 694 -19Z"></path><path id="MJX-TEX-N-3E" d="M84 520Q84 528 88 533T96 539L99 540Q106 540 253 471T544 334L687 265Q694 260 694 250T687 235Q685 233 395 96L107 -40H101Q83 -38 83 -20Q83 -19 83 -17Q82 -10 98 -1Q117 9 248 71Q326 108 378 132L626 250L378 368Q90 504 86 509Q84 513 84 520Z"></path><path id="MJX-TEX-N-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path><path id="MJX-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-TEX-N-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path><path id="MJX-TEX-N-2B" d="M56 237T56 250T70 270H369V420L370 570Q380 583 389 583Q402 583 409 568V270H707Q722 262 722 250T707 230H409V-68Q401 -82 391 -82H389H387Q375 -82 369 -68V230H70Q56 237 56 250Z"></path><path id="MJX-TEX-N-34" d="M462 0Q444 3 333 3Q217 3 199 0H190V46H221Q241 46 248 46T265 48T279 53T286 61Q287 63 287 115V165H28V211L179 442Q332 674 334 675Q336 677 355 677H373L379 671V211H471V165H379V114Q379 73 379 66T385 54Q393 47 442 46H471V0H462ZM293 211V545L74 212L183 211H293Z"></path><path id="MJX-TEX-I-1D44E" d="M33 157Q33 258 109 349T280 441Q331 441 370 392Q386 422 416 422Q429 422 439 414T449 394Q449 381 412 234T374 68Q374 43 381 35T402 26Q411 27 422 35Q443 55 463 131Q469 151 473 152Q475 153 483 153H487Q506 153 506 144Q506 138 501 117T481 63T449 13Q436 0 417 -8Q409 -10 393 -10Q359 -10 336 5T306 36L300 51Q299 52 296 50Q294 48 292 46Q233 -10 172 -10Q117 -10 75 30T33 157ZM351 328Q351 334 346 350T323 385T277 405Q242 405 210 374T160 293Q131 214 119 129Q119 126 119 118T118 106Q118 61 136 44T179 26Q217 26 254 59T298 110Q300 114 325 217T351 328Z"></path><path id="MJX-TEX-I-1D453" d="M118 -162Q120 -162 124 -164T135 -167T147 -168Q160 -168 171 -155T187 -126Q197 -99 221 27T267 267T289 382V385H242Q195 385 192 387Q188 390 188 397L195 425Q197 430 203 430T250 431Q298 431 298 432Q298 434 307 482T319 540Q356 705 465 705Q502 703 526 683T550 630Q550 594 529 578T487 561Q443 561 443 603Q443 622 454 636T478 657L487 662Q471 668 457 668Q445 668 434 658T419 630Q412 601 403 552T387 469T380 433Q380 431 435 431Q480 431 487 430T498 424Q499 420 496 407T491 391Q489 386 482 386T428 385H372L349 263Q301 15 282 -47Q255 -132 212 -173Q175 -205 139 -205Q107 -205 81 -186T55 -132Q55 -95 76 -78T118 -61Q162 -61 162 -103Q162 -122 151 -136T127 -157L118 -162Z"></path><path id="MJX-TEX-I-1D454" d="M311 43Q296 30 267 15T206 0Q143 0 105 45T66 160Q66 265 143 353T314 442Q361 442 401 394L404 398Q406 401 409 404T418 412T431 419T447 422Q461 422 470 413T480 394Q480 379 423 152T363 -80Q345 -134 286 -169T151 -205Q10 -205 10 -137Q10 -111 28 -91T74 -71Q89 -71 102 -80T116 -111Q116 -121 114 -130T107 -144T99 -154T92 -162L90 -164H91Q101 -167 151 -167Q189 -167 211 -155Q234 -144 254 -122T282 -75Q288 -56 298 -13Q311 35 311 43ZM384 328L380 339Q377 350 375 354T369 368T359 382T346 393T328 402T306 405Q262 405 221 352Q191 313 171 233T151 117Q151 38 213 38Q269 38 323 108L331 118L384 328Z"></path><path id="MJX-TEX-N-27FA" d="M1438 514Q1438 525 1454 525Q1459 525 1462 525T1467 525T1471 524T1473 523T1475 520T1477 517T1480 512Q1517 438 1578 381T1689 300T1785 263Q1802 258 1802 250T1793 239T1756 228T1698 204Q1554 134 1480 -12Q1476 -21 1473 -22T1458 -24Q1438 -24 1438 -17Q1438 -13 1443 0Q1478 69 1529 123L1539 133H318L328 123Q379 69 414 0Q419 -13 419 -17Q419 -24 399 -24Q388 -24 385 -23T377 -12Q332 77 253 144T72 237Q62 240 59 242T56 250T59 257T70 262T89 268T119 278T160 296Q303 366 377 512Q382 522 385 523T401 525Q419 524 419 515Q419 510 414 500Q379 431 328 377L318 367H1539L1529 377Q1496 412 1467 458T1438 514ZM274 173H1583L1593 181Q1632 211 1710 250Q1709 251 1692 259T1647 283T1593 319L1583 327H930L927 328L602 327H274L264 319Q225 289 147 250Q148 249 165 241T210 217T264 181L274 173Z"></path><path id="MJX-TEX-I-1D44F" d="M73 647Q73 657 77 670T89 683Q90 683 161 688T234 694Q246 694 246 685T212 542Q204 508 195 472T180 418L176 399Q176 396 182 402Q231 442 283 442Q345 442 383 396T422 280Q422 169 343 79T173 -11Q123 -11 82 27T40 150V159Q40 180 48 217T97 414Q147 611 147 623T109 637Q104 637 101 637H96Q86 637 83 637T76 640T73 647ZM336 325V331Q336 405 275 405Q258 405 240 397T207 376T181 352T163 330L157 322L136 236Q114 150 114 114Q114 66 138 42Q154 26 178 26Q211 26 245 58Q270 81 285 114T318 219Q336 291 336 325Z"></path><path id="MJX-TEX-N-6C" d="M42 46H56Q95 46 103 60V68Q103 77 103 91T103 124T104 167T104 217T104 272T104 329Q104 366 104 407T104 482T104 542T103 586T103 603Q100 622 89 628T44 637H26V660Q26 683 28 683L38 684Q48 685 67 686T104 688Q121 689 141 690T171 693T182 694H185V379Q185 62 186 60Q190 52 198 49Q219 46 247 46H263V0H255L232 1Q209 2 183 2T145 3T107 3T57 1L34 0H26V46H42Z"></path><path id="MJX-TEX-N-6F" d="M28 214Q28 309 93 378T250 448Q340 448 405 380T471 215Q471 120 407 55T250 -10Q153 -10 91 57T28 214ZM250 30Q372 30 372 193V225V250Q372 272 371 288T364 326T348 362T317 390T268 410Q263 411 252 411Q222 411 195 399Q152 377 139 338T126 246V226Q126 130 145 91Q177 30 250 30Z"></path><path id="MJX-TEX-N-67" d="M329 409Q373 453 429 453Q459 453 472 434T485 396Q485 382 476 371T449 360Q416 360 412 390Q410 404 415 411Q415 412 416 414V415Q388 412 363 393Q355 388 355 386Q355 385 359 381T368 369T379 351T388 325T392 292Q392 230 343 187T222 143Q172 143 123 171Q112 153 112 133Q112 98 138 81Q147 75 155 75T227 73Q311 72 335 67Q396 58 431 26Q470 -13 470 -72Q470 -139 392 -175Q332 -206 250 -206Q167 -206 107 -175Q29 -140 29 -75Q29 -39 50 -15T92 18L103 24Q67 55 67 108Q67 155 96 193Q52 237 52 292Q52 355 102 398T223 442Q274 442 318 416L329 409ZM299 343Q294 371 273 387T221 404Q192 404 171 388T145 343Q142 326 142 292Q142 248 149 227T179 192Q196 182 222 182Q244 182 260 189T283 207T294 227T299 242Q302 258 302 292T299 343ZM403 -75Q403 -50 389 -34T348 -11T299 -2T245 0H218Q151 0 138 -6Q118 -15 107 -34T95 -74Q95 -84 101 -97T122 -127T170 -155T250 -167Q319 -167 361 -139T403 -75Z"></path><path id="MJX-TEX-N-2061" d=""></path><path id="MJX-TEX-N-38" d="M70 417T70 494T124 618T248 666Q319 666 374 624T429 515Q429 485 418 459T392 417T361 389T335 371T324 363L338 354Q352 344 366 334T382 323Q457 264 457 174Q457 95 399 37T249 -22Q159 -22 101 29T43 155Q43 263 172 335L154 348Q133 361 127 368Q70 417 70 494ZM286 386L292 390Q298 394 301 396T311 403T323 413T334 425T345 438T355 454T364 471T369 491T371 513Q371 556 342 586T275 624Q268 625 242 625Q201 625 165 599T128 534Q128 511 141 492T167 463T217 431Q224 426 228 424L286 386ZM250 21Q308 21 350 55T392 137Q392 154 387 169T375 194T353 216T330 234T301 253T274 270Q260 279 244 289T218 306L210 311Q204 311 181 294T133 239T107 157Q107 98 150 60T250 21Z"></path><path id="MJX-TEX-N-21D2" d="M580 514Q580 525 596 525Q601 525 604 525T609 525T613 524T615 523T617 520T619 517T622 512Q659 438 720 381T831 300T927 263Q944 258 944 250T935 239T898 228T840 204Q696 134 622 -12Q618 -21 615 -22T600 -24Q580 -24 580 -17Q580 -13 585 0Q620 69 671 123L681 133H70Q56 140 56 153Q56 168 72 173H725L735 181Q774 211 852 250Q851 251 834 259T789 283T735 319L725 327H72Q56 332 56 347Q56 360 70 367H681L671 377Q638 412 609 458T580 514Z"></path><path id="MJX-TEX-N-33" d="M127 463Q100 463 85 480T69 524Q69 579 117 622T233 665Q268 665 277 664Q351 652 390 611T430 522Q430 470 396 421T302 350L299 348Q299 347 308 345T337 336T375 315Q457 262 457 175Q457 96 395 37T238 -22Q158 -22 100 21T42 130Q42 158 60 175T105 193Q133 193 151 175T169 130Q169 119 166 110T159 94T148 82T136 74T126 70T118 67L114 66Q165 21 238 21Q293 21 321 74Q338 107 338 175V195Q338 290 274 322Q259 328 213 329L171 330L168 332Q166 335 166 348Q166 366 174 366Q202 366 232 371Q266 376 294 413T322 525V533Q322 590 287 612Q265 626 240 626Q208 626 181 615T143 592T132 580H135Q138 579 143 578T153 573T165 566T175 555T183 540T186 520Q186 498 172 481T127 463Z"></path><path id="MJX-TEX-N-2260" d="M166 -215T159 -215T147 -212T141 -204T139 -197Q139 -190 144 -183L306 133H70Q56 140 56 153Q56 168 72 173H327L406 327H72Q56 332 56 347Q56 360 70 367H426Q597 702 602 707Q605 716 618 716Q625 716 630 712T636 703T638 696Q638 692 471 367H707Q722 359 722 347Q722 336 708 328L451 327L371 173H708Q722 163 722 153Q722 140 707 133H351Q175 -210 170 -212Q166 -215 159 -215Z"></path><path id="MJX-TEX-N-221A" d="M95 178Q89 178 81 186T72 200T103 230T169 280T207 309Q209 311 212 311H213Q219 311 227 294T281 177Q300 134 312 108L397 -77Q398 -77 501 136T707 565T814 786Q820 800 834 800Q841 800 846 794T853 782V776L620 293L385 -193Q381 -200 366 -200Q357 -200 354 -197Q352 -195 256 15L160 225L144 214Q129 202 113 190T95 178Z"></path><path id="MJX-TEX-I-1D434" d="M208 74Q208 50 254 46Q272 46 272 35Q272 34 270 22Q267 8 264 4T251 0Q249 0 239 0T205 1T141 2Q70 2 50 0H42Q35 7 35 11Q37 38 48 46H62Q132 49 164 96Q170 102 345 401T523 704Q530 716 547 716H555H572Q578 707 578 706L606 383Q634 60 636 57Q641 46 701 46Q726 46 726 36Q726 34 723 22Q720 7 718 4T704 0Q701 0 690 0T651 1T578 2Q484 2 455 0H443Q437 6 437 9T439 27Q443 40 445 43L449 46H469Q523 49 533 63L521 213H283L249 155Q208 86 208 74ZM516 260Q516 271 504 416T490 562L463 519Q447 492 400 412L310 260L413 259Q516 259 516 260Z"></path><path id="MJX-TEX-I-1D435" d="M231 637Q204 637 199 638T194 649Q194 676 205 682Q206 683 335 683Q594 683 608 681Q671 671 713 636T756 544Q756 480 698 429T565 360L555 357Q619 348 660 311T702 219Q702 146 630 78T453 1Q446 0 242 0Q42 0 39 2Q35 5 35 10Q35 17 37 24Q42 43 47 45Q51 46 62 46H68Q95 46 128 49Q142 52 147 61Q150 65 219 339T288 628Q288 635 231 637ZM649 544Q649 574 634 600T585 634Q578 636 493 637Q473 637 451 637T416 636H403Q388 635 384 626Q382 622 352 506Q352 503 351 500L320 374H401Q482 374 494 376Q554 386 601 434T649 544ZM595 229Q595 273 572 302T512 336Q506 337 429 337Q311 337 310 336Q310 334 293 263T258 122L240 52Q240 48 252 48T333 46Q422 46 429 47Q491 54 543 105T595 229Z"></path><path id="MJX-TEX-S4-23A7" d="M712 899L718 893V876V865Q718 854 704 846Q627 793 577 710T510 525Q510 524 509 521Q505 493 504 349Q504 345 504 334Q504 277 504 240Q504 -2 503 -4Q502 -8 494 -9T444 -10Q392 -10 390 -9Q387 -8 386 -5Q384 5 384 230Q384 262 384 312T383 382Q383 481 392 535T434 656Q510 806 664 892L677 899H712Z"></path><path id="MJX-TEX-S4-23A9" d="M718 -893L712 -899H677L666 -893Q542 -825 468 -714T385 -476Q384 -466 384 -282Q384 3 385 5L389 9Q392 10 444 10Q486 10 494 9T503 4Q504 2 504 -239V-310V-366Q504 -470 508 -513T530 -609Q546 -657 569 -698T617 -767T661 -812T699 -843T717 -856T718 -876V-893Z"></path><path id="MJX-TEX-S4-23A8" d="M389 1159Q391 1160 455 1160Q496 1160 498 1159Q501 1158 502 1155Q504 1145 504 924Q504 691 503 682Q494 549 425 439T243 259L229 250L243 241Q349 175 421 66T503 -182Q504 -191 504 -424Q504 -600 504 -629T499 -659H498Q496 -660 444 -660T390 -659Q387 -658 386 -655Q384 -645 384 -425V-282Q384 -176 377 -116T342 10Q325 54 301 92T255 155T214 196T183 222T171 232Q170 233 170 250T171 268Q171 269 191 284T240 331T300 407T354 524T383 679Q384 691 384 925Q384 1152 385 1155L389 1159Z"></path><path id="MJX-TEX-S4-23AA" d="M384 150V266Q384 304 389 309Q391 310 455 310Q496 310 498 309Q502 308 503 298Q504 283 504 150Q504 32 504 12T499 -9H498Q496 -10 444 -10T390 -9Q386 -8 385 2Q384 17 384 150Z"></path><path id="MJX-TEX-S4-23A1" d="M319 -645V1154H666V1070H403V-645H319Z"></path><path id="MJX-TEX-S4-23A3" d="M319 -644V1155H403V-560H666V-644H319Z"></path><path id="MJX-TEX-S4-23A2" d="M319 0V602H403V0H319Z"></path><path id="MJX-TEX-S3-7B" d="M618 -943L612 -949H582L568 -943Q472 -903 411 -841T332 -703Q327 -682 327 -653T325 -350Q324 -28 323 -18Q317 24 301 61T264 124T221 171T179 205T147 225T132 234Q130 238 130 250Q130 255 130 258T131 264T132 267T134 269T139 272T144 275Q207 308 256 367Q310 436 323 519Q324 529 325 851Q326 1124 326 1154T332 1205Q369 1358 566 1443L582 1450H612L618 1444V1429Q618 1413 616 1411L608 1406Q599 1402 585 1393T552 1372T515 1343T479 1305T449 1257T429 1200Q425 1180 425 1152T423 851Q422 579 422 549T416 498Q407 459 388 424T346 364T297 318T250 284T214 264T197 254L188 251L205 242Q290 200 345 138T416 3Q421 -18 421 -48T423 -349Q423 -397 423 -472Q424 -677 428 -694Q429 -697 429 -699Q434 -722 443 -743T465 -782T491 -816T519 -845T548 -868T574 -886T595 -899T610 -908L616 -910Q618 -912 618 -928V-943Z"></path><path id="MJX-TEX-S3-5B" d="M247 -949V1450H516V1388H309V-887H516V-949H247Z"></path><path id="MJX-TEX-N-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path id="MJX-TEX-N-2192" d="M56 237T56 250T70 270H835Q719 357 692 493Q692 494 692 496T691 499Q691 511 708 511H711Q720 511 723 510T729 506T732 497T735 481T743 456Q765 389 816 336T935 261Q944 258 944 250Q944 244 939 241T915 231T877 212Q836 186 806 152T761 85T740 35T732 4Q730 -6 727 -8T711 -11Q691 -11 691 0Q691 7 696 25Q728 151 835 230H70Q56 237 56 250Z"></path><path id="MJX-TEX-N-221E" d="M55 217Q55 305 111 373T254 442Q342 442 419 381Q457 350 493 303L507 284L514 294Q618 442 747 442Q833 442 888 374T944 214Q944 128 889 59T743 -11Q657 -11 580 50Q542 81 506 128L492 147L485 137Q381 -11 252 -11Q166 -11 111 57T55 217ZM907 217Q907 285 869 341T761 397Q740 397 720 392T682 378T648 359T619 335T594 310T574 285T559 263T548 246L543 238L574 198Q605 158 622 138T664 94T714 61T765 51Q827 51 867 100T907 217ZM92 214Q92 145 131 89T239 33Q357 33 456 193L425 233Q364 312 334 337Q285 380 233 380Q171 380 132 331T92 214Z"></path><path id="MJX-TEX-N-37" d="M55 458Q56 460 72 567L88 674Q88 676 108 676H128V672Q128 662 143 655T195 646T364 644H485V605L417 512Q408 500 387 472T360 435T339 403T319 367T305 330T292 284T284 230T278 162T275 80Q275 66 275 52T274 28V19Q270 2 255 -10T221 -22Q210 -22 200 -19T179 0T168 40Q168 198 265 368Q285 400 349 489L395 552H302Q128 552 119 546Q113 543 108 522T98 479L95 458V455H55V458Z"></path><path id="MJX-TEX-N-35" d="M164 157Q164 133 148 117T109 101H102Q148 22 224 22Q294 22 326 82Q345 115 345 210Q345 313 318 349Q292 382 260 382H254Q176 382 136 314Q132 307 129 306T114 304Q97 304 95 310Q93 314 93 485V614Q93 664 98 664Q100 666 102 666Q103 666 123 658T178 642T253 634Q324 634 389 662Q397 666 402 666Q410 666 410 648V635Q328 538 205 538Q174 538 149 544L139 546V374Q158 388 169 396T205 412T256 420Q337 420 393 355T449 201Q449 109 385 44T229 -22Q148 -22 99 32T50 154Q50 178 61 192T84 210T107 214Q132 214 148 197T164 157Z"></path><path id="MJX-TEX-N-22C5" d="M78 250Q78 274 95 292T138 310Q162 310 180 294T199 251Q199 226 182 208T139 190T96 207T78 250Z"></path><path id="MJX-TEX-N-36" d="M42 313Q42 476 123 571T303 666Q372 666 402 630T432 550Q432 525 418 510T379 495Q356 495 341 509T326 548Q326 592 373 601Q351 623 311 626Q240 626 194 566Q147 500 147 364L148 360Q153 366 156 373Q197 433 263 433H267Q313 433 348 414Q372 400 396 374T435 317Q456 268 456 210V192Q456 169 451 149Q440 90 387 34T253 -22Q225 -22 199 -14T143 16T92 75T56 172T42 313ZM257 397Q227 397 205 380T171 335T154 278T148 216Q148 133 160 97T198 39Q222 21 251 21Q302 21 329 59Q342 77 347 104T352 209Q352 289 347 316T329 361Q302 397 257 397Z"></path><path id="MJX-TEX-N-39" d="M352 287Q304 211 232 211Q154 211 104 270T44 396Q42 412 42 436V444Q42 537 111 606Q171 666 243 666Q245 666 249 666T257 665H261Q273 665 286 663T323 651T370 619T413 560Q456 472 456 334Q456 194 396 97Q361 41 312 10T208 -22Q147 -22 108 7T68 93T121 149Q143 149 158 135T173 96Q173 78 164 65T148 49T135 44L131 43Q131 41 138 37T164 27T206 22H212Q272 22 313 86Q352 142 352 280V287ZM244 248Q292 248 321 297T351 430Q351 508 343 542Q341 552 337 562T323 588T293 615T246 625Q208 625 181 598Q160 576 154 546T147 441Q147 358 152 329T172 282Q197 248 244 248Z"></path><path id="MJX-TEX-I-1D461" d="M26 385Q19 392 19 395Q19 399 22 411T27 425Q29 430 36 430T87 431H140L159 511Q162 522 166 540T173 566T179 586T187 603T197 615T211 624T229 626Q247 625 254 615T261 596Q261 589 252 549T232 470L222 433Q222 431 272 431H323Q330 424 330 420Q330 398 317 385H210L174 240Q135 80 135 68Q135 26 162 26Q197 26 230 60T283 144Q285 150 288 151T303 153H307Q322 153 322 145Q322 142 319 133Q314 117 301 95T267 48T216 6T155 -11Q125 -11 98 4T59 56Q57 64 57 83V101L92 241Q127 382 128 383Q128 385 77 385H26Z"></path><path id="MJX-TEX-N-2208" d="M84 250Q84 372 166 450T360 539Q361 539 377 539T419 540T469 540H568Q583 532 583 520Q583 511 570 501L466 500Q355 499 329 494Q280 482 242 458T183 409T147 354T129 306T124 272V270H568Q583 262 583 250T568 230H124V228Q124 207 134 177T167 112T231 48T328 7Q355 1 466 0H570Q583 -10 583 -20Q583 -32 568 -40H471Q464 -40 446 -40T417 -41Q262 -41 172 45Q84 127 84 250Z"></path><path id="MJX-TEX-N-5B" d="M118 -250V750H255V710H158V-210H255V-250H118Z"></path><path id="MJX-TEX-N-3B" d="M78 370Q78 394 95 412T138 430Q162 430 180 414T199 371Q199 346 182 328T139 310T96 327T78 370ZM78 60Q78 85 94 103T137 121Q202 121 202 8Q202 -44 183 -94T144 -169T118 -194Q115 -194 106 -186T95 -174Q94 -171 107 -155T137 -107T160 -38Q161 -32 162 -22T165 -4T165 4Q165 5 161 4T142 0Q110 0 94 18T78 60Z"></path><path id="MJX-TEX-N-222A" d="M591 598H592Q604 598 611 583V376Q611 345 611 296Q610 162 606 148Q605 146 605 145Q586 68 507 23T333 -22Q268 -22 209 -1T106 66T56 173Q55 180 55 384L56 585Q66 598 75 598Q85 598 95 585V378L96 172L98 162Q112 95 181 57T332 18Q415 18 487 58T570 175Q571 180 571 383V583Q579 598 591 598Z"></path><path id="MJX-TEX-N-A0" d=""></path></defs></svg></body></html>

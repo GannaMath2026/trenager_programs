@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ОГЭ Информатика — Задание 3 (Логика)</title>
+    <style>
+        :root { --bg: #f1f4f9; --panel: #fff; --ink: #1c2c45; --muted: #60738e; --line: #d7e1ec; --blue: #3267e8; --good: #187447; --bad: #b42318; --shadow: 0 8px 26px #18304b0b; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Arial; }
+        header { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid var(--line); padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .brand strong { display: block; font-size: 19px; }
+        .brand small { color: var(--blue); font-weight: 800; letter-spacing: .1em; }
+        .buttons { display: flex; gap: 7px; flex-wrap: wrap; }
+        .btn { border: 1px solid var(--line); border-radius: 9px; padding: 9px 12px; background: #fff; color: #2c405e; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: .2s; }
+        .btn:hover { background: #f8fafc; }
+        .btn.primary { background: var(--blue); color: white; border-color: var(--blue); }
+        .btn.primary:hover { background: #2554c7; }
+        .btn.danger { background: #fff0f0; color: var(--bad); border-color: #fecaca; }
+        .btn.danger:hover { background: #fee2e2; }
+        .layout { max-width: 1500px; margin: auto; padding: 14px; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 14px; }
+        .side, .main { background: #fff; border: 1px solid var(--line); border-radius: 15px; box-shadow: var(--shadow); }
+        .side { position: sticky; top: 90px; max-height: calc(100vh - 105px); overflow: auto; padding: 14px; }
+        .main { padding: clamp(16px, 2vw, 28px); min-height: 75vh; position: relative; }
+        .side h2 { font-size: 15px; margin: 4px 0 10px; display: flex; justify-content: space-between; align-items: center; }
+        .tasknav { display: grid; gap: 4px; }
+        .tasknav button { display: flex; gap: 8px; text-align: left; width: 100%; border: 1px solid transparent; border-radius: 8px; background: transparent; padding: 8px; font: inherit; font-size: 13px; cursor: pointer; transition: .2s; }
+        .tasknav button:hover { background: #f8fafc; }
+        .tasknav button.active { background: #eef3ff; border-color: #c3d3fa; font-weight: bold; }
+        .tasknav button.status-done { background: #e8f8ee; border-color: #b7e4c7; }
+        .tasknav button.status-skipped { background: #fff5db; border-color: #f0d17a; }
+        .statusmark { font-size: 16px; min-width: 20px; }
+        .progress { height: 8px; background: #e8edf4; border-radius: 99px; overflow: hidden; margin: 8px 0 14px; }
+        .progress div { height: 100%; background: var(--blue); width: 0; transition: width .3s; }
+        .badge { display: inline-block; background: #eaf0ff; color: #2d55b8; border-radius: 7px; padding: 4px 8px; font-size: 12px; font-weight: 800; }
+        .task-title { font-size: clamp(20px, 2.5vw, 28px); line-height: 1.25; margin: 12px 0; }
+        .condition { white-space: pre-line; background: #f7f9fc; border: 1px solid var(--line); border-left: 4px solid var(--blue); border-radius: 12px; padding: 16px; margin: 15px 0; font-size: 18px; font-weight: 500; }
+        .label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: 900; color: #647690; margin-bottom: 8px;}
+        .answerrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
+        .answerrow input { flex: 1; min-width: 180px; padding: 12px; border: 2px solid #cbd5e1; border-radius: 9px; font: inherit; font-size: 18px; font-weight: bold; }
+        .feedback { margin: 12px 0; font-weight: 700; font-size: 18px; }
+        
+        /* Рисовалка */
+        .canvas-container { border: 2px dashed #cbd5e1; border-radius: 12px; background: #fafbfc; margin: 15px 0; position: relative; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 220px; cursor: crosshair; touch-action: none; }
+        .canvas-tools { position: absolute; top: 8px; right: 8px; display: flex; gap: 5px; }
+        .tool-btn { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font-size: 12px; cursor: pointer; font-weight: bold; color: #333; }
+        .tool-btn:hover { background: #f1f5f9; }
+        
+        .steps-box { border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 15px 0; background: #f8fafc; display: none; }
+        .steps-box.show { display: block; }
+        .step-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #cbd5e1; }
+        .step-item:last-child { border: none; margin: 0; padding: 0; }
+        .step-title { font-weight: bold; color: var(--blue); margin-bottom: 4px; }
+        
+        /* Комментарий */
+        .comment-box { margin-top: 15px; }
+        .comment-box textarea { width: 100%; height: 70px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 9px; font: inherit; resize: vertical; }
+
+        .actions { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 16px; margin-top: 20px; }
+        
+        /* Модалка и теория */
+        .overlay { display: none; position: fixed; inset: 0; background: #17263dd0; z-index: 20; align-items: center; justify-content: center; padding: 18px; }
+        .overlay.show { display: flex; }
+        .modal { background: white; border-radius: 15px; padding: 22px; max-width: 950px; width: 100%; max-height: 90vh; overflow: auto; }
+        
+        .sticker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0; }
+        .sticker { padding: 15px; border-radius: 12px; box-shadow: 2px 4px 10px rgba(0,0,0,0.1); position: relative; font-size: 14px; }
+        .sticker:nth-child(1) { background: #fff9c4; border: 2px solid #fbc02d; transform: rotate(-1deg); }
+        .sticker:nth-child(2) { background: #e1f5fe; border: 2px solid #4fc3f7; transform: rotate(1deg); }
+        .sticker:nth-child(3) { background: #e8f5e9; border: 2px solid #81c784; transform: rotate(-1deg); grid-column: span 2; }
+        .sticker h4 { margin: 0 0 8px 0; font-size: 16px; }
+        .sticker .math { font-size: 18px; font-weight: bold; text-align: center; margin: 10px 0; font-family: monospace; }
+
+        /* Отчёт */
+        .report { font-size: 13px; }
+        .report table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .report th, .report td { border: 1px solid #cbd5e1; padding: 6px; text-align: left; vertical-align: top; }
+        .report th { background: #f4f7fb; }
+        .report .status-cell { font-weight: bold; text-align: center; }
+        .report .status-ok { color: var(--good); background: #e8f8ee; }
+        .report .status-bad { color: var(--bad); background: #fee2e2; }
+        .report .status-skip { color: #b45309; background: #fef3c7; }
+        .report .status-hint { color: #7c3aed; font-size: 11px; display: block; }
+        .report img { max-width: 250px; width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; display: block; margin-top: 5px; }
+        .report textarea { width: 100%; height: 60px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px; font: inherit; resize: vertical; }
+        
+        @media(max-width: 850px) { 
+            .layout { grid-template-columns: 1fr; } 
+            .side { position: static; max-height: none; } 
+            .sticker-grid { grid-template-columns: 1fr; }
+            .sticker:nth-child(3) { grid-column: span 1; }
+        }
+        @media print {
+            body { background: #fff !important; }
+            header, .side, .actions, .buttons { display: none !important; }
+            .layout { display: block; padding: 0; margin: 0; }
+            .main { border: none; box-shadow: none; padding: 0; }
+            .overlay.show { display: block !important; position: static !important; background: transparent !important; padding: 0 !important; }
+            .overlay.show .modal { display: block !important; position: static !important; max-width: none !important; max-height: none !important; overflow: visible !important; box-shadow: none !important; padding: 0 !important; }
+            .report th, .report td { padding: 4px; font-size: 11px; }
+            .report img { max-width: 150px; }
+            .report .report-actions { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="brand">
+        <small>ОГЭ • ИНФОРМАТИКА</small>
+        <strong>Задание 3: Логика и высказывания</strong>
+        <span id="studentNameDisplay" style="font-size: 13px; color: var(--blue);">Ученик</span>
+    </div>
+    <div class="buttons">
+        <button class="btn" id="guideBtn">📚 Методичка</button>
+        <button class="btn" id="saveBtn">💾 Сохранить</button>
+        <button class="btn" id="resetBtn" style="color: var(--bad);">🔄 Сброс</button>
+        <button class="btn primary" id="reportBtn">📋 Отчёт</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="side">
+        <h2>Все задания</h2>
+        <div class="progress"><div id="progressbar"></div></div>
+        <div id="tasknav" class="tasknav"></div>
+    </aside>
+    <main class="main" id="view"></main>
+</div>
+
+<div class="overlay" id="modal">
+    <div class="modal" id="modalcontent"></div>
+</div>
+
+<script>
+const TASKS = [
+    { id:1, type:'p', text:"Напишите наибольшее целое число x, для которого истинно высказывание:\n¬(x ≤ 10) ∧ ¬(x > 16)", answer:"16",
+      steps:[{t:"Шаг 1", c:"¬(x ≤ 10) = x > 10.<br>¬(x > 16) = x ≤ 16."},{t:"Шаг 2", c:"(x > 10) ∧ (x ≤ 16)."},{t:"Шаг 3", c:"x ∈ (10; 16]. Наибольшее целое: 16."}]},
+    { id:101, type:'a', text:"Наибольшее целое x:\n¬(x ≤ 11) ∧ ¬(x ≥ 17) ∧ (x нечётное)", answer:"15"},
+    
+    { id:2, type:'p', text:"Напишите наименьшее число x:\n¬(x < 25) ∧ ¬(сумма цифр x > 6)", answer:"30",
+      steps:[{t:"Шаг 1", c:"¬(x < 25) = x ≥ 25.<br>¬(сумма > 6) = сумма ≤ 6."},{t:"Шаг 2", c:"x ≥ 25, сумма цифр ≤ 6."},{t:"Шаг 3", c:"25 (7), 26 (8), 27 (9), 28 (10), 29 (11) — не подходят.<br>30: 3+0=3 (≤6) — подходит."}]},
+    { id:102, type:'a', text:"Наименьшее число x:\n¬(x < 30) ∧ ¬(сумма цифр x > 3)", answer:"30"}, 
+    
+    { id:3, type:'p', text:"Напишите наибольшее целое число x:\n¬(x чётное) ∧ ¬(x ≥ 11)", answer:"9",
+      steps:[{t:"Шаг 1", c:"¬(x чётное) = x нечётное.<br>¬(x ≥ 11) = x < 11."},{t:"Шаг 2", c:"x < 11, x нечётное."},{t:"Шаг 3", c:"Наибольшее нечётное < 11: 9."}]},
+    { id:103, type:'a', text:"Наибольшее целое x:\n¬(x чётное) ∧ ¬(x ≥ 15)", answer:"13"},
+    
+    { id:4, type:'p', text:"Дано: 638, 442, 357, 123.\nДля какого числа истинно:\n¬(Первая цифра чётная) ∧ (Сумма цифр чётная)?", answer:"123",
+      steps:[{t:"Шаг 1", c:"¬(Первая цифра чётная) = Первая цифра нечётная."},{t:"Шаг 2", c:"638 (6-чёт), 442 (4-чёт).<br>357 (3-нечёт), 123 (1-нечёт)."},{t:"Шаг 3", c:"357: 3+5+7=15 (нечёт).<br>123: 1+2+3=6 (чёт).<br>Ответ: 123."}]},
+    { id:104, type:'a', text:"Дано: 890, 521, 734, 457.\nИстинно:\n¬(Последняя цифра чётная) ∧ (Сумма цифр чётная)", answer:"457"},
+    
+    { id:5, type:'p', text:"Напишите наибольшее двузначное число:\n(первая цифра нечётная) ∧ ¬(число делится на 3)", answer:"98",
+      steps:[{t:"Шаг 1", c:"¬(делится на 3) = не делится на 3."},{t:"Шаг 2", c:"Ищем от 99 вниз с нечётной первой цифрой."},{t:"Шаг 3", c:"99 (делится).<br>98 (не делится, первая 9 — нечёт).<br>Ответ: 98."}]},
+    { id:105, type:'a', text:"Наибольшее двузначное:\n(вторая цифра чётная) ∧ ¬(число делится на 5)", answer:"98"}, 
+    
+    { id:6, type:'p', text:"Напишите наименьшее целое число x:\n¬(x ≤ 8) ∧ ¬(x ≥ 15) ∧ (x чётное)", answer:"10",
+      steps:[{t:"Шаг 1", c:"¬(x ≤ 8) = x > 8.<br>¬(x ≥ 15) = x < 15."},{t:"Шаг 2", c:"8 < x < 15, x чётное."},{t:"Шаг 3", c:"Чётные: 10, 12, 14. Наименьшее: 10."}]},
+    { id:106, type:'a', text:"Наименьшее целое x:\n¬(x ≤ 5) ∧ ¬(x ≥ 12) ∧ (x нечётное)", answer:"7"},
+    
+    { id:7, type:'p', text:"Напишите количество натуральных чисел:\n¬(Число > 15) ∧ ¬(Число чётное)", answer:"8",
+      steps:[{t:"Шаг 1", c:"¬(Число > 15) = Число ≤ 15.<br>¬(Число чётное) = Число нечётное."},{t:"Шаг 2", c:"Нечётные от 1 до 15."},{t:"Шаг 3", c:"1, 3, 5, 7, 9, 11, 13, 15. Всего 8."}]},
+    { id:107, type:'a', text:"Количество натуральных чисел:\n¬(Число > 12) ∧ ¬(Число нечётное)", answer:"6"}, 
+    
+    { id:8, type:'p', text:"Для какого целого X ЛОЖНО:\n(X > 7) ∨ ¬(X > 6)?", answer:"7",
+      steps:[{t:"Шаг 1", c:"Ложно, значит отрицание ИСТИННО."},{t:"Шаг 2", c:"¬((X > 7) ∨ ¬(X > 6)) = ¬(X > 7) ∧ (X > 6)."},{t:"Шаг 3", c:"(X ≤ 7) ∧ (X > 6) → X = 7."}]},
+    { id:108, type:'a', text:"Для какого целого X ЛОЖНО:\n(X > 5) ∨ ¬(X > 4)?", answer:"5"},
+    
+    { id:9, type:'p', text:"Наибольшее натуральное x:\n¬((x ≥ 23) ∨ (x < 18))", answer:"22",
+      steps:[{t:"Шаг 1", c:"¬(A ∨ B) = ¬A ∧ ¬B."},{t:"Шаг 2", c:"(x < 23) ∧ (x ≥ 18)."},{t:"Шаг 3", c:"18 ≤ x < 23. Наибольшее: 22."}]},
+    { id:109, type:'a', text:"Наибольшее натуральное x:\n¬((x ≥ 30) ∨ (x < 25))", answer:"29"},
+    
+    { id:10, type:'p', text:"Наибольшее целое x:\n¬(x ≤ 11) ∧ ¬(x ≥ 17) ∧ (x нечётное)", answer:"15",
+      steps:[{t:"Шаг 1", c:"x > 11 ∧ x < 17 ∧ x нечётное."},{t:"Шаг 2", c:"11 < x < 17."},{t:"Шаг 3", c:"Нечётные: 13, 15. Наибольшее: 15."}]},
+    { id:110, type:'a', text:"Наибольшее целое x:\n¬(x ≤ 20) ∧ ¬(x ≥ 25) ∧ (x чётное)", answer:"24"},
+    
+    { id:11, type:'p', text:"Наибольшее двузначное x:\n(только первая цифра чётная) ∧ ¬(x делится на 7) ∧ (x делится на 9)", answer:"81",
+      steps:[{t:"Шаг 1", c:"¬(делится на 7) = не делится на 7."},{t:"Шаг 2", c:"Кратные 9: 18, 27... 81, 90."},{t:"Шаг 3", c:"Только первая чётная: 81 (8-чёт, 1-нечёт).<br>81 не делится на 7. Ответ: 81."}]},
+    { id:111, type:'a', text:"Наибольшее двузначное x:\n(только первая цифра чётная) ∧ ¬(x делится на 5) ∧ (x делится на 3)", answer:"81"}, 
+    
+    { id:12, type:'p', text:"Наименьшее натуральное X:\n(¬(X > 7) ∧ (X ≤ 12)) ∨ (X ≥ 4)", answer:"1",
+      steps:[{t:"Шаг 1", c:"¬(X > 7) = X ≤ 7."},{t:"Шаг 2", c:"(X ≤ 7) ∨ (X ≥ 4) — истинно для любого X."},{t:"Шаг 3", c:"Наименьшее натуральное: 1."}]},
+    { id:112, type:'a', text:"Наименьшее натуральное X:\n(¬(X > 10) ∧ (X ≤ 15)) ∨ (X ≥ 5)", answer:"1"},
+    
+    { id:13, type:'p', text:"Наибольшее число x:\n¬(x > 43) ∧ ¬(сумма цифр x < 9)", answer:"39",
+      steps:[{t:"Шаг 1", c:"x ≤ 43 ∧ сумма цифр ≥ 9."},{t:"Шаг 2", c:"43: 4+3=7 (нет).<br>...<br>39: 3+9=12 (да)."},{t:"Шаг 3", c:"Ответ: 39."}]},
+    { id:113, type:'a', text:"Наибольшее число x:\n¬(x > 52) ∧ ¬(сумма цифр x < 7)", answer:"49"}, 
+    
+    { id:14, type:'p', text:"Количество двузначных X:\n¬(X < 64) ∧ (все цифры чётные)", answer:"8",
+      steps:[{t:"Шаг 1", c:"X ≥ 64 ∧ все цифры чётные."},{t:"Шаг 2", c:"6x: 64, 66, 68.<br>8x: 80, 82, 84, 86, 88."},{t:"Шаг 3", c:"Всего 3 + 5 = 8."}]},
+    { id:114, type:'a', text:"Количество двузначных X:\n¬(X < 80) ∧ (все цифры чётные)", answer:"5"}, 
+    
+    { id:15, type:'p', text:"Наибольшее x, для которого ЛОЖНО:\n(x > 95) ∨ ¬(x кратно 14)", answer:"84",
+      steps:[{t:"Шаг 1", c:"Отрицание истинно: (x ≤ 95) ∧ (x кратно 14)."},{t:"Шаг 2", c:"95 / 14 = 6.78."},{t:"Шаг 3", c:"14 * 6 = 84. Ответ: 84."}]},
+    { id:115, type:'a', text:"Наибольшее x, для которого ЛОЖНО:\n(x > 50) ∨ ¬(x кратно 12)", answer:"48"},
+    
+    { id:16, type:'p', text:"Наибольшее натуральное X, для которого ЛОЖНО:\n((X < 8) ∧ (X ≥ 2)) ∨ ¬(X < 12)", answer:"11",
+      steps:[{t:"Шаг 1", c:"Отрицание: ¬((X < 8) ∧ (X ≥ 2)) ∧ (X < 12)."},{t:"Шаг 2", c:"((X ≥ 8) ∨ (X < 2)) ∧ (X < 12)."},{t:"Шаг 3", c:"X = 8, 9, 10, 11 или 1. Наибольшее: 11."}]},
+    { id:116, type:'a', text:"Наибольшее натуральное X, для которого ЛОЖНО:\n((X < 5) ∧ (X ≥ 3)) ∨ ¬(X < 10)", answer:"9"},
+    
+    { id:17, type:'p', text:"Наибольшее двузначное:\n(первая цифра нечётная) ∧ ¬(число делится на 3)", answer:"97",
+      steps:[{t:"Шаг 1", c:"¬(делится на 3) = не делится на 3."},{t:"Шаг 2", c:"От 99 вниз."},{t:"Шаг 3", c:"98 (дел на 3? нет, 17). 97 (9+7=16). Ответ: 97."}]},
+    { id:117, type:'a', text:"Наибольшее двузначное:\n(вторая цифра нечётная) ∧ ¬(число делится на 5)", answer:"99"},
+    
+    { id:18, type:'p', text:"Наименьшее натуральное трёхзначное:\n¬(Число нечётное) ∧ (Число кратно 3)", answer:"102",
+      steps:[{t:"Шаг 1", c:"¬(нечётное) = чётное."},{t:"Шаг 2", c:"Чётное, кратно 3, 3-значное."},{t:"Шаг 3", c:"100 (не дел), 102 (1+2=3, чёт). Ответ: 102."}]},
+    { id:118, type:'a', text:"Наименьшее натуральное трёхзначное:\n¬(Число нечётное) ∧ (Число кратно 5)", answer:"100"},
+    
+    { id:19, type:'p', text:"Количество натуральных двузначных:\n¬(x чётное) ∧ ¬(x > 67)", answer:"29",
+      steps:[{t:"Шаг 1", c:"x нечётное, x ≤ 67."},{t:"Шаг 2", c:"От 10 до 67 включительно: 58 чисел."},{t:"Шаг 3", c:"Нечётных ровно половина: 29."}]},
+    { id:119, type:'a', text:"Количество натуральных двузначных:\n¬(x чётное) ∧ ¬(x > 45)", answer:"18"},
+    
+    { id:20, type:'p', text:"Количество трёхзначных X:\n(X ≥ 250) ∧ (X кратно 30) ∧ ¬(X < 700)", answer:"10",
+      steps:[{t:"Шаг 1", c:"X ≥ 700, кратно 30."},{t:"Шаг 2", c:"Наименьшее: 720."},{t:"Шаг 3", c:"От 720 до 990: 720, 750... 990. Всего 10."}]},
+    { id:120, type:'a', text:"Количество трёхзначных X:\n(X ≥ 150) ∧ (X кратно 40) ∧ ¬(X < 600)", answer:"10"} 
+];
+
+TASKS.sort((a,b) => a.id - b.id);
+
+let state = {
+    name: 'Ученик',
+    current: 1,
+    done: {}, 
+    drawings: {}, 
+    comments: {}, 
+    answers: {}
+};
+
+let embeddedData = null;
+try {
+    let scriptTag = document.getElementById('embedded-state');
+    if (scriptTag) embeddedData = JSON.parse(scriptTag.textContent);
+} catch(e) {}
+
+if (embeddedData) {
+    state = { ...state, ...embeddedData };
+} else {
+    try {
+        let old = JSON.parse(localStorage.getItem('oge_logic_v13') || 'null');
+        if(old) state = { ...state, ...old };
+    } catch(e) {}
+}
+
+// Принудительно приводим ID текущего задания к числу
+state.current = Number(state.current) || 1;
+if (!state.done) state.done = {};
+
+const $ = id => document.getElementById(id);
+const getTask = (id) => TASKS.find(t => t.id == id);
+const isAnalog = (id) => Number(id) >= 100;
+const getProtoId = (id) => isAnalog(id) ? (Number(id) % 100) : Number(id);
+
+const PROTO_IDS = TASKS.filter(t => !isAnalog(t.id)).map(t => t.id);
+
+function save() { localStorage.setItem('oge_logic_v13', JSON.stringify(state)); }
+
+function renderNav() {
+    try {
+        $('tasknav').innerHTML = PROTO_IDS.map(pid => {
+            let pStat = state.done[pid] || {};
+            let aStat = state.done[pid + 100] || {};
+            
+            let statusClass = '';
+            let mark = '⚪';
+            
+            if (pStat.correct) { 
+                if (aStat.correct) { statusClass = 'status-done'; mark = '✅'; }
+                else if (pStat.hintUsed) { statusClass = 'status-skipped'; mark = '⚠️'; }
+                else { statusClass = 'status-done'; mark = '✅'; }
+            }
+            else if (pStat.skipped) { statusClass = 'status-skipped'; mark = '⏭️'; }
+
+            let isActive = (state.current === pid) || (state.current === pid + 100);
+
+            return `<button class="${isActive ? 'active' : ''} ${statusClass}" onclick="openTask(${pid})">
+                <span class="statusmark">${mark}</span>
+                <span>Задание ${pid}</span>
+            </button>`;
+        }).join('');
+        
+        let doneCount = PROTO_IDS.filter(pid => state.done[pid] && state.done[pid].correct).length;
+        $('progressbar').style.width = (100 * doneCount / PROTO_IDS.length) + '%';
+    } catch(e) {
+        console.error("Ошибка в renderNav", e);
+    }
+}
+
+function openTask(id) {
+    state.current = Number(id);
+    save();
+    render();
+    window.scrollTo(0, 0);
+}
+
+/* --- ИСПРАВЛЕННАЯ ЛОГИКА ПЕРЕХОДА --- */
+function goNext() {
+    let currentProto = getProtoId(state.current);
+    let nextProto = currentProto + 1;
+    if (nextProto > 20) nextProto = 1; // Если это было 20-е, идем в начало
+    
+    if (isAnalog(state.current)) {
+        // Из аналога всегда идем на СЛЕДУЮЩИЙ прототип в списке
+        openTask(nextProto);
+    } else {
+        // Из прототипа проверяем: была ли подсказка и решен ли аналог?
+        let pStat = state.done[currentProto] || {};
+        let aStat = state.done[currentProto + 100] || {};
+        
+        if (pStat.hintUsed && !aStat.correct) {
+            // Если аналог не решен - кидаем на него
+            openTask(currentProto + 100);
+        } else {
+            // Иначе - на следующий прототип
+            openTask(nextProto);
+        }
+    }
+}
+/* ------------------------------------- */
+
+function render() {
+    renderNav();
+    $('studentNameDisplay').textContent = state.name;
+    
+    let t = getTask(state.current);
+    if (!t) {
+        // Если задание не найдено, ставим дефолтное
+        state.current = 1;
+        t = getTask(1);
+    }
+
+    let stat = state.done[t.id] || {};
+    let isDone = stat.correct;
+    let isRep = isAnalog(t.id);
+    let protoId = getProtoId(t.id);
+    
+    let mainBg = '#fff';
+    let borderStyle = '1px solid var(--line)';
+    if (isDone) { mainBg = '#e8f8ee'; borderStyle = '2px solid #2c9b5d'; }
+    else if (stat.skipped) { mainBg = '#fff5db'; borderStyle = '2px solid #f0d17a'; }
+    else if (stat.attempts > 0) { mainBg = '#fef2f2'; borderStyle = '2px solid #fecaca'; }
+
+    $('view').style.background = mainBg;
+    $('view').style.border = borderStyle;
+    $('view').style.borderRadius = '15px';
+
+    let navHtml = '';
+    if (isRep) {
+        navHtml = `<div style="background: #fef08a; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; color: #854d0e;">
+            📝 Работа над ошибками. Аналог к заданию ${protoId}
+            <button class="btn" style="float: right; padding: 2px 8px;" onclick="openTask(${protoId})">Вернуться</button>
+        </div>`;
+    }
+
+    let hintBtn = (!isRep && !isDone && !stat.hintUsed) ? `<button class="btn" onclick="useHint()">💡 Подсказка</button>` : '';
+
+    $('view').innerHTML = `
+        ${navHtml}
+        <div class="badge">${isRep ? 'Аналог (без подсказок)' : 'Прототип'}</div>
+        <h1 class="task-title">Задание ${t.id}</h1>
+        <div class="condition">
+            <div class="label">Условие</div>
+            ${t.text.replace(/\n/g, '<br>')}
+        </div>
+
+        <div class="buttons" style="margin-bottom: 15px;">
+            ${hintBtn}
+        </div>
+
+        ${!isRep ? `
+        <div class="steps-box ${stat.hintUsed ? 'show' : ''}" id="stepsBox">
+            ${t.steps.map(s => `
+                <div class="step-item">
+                    <div class="step-title">${s.t}</div>
+                    <div>${s.c}</div>
+                </div>
+            `).join('')}
+        </div>
+        ` : ''}
+
+        <div class="label">Черновик / Числовая прямая</div>
+        <div class="canvas-container">
+            <canvas id="board" width="800" height="220"></canvas>
+            <div class="canvas-tools">
+                <button class="tool-btn" onclick="clearCanvas()">Очистить</button>
+            </div>
+        </div>
+
+        <div class="comment-box">
+            <div class="label">Комментарий к решению (необязательно)</div>
+            <textarea placeholder="Напишите, что было сложно или как вы рассуждали..." oninput="state.comments[state.current]=this.value; save();">${state.comments[state.current] || ''}</textarea>
+        </div>
+
+        <div class="answerrow">
+            <input id="answer" value="${state.answers[t.id] || ''}" placeholder="Введите ответ" oninput="state.answers[state.current]=this.value;save()" onkeydown="if(event.key==='Enter') check()">
+            <button class="btn primary" onclick="check()">Проверить</button>
+        </div>
+        <div class="feedback" id="feedback">
+            ${isDone ? '<span style="color:var(--good)">✅ Верно! Задание выполнено.</span>' : 
+              stat.skipped ? '<span style="color:#b45309">⏭️ Пропущено. Попробуйте решить аналог.</span>' : 
+              stat.attempts > 0 ? '<span style="color:var(--bad)">❌ Есть ошибки. Попробуйте ещё раз.</span>' : ''}
+        </div>
+
+        <div class="actions">
+            ${!isDone ? `<div class="buttons"><button class="btn" onclick="skipTask()">Пропустить задание ⏭️</button></div>` : ''}
+        </div>
+    `;
+
+    initCanvas(t.id);
+}
+
+function useHint() {
+    let t = getTask(state.current);
+    if (!t || isAnalog(t.id)) return;
+    if (!state.done[t.id]) state.done[t.id] = { attempts: 0, hintUsed: false, correct: false };
+    if (!state.done[t.id].hintUsed) {
+        state.done[t.id].hintUsed = true;
+        save();
+        render();
+        
+        if (!state.done[t.id].correct) {
+            openModal(`
+                <h2>💡 Подсказка использована</h2>
+                <p>Вы посмотрели подсказку. Теперь, чтобы закрепить материал, после правильного решения этого задания вам будет предложено решить <b>аналог</b> для работы над ошибками.</p>
+                <button class="btn primary" onclick="closeModal()">Понятно</button>
+            `);
+        }
+    }
+}
+
+function skipTask() {
+    let id = state.current;
+    if (!state.done[id]) state.done[id] = { attempts: 0, hintUsed: false, correct: false };
+    state.done[id].skipped = true;
+    save();
+    goNext();
+}
+
+function check() {
+    let t = getTask(state.current);
+    if (!t) return;
+    let v = $('answer').value.trim();
+    if (!v) return;
+
+    if (!state.done[t.id]) state.done[t.id] = { attempts: 0, hintUsed: false, correct: false };
+    state.done[t.id].attempts += 1;
+
+    let isCorrect = (v.toLowerCase() === t.answer.toLowerCase());
+
+    if (isCorrect) {
+        state.done[t.id].correct = true;
+        state.done[t.id].skipped = false;
+        state.done[t.id].firstTry = (state.done[t.id].attempts === 1);
+        
+        if (canvas) state.drawings[t.id] = canvas.toDataURL();
+        save();
+        
+        $('feedback').innerHTML = '<span style="color:var(--good); font-size: 20px;">✅ Верно! 🎉</span>';
+        $('view').style.background = '#e8f8ee';
+        $('view').style.border = '2px solid #2c9b5d';
+        renderNav();
+
+        setTimeout(() => {
+            if (!isAnalog(t.id) && state.done[t.id].hintUsed) {
+                openTask(t.id + 100); 
+            } else {
+                goNext();
+            }
+        }, 1500);
+
+    } else {
+        $('feedback').innerHTML = '<span style="color:var(--bad); font-size: 18px;">❌ Неверно. Попробуйте ещё раз.</span>';
+        $('view').style.background = '#fef2f2';
+        $('view').style.border = '2px solid #fecaca';
+        save();
+        renderNav();
+    }
+}
+
+/* --- Рисовалка --- */
+let canvas, ctx, drawing = false;
+
+function initCanvas(taskId) {
+    canvas = $('board');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(20, 150); ctx.lineTo(780, 150); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(770, 145); ctx.lineTo(780, 150); ctx.lineTo(770, 155); ctx.stroke();
+
+    if (state.drawings[taskId]) {
+        let img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = state.drawings[taskId];
+    }
+
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#e11d48'; // Красный
+
+    canvas.onmousedown = startDraw;
+    canvas.onmousemove = draw;
+    canvas.onmouseup = stopDraw;
+    canvas.onmouseout = stopDraw;
+
+    canvas.ontouchstart = (e) => { e.preventDefault(); startDraw(e.touches[0]); };
+    canvas.ontouchmove = (e) => { e.preventDefault(); draw(e.touches[0]); };
+    canvas.ontouchend = stopDraw;
+}
+
+function getPos(e) {
+    let rect = canvas.getBoundingClientRect();
+    return {
+        x: (e.clientX - rect.left) * (canvas.width / rect.width),
+        y: (e.clientY - rect.top) * (canvas.height / rect.height)
+    };
+}
+
+function startDraw(e) {
+    drawing = true;
+    let pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+}
+
+function draw(e) {
+    if (!drawing) return;
+    let pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+}
+
+function stopDraw() {
+    drawing = false;
+    if (state.current) {
+        state.drawings[state.current] = canvas.toDataURL();
+        save();
+    }
+}
+
+function clearCanvas() {
+    if (!canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(20, 150); ctx.lineTo(780, 150); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(770, 145); ctx.lineTo(780, 150); ctx.lineTo(770, 155); ctx.stroke();
+    
+    ctx.strokeStyle = '#e11d48';
+    ctx.lineWidth = 3;
+    
+    delete state.drawings[state.current];
+    save();
+}
+
+/* --- Модалки и Отчёт --- */
+function openModal(content) { $('modalcontent').innerHTML = content; $('modal').classList.add('show'); }
+function closeModal() { $('modal').classList.remove('show'); }
+
+$('guideBtn').onclick = () => {
+    openModal(`
+        <h2 style="text-align:center;">📚 Методичка: Логика</h2>
+        <div class="sticker-grid">
+            <div class="sticker">
+                <h4>🔄 Отрицание неравенств</h4>
+                <p>Строгое неравенство меняется на нестрогое и наоборот:</p>
+                <div class="math">¬(x > a) = x ≤ a</div>
+                <div class="math">¬(x < a) = x ≥ a</div>
+                <div class="math">¬(x ≥ a) = x < a</div>
+                <div class="math">¬(x ≤ a) = x > a</div>
+            </div>
+            <div class="sticker">
+                <h4>⚖️ Законы де Моргана</h4>
+                <p>Помогают раскрывать скобки с отрицанием:</p>
+                <div class="math">¬(A ∨ B) = ¬A ∧ ¬B</div>
+                <div class="math">¬(A ∧ B) = ¬A ∨ ¬B</div>
+                <p style="font-size:12px; margin-top:5px;">Отрицание суммы — это произведение отрицаний, и наоборот.</p>
+            </div>
+            <div class="sticker">
+                <h4>🤔 Двойное отрицание</h4>
+                <p>Два минуса дают плюс. Двойное отрицание уничтожается:</p>
+                <div class="math" style="font-size: 24px;">¬(¬A) = A</div>
+                <p>Если видите два знака «не» подряд, их можно просто убрать. <b>Подробнее смотри в теории!</b></p>
+            </div>
+            <div class="sticker">
+                <h4>📐 Пересечение и объединение</h4>
+                <p><b>∧ (И)</b> — пересечение. Число должно удовлетворять <u>обоим</u> условиям.</p>
+                <p><b>∨ (ИЛИ)</b> — объединение. Число удовлетворяет <u>хотя бы одному</u> условию.</p>
+            </div>
+        </div>
+        <div style="text-align:center;">
+            <button class="btn primary" onclick="closeModal()">Закрыть</button>
+        </div>
+    `);
+};
+
+$('resetBtn').onclick = () => {
+    if(confirm('Вы уверены, что хотите сбросить весь прогресс? Все рисунки, ответы и комментарии будут удалены.')) {
+        localStorage.removeItem('oge_logic_v13');
+        location.reload();
+    }
+};
+
+$('saveBtn').onclick = () => {
+    let clone = document.documentElement.cloneNode(true);
+    
+    let script = document.createElement('script');
+    script.id = 'embedded-state';
+    script.type = 'application/json';
+    script.textContent = JSON.stringify(state);
+    clone.querySelector('body').appendChild(script);
+    
+    let overlay = clone.querySelector('#modal');
+    if (overlay) overlay.classList.remove('show');
+    
+    let htmlStr = '<!doctype html>\n' + clone.outerHTML;
+    let blob = new Blob([htmlStr], {type: 'text/html'});
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = 'oge_logic_trainer_saved.html';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+$('reportBtn').onclick = () => {
+    let rows = PROTO_IDS.map(pid => {
+        let t = getTask(pid);
+        let stat = state.done[pid] || {};
+        let analogStat = state.done[pid + 100] || {};
+        
+        let statusText = 'Не решено';
+        let statusClass = 'status-bad';
+        
+        if (stat.correct) {
+            statusText = '✅ Решено';
+            statusClass = 'status-ok';
+            if (stat.hintUsed) statusText += '<br><span class="status-hint">(была подсказка)</span>';
+            if (stat.firstTry) statusText += '<br><span style="font-size:11px; color:green;">(с 1-й попытки)</span>';
+            else statusText += `<br><span style="font-size:11px; color:orange;">(попыток: ${stat.attempts})</span>`;
+        } else if (stat.skipped) {
+            statusText = '⏭️ Пропущено';
+            statusClass = 'status-skip';
+        } else if (stat.attempts > 0) {
+            statusText = `❌ Ошибки (${stat.attempts})`;
+        }
+
+        let imgHtml = state.drawings[pid] ? `<img src="${state.drawings[pid]}" alt="Рисунок">` : '<span style="color:#94a3b8;">Нет рисунка</span>';
+        let commentVal = state.comments[pid] || '';
+        
+        let analogStatus = analogStat.correct ? '<span style="color:green; font-size:11px; display:block; margin-top:4px;">✅ Аналог решён</span>' : '';
+
+        return `<tr>
+            <td style="text-align:center;"><b>${pid}</b></td>
+            <td style="font-size:12px;">${t.text.replace(/\n/g, '<br>')}</td>
+            <td style="text-align:center; font-weight:bold;">${state.answers[pid] || '—'}</td>
+            <td class="status-cell ${statusClass}">${statusText} ${analogStatus}</td>
+            <td>
+                ${imgHtml}
+                <textarea placeholder="Комментарий..." onchange="state.comments['${pid}']=this.value; save();">${commentVal}</textarea>
+            </td>
+        </tr>`;
+    }).join('');
+
+    openModal(`
+        <div class="report">
+            <h2 style="text-align:center; margin-top:0;">Отчёт для учителя</h2>
+            <p style="text-align:center; margin-bottom: 10px;">Ученик: <b>${state.name}</b> · ${new Date().toLocaleDateString('ru-RU')}</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">№</th>
+                        <th>Условие</th>
+                        <th style="width: 60px;">Ответ</th>
+                        <th style="width: 110px;">Статус</th>
+                        <th style="width: 280px;">Черновик и Комментарий</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+            <div class="report-actions" style="margin-top:20px; text-align:center;">
+                <button class="btn primary" onclick="window.print()">🖨️ Печать / PDF</button>
+                <button class="btn" onclick="closeModal()">Закрыть</button>
+            </div>
+        </div>
+    `);
+};
+
+function init() {
+    if(!localStorage.getItem('oge_logic_v13') && !embeddedData) {
+        openModal(`
+            <h2>Начало работы</h2>
+            <p>Введите имя ученика:</p>
+            <input id="studentName" value="Ученик" style="padding:10px; width:100%; margin-bottom:15px; font-size:16px; border: 1px solid #ccc; border-radius: 6px;">
+            <button class="btn primary" onclick="state.name=document.getElementById('studentName').value.trim()||'Ученик'; save(); closeModal(); render();">Начать</button>
+        `);
+    }
+    render();
+}
+
+init();
+</script>
+</body>
+</html>

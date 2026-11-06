@@ -1,0 +1,2658 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Неравенства: разбор по шагам</title>
+<style>
+:root{
+  --bg:#f0f4f8;--cd:#fff;--tx:#1e293b;--mu:#64748b;--ac:#3b82f6;
+  --ok:#10b981;--bad:#ef4444;--wa:#f59e0b;--br:#e2e8f0;
+  --axis:#475569;--ans:#3b82f6;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px)
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f172a;--cd:#1e293b;--tx:#f1f5f9;--mu:#94a3b8;--ac:#60a5fa;
+    --ok:#34d399;--bad:#f87171;--wa:#fbbf24;--br:#334155;
+    --axis:#cbd5e1;--ans:#60a5fa;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f172a;--cd:#1e293b;--tx:#f1f5f9;--mu:#94a3b8;--ac:#60a5fa;
+  --ok:#34d399;--bad:#f87171;--wa:#fbbf24;--br:#334155;
+  --axis:#cbd5e1;--ans:#60a5fa;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;gap:8px;align-items:center;padding:10px 16px;background:var(--cd);border-bottom:1px solid var(--br);flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+header h1{flex:1;margin:0;font-size:18px;min-width:200px;font-weight:800;letter-spacing:-0.5px}
+main{max-width:1100px;margin:auto;padding:16px}
+button,select,input,textarea{font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--br);border-radius:10px;padding:8px 12px;transition:.15s}
+button{cursor:pointer}
+button:hover{background:var(--br)}
+button.on,button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+button.pri:hover{filter:brightness(1.1)}
+button.ghost{background:transparent}
+
+/* Кнопки шапки */
+.btn-theory{background:#8b5cf6;color:#fff;border-color:#8b5cf6}
+.btn-add{background:#10b981;color:#fff;border-color:#10b981}
+.btn-import{background:#f59e0b;color:#fff;border-color:#f59e0b}
+.btn-export{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+.btn-print{background:#64748b;color:#fff;border-color:#64748b}
+.btn-theme{background:#475569;color:#fff;border-color:#475569}
+.btn-theory:hover,.btn-add:hover,.btn-import:hover,.btn-export:hover,.btn-print:hover,.btn-theme:hover{filter:brightness(1.1)}
+
+.card{background:var(--cd);border:1px solid var(--br);border-radius:16px;padding:16px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.02)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.meta{font-size:13px;color:var(--mu)}
+.tag{font-size:12px;border:1px solid var(--br);border-radius:8px;padding:2px 8px;color:var(--mu);background:var(--bg)}
+.tx{margin:8px 0;overflow-x:auto}
+.eq{font-size:1.5em;overflow-x:auto;overflow-y:hidden;padding:12px 0;text-align:center;background:var(--bg);border-radius:10px;margin:8px 0}
+.q{font-weight:600;margin:0 0 12px;font-size:17px}
+.op{display:block;width:100%;text-align:left;margin-bottom:8px;padding:12px 14px;border-radius:12px;font-size:15px;line-height:1.4}
+.op.g{background:var(--ok);color:#fff;border-color:var(--ok)}
+.op.r{background:var(--bad);color:#fff;border-color:var(--bad)}
+.op .tx{color:inherit;margin:0}
+.op.g .tx, .op.r .tx{color:inherit}
+#fb{color:var(--mu);margin-top:8px;font-size:14px}
+#fb.bad{color:var(--bad)}
+#fb.good{color:var(--ok);font-weight:600}
+.row.done{border-left:6px solid var(--ok);background:color-mix(in srgb,var(--ok) 10%,var(--cd))}
+.row.hw{border-right:4px solid var(--wa)}
+.stk{display:inline-block;background:var(--ok);color:#fff;font-weight:800;font-size:12px;letter-spacing:.5px;padding:3px 10px;border-radius:8px;transform:rotate(-3deg);box-shadow:0 2px 4px rgba(0,0,0,.1);margin-left:8px}
+.d-basic{color:var(--ok);font-weight:600}.d-medium{color:var(--wa);font-weight:600}.d-hard{color:var(--bad);font-weight:600}
+details{margin-top:10px;background:var(--bg);border-radius:10px;padding:8px}
+summary{cursor:pointer;color:var(--mu);font-weight:500;outline:none}
+.h{padding:6px 0;overflow-x:auto;text-align:center}
+
+/* Оси и интервалы */
+.opt-ax{display:flex;flex-direction:column;gap:8px}
+.opt-ax-btn{padding:8px 12px;text-align:left;width:100%;border-radius:12px}
+.opt-ax-btn.g{background:color-mix(in srgb,var(--ok) 15%,var(--cd));border-color:var(--ok)}
+.opt-ax-btn.r{background:color-mix(in srgb,var(--bad) 15%,var(--cd));border-color:var(--bad)}
+.opt-ax-btn .cap{font-size:14px;margin-top:4px;color:var(--mu)}
+.opt-ax-btn.g .cap{color:var(--ok)}
+.opt-ax-btn.r .cap{color:var(--bad)}
+.axwrap{overflow-x:auto;padding:2px 0;pointer-events:none}
+.axsvg{display:block;width:100%;height:70px}
+.ax-label{font:13px system-ui,sans-serif;fill:var(--mu)}
+.ax-num{font:13px ui-monospace,monospace;fill:var(--tx)}
+.ax-check{font:16px system-ui,sans-serif;fill:var(--ok)}
+
+/* Теория - стикеры */
+.theory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:16px}
+.sticker{padding:16px;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.05);border:2px solid transparent}
+.sticker h3{margin:0 0 10px 0;font-size:16px;display:flex;align-items:center;gap:8px;font-weight:700}
+.sticker p{margin:6px 0;font-size:14px;line-height:1.5}
+.sticker .ex{margin-top:10px;padding:8px 12px;background:rgba(255,255,255,.6);border-radius:8px;font-size:14px;font-family:ui-monospace,monospace;overflow-x:auto}
+.st-blue{background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a}
+.st-blue .ex{color:#1e40af}
+.st-green{background:#ecfdf5;border-color:#a7f3d0;color:#064e3b}
+.st-green .ex{color:#065f46}
+.st-yellow{background:#fefce8;border-color:#fef08a;color:#713f12}
+.st-yellow .ex{color:#854d0e}
+.st-purple{background:#faf5ff;border-color:#e9d5ff;color:#4c1d95}
+.st-purple .ex{color:#5b21b6}
+.st-orange{background:#fff7ed;border-color:#fed7aa;color:#7c2d12}
+.st-orange .ex{color:#9a3412}
+.st-red{background:#fef2f2;border-color:#fecaca;color:#7f1d1d}
+.st-red .ex{color:#991b1b}
+.st-cyan{background:#ecfeff;border-color:#a5f3fc;color:#164e63}
+.st-cyan .ex{color:#155e75}
+
+/* Модальное окно */
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000;backdrop-filter:blur(2px)}
+.modal-box{background:var(--cd);border-radius:16px;padding:20px;width:100%;max-width:800px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 10px 25px rgba(0,0,0,.2)}
+.modal-box h3{margin:0 0 16px 0;font-size:18px}
+.modal-box textarea{flex:1;min-height:300px;font-family:ui-monospace,Consolas,monospace;font-size:13px;resize:none;background:var(--bg);color:var(--tx);border:1px solid var(--br);border-radius:8px;padding:12px;margin-bottom:12px}
+.modal-box .bar{margin:0;justify-content:flex-end}
+.print-options{max-width:620px;gap:12px}
+.print-fields{display:flex;gap:12px 22px;flex-wrap:wrap;padding:10px 12px;background:var(--bg);border:1px solid var(--br);border-radius:10px}
+.print-fields label,.print-task-list label{display:flex;align-items:center;gap:8px;cursor:pointer}
+.print-fields input,.print-task-list input{width:17px;height:17px;accent-color:#2563eb}
+.print-task-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.print-task-head span{display:flex;gap:6px}
+.print-task-list{max-height:38vh;overflow:auto;border:1px solid var(--br);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.print-options .bar{margin-top:4px}
+.import-box{overflow-y:auto;gap:8px}
+.import-box #jsonPaste{flex:none;height:28vh;min-height:120px;max-height:320px;white-space:pre;overflow:auto}
+.import-box .bar{position:sticky;bottom:0;background:var(--cd);padding:10px 0 2px;z-index:2}
+.import-box #importHint{padding:7px 9px;background:var(--bg);border-radius:7px}
+
+
+/* Печать */
+@media print {
+  header, .bar, .btn-theory, .btn-add, .btn-import, .btn-export, .btn-print, .btn-theme, #btnTheory, #btnAdd, #btnImport, #btnExport, #btnPrint, #btnTheme, .row .bar, .modal, button {
+    display: none !important;
+  }
+  body { background: #fff; color: #000; }
+  main { max-width: 100%; padding: 0; }
+  .card { box-shadow: none; border: none; padding: 0; margin-bottom: 24px; page-break-inside: avoid; }
+  .row { border: none !important; margin-bottom: 30px; padding: 0; background: none !important; }
+  .row .tag, .row .meta { display: none; }
+  .row .tx { font-size: 16px; }
+  h3 { font-size: 20px; margin-bottom: 8px; }
+}
+
+
+.solution-answer{padding:14px 16px;border:1px solid var(--br);border-left:5px solid var(--ok);border-radius:12px;background:color-mix(in srgb,var(--ok) 7%,var(--cd));line-height:1.55}
+.solution-axis{padding:12px 0;pointer-events:auto}
+.solution-axis .axsvg{height:100px;min-width:340px}
+.step-navigator{padding:12px 16px}
+.step-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.step-head button{white-space:nowrap}
+#stepSlider{display:block;width:100%;padding:0;margin:14px 0 4px;accent-color:var(--ac);cursor:pointer}
+.step-scale{display:flex;justify-content:space-between;color:var(--mu);font-size:12px}
+@media(max-width:520px){.step-head button{padding:7px 9px;font-size:13px}.step-head b{font-size:14px}}
+
+@media (max-width: 600px) {
+  .theory-grid{grid-template-columns:1fr}
+  .eq{font-size:1.2em}
+  main{padding:12px}
+  header h1{font-size:16px}
+}
+</style>
+<script>
+window.MathJax={
+  tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},
+  svg:{fontCache:'global'},
+  startup:{typeset:false}
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+</head>
+<body>
+<header>
+  <h1>Неравенства</h1>
+  <button id="btnTheory" class="btn-theory" title="Шпаргалка">💡 Теория</button>
+  <button id="btnAdd" class="btn-add" title="Добавить задачу">➕ Добавить</button>
+  <button id="btnImport" class="btn-import" title="Загрузить JSON">📥 Импорт</button>
+  <button id="btnExport" class="btn-export" title="Скачать JSON">💾 JSON</button>
+  <button id="btnSaveApp" class="btn-export" title="Сохранить приложение целиком">⬇️ Сохранить приложение</button>
+  <button id="btnPrint" class="btn-print" title="Печать задач">🖨 Печать</button>
+  <button id="btnTheme" class="btn-theme" title="Сменить тему">🌗</button>
+</header>
+<main id="app"></main>
+<div id="modalRoot"></div>
+
+<script type="application/json" id="seed">
+[
+  {
+    "id": 900001,
+    "n": "001",
+    "s": "01 · ПОКАЗАТЕЛЬНЫЕ",
+    "d": "medium",
+    "t": "Решите неравенство: \\( 2\\left(18^{x}+8^{x}\\right) > 12^{x}+27^{x} \\).",
+    "c": "Решите неравенство: \\( 2\\left(18^{x}+8^{x}\\right) > 12^{x}+27^{x} \\).",
+    "a": "Ответ: \\( \\left(-\\infty;\\ \\log_{2/3}\\tfrac{1}{2}\\right) \\).",
+    "ap": "\\left(-\\infty;\\ \\log_{2/3}\\tfrac{1}{2}\\right)",
+    "ch": [
+      {
+        "e": "2\\left(18^{x}+8^{x}\\right) > 12^{x}+27^{x}",
+        "q": "С чего начать? Степени записаны разными основаниями.",
+        "o": [
+          {
+            "t": "Расписать основания $18, 8, 12, 27$ через простые множители $2, 3$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Сразу разделить на $27^x$",
+            "ok": false,
+            "w": "Без расписывания оснований не получится удобной замены."
+          },
+          {
+            "t": "Прологарифмировать обе части",
+            "ok": false,
+            "w": "Сумма не логарифмируется: $\\log(a+b)\\ne\\log a+\\log b$."
+          }
+        ]
+      },
+      {
+        "e": "2\\left(2^{x}\\cdot 3^{2x}+2^{3x}\\right) > 2^{2x}\\cdot 3^{x}+3^{3x}",
+        "q": "Теперь основания видны. Как привести к одной замене?",
+        "o": [
+          {
+            "t": "Разделить обе части на $3^{3x}>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Разделить обе части на $2^{3x}>0$",
+            "ok": false,
+            "w": "Получим степени $(3/2)^x$, что менее удобно для замены."
+          },
+          {
+            "t": "Разделить обе части на $27^{x}$",
+            "ok": false,
+            "w": "Это даст $(2/3)^x$, но в одном слагаемом останется $(2/9)^x$ — замена неудобна."
+          }
+        ]
+      },
+      {
+        "e": "2\\left(\\left(\\tfrac{2}{3}\\right)^{x}+\\left(\\tfrac{2}{3}\\right)^{3x}\\right) > \\left(\\tfrac{2}{3}\\right)^{2x}+1",
+        "q": "Какая замена упростит неравенство?",
+        "o": [
+          {
+            "t": "$t=\\left(\\frac{2}{3}\\right)^{x}$, причём $t>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$t=\\left(\\frac{2}{3}\\right)^{3x}$",
+            "ok": false,
+            "w": "Тогда $(2/3)^x$ не выразится через $t$ целой степенью: получим $t^{1/3}$."
+          },
+          {
+            "t": "$t=2^{x}$",
+            "ok": false,
+            "w": "Основания в левой части разные; удобнее именно $(2/3)^x$."
+          },
+          {
+            "t": "$t=\\left(\\frac{2}{3}\\right)^{2x}$",
+            "ok": false,
+            "w": "Тогда $(2/3)^x=\\sqrt{t}$ — снова корень."
+          }
+        ]
+      },
+      {
+        "e": "2t+2t^{3} > t^{2}+1 \\quad \\Longleftrightarrow\\quad 2t^{3}-t^{2}+2t-1 > 0",
+        "q": "Как разложить левую часть на множители?",
+        "o": [
+          {
+            "t": "Сгруппировать: $t^{2}(2t-1)+(2t-1)=(2t-1)(t^{2}+1)$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Разделить всё на $t>0$: получим $2t^{2}-t+2-\\tfrac{1}{t}>0$",
+            "ok": false,
+            "w": "После деления на $t$ появляется $\\tfrac{1}{t}$ — не упрощает."
+          },
+          {
+            "t": "Решать как квадратное относительно $t$",
+            "ok": false,
+            "w": "Это уравнение третьей степени, для него нужна группировка."
+          }
+        ]
+      },
+      {
+        "e": "(2t-1)(t^{2}+1) > 0",
+        "q": "Что можно сказать о втором множителе?",
+        "o": [
+          {
+            "t": "$t^{2}+1>0$ при всех $t$ ($D=-4\u003c0$), поэтому $2t-1>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Найти корни $t^{2}+1=0$: $t=\\pm 1$, дальше метод интервалов",
+            "ok": false,
+            "w": "Уравнение $t^2+1=0$ действительных корней не имеет — парабола всегда выше оси $t$."
+          },
+          {
+            "t": "Разложить $t^{2}+1=(t-1)(t+1)$",
+            "ok": false,
+            "w": "Формула неверна: $t^{2}+1\\ne (t-1)(t+1)=t^{2}-1$."
+          }
+        ]
+      },
+      {
+        "e": "2t-1 > 0 \\iff t > \\tfrac{1}{2}",
+        "q": "Нарисуйте решение на числовой оси $t$.",
+        "o": [
+          {
+            "t": "Луч вправо от $1/2$, точка выколотая",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "\\frac{1}{2}",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч влево от $1/2$, точка выколотая",
+            "ok": false,
+            "w": "Знак $>$ означает, что $t$ правее $1/2$, а не левее.",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "\\frac{1}{2}",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 1,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч вправо от $1/2$, точка закрашенная",
+            "ok": false,
+            "w": "Неравенство строгое ($2t-1>0$) — точка выколотая.",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "\\frac{1}{2}",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "t > \\tfrac{1}{2}, \\quad t=\\left(\\tfrac{2}{3}\\right)^{x}",
+        "q": "Обратная замена. Какое неравенство получится для $x$?",
+        "o": [
+          {
+            "t": "$\\left(\\frac{2}{3}\\right)^{x}>\\frac{1}{2}$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$\\left(\\frac{2}{3}\\right)^{x}\u003c\\frac{1}{2}$",
+            "ok": false,
+            "w": "Получили $t>\\tfrac12$, значит $\\left(\\tfrac23\\right)^{x}>\\tfrac12$."
+          },
+          {
+            "t": "$\\left(\\frac{2}{3}\\right)^{x}\\ge\\frac{1}{2}$",
+            "ok": false,
+            "w": "Неравенство было строгим ($t>\\tfrac12$), поэтому $>$, а не $\\ge$."
+          }
+        ]
+      },
+      {
+        "e": "\\left(\\tfrac{2}{3}\\right)^{x} > \\tfrac{1}{2}",
+        "q": "Как свести к сравнимому виду, чтобы «сбросить» основания?",
+        "o": [
+          {
+            "t": "Записать $\\tfrac12=\\left(\\tfrac23\\right)^{\\log_{2/3}(1/2)}$ по основному логарифмическому тождеству",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Записать $\\tfrac12=\\left(\\tfrac23\\right)^{1}$",
+            "ok": false,
+            "w": "$\\left(\\tfrac{2}{3}\\right)^{1}=\\tfrac{2}{3}\\ne\\tfrac12$."
+          },
+          {
+            "t": "Возвести обе части в квадрат",
+            "ok": false,
+            "w": "Основания те же, а проще не стало."
+          }
+        ]
+      },
+      {
+        "e": "\\left(\\tfrac{2}{3}\\right)^{x} > \\left(\\tfrac{2}{3}\\right)^{\\log_{2/3}(1/2)}",
+        "q": "Основание степени $\\tfrac{2}{3}\u003c1$. Что происходит со знаком при сравнении показателей?",
+        "o": [
+          {
+            "t": "Знак меняется: $x\u003c\\log_{2/3}(1/2)$ — функция $y=(2/3)^t$ убывает",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Знак сохраняется: $x>\\log_{2/3}(1/2)$",
+            "ok": false,
+            "w": "Это верно только для основания $>1$. У нас $\\tfrac23\u003c1$ — знак меняется."
+          },
+          {
+            "t": "Решений нет: $\\tfrac23\u003c1$, поэтому $(2/3)^x$ всегда меньше $\\tfrac23$",
+            "ok": false,
+            "w": "При отрицательных $x$ значения больше $\\tfrac23$; решения есть."
+          }
+        ]
+      },
+      {
+        "e": "x \u003c \\log_{2/3}\\!\\left(\\tfrac{1}{2}\\right)",
+        "q": "Нарисуйте решение на числовой оси $x$.",
+        "o": [
+          {
+            "t": "Луч влево от $\\log_{2/3}\\tfrac12$, точка выколотая",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "\\log_{2/3}\\!\\frac{1}{2}",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 1,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч вправо от $\\log_{2/3}\\tfrac12$, точка выколотая",
+            "ok": false,
+            "w": "Знак $\u003c$, поэтому $x$ левее точки.",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "\\log_{2/3}\\!\\frac{1}{2}",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч влево от $\\log_{2/3}\\tfrac12$, точка закрашенная",
+            "ok": false,
+            "w": "Неравенство строгое — точка выколотая.",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "\\log_{2/3}\\!\\frac{1}{2}",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 1,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in \\left(-\\infty;\\ \\log_{2/3}\\!\\left(\\tfrac{1}{2}\\right)\\right)",
+        "q": "END"
+      }
+    ]
+  },
+  {
+    "id": 900003,
+    "n": "003",
+    "s": "01 · ПОКАЗАТЕЛЬНЫЕ",
+    "d": "medium",
+    "t": "Решите неравенство: \\( 2\\left(50^{x}+8^{x}\\right) > 20^{x}+3\\cdot 125^{x} \\).",
+    "c": "Решите неравенство: \\( 2\\left(50^{x}+8^{x}\\right) > 20^{x}+3\\cdot 125^{x} \\).",
+    "a": "Ответ: \\( x \\in (-\\infty; 0) \\).",
+    "ap": "x \\in (-\\infty; 0)",
+    "ch": [
+      {
+        "e": "2\\left(50^{x}+8^{x}\\right) > 20^{x}+3\\cdot 125^{x}",
+        "q": "С чего начать? Степени записаны разными основаниями.",
+        "o": [
+          {
+            "t": "Расписать основания $50, 8, 20, 125$ через простые множители $2, 5$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Сразу разделить на $125^x$",
+            "ok": false,
+            "w": "Без расписывания оснований не получится удобной замены."
+          },
+          {
+            "t": "Прологарифмировать обе части",
+            "ok": false,
+            "w": "Сумма не логарифмируется."
+          }
+        ]
+      },
+      {
+        "e": "2\\left(5^{2x}\\cdot 2^{x}+2^{3x}\\right) > 2^{2x}\\cdot 5^{x}+3\\cdot 5^{3x}",
+        "q": "Теперь основания видны. Как привести к одной замене?",
+        "o": [
+          {
+            "t": "Разделить обе части на $5^{3x}>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Разделить обе части на $2^{3x}>0$",
+            "ok": false,
+            "w": "Получим степени $(5/2)^x$, что менее удобно для замены."
+          },
+          {
+            "t": "Разделить обе части на $5^{2x}$",
+            "ok": false,
+            "w": "Останутся слагаемые с $5^x$ и $5^{3x}$, замена не упростит."
+          }
+        ]
+      },
+      {
+        "e": "2\\left(\\left(\\tfrac{2}{5}\\right)^{x}+\\left(\\tfrac{2}{5}\\right)^{3x}\\right) > \\left(\\tfrac{2}{5}\\right)^{2x}+3",
+        "q": "Какая замена упростит неравенство?",
+        "o": [
+          {
+            "t": "$t=\\left(\\frac{2}{5}\\right)^{x}$, причём $t>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$t=2^{x}$",
+            "ok": false,
+            "w": "В уравнении останутся степени с основанием 5."
+          },
+          {
+            "t": "$t=\\left(\\frac{5}{2}\\right)^{x}$",
+            "ok": false,
+            "w": "Тогда получим степени с отрицательными показателями, удобнее основание $2/5$."
+          }
+        ]
+      },
+      {
+        "e": "2t^{3}-t^{2}+2t-3 > 0",
+        "q": "Как разложить левую часть на множители?",
+        "o": [
+          {
+            "t": "Заметить корень $t=1$ и разделить по схеме Горнера: $(t-1)(2t^{2}+t+3)>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Сгруппировать: $t^2(2t-1)+1(2t-3)>0$",
+            "ok": false,
+            "w": "Общих скобок не появляется."
+          },
+          {
+            "t": "Решать как квадратное относительно $t$",
+            "ok": false,
+            "w": "Уравнение третьей степени."
+          }
+        ]
+      },
+      {
+        "e": "(t-1)(2t^{2}+t+3) > 0",
+        "q": "Что можно сказать о втором множителе?",
+        "o": [
+          {
+            "t": "Дискриминант $D=1-24=-23\u003c0$, корней нет — парабола всегда $>0$, значит $t-1>0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Корни есть, применяем метод интервалов по трём точкам",
+            "ok": false,
+            "w": "Дискриминант отрицательный — действительных корней у $2t^2+t+3$ нет."
+          },
+          {
+            "t": "Парабола всегда $\u003c0$, значит $t-1\u003c0$",
+            "ok": false,
+            "w": "Ветви вверх и $D\u003c0$ означают, что парабола всегда выше оси $t$, то есть $>0$."
+          }
+        ]
+      },
+      {
+        "e": "t - 1 > 0 \\iff t > 1",
+        "q": "Нарисуйте решение на числовой оси $t$.",
+        "o": [
+          {
+            "t": "Луч вправо от $1$, точка выколотая",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "1",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч влево от $1$, точка выколотая",
+            "ok": false,
+            "w": "Знак $>$, значит $t$ больше 1, а не меньше.",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "1",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 1,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч вправо от $1$, точка закрашенная",
+            "ok": false,
+            "w": "Неравенство строгое, точка выколотая.",
+            "axis": {
+              "points": [
+                {
+                  "x": 1,
+                  "label": "1",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "t > 1, \\quad t=\\left(\\tfrac{2}{5}\\right)^{x}",
+        "q": "Обратная замена. Какое неравенство получится для $x$?",
+        "o": [
+          {
+            "t": "$\\left(\\frac{2}{5}\\right)^{x}>1$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$\\left(\\frac{2}{5}\\right)^{x}\u003c1$",
+            "ok": false,
+            "w": "Получили $t>1$, значит левая часть больше 1."
+          },
+          {
+            "t": "$\\left(\\frac{2}{5}\\right)^{x}\\ge 1$",
+            "ok": false,
+            "w": "Неравенство было строгим."
+          }
+        ]
+      },
+      {
+        "e": "\\left(\\tfrac{2}{5}\\right)^{x} > 1",
+        "q": "Как записать $1$ в виде степени с основанием $2/5$, чтобы сбросить основания?",
+        "o": [
+          {
+            "t": "$1=\\left(\\frac{2}{5}\\right)^0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$1=\\left(\\frac{2}{5}\\right)^1$",
+            "ok": false,
+            "w": "$\\frac{2}{5} \\ne 1$."
+          },
+          {
+            "t": "$1=\\left(\\frac{2}{5}\\right)^{\\log_{2/5} 1}$",
+            "ok": false,
+            "w": "Это верно ($\\log_{2/5}1=0$), но проще взять просто $0$."
+          }
+        ]
+      },
+      {
+        "e": "\\left(\\tfrac{2}{5}\\right)^{x} > \\left(\\tfrac{2}{5}\\right)^{0}",
+        "q": "Основание степени $\\tfrac{2}{5}\u003c1$. Что происходит со знаком при сравнении показателей?",
+        "o": [
+          {
+            "t": "Знак меняется: $x \u003c 0$ — функция убывает",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Знак сохраняется: $x > 0$",
+            "ok": false,
+            "w": "Это верно только для основания $>1$. У нас $0 \u003c \\frac{2}{5} \u003c 1$ — знак меняется."
+          },
+          {
+            "t": "Решений нет",
+            "ok": false,
+            "w": "При отрицательных $x$ функция $>1$, решения есть."
+          }
+        ]
+      },
+      {
+        "e": "x \u003c 0",
+        "q": "Нарисуйте решение на числовой оси $x$.",
+        "o": [
+          {
+            "t": "Луч влево от нуля, точка выколотая",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "0",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч вправо от нуля, точка выколотая",
+            "ok": false,
+            "w": "Знак $\u003c$, поэтому $x$ левее нуля.",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "0",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 0,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Луч влево от нуля, точка закрашенная",
+            "ok": false,
+            "w": "Неравенство строгое — точка выколотая.",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "0",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in (-\\infty; 0)",
+        "q": "END"
+      }
+    ]
+  },
+  {
+    "id": 900004,
+    "n": "004",
+    "s": "01 · ПОКАЗАТЕЛЬНЫЕ",
+    "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{2\\cdot 3^{2x+1} - 7\\cdot 6^x + 2\\cdot 4^x}{3\\cdot 9^x - 3\\cdot 2^{x+1}} \\le 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{2\\cdot 3^{2x+1} - 7\\cdot 6^x + 2\\cdot 4^x}{3\\cdot 9^x - 3\\cdot 2^{x+1}} \\le 0 \\).",
+    "a": "Ответ: \\( x \\in (-\\infty;\\ -1) \\cup (1;\\ +\\infty) \\).",
+    "ap": "x \\in (-\\infty;\\ -1) \\cup (1;\\ +\\infty)",
+    "ch": [
+      {
+        "e": "\\dfrac{2\\cdot 3^{2x+1} - 7\\cdot 6^x + 2\\cdot 4^x}{3\\cdot 9^x - 3\\cdot 2^{x+1}} \\le 0",
+        "q": "Шаг 1. Избавьтесь от 'хвостов' в показателях.",
+        "o": [
+          {
+            "t": "Расписать степени: $3^{2x+1} = 3\\cdot 9^x$, $2^{x+1} = 2\\cdot 2^x$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Сразу разделить на $9^x$",
+            "ok": false,
+            "w": "Сначала нужно расписать степени, чтобы было видно общее основание."
+          },
+          {
+            "t": "Расписать степени: $3^{2x+1} = 3 + 9^x$, $2^{x+1} = 2 + 2^x$",
+            "ok": false,
+            "w": "Показатели складываются — степени умножаются."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{6\\cdot 9^x - 7\\cdot 6^x + 2\\cdot 4^x}{3\\cdot 9^x - 6\\cdot 2^x} \\le 0",
+        "q": "Шаг 5. Разделите числитель и знаменатель на $4^x > 0$, чтобы перейти к одному основанию.",
+        "o": [
+          {
+            "t": "Разделить на $4^x$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Разделить на $9^x$",
+            "ok": false,
+            "w": "Получатся основания $2/3$ и $4/9$, что неудобно."
+          },
+          {
+            "t": "Сократить на $3$",
+            "ok": false,
+            "w": "Это не избавит от разных оснований."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{6\\left(\\tfrac{3}{2}\\right)^{2x} - 7\\left(\\tfrac{3}{2}\\right)^x + 2}{3\\left(\\tfrac{3}{2}\\right)^{2x} - 6\\left(\\tfrac{3}{2}\\right)^x} \\le 0",
+        "q": "Шаг 5. Введите замену переменной.",
+        "o": [
+          {
+            "t": "$t = \\left(\\frac{3}{2}\\right)^x$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$t = 3^x$",
+            "ok": false,
+            "w": "В знаменателе останутся степени с основанием 2."
+          },
+          {
+            "t": "$t = \\left(\\frac{2}{3}\\right)^x$",
+            "ok": false,
+            "w": "Тогда степени будут с отрицательными показателями."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{6t^2 - 7t + 2}{3t^2 - 6t} \\le 0",
+        "q": "Шаг 6. Как разложить числитель и знаменатель на множители?",
+        "o": [
+          {
+            "t": "Числитель: $6(t - 1/2)(t - 2/3)$. Знаменатель: $3t(t - 2)$.",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Числитель: корни $1$ и $2$, разложение $6(t-1)(t-2)$.",
+            "ok": false,
+            "w": "Сумма корней равна $7/6$, а не $3$."
+          },
+          {
+            "t": "Знаменатель: $3t(t-6)$",
+            "ok": false,
+            "w": "Вынесли $3t$, но остаток $t - 2$, а не $t - 6$."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{6\\left(t - \\tfrac{1}{2}\\right)\\left(t - \\tfrac{2}{3}\\right)}{3t(t - 2)} \\le 0",
+        "q": "Шаг 7. Решите методом интервалов (без сокращения дроби).",
+        "o": [
+          {
+            "t": "",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "0",
+                  "type": "open"
+                },
+                {
+                  "x": 1,
+                  "label": "\\frac{1}{2}",
+                  "type": "closed"
+                },
+                {
+                  "x": 2,
+                  "label": "\\frac{2}{3}",
+                  "type": "closed"
+                },
+                {
+                  "x": 3,
+                  "label": "2",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                },
+                {
+                  "from": 0,
+                  "to": 1,
+                  "shade": true
+                },
+                {
+                  "from": 2,
+                  "to": 3,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "",
+            "ok": false,
+            "w": "Неверный интервал. Вам нужны те, где знак минус: $t \\in (0; 1/2] \\cup [2/3; 2)$.",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "0",
+                  "type": "open"
+                },
+                {
+                  "x": 1,
+                  "label": "\\frac{1}{2}",
+                  "type": "open"
+                },
+                {
+                  "x": 2,
+                  "label": "\\frac{2}{3}",
+                  "type": "open"
+                },
+                {
+                  "x": 3,
+                  "label": "2",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                },
+                {
+                  "from": 1,
+                  "to": 2,
+                  "shade": true
+                },
+                {
+                  "from": 3,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "",
+            "ok": false,
+            "w": "Неверный интервал. Знаменатель не может быть нулём.",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "0",
+                  "type": "closed"
+                },
+                {
+                  "x": 1,
+                  "label": "\\frac{1}{2}",
+                  "type": "closed"
+                },
+                {
+                  "x": 2,
+                  "label": "\\frac{2}{3}",
+                  "type": "closed"
+                },
+                {
+                  "x": 3,
+                  "label": "2",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 0,
+                  "to": 1,
+                  "shade": true
+                },
+                {
+                  "from": 2,
+                  "to": 3,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "t \\in (-\\infty; 0) \\cup \\left(0; \\tfrac{1}{2}\\right] \\cup \\left[\\tfrac{2}{3}; 2\\right)",
+        "q": "Шаг 8. Запишите полученные промежутки для $t$ в виде совокупности неравенств.",
+        "o": [
+          {
+            "t": "$\\left[ \\begin{array}{l} t \u003c 0 \\\\ 0 \u003c t \\le \\frac{1}{2} \\\\ \\frac{2}{3} \\le t \u003c 2 \\end{array} \\right.$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$\\left[ \\begin{array}{l} t \\le \\frac{1}{2} \\\\ t \u003c 2 \\end{array} \\right.$",
+            "ok": false,
+            "w": "Потеряны ограничения для $t$."
+          },
+          {
+            "t": "$\\left[ \\begin{array}{l} t > 0 \\\\ t \\ge \\frac{1}{2} \\end{array} \\right.$",
+            "ok": false,
+            "w": "Знаки перепутаны и промежутки не соответствуют оси."
+          }
+        ]
+      },
+      {
+        "e": "\\left[ \\begin{array}{l} \\left(\\tfrac{3}{2}\\right)^x \u003c 0 \\\\ 0 \u003c \\left(\\tfrac{3}{2}\\right)^x \\le \\tfrac{1}{2} \\\\ \\tfrac{2}{3} \\le \\left(\\tfrac{3}{2}\\right)^x \u003c 2 \\end{array} \\right.",
+        "q": "Шаг 9. Запишите числа $\\tfrac{1}{2}$, $\\tfrac{2}{3}$ и $2$ в виде степеней с основанием $\\tfrac{3}{2}$, чтобы перейти к сравнению показателей.",
+        "o": [
+          {
+            "t": "$\\left[ \\begin{array}{l} \\left(\\tfrac{3}{2}\\right)^x \u003c 0 \\\\ \\left(\\tfrac{3}{2}\\right)^x \\le \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(1/2)} \\\\ \\left(\\tfrac{3}{2}\\right)^{-1} \\le \\left(\\tfrac{3}{2}\\right)^x \u003c \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(2)} \\end{array} \\right.$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$\\left[ \\begin{array}{l} \\left(\\tfrac{3}{2}\\right)^x \u003c 0 \\text{ при всех } x \\\\ \\left(\\tfrac{3}{2}\\right)^x \\le \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(1/2)} \\\\ \\left(\\tfrac{3}{2}\\right)^{-1} \\le \\left(\\tfrac{3}{2}\\right)^x \u003c \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(2)} \\end{array} \\right.$",
+            "ok": false,
+            "w": "Степень с положительным основанием всегда строго больше нуля, поэтому $\u003c0$ быть не может."
+          },
+          {
+            "t": "$\\left[ \\begin{array}{l} \\left(\\tfrac{3}{2}\\right)^x \u003c 0 \\\\ \\left(\\tfrac{3}{2}\\right)^x \\ge \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(1/2)} \\\\ \\left(\\tfrac{3}{2}\\right)^{-1} \\ge \\left(\\tfrac{3}{2}\\right)^x > \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(2)} \\end{array} \\right.$",
+            "ok": false,
+            "w": "Смена знака неравенства недопустима, так как основание $3/2 > 1$ (функция возрастает)."
+          }
+        ]
+      },
+      {
+        "e": "\\left[ \\begin{array}{l} \\left(\\tfrac{3}{2}\\right)^x \u003c 0 \\\\ \\left(\\tfrac{3}{2}\\right)^x \\le \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(1/2)} \\\\ \\left(\\tfrac{3}{2}\\right)^{-1} \\le \\left(\\tfrac{3}{2}\\right)^x \u003c \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(2)} \\end{array} \\right.",
+        "q": "Шаг 10. Вспомните, что $0 \u003c \\left(\\tfrac{3}{2}\\right)^x$ всегда, и перейдите от степеней к показателям (основание $\\tfrac{3}{2} > 1$, знак сохраняется).",
+        "o": [
+          {
+            "t": "$\\left[ \\begin{array}{l} x \u003c \\log_{3/2}(1/2) \\\\ -1 \\le x \u003c \\log_{3/2}(2) \\end{array} \\right.$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$\\left[ \\begin{array}{l} x \\le \\log_{3/2}(1/2) \\\\ -1 \\le x \u003c \\log_{3/2}(2) \\end{array} \\right.$",
+            "ok": false,
+            "w": "В первом неравенстве было строгое $\u003c$, поэтому знак сохраняется."
+          },
+          {
+            "t": "$\\left[ \\begin{array}{l} x > \\log_{3/2}(1/2) \\\\ -1 > x \\ge \\log_{3/2}(2) \\end{array} \\right.$",
+            "ok": false,
+            "w": "Знак неравенства не меняется, так как основание степени больше 1."
+          }
+        ]
+      },
+      {
+        "e": "x \\in (-\\infty;\\ -1) \\cup (1;\\ +\\infty)",
+        "q": "END"
+      }
+    ]
+  },
+  {
+    "id": 900006,
+    "n": "006",
+    "s": "01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ",
+    "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{4^{x^2+x-4} - 0{,}5^{2x^2-2x-1}}{0{,}2 \\cdot 5^x - 1} \\le 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{4^{x^2+x-4} - 0{,}5^{2x^2-2x-1}}{0{,}2 \\cdot 5^x - 1} \\le 0 \\).",
+    "a": "Ответ: \\( x \\in (-\\infty;\\ -1{,}5] \\cup (1;\\ 1{,}5] \\).",
+    "ap": "x \\in (-\\infty;\\ -1{,}5] \\cup (1;\\ 1{,}5]",
+    "ch": [
+      {
+        "e": "\\dfrac{4^{x^2+x-4} - 0{,}5^{2x^2-2x-1}}{0{,}2 \\cdot 5^x - 1} \\le 0",
+        "q": "С чего начнем решение?",
+        "o": [
+          {
+            "t": "Привести степени к одинаковым основаниям: в числителе к 4, в знаменателе к 5",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Сразу выписать нули числителя и знаменателя",
+            "ok": false,
+            "w": "Пока основания разные, найти нули не получится."
+          },
+          {
+            "t": "Умножить обе части на знаменатель",
+            "ok": false,
+            "w": "Неизвестно, положительный ли знаменатель, поэтому знак неравенства может измениться."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{4^{x^2+x-4} - 0{,}5^{2x^2-2x-1}}{0{,}2 \\cdot 5^x - 1} \\le 0",
+        "q": "Преобразуем только числитель. Как записать $0{,}5^{2x^2-2x-1}$ через основание 4?",
+        "o": [
+          {
+            "t": "$0{,}5 = 2^{-1}$, поэтому $0{,}5^{2x^2-2x-1} = (2^{-1})^{2x^2-2x-1} = 2^{-2x^2+2x+1} = 4^{-x^2+x+0{,}5}$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$0{,}5 = 2$, поэтому $0{,}5^{2x^2-2x-1} = 2^{2x^2-2x-1}$",
+            "ok": false,
+            "w": "Ноль целых пять десятых — это $1/2$, а не 2."
+          },
+          {
+            "t": "Приравнять показатели: $x^2+x-4 = 2x^2-2x-1$",
+            "ok": false,
+            "w": "Основания разные, нельзя просто приравнять показатели."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{4^{x^2+x-4} - 4^{-x^2+x+0{,}5}}{0{,}2 \\cdot 5^x - 1} \\le 0",
+        "q": "Теперь преобразуем знаменатель. Как записать $0{,}2 \\cdot 5^x$ через основание 5?",
+        "o": [
+          {
+            "t": "$0{,}2 = 5^{-1}$, поэтому $0{,}2 \\cdot 5^x = 5^{-1} \\cdot 5^x = 5^{x-1}$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$0{,}2 \\cdot 5^x = 1$, откуда сразу $x=1$",
+            "ok": false,
+            "w": "Вы нашли корень уравнения, но само выражение преобразуется иначе."
+          },
+          {
+            "t": "$0{,}2 \\cdot 5^x - 1 = 1 \\cdot 5^x - 1$",
+            "ok": false,
+            "w": "$0{,}2$ — это $1/5$, а не 1."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{4^{x^2+x-4} - 4^{-x^2+x+0{,}5}}{5^{x-1} - 1} \\le 0",
+        "q": "Теперь найдем нули числителя.",
+        "o": [
+          {
+            "t": "$x^2+x-4 = -x^2+x+0{,}5 \\Rightarrow 2x^2 = 4{,}5 \\Rightarrow x^2 = 2{,}25 \\Rightarrow x = \\pm 1{,}5$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$2x^2 = 3{,}5 \\Rightarrow x = \\pm\\sqrt{1{,}75}$",
+            "ok": false,
+            "w": "Ошибка в переносе слагаемых."
+          },
+          {
+            "t": "$x = 1{,}5$ (только положительный)",
+            "ok": false,
+            "w": "Из $x^2 = 2{,}25$ извлекается два корня."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{4^{x^2+x-4} - 4^{-x^2+x+0{,}5}}{5^{x-1} - 1} \\le 0",
+        "q": "А теперь найдем нули знаменателя.",
+        "o": [
+          {
+            "t": "$5^{x-1} = 1 = 5^0 \\Rightarrow x - 1 = 0 \\Rightarrow x = 1$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$5^{x-1} = 5 \\Rightarrow x - 1 = 5 \\Rightarrow x = 6$",
+            "ok": false,
+            "w": "Единица — это $5^0$, а не $5^1$."
+          },
+          {
+            "t": "$x = 0$",
+            "ok": false,
+            "w": "При $x=0$ выражение равно $5^{-1} - 1 = 0{,}2 - 1 = -0{,}8$."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{4^{x^2+x-4} - 4^{-x^2+x+0{,}5}}{5^{x-1} - 1} \\le 0 \\quad \\text{(нули числ.: } \\pm 1{,}5; \\text{ нуль знам.: } 1 \\text{)}",
+        "q": "Отметьте точки на числовой оси и расставьте знаки дроби. (Подставляйте числа в преобразованное неравенство сверху).",
+        "o": [
+          {
+            "t": "Точки $-1{,}5$ и $1{,}5$ закрашены, точка $1$ выколота. Знаки: $-, +, -, +$.",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "-1{,}5",
+                  "type": "closed"
+                },
+                {
+                  "x": 1,
+                  "label": "1",
+                  "type": "open"
+                },
+                {
+                  "x": 2,
+                  "label": "1{,}5",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                },
+                {
+                  "from": 1,
+                  "to": 2,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Все точки выколоты. Знаки: $+, -, +, -$.",
+            "ok": false,
+            "w": "Неравенство нестрогое ($\\le 0$), нули числителя должны быть закрашены. И знаки чередуются с плюса справа."
+          },
+          {
+            "t": "Все точки закрашены. Знаки: $-, +, -, +$.",
+            "ok": false,
+            "w": "Нуль знаменателя всегда выколот, так как на ноль делить нельзя.",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "-1{,}5",
+                  "type": "closed"
+                },
+                {
+                  "x": 1,
+                  "label": "1",
+                  "type": "closed"
+                },
+                {
+                  "x": 2,
+                  "label": "1{,}5",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                },
+                {
+                  "from": 1,
+                  "to": 2,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in (-\\infty;\\ -1{,}5] \\cup (1;\\ 1{,}5]",
+        "q": "END"
+      }
+    ]
+  },
+  {
+    "id": 900007,
+    "n": "007",
+    "s": "01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ",
+    "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{27^x - 3\\cdot 9^{x+1} + 3^{x+5} - 729}{50x^2 + 10x + 0{,}5} \\le 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{27^x - 3\\cdot 9^{x+1} + 3^{x+5} - 729}{50x^2 + 10x + 0{,}5} \\le 0 \\).",
+    "a": "Ответ: \\( x \\in (-\\infty;\\ -0{,}1) \\cup (-0{,}1;\\ 2] \\).",
+    "ap": "x \\in (-\\infty;\\ -0{,}1) \\cup (-0{,}1;\\ 2]",
+    "ch": [
+      {
+        "e": "\\dfrac{27^x - 3\\cdot 9^{x+1} + 3^{x+5} - 729}{50x^2 + 10x + 0{,}5} \\le 0",
+        "q": "С чего начнем?",
+        "o": [
+          {
+            "t": "Приравнять числитель к нулю, чтобы найти его корни",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Приравнять знаменатель к нулю, чтобы найти его корни",
+            "ok": false,
+            "w": "Начинать удобнее с числителя, чтобы понять его структуру."
+          },
+          {
+            "t": "Умножить обе части на знаменатель",
+            "ok": false,
+            "w": "Неизвестно, положительный ли знаменатель, знак может измениться."
+          }
+        ]
+      },
+      {
+        "e": "27^x - 3\\cdot 9^{x+1} + 3^{x+5} - 729 = 0",
+        "q": "Как привести все степени к одному основанию 3?",
+        "o": [
+          {
+            "t": "$27^x = 3^{3x}$, $3\\cdot 9^{x+1} = 3\\cdot 3^{2x+2} = 3^{2x+3}$, $3^{x+5} = 3^{x+5}$, $729 = 3^6$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$27^x = 3^x$, $9^{x+1} = 3^{x+1}$",
+            "ok": false,
+            "w": "Не учтено, что $27=3^3$, а $9=3^2$."
+          },
+          {
+            "t": "Вынести $3^x$ за скобку",
+            "ok": false,
+            "w": "Сначала нужно расписать основания."
+          }
+        ]
+      },
+      {
+        "e": "3^{3x} - 3^{2x+3} + 3^{x+5} - 3^6 = 0",
+        "q": "Какая замена упростит уравнение?",
+        "o": [
+          {
+            "t": "$t = 3^x$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "$t = 3^{2x}$",
+            "ok": false,
+            "w": "Останутся степени $x$ и $3x$."
+          },
+          {
+            "t": "$t = x$",
+            "ok": false,
+            "w": "Степени останутся."
+          }
+        ]
+      },
+      {
+        "e": "t^3 - 27t^2 + 243t - 729 = 0",
+        "q": "Как разложить кубическое уравнение на множители?",
+        "o": [
+          {
+            "t": "Заметить корень $t=9$ и разделить по схеме Горнера: $(t-9)(t^2 - 18t + 81) = 0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Сгруппировать: $t^2(t-27) + 243(t-3) = 0$",
+            "ok": false,
+            "w": "Общие скобки не появляются."
+          },
+          {
+            "t": "Разделить на $t$: $t^2 - 27t + 243 - 729/t = 0$",
+            "ok": false,
+            "w": "Появится дробь $1/t$, станет хуже."
+          }
+        ]
+      },
+      {
+        "e": "(t-9)(t^2 - 18t + 81) = 0",
+        "q": "Что можно сказать о втором множителе?",
+        "o": [
+          {
+            "t": "Это полный квадрат: $(t-9)^2$, значит все уравнение имеет вид $(t-9)^3 = 0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Дискриминант $D = 324 - 324 = 0$, значит корень один: $t=9$",
+            "ok": false,
+            "w": "Верно, но это значит, что корень $t=9$ имеет кратность 3, и это важно для знака."
+          },
+          {
+            "t": "Корней нет, так как $D \u003c 0$",
+            "ok": false,
+            "w": "$D = 0$, корень есть."
+          }
+        ]
+      },
+      {
+        "e": "(t-9)^3 = 0 \\Rightarrow t = 9 \\Rightarrow 3^x = 9 \\Rightarrow x = 2",
+        "q": "Теперь перейдем к знаменателю. Как найти его нули?",
+        "o": [
+          {
+            "t": "Приравнять к нулю: $50x^2 + 10x + 0{,}5 = 0$, разделить на 50, получить $x^2 + 0{,}2x + 0{,}01 = 0$",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Найти дискриминант $D = 100 - 100 = 0$, $x = -0{,}1$",
+            "ok": false,
+            "w": "Это следующий шаг, а не ответ на вопрос «как найти»."
+          },
+          {
+            "t": "Вынести $x$ за скобку",
+            "ok": false,
+            "w": "Есть свободный член $0{,}5$, так не получится."
+          }
+        ]
+      },
+      {
+        "e": "50x^2 + 10x + 0{,}5 = 0 \\Rightarrow x^2 + 0{,}2x + 0{,}01 = 0 \\Rightarrow (x+0{,}1)^2 = 0 \\Rightarrow x = -0{,}1",
+        "q": "Что означает, что корень $-0{,}1$ — это полный квадрат?",
+        "o": [
+          {
+            "t": "Корень имеет чётную кратность, поэтому при переходе через него знак неравенства не меняется",
+            "ok": true,
+            "w": ""
+          },
+          {
+            "t": "Это значит, что в этой точке знаменатель равен нулю, и её нужно исключить (выколоть)",
+            "ok": false,
+            "w": "Да, выколоть нужно, но главное — знак не меняется."
+          },
+          {
+            "t": "Это значит, что корень $-0{,}1$ можно не отмечать на оси",
+            "ok": false,
+            "w": "Отметить нужно (выколотой точкой), иначе потеряем ограничение."
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{(3^x - 9)^3}{50(x+0{,}1)^2} \\le 0",
+        "q": "Отметьте точки на числовой оси и расставьте знаки.",
+        "o": [
+          {
+            "t": "Точка $-0{,}1$ выколота (знак не меняется); точка $2$ закрашена, знак меняется с минуса на плюс. Нужны промежутки со знаком минус.",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "-0{,}1",
+                  "type": "open",
+                  "mark": "!"
+                },
+                {
+                  "x": 1,
+                  "label": "2",
+                  "type": "closed"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                },
+                {
+                  "from": 0,
+                  "to": 1,
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          },
+          {
+            "t": "Точка $-0{,}1$ закрашена, так как корень чётной кратности; точка $2$ закрашена.",
+            "ok": false,
+            "w": "Знаменатель не может быть равен нулю, поэтому $-0{,}1$ всегда выколота."
+          },
+          {
+            "t": "Точка $-0{,}1$ выколота, знак меняется с плюса на минус; точка $2$ выколота.",
+            "ok": false,
+            "w": "В точке $2$ знак меняется с минуса на плюс, а сама точка закрашена, так как неравенство нестрогое.",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "-0{,}1",
+                  "type": "open"
+                },
+                {
+                  "x": 1,
+                  "label": "2",
+                  "type": "open"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": "-Infinity",
+                  "to": 0,
+                  "shade": true
+                },
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in (-\\infty;\\ -0{,}1) \\cup (-0{,}1;\\ 2]",
+        "q": "END"
+      }
+    ]
+  },
+  {
+    "id": 900008,
+    "n": "008",
+    "s": "01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ",
+    "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0 \\).",
+    "a": "Ответ: \\( x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty) \\).",
+    "ap": "x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty)",
+    "ch": [
+      {
+        "e": "\\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0",
+        "q": "С чего начнем решение?",
+        "o": [
+          {
+            "t": "Приравняем числитель к нулю, чтобы найти его корни",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1 = 0",
+        "q": "Преобразуем первое слагаемое. Раскладываем степень с хвостом.",
+        "o": [
+          {
+            "t": "$27^{x+1} = 27^x \\cdot 27^1 = 3^{3x} \\cdot 27$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "3^{3x} \\cdot 27 - 3\\cdot 9^{x+1} + 3^{x+2} - 1 = 0",
+        "q": "Преобразуем второе слагаемое. Раскладываем степень с хвостом.",
+        "o": [
+          {
+            "t": "$3\\cdot 9^{x+1} = 3 \\cdot 9^x \\cdot 9^1 = 3 \\cdot 3^{2x} \\cdot 9 = 27 \\cdot 3^{2x}$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "3^{3x} \\cdot 27 - 27 \\cdot 3^{2x} + 3^{x+2} - 1 = 0",
+        "q": "Преобразуем третье слагаемое. Раскладываем степень с хвостом.",
+        "o": [
+          {
+            "t": "$3^{x+2} = 3^x \\cdot 3^2 = 9 \\cdot 3^x$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "27 \\cdot 3^{3x} - 27 \\cdot 3^{2x} + 9 \\cdot 3^x - 1 = 0",
+        "q": "Сделаем замену переменной \\(t = 3^x\\).",
+        "o": [
+          {
+            "t": "$t = 3^x$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "27t^3 - 27t^2 + 9t - 1 = 0",
+        "q": "Найдем корень кубического уравнения по схеме Горнера. Подбором проверяем делители свободного члена, подходит \\( t = \\frac{1}{3} \\).",
+        "o": [
+          {
+            "t": "Применили схему Горнера. В итоге получили:\n$(t - \\frac{1}{3})(27t^2 - 18t + 3) = 0$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "(t - \\frac{1}{3})(27t^2 - 18t + 3) = 0",
+        "q": "Обратите внимание: вторая скобка \\(27t^2 - 18t + 3\\) — это развернутый квадрат разности, умноженный на 3. Перепишем уравнение.",
+        "o": [
+          {
+            "t": "Вспомним формулу куба разности:\n$(a - b)^3 = a^3 - 3a^2b + 3ab^2 - b^3$\n\nПрименяем её: $(3t - 1)^3 = 0$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "(3t - 1)^3 = 0 \\Rightarrow t = \\frac{1}{3}",
+        "q": "Возвращаемся к переменной \\(x\\).",
+        "o": [
+          {
+            "t": "$3^x = \\frac{1}{3} \\Rightarrow 3^x = 3^{-1} \\Rightarrow x = -1$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "50x^2 + 50x + 12{,}5 = 0",
+        "q": "Теперь найдем нули знаменателя. Для удобства разделим уравнение на 50.",
+        "o": [
+          {
+            "t": "$x^2 + x + 0{,}25 = 0$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "x^2 + x + 0{,}25 = 0",
+        "q": "Свернем по формуле квадрата суммы.",
+        "o": [
+          {
+            "t": "$(x + 0{,}5)^2 = 0 \\Rightarrow x = -0{,}5$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{(3^x - 3^{-1})^3}{50(x+0{,}5)^2} \\ge 0",
+        "q": "Запишем ограничения и определим точки на числовой оси.\nЧислитель: \\(x = -1\\) (закрашена, так как \\(\\ge 0\\)).\nЗнаменатель: \\(x \\neq -0{,}5\\) (выколота).",
+        "o": [
+          {
+            "t": "Числитель: \\(x = -1\\)\nЗнаменатель: \\(x \\neq -0{,}5\\)",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{(3^x - 3^{-1})^3}{50(x+0{,}5)^2} \\ge 0",
+        "q": "Переходим к методу интервалов. Корень \\(-1\\) имеет нечетную кратность (знак меняется). Корень \\(-0{,}5\\) имеет четную кратность (знак сохраняется). Нам нужны промежутки с плюсом.",
+        "o": [
+          {
+            "t": "Ответ: \\(x \\in [-1; -0{,}5) \\cup (-0{,}5; +\\infty)\\)",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "",
+                  "type": "hidden"
+                },
+                {
+                  "x": 1,
+                  "label": "-1",
+                  "type": "closed"
+                },
+                {
+                  "x": 2,
+                  "label": "-0.5",
+                  "type": "open",
+                  "mark": "!"
+                },
+                {
+                  "x": 3,
+                  "label": "",
+                  "type": "hidden"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 0,
+                  "to": 1,
+                  "shade": false,
+                  "arc": true,
+                  "label": "-",
+                  "color": "red"
+                },
+                {
+                  "from": 1,
+                  "to": 2,
+                  "shade": true,
+                  "arc": true,
+                  "label": "+",
+                  "color": "green"
+                },
+                {
+                  "from": 2,
+                  "to": 3,
+                  "shade": true,
+                  "arc": true,
+                  "label": "+",
+                  "color": "green"
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty)",
+        "q": "END"
+      }
+    ]
+  },
+  {
+    "id": 900008,
+    "n": "008",
+    "s": "01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ",
+    "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0 \\).",
+    "a": "Ответ: \\( x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty) \\).",
+    "ap": "x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty)",
+    "ch": [
+      {
+        "e": "\\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0",
+        "q": "С чего начнем решение?",
+        "o": [
+          {
+            "t": "Приравняем числитель к нулю, чтобы найти его корни",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1 = 0",
+        "q": "Преобразуем первое слагаемое. Раскладываем степень с хвостом.",
+        "o": [
+          {
+            "t": "$27^{x+1} = 27^x \\cdot 27^1 = 3^{3x} \\cdot 27$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "3^{3x} \\cdot 27 - 3\\cdot 9^{x+1} + 3^{x+2} - 1 = 0",
+        "q": "Преобразуем второе слагаемое. Раскладываем степень с хвостом.",
+        "o": [
+          {
+            "t": "$3\\cdot 9^{x+1} = 3 \\cdot 9^x \\cdot 9^1 = 3 \\cdot 3^{2x} \\cdot 9 = 27 \\cdot 3^{2x}$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "3^{3x} \\cdot 27 - 27 \\cdot 3^{2x} + 3^{x+2} - 1 = 0",
+        "q": "Преобразуем третье слагаемое. Раскладываем степень с хвостом.",
+        "o": [
+          {
+            "t": "$3^{x+2} = 3^x \\cdot 3^2 = 9 \\cdot 3^x$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "27 \\cdot 3^{3x} - 27 \\cdot 3^{2x} + 9 \\cdot 3^x - 1 = 0",
+        "q": "Сделаем замену переменной \\(t = 3^x\\).",
+        "o": [
+          {
+            "t": "$t = 3^x$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "27t^3 - 27t^2 + 9t - 1 = 0",
+        "q": "Найдем корень кубического уравнения по схеме Горнера. Подбором проверяем делители свободного члена. Подходит \\( t = \\frac{1}{3} \\).",
+        "o": [
+          {
+            "t": "Заполняем таблицу:\n\n$\\begin{array}{c|cccc}\n & 27 & -27 & 9 & -1 \\\\\n\\hline\n\\frac{1}{3} & 27 & -18 & 3 & 0\n\\end{array}$\n\nПолучили остаток 0 и коэффициенты квадратного трехчлена: $27t^2 - 18t + 3$.",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "(t - \\frac{1}{3})(27t^2 - 18t + 3) = 0",
+        "q": "Упростим квадратный трехчлен, разделив на 3: \\( 9t^2 - 6t + 1 = 0 \\).",
+        "o": [
+          {
+            "t": "$(3t - 1)^2 = 0 \\Rightarrow t = \\frac{1}{3}$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "(t - \\frac{1}{3}) \\cdot (3t - 1)^2 = 0",
+        "q": "Возвращаемся к переменной \\(x\\).",
+        "o": [
+          {
+            "t": "$3^x = \\frac{1}{3} \\Rightarrow 3^x = 3^{-1} \\Rightarrow x = -1$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "50x^2 + 50x + 12{,}5 = 0",
+        "q": "Теперь найдем нули знаменателя. Для удобства разделим на 50.",
+        "o": [
+          {
+            "t": "$x^2 + x + 0{,}25 = 0$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "x^2 + x + 0{,}25 = 0",
+        "q": "Свернем по формуле квадрата суммы.",
+        "o": [
+          {
+            "t": "$(x + 0{,}5)^2 = 0 \\Rightarrow x = -0{,}5$",
+            "ok": true,
+            "w": ""
+          }
+        ]
+      },
+      {
+        "e": "\\dfrac{(3^x - 3^{-1})^3}{50(x+0{,}5)^2} \\ge 0",
+        "q": "Переходим к методу интервалов. Корень \\(-1\\) имеет нечетную кратность (знак меняется), корень \\(-0{,}5\\) имеет четную кратность (знак не меняется). Точка \\(-1\\) закрашена, \\(-0{,}5\\) выколота.",
+        "o": [
+          {
+            "t": "Ответ: \\(x \\in [-1; -0{,}5) \\cup (-0{,}5; +\\infty)\\)",
+            "ok": true,
+            "w": "",
+            "axis": {
+              "points": [
+                {
+                  "x": 0,
+                  "label": "-1",
+                  "type": "closed"
+                },
+                {
+                  "x": 1,
+                  "label": "-0{,}5",
+                  "type": "open",
+                  "mark": "!"
+                }
+              ],
+              "intervals": [
+                {
+                  "from": 0,
+                  "to": 1,
+                  "shade": true
+                },
+                {
+                  "from": 1,
+                  "to": "+Infinity",
+                  "shade": true
+                }
+              ],
+              "side": "up"
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty)",
+        "q": "END"
+      }
+    ]
+  }
+]
+</script>
+<script type="application/json" id="seed-state">{}</script>
+
+<script>
+(function(){
+  'use strict';
+
+  const $ = id => document.getElementById(id);
+  const H = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const DF = {basic:'базовый', medium:'средний', hard:'сложный'};
+
+  let T = [], S = {};
+  let fl = {sec:'', st:'all', df:'', q:''};
+  let shown = 12, cur = null, ch = null, si = 0, err = 0, hist = [], ord = [], lock = 0;
+
+  try { S = JSON.parse(localStorage.getItem('ineq.v2.s')) || JSON.parse($('seed-state')?.textContent || '{}') || {}; } catch(e) { S = {}; }
+  function persistTasks(){ try { localStorage.setItem('ineq.v2.tasks', JSON.stringify(T)); } catch(e) {} }
+  function sv() { try { localStorage.setItem('ineq.v2.s', JSON.stringify(S)); } catch(e) {} }
+  function correctOption(step){ return (step && Array.isArray(step.o) ? step.o.find(o=>o && o.ok) : null) || null; }
+  function g(id) { return S[id] || (S[id] = {}); }
+  function showErr(e) { console.error(e); alert('Ошибка: ' + (e.message || e)); }
+
+  function loadSeed() {
+    try {
+      const raw = $('seed').textContent;
+      const embedded = JSON.parse(raw);
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem('ineq.v2.tasks') || 'null'); } catch(e) {}
+      T = Array.isArray(saved) && saved.length ? saved : embedded;
+      if (!Array.isArray(T)) T = [];
+    } catch(e) { T = []; showErr(e); }
+    T.sort((a,b) => String(a.n||'').localeCompare(String(b.n||''), 'ru', {numeric:true}));
+  }
+
+  function tx(el, n) {
+    n = n || 0;
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([el]).catch(e => console.warn('MathJax', e));
+    } else if (n < 80) setTimeout(() => tx(el, n + 1), 250);
+  }
+
+  function SEC() {
+    return [...new Set(T.map(t => t.s))].sort((a,b)=>String(a).localeCompare(String(b),'ru',{numeric:true}));
+  }
+  function okf(t) {
+    const x = S[t.id] || {};
+    return fl.st === 'all'
+      || (fl.st === 'new'  && !x.done)
+      || (fl.st === 'done' && x.done)
+      || (fl.st === 'hw'   && x.hw)
+      || (fl.st === 'fav'  && x.fav);
+  }
+
+  /* ---------- Список ---------- */
+  function menu() {
+    cur = null;
+    $('app').innerHTML = `
+      <div class="card">
+        <div class="bar">
+          <select id="fSec">
+            <option value="">Все разделы</option>
+            ${SEC().map(s => `<option ${fl.sec===s?'selected':''}>${H(s)}</option>`).join('')}
+          </select>
+          <select id="fDf">
+            <option value="">Любая сложность</option>
+            ${Object.keys(DF).map(k => `<option value="${k}" ${fl.df===k?'selected':''}>${DF[k]}</option>`).join('')}
+          </select>
+          <input id="fQ" placeholder="Поиск по номеру или тексту" value="${H(fl.q)}" style="flex:1;min-width:140px">
+        </div>
+        <div class="bar" id="chips" style="margin:0"></div>
+      </div>
+      <div id="rows"></div>`;
+
+    $('fSec').addEventListener('change', e => { fl.sec = e.target.value; shown = 12; rows(); });
+    $('fDf').addEventListener('change', e => { fl.df = e.target.value; shown = 12; rows(); });
+    $('fQ').addEventListener('input', e => { fl.q = e.target.value.toLowerCase(); shown = 12; rows(); });
+
+    rows();
+  }
+
+  function rows() {
+    const C = [['all','Все'],['new','Не разобраны'],['done','Разобраны'],['hw','ДЗ'],['fav','Избранное']];
+    const cnt = k => {
+      const s = fl.st; fl.st = k;
+      const r = T.filter(okf).length;
+      fl.st = s; return r;
+    };
+    const chips = $('chips');
+    if (chips) {
+      chips.innerHTML = C.map(c =>
+        `<button class="${fl.st===c[0]?'on':''}" data-st="${c[0]}">${c[1]} · ${cnt(c[0])}</button>`
+      ).join('');
+      chips.querySelectorAll('button[data-st]').forEach(b => {
+        b.addEventListener('click', () => { fl.st = b.getAttribute('data-st'); shown = 12; rows(); });
+      });
+    }
+    const L = T.filter(t =>
+      (!fl.sec || t.s === fl.sec) &&
+      (!fl.df  || t.d === fl.df) &&
+      (!fl.q   || ((t.n||'') + ' ' + (t.c||'') + ' ' + (t.s||'')).toLowerCase().includes(fl.q)) &&
+      okf(t)
+    );
+    const rowsEl = $('rows');
+    if (!rowsEl) return;
+    rowsEl.innerHTML = L.slice(0, shown).map(t => {
+      const x = S[t.id] || {};
+      return `<div class="card row ${x.done?'done':''} ${x.hw?'hw':''}">
+        <div class="bar" style="margin:0">
+          <b>№ ${H(t.n)}</b>
+          <span class="tag">${H(t.s)}</span>
+          ${t.ch && t.ch.length ? '<span class="tag" style="color:var(--ok);border-color:var(--ok)">✓ разбор</span>' : ''}
+          <span class="${'d-'+(t.d||'basic')}">● ${DF[t.d] || ''}</span>
+          ${x.done ? '<span class="stk">✓ РАЗОБРАНО</span>' : ''}
+          ${x.hw ? '<span class="meta" style="font-weight:600">ДЗ</span>' : ''}
+        </div>
+        <div class="tx" style="margin:10px 0;font-size:16px">${t.c}</div>
+        <div class="bar" style="margin:0">
+          <button class="pri" data-act="open" data-id="${t.id}">Разбирать</button>
+          <button data-act="fav" data-id="${t.id}">${x.fav?'★':'☆'}</button>
+          <button data-act="hw" data-id="${t.id}">${x.hw?'✓ ДЗ':'+ ДЗ'}</button>
+          <button data-act="edit" data-id="${t.id}" style="margin-left:auto" title="Редактировать">✏️</button>
+          <button data-act="del" data-id="${t.id}" style="color:var(--bad);border-color:var(--bad)" title="Удалить">🗑</button>
+        </div>
+      </div>`;
+    }).join('') || '<div class="card meta">Ничего не найдено</div>';
+    if (L.length > shown) {
+      rowsEl.innerHTML += `<button id="moreBtn" style="width:100%;padding:12px">Показать ещё (${L.length - shown})</button>`;
+      $('moreBtn').addEventListener('click', () => { shown += 12; rows(); });
+    }
+    rowsEl.querySelectorAll('button[data-act]').forEach(b => {
+      b.addEventListener('click', () => {
+        const id = b.getAttribute('data-id');
+        const act = b.getAttribute('data-act');
+        if (act === 'open') openT(id);
+        else if (act === 'edit') editTask(id);
+        else if (act === 'del') delTask(id);
+        else tg(id, act);
+      });
+    });
+    tx(rowsEl);
+  }
+
+  function tg(id, k) {
+    const x = g(id); x[k] = !x[k]; sv();
+    if (cur) view(); else rows();
+  }
+
+  /* ---------- Карточка ---------- */
+  function openT(id) {
+    cur = T.find(t => String(t.id) === String(id));
+    if (!cur) return;
+    ch = Array.isArray(cur.ch) ? JSON.parse(JSON.stringify(cur.ch)) : null;
+    si = 0; err = 0; hist = [];
+    shuf();
+    view();
+  }
+
+  function shuf() {
+    const s = ch && ch[si];
+    ord = s && Array.isArray(s.o) ? s.o.map((_, i) => i).sort(() => Math.random() - .5) : [];
+  }
+
+  function view() {
+    const t = cur, x = g(t.id);
+    $('app').innerHTML = `
+      <div class="card">
+        <div class="bar">
+          <button id="backBtn" class="ghost">← К списку</button>
+          <button id="favBtn">${x.fav?'★':'☆'} Избранное</button>
+          <button id="hwBtn">${x.hw?'✓ ДЗ':'+ ДЗ'}</button>
+          <button id="doneBtn">${x.done?'✓ Разобрано':'Отметить разобранным'}</button>
+          <button id="editBtn" style="margin-left:auto">✏️ Редактировать</button>
+          <button id="delBtn" style="color:var(--bad);border-color:var(--bad)">🗑 Удалить</button>
+        </div>
+        <b>№ ${H(t.n)}</b> <span class="tag">${H(t.s)}</span>
+        <div class="tx" style="font-size:1.1em;margin-top:12px">${t.t}</div>
+      </div>
+      <div id="ch"></div>`;
+    $('backBtn').addEventListener('click', menu);
+    $('favBtn').addEventListener('click', () => tg(t.id,'fav'));
+    $('hwBtn').addEventListener('click', () => tg(t.id,'hw'));
+    $('doneBtn').addEventListener('click', () => tg(t.id,'done'));
+    $('editBtn').addEventListener('click', () => editTask(t.id));
+    $('delBtn').addEventListener('click', () => delTask(t.id));
+    chain();
+    tx($('app'));
+  }
+
+  function renderOption(s, j, o) {
+    if (o.axis) {
+      return `<button class="opt-ax-btn" data-j="${j}">
+        <div class="axwrap">${axisSvg(o.axis)}</div>
+        ${o.t ? `<div class="cap">${H(o.t)}</div>` : ''}
+      </button>`;
+    }
+    if (o.display) {
+      return `<button class="op" data-j="${j}">
+        <div>${H(o.t)}</div>
+        <div class="display-op tx" style="margin-top:8px;padding:8px;background:rgba(0,0,0,.04);border-radius:8px;text-align:center">$$${H(o.display)}$$</div>
+      </button>`;
+    }
+    return `<button class="op" data-j="${j}">${H(o.t)}</button>`;
+  }
+
+  function chain() {
+    const el = $('ch');
+    if (!el) return;
+    if (!ch) {
+      el.innerHTML = '<div class="card"><p>Разбора пока нет. Нажмите «Загрузить JSON» и вставьте разбор.</p></div>';
+      return;
+    }
+    si = Math.max(0, Math.min(si, ch.length - 1));
+    const s = ch[si], fin = String(s.q||'').toUpperCase() === 'END';
+    const chosen = correctOption(s);
+    const answer = chosen ? chosen.t : '';
+    const axis = chosen && chosen.axis;
+    const total = ch.length;
+    let body = '';
+    if (fin) {
+      body = `<div class="card">
+        <b style="color:var(--ok)">✓ Ответ получен</b>
+        <div class="tx" style="font-size:1.15em;margin-top:8px">${H(cur.a || s.e || '')}</div>
+        <div class="meta" style="margin-top:8px">Ошибок: ${err}</div>
+        <div class="bar" style="margin-top:12px">
+          <button class="pri" id="redoBtn">Сначала</button>
+          <button id="nextBtn">Следующее задание →</button>
+        </div>
+      </div>`;
+    } else {
+      body = `<div class="card">
+        ${s.q ? `<p class="q">${H(s.q)}</p>` : ''}
+        ${answer ? `<div class="solution-answer">${H(answer)}</div>` : '<div class="meta">Для этого шага в JSON не найдено поле правильного ответа.</div>'}
+        ${axis ? `<div class="axwrap solution-axis">${axisSvg(axis)}</div>` : ''}
+        ${chosen && chosen.w ? `<div class="meta" style="margin-top:8px">${H(chosen.w)}</div>` : ''}
+      </div>`;
+    }
+    el.innerHTML = `
+      <div class="card step-navigator">
+        <div class="step-head">
+          <button id="prevStep" ${si===0?'disabled':''}>← Назад</button>
+          <b>Шаг ${si+1} из ${total}</b>
+          <button id="nextStep" ${si>=total-1?'disabled':''}>Вперёд →</button>
+        </div>
+        <input id="stepSlider" aria-label="Шаг решения" type="range" min="0" max="${total-1}" step="1" value="${si}">
+        <div class="step-scale"><span>Начало</span><span>${fin?'Ответ':'Можно перемещаться по шагам'}</span><span>Конец</span></div>
+      </div>
+      <div class="card">
+        <div class="meta">Промежуточное выражение</div>
+        <div class="eq">$$${H(s.e || '')}$$</div>
+      </div>
+      ${body}`;
+    $('prevStep').addEventListener('click',()=>goStep(si-1));
+    $('nextStep').addEventListener('click',()=>goStep(si+1));
+    $('stepSlider').addEventListener('change',e=>goStep(Number(e.target.value)));
+    if ($('redoBtn')) $('redoBtn').addEventListener('click', redo);
+    if ($('nextBtn')) $('nextBtn').addEventListener('click', nxt);
+    tx(el);
+  }
+
+  function goStep(n) {
+    if (!ch) return;
+    si = Math.max(0, Math.min(ch.length-1, Number(n)||0));
+    chain();
+    $('stepSlider')?.focus({preventScroll:true});
+  }
+
+  function redo() { si = 0; err = 0; hist = []; shuf(); chain(); }
+  function nxt() {
+    const i = T.findIndex(t => String(t.id) === String(cur.id));
+    const n = T[i + 1];
+    if (n) openT(n.id); else menu();
+  }
+
+  /* ---------- Ось ---------- */
+  function axisSvg(axis) {
+    if (!axis) return '';
+    const W=620, HH=100, L=34, R=586, Y=45, span=R-L;
+    const pts=(axis.points||[]).slice().sort((a,b)=>Number(a.x)-Number(b.x));
+    let vals=pts.map(p=>Number(p.x)).filter(Number.isFinite);
+    if(!vals.length) vals=[0];
+    let min=Math.min(...vals), max=Math.max(...vals);
+    if(min===max){ const pad=Math.max(1,Math.abs(min)*.5); min-=pad; max+=pad; }
+    else { const pad=(max-min)*.22; min-=pad; max+=pad; }
+    const X=v=>{
+      if(v==='-Infinity'||v===-Infinity) return L;
+      if(v==='+Infinity'||v===Infinity) return R;
+      const n=Number(v); return L+(n-min)/(max-min)*span;
+    };
+    let svg=`<svg class="axsvg" viewBox="0 0 ${W} ${HH}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Числовая ось с решением">`;
+    // выделение промежутков: прямые отрезки/лучи строго по координатам
+    for(const it of (axis.intervals||[])){
+      if(it.shade===false) continue;
+      const a=X(it.from), b=X(it.to);
+      if(Math.abs(a-b)<1){
+        svg+=`<circle cx="${a}" cy="${Y}" r="9" fill="var(--ans)" opacity=".22"/>`;
+      } else {
+        const left=Math.min(a,b), right=Math.max(a,b);
+        svg+=`<line x1="${left}" y1="${Y}" x2="${right}" y2="${Y}" stroke="var(--ans)" stroke-width="8" stroke-linecap="butt"/>`;
+        if(it.from==='-Infinity'||it.from===-Infinity||it.to==='-Infinity'||it.to===-Infinity)
+          svg+=`<path d="M ${L+1} ${Y} l 13 -7 v 14 z" fill="var(--ans)"/>`;
+        if(it.from==='+Infinity'||it.from===Infinity||it.to==='+Infinity'||it.to===Infinity)
+          svg+=`<path d="M ${R-1} ${Y} l -13 -7 v 14 z" fill="var(--ans)"/>`;
+      }
+    }
+    svg+=`<line x1="${L}" y1="${Y}" x2="${R}" y2="${Y}" stroke="var(--axis)" stroke-width="2"/>`;
+    svg+=`<path d="M ${R} ${Y} l -10 -5 v 10 z" fill="var(--axis)"/>`;
+    svg+=`<text x="${R+8}" y="${Y+5}" class="ax-label">x</text>`;
+    for(const p of pts){
+      const x=X(p.x);
+      svg+=p.type==='closed'
+        ? `<circle cx="${x}" cy="${Y}" r="6.5" fill="var(--ans)" stroke="var(--ans)" stroke-width="2"/>`
+        : `<circle cx="${x}" cy="${Y}" r="6.5" fill="var(--cd)" stroke="var(--ans)" stroke-width="2.5"/>`;
+      if(p.mark==='!') svg+=`<text x="${x}" y="${Y-14}" text-anchor="middle" font-weight="bold" font-size="17" fill="var(--bad)">!</text>`;
+      const label=String(p.label??p.x);
+      const width=190, cx=Math.max(width/2+2,Math.min(W-width/2-2,x));
+      svg+=`<foreignObject x="${cx-width/2}" y="${Y+12}" width="${width}" height="34"><div xmlns="http://www.w3.org/1999/xhtml" style="text-align:center;color:var(--tx);font:14px system-ui,sans-serif;white-space:nowrap">\\(${label}\\)</div></foreignObject>`;
+    }
+    svg+='</svg>'; return svg;
+  }
+
+  /* ---------- Экспорт / Импорт / Печать ---------- */
+  function getFiltered() {
+    return T.filter(t =>
+      (!fl.sec || t.s === fl.sec) &&
+      (!fl.df  || t.d === fl.df) &&
+      (!fl.q   || ((t.n||'') + ' ' + (t.c||'') + ' ' + (t.s||'')).toLowerCase().includes(fl.q)) &&
+      okf(t)
+    );
+  }
+
+  function exportJson() {
+    const data = getFiltered();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'inequalities_export.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function saveWholeApp(){
+    const doc=document.documentElement.cloneNode(true);
+    const seed=doc.querySelector('#seed');
+    if(seed){seed.textContent=JSON.stringify(T,null,2).replace(/</g,'\\u003c');seed.dataset.snapshot='1';}
+    let state=doc.querySelector('#seed-state');
+    if(!state){state=doc.createElement('script');state.type='application/json';state.id='seed-state';seed?.after(state);}
+    if(state) state.textContent=JSON.stringify(S,null,2).replace(/</g,'\\u003c');
+    // The saved file starts from the current task set and teacher progress,
+    // while subsequent edits continue to persist in localStorage.
+    const blob=new Blob(['<!doctype html>\n'+doc.outerHTML],{type:'text/html;charset=utf-8'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='НЕРАВЕНСТВА_сохранённое_приложение.html';
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }
+
+  function importJson() {
+    const root = $('modalRoot');
+    root.innerHTML = `
+      <div class="modal" id="importModal">
+        <div class="modal-box import-box" style="max-width:760px">
+          <h3>📥 Загрузка заданий JSON</h3>
+          <p>Можно вставить содержимое JSON в поле или выбрать файл на устройстве.</p>
+          <label style="display:block;margin:10px 0 6px;font-weight:700">Выбрать файл JSON</label>
+          <input id="jsonFile" type="file" accept=".json,application/json,text/json" style="width:100%">
+          <label style="display:block;margin:14px 0 6px;font-weight:700">Или вставить JSON</label>
+          <div id="jsonPaste" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Вставьте сюда JSON" style="width:100%;box-sizing:border-box;font-family:monospace;white-space:pre;overflow:auto;border:1px solid var(--br);border-radius:10px;padding:12px;min-height:180px;max-height:320px;background:var(--bg);color:var(--tx);outline:none"></div>
+          <div class="bar" style="justify-content:flex-end;margin-top:12px">
+            <button type="button" class="ghost" id="cancelImport">Отмена</button>
+            <button type="button" class="pri" id="applyImport" style="font-size:16px;font-weight:800;padding:13px 22px;min-width:230px">✓ ПОДТВЕРДИТЬ И ЗАГРУЗИТЬ</button>
+          </div>
+          <div id="importHint" style="font-size:13px;color:var(--mu);margin-top:8px">При совпадении id существующее задание будет обновлено, остальные добавятся.</div>
+        </div>
+      </div>`;
+    $('cancelImport').addEventListener('click', () => { root.innerHTML = ''; });
+    $('jsonFile').addEventListener('change', async ev => {
+      const file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      try {
+        $('jsonPaste').textContent = await file.text();
+        $('importHint').textContent = '✓ Файл выбран: ' + file.name + '. Теперь нажмите большую кнопку «ПОДТВЕРДИТЬ И ЗАГРУЗИТЬ» внизу окна.';
+        $('applyImport').scrollIntoView({block:'nearest'});
+      } catch(e) {
+        $('importHint').textContent = 'Не удалось прочитать файл: ' + (e.message || e);
+      }
+    });
+    $('applyImport').addEventListener('click', () => {
+      const raw = $('jsonPaste').innerText.trim();
+      if (!raw) { alert('Вставьте JSON или выберите файл.'); return; }
+      let data;
+      try { data = JSON.parse(raw); }
+      catch(e) { alert('Ошибка JSON: ' + e.message); return; }
+      const arr = Array.isArray(data) ? data : [data];
+      let added = 0, upd = 0, skipped = 0;
+      for (const source of arr) {
+        if (!source || typeof source !== 'object' || Array.isArray(source)) { skipped++; continue; }
+        const t = Object.assign({}, source);
+        if (!t.id) t.id = Date.now() + Math.floor(Math.random()*100000) + added;
+        if (!t.n) t.n = String(T.length + added + 1).padStart(3,'0');
+        if (!t.s) t.s = 'Без раздела';
+        if (!t.d) t.d = 'basic';
+        if (!t.c) t.c = t.t || '';
+        const i = T.findIndex(x => String(x.id) === String(t.id));
+        if (i >= 0) { T[i] = Object.assign({}, T[i], t); upd++; }
+        else { T.push(t); added++; }
+      }
+      T.sort((a,b) => String(a.n||'').localeCompare(String(b.n||''), 'ru', {numeric:true}));
+      persistTasks();
+      root.innerHTML = '';
+      alert('Добавлено: ' + added + ', обновлено: ' + upd + (skipped ? ', пропущено: ' + skipped : ''));
+      menu();
+    });
+  }
+
+  function printTasks() {
+    const items = getFiltered();
+    if (!items.length) { alert('Нет задач для печати (отфильтровано).'); return; }
+    const root = $('modalRoot');
+    root.innerHTML = `
+      <div class="modal" id="printModal">
+        <div class="modal-box print-options">
+          <h3>🖨 Настройки печати</h3>
+          <div class="print-fields">
+            <label><input type="checkbox" id="pfCondition" checked> Условия задач</label>
+            <label><input type="checkbox" id="pfSteps" checked> Пошаговый разбор</label>
+            <label><input type="checkbox" id="pfAnswer" checked> Ответы</label>
+          </div>
+          <div class="print-task-head"><b>Какие задачи печатать?</b><span>
+            <button type="button" class="ghost" id="printAll">Выбрать все</button>
+            <button type="button" class="ghost" id="printNone">Снять все</button></span>
+          </div>
+          <div class="print-task-list">${items.map((t,i)=>`<label><input type="checkbox" class="print-task-check" data-index="${i}" checked> № ${H(t.n)} (${H(t.s)})</label>`).join('')}</div>
+          <div class="bar">
+            <button type="button" class="ghost" id="cancelPrint">Отмена</button>
+            <button type="button" class="primary" id="confirmPrint">Печатать</button>
+          </div>
+        </div>
+      </div>`;
+    const close = () => { root.innerHTML=''; };
+    $('cancelPrint').onclick = close;
+    $('printAll').onclick = () => root.querySelectorAll('.print-task-check').forEach(x=>x.checked=true);
+    $('printNone').onclick = () => root.querySelectorAll('.print-task-check').forEach(x=>x.checked=false);
+    $('confirmPrint').onclick = () => {
+      const fields = {
+        condition: $('pfCondition').checked,
+        steps: $('pfSteps').checked,
+        answer: $('pfAnswer').checked
+      };
+      const selected = [...root.querySelectorAll('.print-task-check')]
+        .filter(x=>x.checked).map(x=>items[Number(x.dataset.index)]);
+      if (!selected.length) { alert('Отметьте хотя бы одну задачу.'); return; }
+      // Открываем пустое окно синхронно внутри пользовательского клика:
+      // иначе браузер может посчитать его всплывающим окном и заблокировать.
+      const printWin = window.open('about:blank', '_blank');
+      if (!printWin) {
+        alert('Браузер заблокировал окно печати. Разрешите всплывающие окна для этой страницы и нажмите «Печатать» ещё раз.');
+        return;
+      }
+      close();
+      buildPrintWindow(selected, fields, printWin);
+    };
+  }
+
+  function buildPrintWindow(items, fields, win) {
+    let html = `<!doctype html><html lang="ru"><head>
+      <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>Печать задач</title>
+      <style>
+        @page{size:auto;margin:16mm}
+        *{box-sizing:border-box}
+        body{font-family:Arial,"DejaVu Sans",sans-serif;padding:0;line-height:1.5;color:#111;background:#fff;font-size:12pt}
+        h3{margin:0 0 9px;font-size:15pt;font-weight:700;break-after:avoid}
+        .task{margin:0 0 25px;break-inside:avoid;page-break-inside:avoid}
+        .condition{margin:7px 0 10px}
+        .steps{margin:8px 0 0;padding:0 0 0 18px;border-left:1px solid #bbb;color:#222}
+        .step{margin:4px 0;break-inside:avoid}
+        .step .expr{margin:2px 0}
+        .ans{margin-top:10px;font-weight:600;color:#0645ad}
+        mjx-container{color:#111!important;max-width:100%;overflow:visible!important}
+        mjx-container[display="true"]{display:block;text-align:left!important;margin:7px 0!important}
+        @media print{body{padding:0}.task{break-inside:avoid}}
+      </style>
+      <script>
+        window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$','$$'],['\\\\[','\\\\]']]},svg:{fontCache:'none'},startup:{typeset:false}};
+      <\/script>
+      <script async id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"><\/script>
+    </head><body>`;
+
+    for (const t of items) {
+        html += `<section class="task"><h3>№ ${H(t.n)} (${H(t.s)})</h3>`;
+        if (fields.condition) html += `<div class="condition">${t.t || ''}</div>`;
+        if (fields.steps && t.ch && t.ch.length) {
+          html += '<div class="steps"><b>Шаги:</b>';
+          t.ch.forEach((step, idx) => {
+            if (step.q === 'END') return;
+            const good = (step.o || []).find(o => o.ok);
+            const answerText = good ? good.t : '';
+            html += `<div class="step"><div class="expr">${idx+1}. $${step.e || ''}$</div>`;
+            if (step.q) html += `<div>${step.q}</div>`;
+            if (answerText) html += `<div>${answerText}</div>`;
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+        if (fields.answer) html += `<div class="ans">${t.a || ''}</div>`;
+        html += '</section>';
+    }
+    html += `<script>
+      (function(){
+        let started=false;
+        async function renderAndPrint(){
+          if(started) return; started=true;
+          try {
+            if(window.MathJax){
+              if(window.MathJax.startup && window.MathJax.startup.promise) await window.MathJax.startup.promise;
+              if(window.MathJax.typesetPromise) await window.MathJax.typesetPromise();
+            }
+            if(document.fonts && document.fonts.ready) await document.fonts.ready;
+          } catch(e){ console.error('Ошибка отрисовки формул:',e); }
+          setTimeout(()=>window.print(),300);
+        }
+        const mj=document.getElementById('MathJax-script');
+        if(mj){mj.addEventListener('load',renderAndPrint,{once:true});mj.addEventListener('error',()=>setTimeout(()=>window.print(),500),{once:true});}
+        window.addEventListener('load',()=>{if(window.MathJax && window.MathJax.typesetPromise) renderAndPrint();else setTimeout(renderAndPrint,1800);},{once:true});
+      })();
+    <\/script></body></html>`;
+
+    if (!win || win.closed) { alert('Не удалось открыть окно печати. Разрешите всплывающие окна для этой страницы.'); return; }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  }
+
+  /* ---------- Редактирование/Добавление/Удаление ---------- */
+  function openModal(taskObj, isNew, originalId) {
+    $('modalRoot').innerHTML = `
+      <div class="modal" id="editModal">
+        <div class="modal-box">
+          <h3>${isNew ? '➕ Новая задача' : '✏️ Редактирование задачи №'+H(taskObj.n)}</h3>
+          <textarea id="editJson" spellcheck="false">${JSON.stringify(taskObj, null, 2)}</textarea>
+          <div class="bar">
+            <button class="ghost" id="cancelEdit">Отмена</button>
+            <button class="pri" id="saveEdit">Сохранить</button>
+          </div>
+        </div>
+      </div>`;
+    
+    $('cancelEdit').addEventListener('click', () => { $('modalRoot').innerHTML = ''; });
+    $('saveEdit').addEventListener('click', () => {
+      try {
+        const parsed = JSON.parse($('editJson').value);
+        if (!parsed || typeof parsed !== 'object' || !parsed.id) throw new Error('Некорректный объект (нет id)');
+        
+        if (isNew) {
+          T.push(parsed);
+        } else {
+          const idx = T.findIndex(x => String(x.id) === String(originalId));
+          if (idx >= 0) T[idx] = parsed;
+        }
+        T.sort((a,b) => String(a.n||'').localeCompare(String(b.n||''), 'ru', {numeric:true}));
+        persistTasks();
+        $('modalRoot').innerHTML = '';
+        
+        if (cur && String(cur.id) === String(parsed.id)) {
+          cur = parsed;
+          ch = Array.isArray(cur.ch) ? JSON.parse(JSON.stringify(cur.ch)) : null;
+          si = 0; err = 0; hist = [];
+          shuf();
+          view();
+        } else {
+          menu();
+        }
+      } catch(e) {
+        alert('Ошибка JSON: ' + e.message);
+      }
+    });
+  }
+
+  function editTask(id) {
+    const t = T.find(x => String(x.id) === String(id));
+    if (!t) return;
+    openModal(t, false, id);
+  }
+
+  function addTask() {
+    const newTask = {
+      id: Date.now(),
+      n: String(T.length + 1).padStart(3,'0'),
+      s: "Без раздела",
+      d: "basic",
+      t: "Условие в LaTeX",
+      c: "Условие для карточки",
+      a: "Ответ",
+      ap: "Ответ (LaTeX)",
+      ch: []
+    };
+    openModal(newTask, true, null);
+  }
+
+  function delTask(id) {
+    if (!confirm('Вы уверены, что хотите удалить эту задачу?')) return;
+    T = T.filter(x => String(x.id) !== String(id));
+    persistTasks(); delete S[id]; sv();
+    if (cur && String(cur.id) === String(id)) menu();
+    else rows();
+  }
+
+  /* ---------- Теория ---------- */
+  function theory() {
+    cur = null;
+    $('app').innerHTML = `
+      <div class="card" style="background:transparent;border:none;box-shadow:none;padding:0">
+        <button id="backBtn2" style="margin-bottom:16px">← К списку</button>
+        <h2 style="margin-top:0;font-size:24px;letter-spacing:-0.5px">📚 Шпаргалка по неравенствам</h2>
+        <div class="theory-grid">
+          
+          <div class="sticker st-blue">
+            <h3>📈 Метод интервалов</h3>
+            <p>Приводим к виду $\\frac{P(x)}{Q(x)} \\gtrless 0$. Находим нули числителя (закрашенные при $\\le, \\ge$, выколотые при $<, >$) и знаменателя (всегда выколотые).</p>
+            <p>Кратные корни чётной кратности не меняют знак — отмечаем их восклицательным знаком <b>!</b>.</p>
+            <div class="ex">$\\frac{(x-1)^2}{(x+2)(x-4)} \\le 0$</div>
+          </div>
+
+          <div class="sticker st-green">
+            <h3>🌱 Показательные</h3>
+            <p>Если $a > 1$: $a^{f} \\gtrless a^{g} \\iff f \\gtrless g$.</p>
+            <p>Если $0 < a < 1$: знак неравенства <b>меняется</b> на противоположный.</p>
+            <p>Правую часть $b > 0$ записываем как $a^{\\log_a b}$, чтобы сбросить основания.</p>
+            <div class="ex">$2^x < 8 \\Rightarrow 2^x < 2^3 \\Rightarrow x < 3$</div>
+          </div>
+
+          <div class="sticker st-purple">
+            <h3>📝 Логарифмические</h3>
+            <p>ОДЗ: аргумент $>0$, основание $>0, \\ne 1$.</p>
+            <p>При $a > 1$ знак сохраняется, при $0 < a < 1$ — меняется.</p>
+            <div class="ex">$\\log_2(x-1) < 3 \\Rightarrow 0 < x-1 < 8$</div>
+          </div>
+
+          <div class="sticker st-orange">
+            <h3>📐 Иррациональные</h3>
+            <p>$\\sqrt{A} < B \\iff \\begin{cases} A \\ge 0 \\\\ B > 0 \\\\ A < B^2 \\end{cases}$</p>
+            <p>$\\sqrt{A} > B \\iff \\left[ \\begin{array}{l} B < 0 \\\\ \\begin{cases} B \\ge 0 \\\\ A > B^2 \\end{cases} \\end{array} \\right.$</p>
+          </div>
+
+          <div class="sticker st-red">
+            <h3>⚖️ Системы и совокупности</h3>
+            <p><b>Система</b> — это <b>И</b> (пересечение): $\\begin{cases} A > 0 \\\\ B < 0 \\end{cases}$</p>
+            <p><b>Совокупность</b> — это <b>ИЛИ</b> (объединение): $\\left[ \\begin{array}{l} A = 0 \\\\ B = 0 \\end{array} \\right.$</p>
+            <p>ОДЗ добавляем к системе под общую фигурную скобку.</p>
+          </div>
+
+          <div class="sticker st-cyan">
+            <h3>🎯 Оценка знака</h3>
+            <p>Часто удобно подставить $x=0$ или $x \\to +\\infty$, чтобы определить знак на крайнем правом промежутке.</p>
+            <p>Помните: при переходе через корень <b>нечётной</b> кратности знак меняется, чётной — нет.</p>
+          </div>
+
+        </div>
+      </div>
+    `;
+    $('backBtn2').addEventListener('click', menu);
+    tx($('app'));
+  }
+
+  function th() {
+    const r = document.documentElement;
+    const d = r.dataset.theme || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+    r.dataset.theme = d === 'dark' ? 'light' : 'dark';
+  }
+
+  /* ---------- Старт ---------- */
+  function init() {
+    loadSeed();
+    if(!localStorage.getItem('ineq.v2.tasks')) persistTasks();
+    $('btnTheory').addEventListener('click', theory);
+    $('btnAdd').addEventListener('click', addTask);
+    $('btnImport').addEventListener('click', importJson);
+    $('btnExport').addEventListener('click', exportJson);
+    $('btnSaveApp').addEventListener('click', saveWholeApp);
+    $('btnPrint').addEventListener('click', printTasks);
+    $('btnTheme').addEventListener('click', th);
+    
+    // для отладки
+    window.menu = menu; window.rows = rows; window.openT = openT; window.tg = tg;
+    window.pick = pick; window.redo = redo; window.nxt = nxt;
+    window.theory = theory; window.th = th; window.importJson = importJson;
+    window.axisSvg = axisSvg; window.saveWholeApp=saveWholeApp; window.editTask = editTask; window.addTask = addTask;
+    window.delTask = delTask; window.exportJson = exportJson; window.printTasks = printTasks;
+    
+    menu();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>

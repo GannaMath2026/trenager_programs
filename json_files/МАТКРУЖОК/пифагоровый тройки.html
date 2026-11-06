@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: Пифагоровы тройки</title>
+<style>
+  :root {
+    --bg: #f4f7fb;
+    --panel: #ffffff;
+    --ink: #1d2b3a;
+    --muted: #63768c;
+    --line: #d6e0ea;
+    --accent: #2f6de0;
+    --accent2: #1f4fb5;
+    --good: #18794e;
+    --good-bg: #e6f7ee;
+    --bad: #b42318;
+    --bad-bg: #fdecea;
+    --warn: #8a5a00;
+    --warn-bg: #fff4d6;
+    --shadow: 0 10px 30px rgba(20, 40, 70, 0.08);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 10% -10%, #e8f0ff 0%, transparent 60%),
+                radial-gradient(900px 500px at 110% 10%, #e6fbf4 0%, transparent 55%),
+                var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .brand h1 {
+    font-size: clamp(20px, 3vw, 28px);
+    margin: 0 0 4px;
+    letter-spacing: -0.02em;
+  }
+  .brand p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .stats {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .chip b { color: var(--accent2); }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px;
+  }
+  .level-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .level-row span { font-weight: 700; color: var(--muted); font-size: 14px; }
+  .seg {
+    display: inline-flex;
+    background: #eef3f9;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .seg button {
+    border: 0;
+    background: transparent;
+    padding: 8px 14px;
+    border-radius: 9px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 14px;
+    color: #52657b;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .seg button.active {
+    background: #fff;
+    color: var(--accent2);
+    box-shadow: 0 2px 8px rgba(30, 70, 140, 0.15);
+  }
+  .task {
+    text-align: center;
+    padding: 14px 0 6px;
+  }
+  .task .q {
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 8px 0 6px;
+    line-height: 1.25;
+  }
+  .task .q code {
+    background: #eef3fb;
+    border: 1px solid #d5e1f2;
+    padding: 2px 10px;
+    border-radius: 10px;
+    color: var(--accent2);
+    font-family: Consolas, monospace;
+  }
+  .task .sub {
+    color: var(--muted);
+    font-size: 14px;
+    min-height: 20px;
+  }
+  .answers {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 22px 0 8px;
+  }
+  .answers.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .answers.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .ans {
+    border: 2px solid var(--line);
+    background: #fbfdff;
+    border-radius: 14px;
+    padding: 16px 10px;
+    font-size: clamp(17px, 2.4vw, 22px);
+    font-weight: 800;
+    font-family: Consolas, monospace;
+    color: var(--ink);
+    cursor: pointer;
+    transition: 0.15s;
+    min-height: 64px;
+  }
+  .ans:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: #f0f6ff;
+    transform: translateY(-1px);
+  }
+  .ans:disabled { cursor: default; }
+  .ans.correct {
+    border-color: var(--good);
+    background: var(--good-bg);
+    color: var(--good);
+  }
+  .ans.wrong {
+    border-color: var(--bad);
+    background: var(--bad-bg);
+    color: var(--bad);
+  }
+  .ans.reveal {
+    border-color: var(--good);
+    background: var(--good-bg);
+    color: var(--good);
+  }
+  .feedback {
+    margin: 14px 0 4px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.ok { background: var(--good-bg); border: 1px solid #b7e3cb; color: var(--good); }
+  .feedback.no { background: var(--bad-bg); border: 1px solid #f2c2bd; color: var(--bad); }
+  .feedback b { font-weight: 800; }
+  .feedback .explain {
+    margin-top: 8px;
+    color: var(--ink);
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .feedback code {
+    background: rgba(0,0,0,0.06);
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-family: Consolas, monospace;
+  }
+  .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 18px;
+  }
+  .btn {
+    border: 1px solid var(--line);
+    background: #fff;
+    color: #2c405e;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.15s;
+    box-shadow: 0 2px 8px rgba(20, 40, 70, 0.06);
+  }
+  .btn:hover { background: #f4f8fd; border-color: #a9bdd6; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: var(--accent2); }
+  .btn.ghost { background: transparent; box-shadow: none; }
+  .btn.hint { background: var(--warn-bg); border-color: #ecd08a; color: var(--warn); }
+  .btn.hint:hover { background: #ffeab3; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .hintbox {
+    display: none;
+    margin: 14px 0 0;
+    padding: 14px 16px;
+    background: var(--warn-bg);
+    border: 1px solid #ecd08a;
+    border-radius: 12px;
+    color: #6b4a00;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .hintbox.show { display: block; }
+  .progress {
+    height: 8px;
+    background: #e7eef7;
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 16px 0 0;
+  }
+  .progress > div {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #4f8bf0, #1f4fb5);
+    border-radius: 999px;
+    transition: width 0.35s ease;
+  }
+  .footer-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 18px;
+  }
+  .streak-fire { color: #d9480f; }
+  .kbd {
+    display: inline-block;
+    border: 1px solid #c6d2df;
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    padding: 0 6px;
+    font-size: 12px;
+    font-family: Consolas, monospace;
+    background: #f7fafc;
+    color: #52657b;
+  }
+  @media (max-width: 640px) {
+    .panel { padding: 16px; }
+    .answers { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .answers.four { grid-template-columns: 1fr 1fr; }
+    .ans { min-height: 56px; padding: 12px 8px; }
+    .chip { padding: 6px 10px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>📐 Пифагоровы тройки</h1>
+      <p>Найди пропущенную сторону прямоугольного треугольника. <span class="kbd">1</span>–<span class="kbd">4</span> — выбор ответа.</p>
+    </div>
+    <div class="stats">
+      <div class="chip">⭐ Очки: <b id="score">0</b></div>
+      <div class="chip">🔥 Серия: <b id="streak" class="streak-fire">0</b></div>
+      <div class="chip">✅ Верно: <b id="right">0</b> / <span id="total">0</span></div>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="level-row">
+      <span>Уровень:</span>
+      <div class="seg" id="levels">
+        <button data-level="1" class="active">Разминка</button>
+        <button data-level="2">Базовый</button>
+        <button data-level="3">Продвинутый</button>
+      </div>
+    </div>
+
+    <div class="task">
+      <div class="sub" id="sub">Прямоугольный треугольник</div>
+      <div class="q" id="question">Загрузка…</div>
+    </div>
+
+    <div class="answers four" id="answers"></div>
+
+    <div class="feedback" id="feedback"></div>
+    <div class="hintbox" id="hintbox"></div>
+
+    <div class="actions">
+      <button class="btn hint" id="hintBtn">💡 Подсказка</button>
+      <button class="btn primary" id="nextBtn">Следующая задача →</button>
+      <button class="btn ghost" id="resetBtn">↺ Сброс</button>
+    </div>
+
+    <div class="progress"><div id="bar"></div></div>
+    <div class="footer-note">Совет: помни формулу <b>a² + b² = c²</b>, где c — гипотенуза.</div>
+  </section>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // Пифагоровы тройки (a, b, c) — a,b катеты, c гипотенуза.
+  // Примитивные и их кратные, чтобы было интересно.
+  const BASE_TRIPLES = [
+    [3, 4, 5],
+    [5, 12, 13],
+    [8, 15, 17],
+    [7, 24, 25],
+    [20, 21, 29],
+    [9, 40, 41],
+    [12, 35, 37],
+    [11, 60, 61],
+    [28, 45, 53],
+    [33, 56, 65],
+    [16, 63, 65],
+    [48, 55, 73],
+    [13, 84, 85],
+    [36, 77, 85],
+    [39, 80, 89],
+    [65, 72, 97],
+  ];
+
+  // Уровни: 1 — маленькие тройки, ответ из 4 вариантов, время не ограничено.
+  //         2 — кратные тройки (×2, ×3), ответ 4 варианта.
+  //         3 — большие числа и кратные до ×6, ответ 4 варианта.
+  const LEVELS = {
+    1: { mults: [1], pool: [0, 1, 2, 3, 4] },
+    2: { mults: [1, 2, 3], pool: [0, 1, 2, 3, 4, 5, 6] },
+    3: { mults: [2, 3, 4, 5, 6], pool: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] },
+  };
+
+  const state = {
+    level: 1,
+    score: 0,
+    streak: 0,
+    right: 0,
+    total: 0,
+    current: null,
+    answered: false,
+    hintUsed: false,
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    score: $("score"),
+    streak: $("streak"),
+    right: $("right"),
+    total: $("total"),
+    sub: $("sub"),
+    question: $("question"),
+    answers: $("answers"),
+    feedback: $("feedback"),
+    hintbox: $("hintbox"),
+    hintBtn: $("hintBtn"),
+    nextBtn: $("nextBtn"),
+    resetBtn: $("resetBtn"),
+    bar: $("bar"),
+    levels: $("levels"),
+  };
+
+  function randInt(n) { return Math.floor(Math.random() * n); }
+  function pick(arr) { return arr[randInt(arr.length)]; }
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = randInt(i + 1);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function gcd(a, b) { while (b) { [a, b] = [b, a % b]; } return a; }
+
+  function buildTriples(level) {
+    const cfg = LEVELS[level];
+    const out = [];
+    cfg.pool.forEach((idx) => {
+      const base = BASE_TRIPLES[idx];
+      cfg.mults.forEach((m) => {
+        out.push([base[0] * m, base[1] * m, base[2] * m]);
+      });
+    });
+    // убрать дубли
+    const seen = new Set();
+    return out.filter((t) => {
+      const key = t.join(",");
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function makeTask() {
+    const triples = buildTriples(state.level);
+    const t = pick(triples);
+    // перемешаем катеты, чтобы не было привычки "первое число меньше"
+    let [a, b, c] = t;
+    if (Math.random() < 0.5) [a, b] = [b, a];
+
+    const kind = pick(["c", "a", "b"]);
+    let known, unknown, correct, formula, hint;
+
+    if (kind === "c") {
+      known = `${a} и ${b}`;
+      unknown = "c";
+      correct = c;
+      formula = `${a}² + ${b}² = c²`;
+      hint = `c² = ${a}² + ${b}² = ${a * a} + ${b * b} = ${a * a + b * b}. Значит, c = √${a * a + b * b}.`;
+    } else if (kind === "a") {
+      known = `${b} и ${c}`;
+      unknown = "a";
+      correct = a;
+      formula = `a² + ${b}² = ${c}²`;
+      hint = `a² = ${c}² − ${b}² = ${c * c} − ${b * b} = ${c * c - b * b}. Значит, a = √${c * c - b * b}.`;
+    } else {
+      known = `${a} и ${c}`;
+      unknown = "b";
+      correct = b;
+      formula = `${a}² + b² = ${c}²`;
+      hint = `b² = ${c}² − ${a}² = ${c * c} − ${a * a} = ${c * c - a * a}. Значит, b = √${c * c - a * a}.`;
+    }
+
+    // варианты ответа: правильный + 3 правдоподобных
+    const opts = new Set([correct]);
+    const candidates = [a, b, c, Math.round(correct * 1.2), correct + 1, correct - 1, correct + 2, correct - 2, correct + 3, correct + 5];
+    shuffle(candidates).forEach((v) => {
+      if (opts.size >= 4) return;
+      if (v > 0 && v !== correct) opts.add(v);
+    });
+    while (opts.size < 4) opts.add(correct + randInt(10) + 1);
+
+    return {
+      a, b, c,
+      kind,
+      known,
+      unknown,
+      correct,
+      options: shuffle([...opts]),
+      formula,
+      hint,
+    };
+  }
+
+  function renderTask() {
+    state.answered = false;
+    state.hintUsed = false;
+    state.current = makeTask();
+    const t = state.current;
+
+    els.sub.textContent = t.unknown === "c"
+      ? "Гипотенуза неизвестна"
+      : "Неизвестен катет";
+    els.question.innerHTML =
+      `Катеты / гипотенуза: <code>${t.known}</code><br>Найди <b>${t.unknown}</b>`;
+
+    els.answers.className = "answers four";
+    els.answers.innerHTML = "";
+    t.options.forEach((val, i) => {
+      const btn = document.createElement("button");
+      btn.className = "ans";
+      btn.type = "button";
+      btn.dataset.value = String(val);
+      btn.innerHTML = `${val} <span style="opacity:.45;font-size:12px">[${i + 1}]</span>`;
+      btn.addEventListener("click", () => chooseAnswer(val, btn));
+      els.answers.appendChild(btn);
+    });
+
+    els.feedback.className = "feedback";
+    els.feedback.innerHTML = "";
+    els.hintbox.className = "hintbox";
+    els.hintbox.innerHTML = "";
+    els.hintBtn.disabled = false;
+    els.nextBtn.textContent = "Следующая задача →";
+
+    updateStats();
+    updateProgress();
+  }
+
+  function chooseAnswer(val, btn) {
+    if (state.answered) return;
+    state.answered = true;
+    state.total += 1;
+
+    const t = state.current;
+    const correct = t.correct;
+    const isRight = val === correct;
+
+    // подсветка
+    [...els.answers.children].forEach((b) => {
+      b.disabled = true;
+      const v = Number(b.dataset.value);
+      if (v === correct) b.classList.add("correct");
+      else if (v === val) b.classList.add("wrong");
+    });
+
+    if (isRight) {
+      state.right += 1;
+      state.streak += 1;
+      const bonus = state.hintUsed ? 5 : 10 + Math.min(state.streak, 5) * 2;
+      state.score += bonus;
+      els.feedback.className = "feedback ok show";
+      els.feedback.innerHTML =
+        `<b>Верно!</b> +${bonus} очков${state.hintUsed ? " (с подсказкой)" : ""}.` +
+        `<div class="explain">${t.formula}. Ответ: <b>${t.unknown} = ${correct}</b>.</div>`;
+    } else {
+      state.streak = 0;
+      els.feedback.className = "feedback no show";
+      els.feedback.innerHTML =
+        `<b>Неверно.</b> Правильный ответ: <b>${t.unknown} = ${correct}</b>.` +
+        `<div class="explain">${t.formula}. Ты выбрал ${val}.</div>`;
+    }
+
+    els.nextBtn.textContent = "Следующая задача →";
+    updateStats();
+    updateProgress();
+  }
+
+  function showHint() {
+    if (state.answered) return;
+    if (state.hintUsed) return;
+    state.hintUsed = true;
+    els.hintBtn.disabled = true;
+    els.hintbox.className = "hintbox show";
+    els.hintbox.innerHTML = `<b>💡 Подсказка:</b> ${state.current.hint}`;
+  }
+
+  function nextTask() {
+    renderTask();
+  }
+
+  function updateStats() {
+    els.score.textContent = state.score;
+    els.streak.textContent = state.streak;
+    els.right.textContent = state.right;
+    els.total.textContent = state.total;
+  }
+
+  function updateProgress() {
+    // прогресс — это серия верных ответов до 10
+    const pct = Math.min(100, (state.streak / 10) * 100);
+    els.bar.style.width = pct + "%";
+  }
+
+  function resetAll() {
+    state.score = 0;
+    state.streak = 0;
+    state.right = 0;
+    state.total = 0;
+    state.level = 1;
+    [...els.levels.children].forEach((b, i) => b.classList.toggle("active", i === 0));
+    renderTask();
+  }
+
+  // Уровни
+  els.levels.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-level]");
+    if (!btn) return;
+    [...els.levels.children].forEach((b) => b.classList.toggle("active", b === btn));
+    state.level = Number(btn.dataset.level);
+    state.streak = 0; // сброс серии при смене уровня
+    renderTask();
+  });
+
+  els.hintBtn.addEventListener("click", showHint);
+  els.nextBtn.addEventListener("click", nextTask);
+  els.resetBtn.addEventListener("click", resetAll);
+
+  // Горячие клавиши 1–4 и Enter / Space для "дальше"
+  document.addEventListener("keydown", (e) => {
+    if (e.target.matches("input, textarea")) return;
+    const k = e.key;
+    if (/^[1-4]$/.test(k)) {
+      const idx = Number(k) - 1;
+      const btn = els.answers.children[idx];
+      if (btn && !btn.disabled) {
+        e.preventDefault();
+        btn.click();
+      }
+    } else if (k === "Enter" || k === " ") {
+      if (state.answered) {
+        e.preventDefault();
+        nextTask();
+      }
+    } else if (k.toLowerCase() === "h") {
+      e.preventDefault();
+      showHint();
+    }
+  });
+
+  // старт
+  renderTask();
+})();
+</script>
+</body>
+</html>

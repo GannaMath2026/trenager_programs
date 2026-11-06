@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Неравенства: разбор по шагам</title>
+<style>
+:root{
+  --bg:#f4f6fb;--cd:#fff;--tx:#1c2333;--mu:#667;--ac:#3b63d9;
+  --ok:#1f9d57;--bad:#d64545;--wa:#d99a1e;--br:#d9deea;
+  --axis:#334155;--pos:#16a34a;--neg:#dc2626;--ans:#2563eb;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px)
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12151d;--cd:#1c212d;--tx:#e8ebf3;--mu:#99a;--ac:#7c9bff;
+    --ok:#3ecf80;--bad:#ff6b6b;--wa:#f0b43c;--br:#2e3547;
+    --axis:#cbd5e1;--pos:#4ade80;--neg:#f87171;--ans:#60a5fa
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12151d;--cd:#1c212d;--tx:#e8ebf3;--mu:#99a;--ac:#7c9bff;
+  --ok:#3ecf80;--bad:#ff6b6b;--wa:#f0b43c;--br:#2e3547;
+  --axis:#cbd5e1;--pos:#4ade80;--neg:#f87171;--ans:#60a5fa
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;gap:8px;align-items:center;padding:10px 14px;background:var(--cd);border-bottom:1px solid var(--br);flex-wrap:wrap}
+header h1{flex:1;margin:0;font-size:16px;min-width:180px}
+main{max-width:880px;margin:auto;padding:12px}
+button,select,input,textarea{font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--br);border-radius:10px;padding:7px 11px}
+button{cursor:pointer}
+button.on,button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+button.ghost{background:transparent}
+.card{background:var(--cd);border:1px solid var(--br);border-radius:14px;padding:12px;margin-bottom:12px}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.meta{font-size:13px;color:var(--mu)}
+.tag{font-size:12px;border:1px solid var(--br);border-radius:8px;padding:1px 7px;color:var(--mu)}
+.tx{margin:6px 0;overflow-x:auto}
+.eq{font-size:1.4em;overflow-x:auto;overflow-y:hidden;padding:6px 0}
+.q{font-weight:600;margin:0 0 10px}
+.op{display:block;width:100%;text-align:left;margin-bottom:8px;padding:11px 12px}
+.op.g{background:var(--ok);color:#fff;border-color:var(--ok)}
+.op.r{background:var(--bad);color:#fff;border-color:var(--bad)}
+.op .tx{color:inherit}
+.op.g .tx, .op.r .tx{color:inherit}
+#fb{color:var(--mu)}
+#fb.bad{color:var(--bad)}
+#fb.good{color:var(--ok)}
+.row.done{border-left:6px solid var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--cd))}
+.row.hw{border-right:4px solid var(--wa)}
+.stk{display:inline-block;background:var(--ok);color:#fff;font-weight:800;font-size:12px;letter-spacing:.5px;padding:3px 10px;border-radius:8px;transform:rotate(-4deg);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.d-basic{color:var(--ok)}.d-medium{color:var(--wa)}.d-hard{color:var(--bad)}
+details{margin-top:6px}
+summary{cursor:pointer;color:var(--mu)}
+.h{padding:4px 0;overflow-x:auto}
+/* ось / метод интервалов */
+.axwrap{overflow-x:auto;padding:8px 2px 2px;pointer-events:none}
+.axsvg{display:block;width:100%;height:120px}
+.ax-label{font:13px system-ui,sans-serif;fill:var(--mu)}
+.ax-num{font:13px ui-monospace,monospace;fill:var(--tx)}
+.opt-ax{display:grid;grid-template-columns:1fr;gap:8px}
+.opt-ax-btn{padding:6px;text-align:left;width:100%}
+.opt-ax-btn.g{background:color-mix(in srgb,var(--ok) 22%,var(--cd));border-color:var(--ok)}
+.opt-ax-btn.r{background:color-mix(in srgb,var(--bad) 18%,var(--cd));border-color:var(--bad)}
+.ansline{font-weight:700;color:var(--ans)}
+#err{color:var(--bad);white-space:pre-wrap;font:13px ui-monospace,monospace;padding:8px}
+.display-op{margin-top:8px;padding:8px;background:color-mix(in srgb,var(--ac) 6%,var(--cd));border-radius:8px}
+</style>
+<script>
+window.MathJax={
+  tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},
+  svg:{fontCache:'global'},
+  startup:{typeset:false}
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+</head>
+<body>
+<header>
+  <h1>Неравенства: разбор по шагам</h1>
+  <button id="btnTheory">Теория</button>
+  <button id="btnImport">Загрузить JSON</button>
+  <button id="btnTheme">◐ тема</button>
+</header>
+<main id="app"></main>
+<div id="err"></div>
+
+<!-- ===============  ДАННЫЕ  =============== -->
+<script type="application/json" id="seed">
+[
+  {
+    "id": 900001,
+    "n": "001",
+    "s": "01 · ПОКАЗАТЕЛЬНЫЕ",
+    "d": "medium",
+    "t": "Решите неравенство: \\( 2\\left(18^{x}+8^{x}\\right) > 12^{x}+27^{x} \\).",
+    "c": "Решите неравенство: \\( 2\\left(18^{x}+8^{x}\\right) > 12^{x}+27^{x} \\).",
+    "a": "Ответ: \\( \\left(-\\infty;\\ \\log_{2/3}\\tfrac{1}{2}\\right) \\).",
+    "ap": "\\left(-\\infty;\\ \\log_{2/3}\\tfrac{1}{2}\\right)",
+    "ch": [
+      {
+        "e": "2\\left(18^{x}+8^{x}\\right) > 12^{x}+27^{x}",
+        "q": "С чего начать? Степени записаны разными основаниями.",
+        "o": [
+          {"t": "Разделить обе части на $3^{3x}>0$ и выразить все степени через $2/3$", "ok": true, "w": ""},
+          {"t": "Разделить обе части на $27^{x}$", "ok": false, "w": "После деления на $27^x$ основания станут разными: $(2/3)^x$, $(2/9)^x$, $(4/9)^x$ — неудобно."},
+          {"t": "Возвести обе части в квадрат", "ok": false, "w": "Это даст посторонние корни, а структура не упростится."}
+        ]
+      },
+      {
+        "e": "2\\left(\\tfrac{2}{3}\\right)^{3x} + 2\\left(\\tfrac{2}{3}\\right)^{x} > \\left(\\tfrac{2}{3}\\right)^{2x} + 1",
+        "q": "Какая замена упростит неравенство?",
+        "o": [
+          {"t": "$t=\\left(\\frac{2}{3}\\right)^{x}$, причём $t>0$", "ok": true, "w": ""},
+          {"t": "$t=\\left(\\frac{2}{3}\\right)^{3x}$", "ok": false, "w": "Тогда $\\left(\\frac{2}{3}\\right)^{x}$ не выразится через $t$ целой степенью: получим $t^{1/3}$."},
+          {"t": "$t=2^{x}$", "ok": false, "w": "Основания в левой части разные; удобнее именно $\\left(\\frac{2}{3}\\right)^{x}$."},
+          {"t": "$t=\\left(\\frac{2}{3}\\right)^{2x}$", "ok": false, "w": "Тогда $\\left(\\frac{2}{3}\\right)^{x}=\\sqrt{t}$ — снова корень."}
+        ]
+      },
+      {
+        "e": "2t^{3}-t^{2}+2t-1 > 0",
+        "q": "Как разложить левую часть на множители?",
+        "o": [
+          {"t": "Сгруппировать: $t^{2}(2t-1)+(2t-1)=(2t-1)(t^{2}+1)$", "ok": true, "w": ""},
+          {"t": "Разделить всё на $t>0$: получим $2t^{2}-t+2-\\tfrac{1}{t}>0$", "ok": false, "w": "После деления на $t$ появляется $\\tfrac{1}{t}$ — не упрощает."},
+          {"t": "Решать как квадратное относительно $t$", "ok": false, "w": "Это уравнение третьей степени, для него нужна группировка."}
+        ]
+      },
+      {
+        "e": "(2t-1)(t^{2}+1) > 0",
+        "q": "Как перейти к простому неравенству для $t$?",
+        "o": [
+          {"t": "$t^{2}+1>0$ при всех $t$ ($D=-4<0$), поэтому $2t-1>0$", "ok": true, "w": ""},
+          {"t": "Найти корни $t^{2}+1=0$: $t=\\pm 1$, дальше метод интервалов по трём точкам", "ok": false, "w": "Уравнение $t^2+1=0$ действительных корней не имеет — парабола всегда выше оси $t$."},
+          {"t": "Разложить $t^{2}+1=(t-1)(t+1)$ и решать методом интервалов", "ok": false, "w": "Формула неверна: $t^{2}+1\\ne (t-1)(t+1)=t^{2}-1$."}
+        ]
+      },
+      {
+        "e": "2t-1 > 0 \\iff t > \\tfrac{1}{2}",
+        "q": "Нарисуйте решение на числовой оси $t$.",
+        "o": [
+          {
+            "t": "Луч вправо от $1/2$, точка выколотая",
+            "ok": true, "w": "",
+            "axis": {
+              "points": [{"x": 1, "label": "\\frac{1}{2}", "type": "open"}],
+              "intervals": [{"from": 1, "to": "+Infinity", "shade": true}]
+            }
+          },
+          {
+            "t": "Луч влево от $1/2$, точка выколотая",
+            "ok": false, "w": "Знак $>$ означает, что $t$ правее $1/2$, а не левее.",
+            "axis": {
+              "points": [{"x": 1, "label": "\\frac{1}{2}", "type": "open"}],
+              "intervals": [{"from": "-Infinity", "to": 1, "shade": true}]
+            }
+          },
+          {
+            "t": "Луч вправо от $1/2$, точка закрашенная",
+            "ok": false, "w": "Неравенство строгое ($2t-1>0$, а не $\\ge 0$) — точка выколотая.",
+            "axis": {
+              "points": [{"x": 1, "label": "\\frac{1}{2}", "type": "closed"}],
+              "intervals": [{"from": 1, "to": "+Infinity", "shade": true}]
+            }
+          }
+        ]
+      },
+      {
+        "e": "t > \\tfrac{1}{2}, \\quad t=\\left(\\tfrac{2}{3}\\right)^{x}",
+        "q": "Обратная замена. Какое неравенство получится для $x$?",
+        "o": [
+          {"t": "$\\left(\\frac{2}{3}\\right)^{x}>\\frac{1}{2}$", "ok": true, "w": ""},
+          {"t": "$\\left(\\frac{2}{3}\\right)^{x}<\\frac{1}{2}$", "ok": false, "w": "Получили $t>\\tfrac12$, значит $\\left(\\tfrac23\\right)^{x}>\\tfrac12$."},
+          {"t": "$\\left(\\frac{2}{3}\\right)^{x}\\ge\\frac{1}{2}$", "ok": false, "w": "Неравенство было строгим ($t>\\tfrac12$), поэтому $>$, а не $\\ge$."}
+        ]
+      },
+      {
+        "e": "\\left(\\tfrac{2}{3}\\right)^{x} > \\tfrac{1}{2}",
+        "q": "Как свести к сравнимому виду, чтобы «сбросить» основания?",
+        "o": [
+          {"t": "Записать $\\tfrac12=\\left(\\tfrac23\\right)^{\\log_{2/3}(1/2)}$ (по основному логарифмическому тождеству, т.к. $\\tfrac12>0$)", "ok": true, "w": ""},
+          {"t": "Записать $\\tfrac12=\\left(\\tfrac23\\right)^{1}$", "ok": false, "w": "$\\left(\\tfrac{2}{3}\\right)^{1}=\\tfrac{2}{3}\\ne\\tfrac12$."},
+          {"t": "Возвести обе части в квадрат: $\\left(\\tfrac{2}{3}\\right)^{2x}>\\tfrac{1}{4}$", "ok": false, "w": "Основания те же, а проще не стало."}
+        ]
+      },
+      {
+        "e": "\\left(\\tfrac{2}{3}\\right)^{x} > \\left(\\tfrac{2}{3}\\right)^{\\log_{2/3}(1/2)}",
+        "q": "Основание степени $\\tfrac{2}{3}<1$. Что происходит со знаком при сравнении показателей?",
+        "o": [
+          {"t": "Знак неравенства меняется: $x<\\log_{2/3}(1/2)$ — функция $y=\\left(\\tfrac{2}{3}\\right)^{t}$ убывает", "ok": true, "w": ""},
+          {"t": "Знак неравенства сохраняется: $x>\\log_{2/3}(1/2)$", "ok": false, "w": "Это верно только для основания $>1$. У нас $\\tfrac23<1$ — функция убывает, знак меняется."},
+          {"t": "Решений нет: $\\tfrac{2}{3}<1$, поэтому $\\left(\\tfrac{2}{3}\\right)^{x}$ всегда меньше $\\tfrac{2}{3}$", "ok": false, "w": "При отрицательных $x$ значения больше $\\tfrac23$; решения есть."}
+        ]
+      },
+      {
+        "e": "x < \\log_{2/3}\\!\\left(\\tfrac{1}{2}\\right)",
+        "q": "Нарисуйте решение на числовой оси $x$.",
+        "o": [
+          {
+            "t": "Луч влево от $\\log_{2/3}\\tfrac12$, точка выколотая",
+            "ok": true, "w": "",
+            "axis": {
+              "points": [{"x": 1, "label": "\\log_{2/3}\\!\\frac{1}{2}", "type": "open"}],
+              "intervals": [{"from": "-Infinity", "to": 1, "shade": true}]
+            }
+          },
+          {
+            "t": "Луч вправо от $\\log_{2/3}\\tfrac12$, точка выколотая",
+            "ok": false, "w": "Знак $<$, поэтому $x$ левее точки.",
+            "axis": {
+              "points": [{"x": 1, "label": "\\log_{2/3}\\!\\frac{1}{2}", "type": "open"}],
+              "intervals": [{"from": 1, "to": "+Infinity", "shade": true}]
+            }
+          },
+          {
+            "t": "Луч влево от $\\log_{2/3}\\tfrac12$, точка закрашенная",
+            "ok": false, "w": "Неравенство строгое — точка выколотая.",
+            "axis": {
+              "points": [{"x": 1, "label": "\\log_{2/3}\\!\\frac{1}{2}", "type": "closed"}],
+              "intervals": [{"from": "-Infinity", "to": 1, "shade": true}]
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in \\left(-\\infty;\\ \\log_{2/3}\\!\\left(\\tfrac{1}{2}\\right)\\right)",
+        "q": "END"
+      }
+    ]
+  },
+  {
+    "id": 900002,
+    "n": "002",
+    "s": "02 · ЛОГАРИФМИЧЕСКИЕ",
+    "d": "medium",
+    "t": "Решите неравенство: \\( \\log_2(x-1) < 3 \\).",
+    "c": "Решите неравенство: \\( \\log_2(x-1) < 3 \\).",
+    "a": "Ответ: \\( (1;\\ 9) \\).",
+    "ap": "(1;\\ 9)",
+    "ch": [
+      {
+        "e": "\\log_2(x-1) < 3",
+        "q": "Что записать первым?",
+        "o": [
+          {"t": "ОДЗ: $x-1>0$, то есть $x>1$", "ok": true, "w": ""},
+          {"t": "ОДЗ: $x-1\\ge 0$, то есть $x\\ge 1$", "ok": false, "w": "Аргумент логарифма строго больше нуля."},
+          {"t": "ОДЗ не нужна — сразу сбрасываем логарифмы", "ok": false, "w": "Аргумент логарифма должен быть положителен."}
+        ]
+      },
+      {
+        "e": "\\log_2(x-1) < 3,\\quad x>1",
+        "q": "Как снять логарифм?",
+        "o": [
+          {"t": "По определению: $x-1<2^3=8$", "ok": true, "w": ""},
+          {"t": "По определению: $x-1<3^2=9$", "ok": false, "w": "Основание $2$, а не $3$: $\\log_a b<c\\iff b<a^c$ при $a>1$."},
+          {"t": "По определению: $x-1<3\\cdot 2=6$", "ok": false, "w": "Возводить нужно в степень, а не умножать."}
+        ]
+      },
+      {
+        "e": "\\left\\{\\begin{array}{l} x-1 < 8 \\\\ x-1 > 0 \\end{array}\\right. \\iff \\left\\{\\begin{array}{l} x<9 \\\\ x>1 \\end{array}\\right.",
+        "q": "Как записать ответ в виде промежутка?",
+        "o": [
+          {"t": "$(1;\\ 9)$ — пересечение $x>1$ и $x<9$", "ok": true, "w": ""},
+          {"t": "$(-\\infty;\\ 9)$ — только из $x<9$", "ok": false, "w": "Не учтено ОДЗ $x>1$."},
+          {"t": "$(1;\\ +\\infty)$ — только из $x>1$", "ok": false, "w": "Не учтено $x<9$."}
+        ]
+      },
+      {
+        "e": "x \\in (1;\\ 9)",
+        "q": "Нарисуйте решение на числовой оси $x$.",
+        "o": [
+          {
+            "t": "Закрашенный отрезок между выколотыми $1$ и $9$",
+            "ok": true, "w": "",
+            "axis": {
+              "points": [
+                {"x": 0, "label": "1", "type": "open"},
+                {"x": 1, "label": "9", "type": "open"}
+              ],
+              "intervals": [{"from": 0, "to": 1, "shade": true}]
+            }
+          },
+          {
+            "t": "Луч влево от $9$",
+            "ok": false, "w": "Не учтено ОДЗ $x>1$.",
+            "axis": {
+              "points": [{"x": 0, "label": "9", "type": "open"}],
+              "intervals": [{"from": "-Infinity", "to": 0, "shade": true}]
+            }
+          },
+          {
+            "t": "Луч вправо от $1$",
+            "ok": false, "w": "Не учтено $x<9$.",
+            "axis": {
+              "points": [{"x": 0, "label": "1", "type": "open"}],
+              "intervals": [{"from": 0, "to": "+Infinity", "shade": true}]
+            }
+          }
+        ]
+      },
+      {
+        "e": "x \\in (1;\\ 9)",
+        "q": "END"
+      }
+    ]
+  }
+]
+</script>
+
+<script>
+(function(){
+  'use strict';
+
+  const $ = id => document.getElementById(id);
+  const H = s => String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const DF = {basic:'базовый', medium:'средний', hard:'сложный'};
+
+  let T = [], S = {};
+  let fl = {sec:'', st:'all', df:'', q:''};
+  let shown = 12, cur = null, ch = null, si = 0, err = 0, hist = [], ord = [], lock = 0;
+
+  try { S = JSON.parse(localStorage.getItem('ineq.s')) || {}; } catch(e) { S = {}; }
+  function sv() { try { localStorage.setItem('ineq.s', JSON.stringify(S)); } catch(e) {} }
+  function g(id) { return S[id] || (S[id] = {}); }
+  function showErr(e) {
+    const el = $('err'); if (el) el.textContent = 'Ошибка: ' + (e && e.message || e);
+    console.error(e);
+  }
+
+  function loadSeed() {
+    try {
+      const raw = $('seed').textContent;
+      T = JSON.parse(raw);
+      if (!Array.isArray(T)) T = [];
+    } catch(e) { T = []; showErr(e); }
+    T.sort((a,b) => String(a.n||'').localeCompare(String(b.n||''), 'ru', {numeric:true}));
+  }
+
+  function tx(el, n) {
+    n = n || 0;
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([el]).catch(e => console.warn('MathJax', e));
+    } else if (n < 80) setTimeout(() => tx(el, n + 1), 250);
+  }
+
+  /* ---------- фильтры ---------- */
+  function SEC() {
+    return [...new Set(T.map(t => t.s))].sort((a,b)=>String(a).localeCompare(String(b),'ru',{numeric:true}));
+  }
+  function okf(t) {
+    const x = S[t.id] || {};
+    return fl.st === 'all'
+      || (fl.st === 'new'  && !x.done)
+      || (fl.st === 'done' && x.done)
+      || (fl.st === 'hw'   && x.hw)
+      || (fl.st === 'fav'  && x.fav);
+  }
+
+  /* ---------- список ---------- */
+  function menu() {
+    cur = null;
+    $('app').innerHTML = `
+      <div class="card">
+        <div class="bar">
+          <select id="fSec">
+            <option value="">Все разделы</option>
+            ${SEC().map(s => `<option ${fl.sec===s?'selected':''}>${H(s)}</option>`).join('')}
+          </select>
+          <select id="fDf">
+            <option value="">Любая сложность</option>
+            ${Object.keys(DF).map(k => `<option value="${k}" ${fl.df===k?'selected':''}>${DF[k]}</option>`).join('')}
+          </select>
+          <input id="fQ" placeholder="Поиск по номеру или тексту" value="${H(fl.q)}" style="flex:1;min-width:140px">
+        </div>
+        <div class="bar" id="chips"></div>
+      </div>
+      <div id="rows"></div>`;
+
+    $('fSec').addEventListener('change', e => { fl.sec = e.target.value; shown = 12; rows(); });
+    $('fDf').addEventListener('change', e => { fl.df = e.target.value; shown = 12; rows(); });
+    $('fQ').addEventListener('input', e => { fl.q = e.target.value.toLowerCase(); shown = 12; rows(); });
+
+    rows();
+  }
+
+  function rows() {
+    const C = [['all','Все'],['new','Не разобраны'],['done','Разобраны'],['hw','ДЗ'],['fav','Избранное']];
+    const cnt = k => {
+      const s = fl.st; fl.st = k;
+      const r = T.filter(okf).length;
+      fl.st = s; return r;
+    };
+    const chips = $('chips');
+    if (chips) {
+      chips.innerHTML = C.map(c =>
+        `<button class="${fl.st===c[0]?'on':''}" data-st="${c[0]}">${c[1]} · ${cnt(c[0])}</button>`
+      ).join('');
+      chips.querySelectorAll('button[data-st]').forEach(b => {
+        b.addEventListener('click', () => { fl.st = b.getAttribute('data-st'); shown = 12; rows(); });
+      });
+    }
+    const L = T.filter(t =>
+      (!fl.sec || t.s === fl.sec) &&
+      (!fl.df  || t.d === fl.df) &&
+      (!fl.q   || ((t.n||'') + ' ' + (t.c||'') + ' ' + (t.s||'')).toLowerCase().includes(fl.q)) &&
+      okf(t)
+    );
+    const rowsEl = $('rows');
+    if (!rowsEl) return;
+    rowsEl.innerHTML = L.slice(0, shown).map(t => {
+      const x = S[t.id] || {};
+      return `<div class="card row ${x.done?'done':''} ${x.hw?'hw':''}">
+        <div class="bar" style="margin:0">
+          <b>№ ${H(t.n)}</b>
+          <span class="tag">${H(t.s)}</span>
+          ${t.ch && t.ch.length ? '<span class="tag" style="color:var(--ok)">разбор готов</span>' : ''}
+          <span class="${'d-'+(t.d||'basic')}">● ${DF[t.d] || ''}</span>
+          ${x.done ? '<span class="stk">✓ РАЗОБРАНО</span>' : ''}
+          ${x.hw ? '<span class="meta">ДЗ</span>' : ''}
+        </div>
+        <div class="tx">${t.c}</div>
+        <div class="bar" style="margin:0">
+          <button class="pri" data-act="open" data-id="${t.id}">Разбирать</button>
+          <button data-act="fav" data-id="${t.id}">${x.fav?'★':'☆'}</button>
+          <button data-act="hw" data-id="${t.id}">${x.hw?'✓ ДЗ':'+ ДЗ'}</button>
+        </div>
+      </div>`;
+    }).join('') || '<div class="card meta">Ничего не найдено</div>';
+    if (L.length > shown) {
+      rowsEl.innerHTML += `<button id="moreBtn">Показать ещё (${L.length - shown})</button>`;
+      $('moreBtn').addEventListener('click', () => { shown += 12; rows(); });
+    }
+    rowsEl.querySelectorAll('button[data-act]').forEach(b => {
+      b.addEventListener('click', () => {
+        const id = b.getAttribute('data-id');
+        const act = b.getAttribute('data-act');
+        if (act === 'open') openT(id);
+        else tg(id, act);
+      });
+    });
+    tx(rowsEl);
+  }
+
+  function tg(id, k) {
+    const x = g(id); x[k] = !x[k]; sv();
+    if (cur) view(); else rows();
+  }
+
+  /* ---------- карточка ---------- */
+  function openT(id) {
+    cur = T.find(t => String(t.id) === String(id));
+    if (!cur) return;
+    ch = Array.isArray(cur.ch) ? JSON.parse(JSON.stringify(cur.ch)) : null;
+    si = 0; err = 0; hist = [];
+    shuf();
+    view();
+  }
+
+  function shuf() {
+    const s = ch && ch[si];
+    ord = s && Array.isArray(s.o) ? s.o.map((_, i) => i).sort(() => Math.random() - .5) : [];
+  }
+
+  function view() {
+    const t = cur, x = g(t.id);
+    $('app').innerHTML = `
+      <div class="card">
+        <div class="bar">
+          <button id="backBtn">← К списку</button>
+          <button id="favBtn">${x.fav?'★':'☆'} Избранное</button>
+          <button id="hwBtn">${x.hw?'✓ ДЗ':'+ ДЗ'}</button>
+          <button id="doneBtn">${x.done?'✓ Разобрано':'Отметить разобранным'}</button>
+        </div>
+        <b>№ ${H(t.n)}</b> <span class="tag">${H(t.s)}</span>
+        <div class="tx">${t.t}</div>
+      </div>
+      <div id="ch"></div>`;
+    $('backBtn').addEventListener('click', menu);
+    $('favBtn').addEventListener('click', () => tg(t.id,'fav'));
+    $('hwBtn').addEventListener('click', () => tg(t.id,'hw'));
+    $('doneBtn').addEventListener('click', () => tg(t.id,'done'));
+    chain();
+    tx($('app'));
+  }
+
+  function renderOption(s, j, o) {
+    if (o.axis) {
+      return `<button class="opt-ax-btn" data-j="${j}">
+        <div class="axwrap">${axisSvg(o.axis)}</div>
+        <div class="meta" style="margin-top:6px">${H(o.t)}</div>
+      </button>`;
+    }
+    if (o.display) {
+      return `<button class="op" data-j="${j}">
+        <div>${H(o.t)}</div>
+        <div class="display-op tx">$$${H(o.display)}$$</div>
+      </button>`;
+    }
+    return `<button class="op" data-j="${j}">${H(o.t)}</button>`;
+  }
+
+  function chain() {
+    const el = $('ch');
+    if (!el) return;
+    if (!ch) {
+      el.innerHTML = '<div class="card"><p>Разбора пока нет. Нажмите «Загрузить JSON» и вставьте разбор.</p></div>';
+      return;
+    }
+    const s = ch[si];
+    const fin = String(s.q||'').toUpperCase() === 'END';
+    let body = '';
+    if (fin) {
+      body = `<div class="card">
+        <b>✓ Дошли до ответа.</b>
+        <div class="meta" style="margin:4px 0 8px">Ошибок: ${err}. Задача отмечена как разобранная.</div>
+        <div class="bar">
+          <button id="ansBtn">Ответ автора</button>
+          <button id="redoBtn">Заново</button>
+          <button id="nextBtn">Следующее →</button>
+        </div>
+        <div id="an" class="tx"></div>
+      </div>`;
+    } else {
+      const isAxis = s.o.some(o => o.axis);
+      const cls = isAxis ? 'opt-ax' : '';
+      body = `<div class="card">
+        <p class="q">${H(s.q)}</p>
+        <div class="${cls}">
+          ${ord.map(j => renderOption(s, j, s.o[j])).join('')}
+        </div>
+        <div id="fb"></div>
+      </div>`;
+    }
+    const histHtml = hist.length
+      ? `<details><summary>Ход решения (${hist.length})</summary>${hist.map(h => `<div class="h">$$${H(h)}$$</div>`).join('')}</details>`
+      : '';
+    el.innerHTML = `
+      <div class="card">
+        <div class="meta">Шаг ${si + 1} из ${ch.length}${err ? ' · ошибок: ' + err : ''}</div>
+        <div class="eq">$$${H(s.e)}$$</div>
+      </div>
+      ${body}
+      ${histHtml}`;
+
+    const ansBtn = $('ansBtn');
+    if (ansBtn) ansBtn.addEventListener('click', () => {
+      $('an').innerHTML = cur.a || '';
+      tx($('an'));
+    });
+    const redoBtn = $('redoBtn');
+    if (redoBtn) redoBtn.addEventListener('click', redo);
+    const nextBtn = $('nextBtn');
+    if (nextBtn) nextBtn.addEventListener('click', nxt);
+    el.querySelectorAll('button[data-j]').forEach(b => {
+      b.addEventListener('click', () => pick(Number(b.getAttribute('data-j')), b));
+    });
+    tx(el);
+  }
+
+  function pick(j, b) {
+    if (lock || b.classList.contains('r')) return;
+    const s = ch[si], o = s.o[j], fb = $('fb');
+    if (o.ok) {
+      lock = 1;
+      b.classList.add('g');
+      if (fb) { fb.className = 'good'; fb.textContent = '✓ Верно'; }
+      setTimeout(() => {
+        lock = 0;
+        hist.push(s.e);
+        si++;
+        if (ch[si] && String(ch[si].q||'').toUpperCase() === 'END') { g(cur.id).done = true; sv(); }
+        shuf();
+        chain();
+      }, 700);
+    } else {
+      err++;
+      b.classList.add('r');
+      if (fb) { fb.className = 'bad'; fb.innerHTML = H(o.w || 'Неверно'); tx(fb); }
+    }
+  }
+
+  function redo() { si = 0; err = 0; hist = []; shuf(); chain(); }
+  function nxt() {
+    const i = T.findIndex(t => String(t.id) === String(cur.id));
+    const n = T[i + 1];
+    if (n) openT(n.id); else menu();
+  }
+
+  /* ---------- ось / метод интервалов ---------- */
+  function axisSvg(axis) {
+    if (!axis) return '<div class="meta">нет данных оси</div>';
+    const W = 360, Hh = 120, PAD = 44;
+    const pts = (axis.points || []).slice().sort((a,b) => a.x - b.x);
+    const n = Math.max(pts.length, 1);
+    const span = W - 2 * PAD;
+    const xs = pts.map((_, i) => n === 1 ? W/2 : PAD + i * span / (n - 1));
+    const y = 62;
+
+    const X = p => {
+      const i = pts.indexOf(p);
+      return xs[i] != null ? xs[i] : W/2;
+    };
+    const xInf = d => {
+      if (d === '-Infinity' || d === -Infinity) return 6;
+      if (d === '+Infinity' || d ===  Infinity) return W - 6;
+      const p = pts.find(q => q.x === d);
+      return p ? X(p) : W/2;
+    };
+
+    let svg = `<svg class="axsvg" viewBox="0 0 ${W} ${Hh}" xmlns="http://www.w3.org/2000/svg">`;
+    svg += `<defs>
+      <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="var(--axis)"/>
+      </marker>
+    </defs>`;
+
+    // закраска интервалов
+    for (const it of (axis.intervals || [])) {
+      if (!it.shade) continue;
+      const x1 = xInf(it.from), x2 = xInf(it.to);
+      svg += `<line x1="${Math.min(x1,x2)}" y1="${y}" x2="${Math.max(x1,x2)}" y2="${y}"
+                stroke="var(--ans)" stroke-width="7" stroke-linecap="round" opacity=".45"/>`;
+    }
+
+    // сама ось и стрелка
+    svg += `<line x1="${PAD-22}" y1="${y}" x2="${W-PAD+22}" y2="${y}" stroke="var(--axis)" stroke-width="2"/>`;
+    svg += `<polygon points="${W-PAD+22},${y} ${W-PAD+14},${y-4} ${W-PAD+14},${y+4}" fill="var(--axis)"/>`;
+    svg += `<text class="ax-label" x="${W-PAD+26}" y="${y-8}">x</text>`;
+
+    // точки и подписи
+    pts.forEach((p, i) => {
+      const cx = xs[i];
+      if (p.type === 'closed') {
+        svg += `<circle cx="${cx}" cy="${y}" r="5.5" fill="var(--neg)"/>`;
+      } else {
+        svg += `<circle cx="${cx}" cy="${y}" r="5" fill="var(--cd)" stroke="var(--neg)" stroke-width="2.5"/>`;
+      }
+      const label = String(p.label || p.x);
+      const isLatex = /[\\^_$]|frac|log|sqrt/.test(label);
+      const lw = 180, lh = 26;
+      const cxClamp = Math.max(lw/2, Math.min(W - lw/2, cx));
+      if (isLatex) {
+        svg += `<foreignObject x="${cxClamp-lw/2}" y="${y-46}" width="${lw}" height="${lh}">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="text-align:center;font:13px system-ui,sans-serif;color:var(--tx);line-height:1.1">\\(${label}\\)</div>
+        </foreignObject>`;
+      } else {
+        svg += `<text class="ax-num" x="${cx}" y="${y-16}" text-anchor="middle">${H(label)}</text>`;
+      }
+    });
+
+    svg += `</svg>`;
+    return svg;
+  }
+
+  /* ---------- импорт ---------- */
+  function importJson() {
+    const raw = prompt('Вставьте JSON (объект одной задачи или массив задач):');
+    if (!raw) return;
+    let data;
+    try { data = JSON.parse(raw); }
+    catch(e) { alert('Ошибка JSON: ' + e.message); return; }
+    const arr = Array.isArray(data) ? data : [data];
+    let added = 0, upd = 0;
+    for (const t of arr) {
+      if (!t || typeof t !== 'object') continue;
+      if (!t.id) t.id = Date.now() + Math.floor(Math.random()*1000);
+      if (!t.n) t.n = String(T.length + 1).padStart(3,'0');
+      if (!t.s) t.s = 'Без раздела';
+      if (!t.d) t.d = 'basic';
+      if (!t.c) t.c = t.t || '';
+      const i = T.findIndex(x => String(x.id) === String(t.id));
+      if (i >= 0) { T[i] = Object.assign({}, T[i], t); upd++; }
+      else { T.push(t); added++; }
+    }
+    T.sort((a,b) => String(a.n||'').localeCompare(String(b.n||''), 'ru', {numeric:true}));
+    alert('Добавлено: ' + added + ', обновлено: ' + upd);
+    menu();
+  }
+
+  /* ---------- теория / тема ---------- */
+  function theory() {
+    cur = null;
+    $('app').innerHTML = `<div class="card">
+      <button id="backBtn2">← К списку</button>
+      <div class="tx">
+        <p><b>Метод интервалов.</b> Приводим к виду <span class="eq">$\\dfrac{P(x)}{Q(x)} \\gtrless 0$</span>, отмечаем нули числителя и знаменателя. Нули знаменателя всегда выколотые; нули числителя — выколотые при строгом неравенстве, закрашенные при нестрогом. Расставляем знаки на промежутках и выбираем нужные.</p>
+        <p><b>Показательные неравенства.</b> Если основание $a>1$, то $a^{f}\\gtrless a^{g}\\iff f\\gtrless g$. Если $0<a<1$, знак неравенства меняется. Правую часть $b>0$ удобно записать как $a^{\\log_a b}$ по основному логарифмическому тождеству, чтобы «сбросить» основания.</p>
+        <p><b>Логарифмические неравенства.</b> ОДЗ: аргумент положителен, основание положительно и не равно $1$. При $a>1$ знак при снятии логарифма сохраняется, при $0<a<1$ — меняется.</p>
+        <p><b>Иррациональные.</b> $\\sqrt A<B \\iff \\begin{cases} A\\ge0\\\\ B>0\\\\ A<B^2\\end{cases}$, $\\sqrt A>B$ — совокупность случаев $B<0$ и $\\begin{cases}B\\ge0\\\\ A>B^2\\end{cases}$.</p>
+        <p><b>Системы и совокупности.</b> Система (через $\\begin{cases}\\ldots\\end{cases}$) — пересечение, совокупность (через $\\left[\\begin{array}{l}\\ldots\\end{array}\\right.$) — объединение. ОДЗ при решении обычно добавляют к системе, а совокупность решений объединяют с ней под общей фигурной скобкой.</p>
+      </div>
+    </div>`;
+    $('backBtn2').addEventListener('click', menu);
+    tx($('app'));
+  }
+
+  function th() {
+    const r = document.documentElement;
+    const d = r.dataset.theme || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+    r.dataset.theme = d === 'dark' ? 'light' : 'dark';
+  }
+
+  /* ---------- старт ---------- */
+  function init() {
+    loadSeed();
+    $('btnTheory').addEventListener('click', theory);
+    $('btnImport').addEventListener('click', importJson);
+    $('btnTheme').addEventListener('click', th);
+    // для отладки
+    window.menu = menu; window.rows = rows; window.openT = openT; window.tg = tg;
+    window.pick = pick; window.redo = redo; window.nxt = nxt;
+    window.theory = theory; window.th = th; window.importJson = importJson;
+    window.axisSvg = axisSvg;
+    menu();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>

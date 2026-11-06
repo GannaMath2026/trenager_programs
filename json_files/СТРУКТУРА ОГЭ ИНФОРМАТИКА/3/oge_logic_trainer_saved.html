@@ -1,0 +1,1025 @@
+<!doctype html>
+<html lang="ru"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ОГЭ Информатика — Задание 3 (Логика)</title>
+    <style>
+        :root { --bg: #f1f4f9; --panel: #fff; --ink: #1c2c45; --muted: #60738e; --line: #d7e1ec; --blue: #3267e8; --good: #187447; --bad: #b42318; --shadow: 0 8px 26px #18304b0b; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Arial; }
+        header { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid var(--line); padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .brand strong { display: block; font-size: 19px; }
+        .brand small { color: var(--blue); font-weight: 800; letter-spacing: .1em; }
+        .buttons { display: flex; gap: 7px; flex-wrap: wrap; }
+        .btn { border: 1px solid var(--line); border-radius: 9px; padding: 9px 12px; background: #fff; color: #2c405e; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: .2s; }
+        .btn:hover { background: #f8fafc; }
+        .btn.primary { background: var(--blue); color: white; border-color: var(--blue); }
+        .btn.primary:hover { background: #2554c7; }
+        .btn.danger { background: #fff0f0; color: var(--bad); border-color: #fecaca; }
+        .btn.danger:hover { background: #fee2e2; }
+        .layout { max-width: 1500px; margin: auto; padding: 14px; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 14px; }
+        .side, .main { background: #fff; border: 1px solid var(--line); border-radius: 15px; box-shadow: var(--shadow); }
+        .side { position: sticky; top: 90px; max-height: calc(100vh - 105px); overflow: auto; padding: 14px; }
+        .main { padding: clamp(16px, 2vw, 28px); min-height: 75vh; position: relative; }
+        .side h2 { font-size: 15px; margin: 4px 0 10px; display: flex; justify-content: space-between; align-items: center; }
+        .tasknav { display: grid; gap: 4px; }
+        .tasknav button { display: flex; gap: 8px; text-align: left; width: 100%; border: 1px solid transparent; border-radius: 8px; background: transparent; padding: 8px; font: inherit; font-size: 13px; cursor: pointer; transition: .2s; }
+        .tasknav button:hover { background: #f8fafc; }
+        .tasknav button.active { background: #eef3ff; border-color: #c3d3fa; font-weight: bold; }
+        .tasknav button.status-done { background: #e8f8ee; border-color: #b7e4c7; }
+        .tasknav button.status-skipped { background: #fff5db; border-color: #f0d17a; }
+        .statusmark { font-size: 16px; min-width: 20px; }
+        .progress { height: 8px; background: #e8edf4; border-radius: 99px; overflow: hidden; margin: 8px 0 14px; }
+        .progress div { height: 100%; background: var(--blue); width: 0; transition: width .3s; }
+        .badge { display: inline-block; background: #eaf0ff; color: #2d55b8; border-radius: 7px; padding: 4px 8px; font-size: 12px; font-weight: 800; }
+        .task-title { font-size: clamp(20px, 2.5vw, 28px); line-height: 1.25; margin: 12px 0; }
+        .condition { white-space: pre-line; background: #f7f9fc; border: 1px solid var(--line); border-left: 4px solid var(--blue); border-radius: 12px; padding: 16px; margin: 15px 0; font-size: 18px; font-weight: 500; }
+        .label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: 900; color: #647690; margin-bottom: 8px;}
+        .answerrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
+        .answerrow input { flex: 1; min-width: 180px; padding: 12px; border: 2px solid #cbd5e1; border-radius: 9px; font: inherit; font-size: 18px; font-weight: bold; }
+        .feedback { margin: 12px 0; font-weight: 700; font-size: 18px; }
+        
+        /* Рисовалка */
+        .canvas-container { border: 2px dashed #cbd5e1; border-radius: 12px; background: #fafbfc; margin: 15px 0; position: relative; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 220px; cursor: crosshair; touch-action: none; }
+        .canvas-tools { position: absolute; top: 8px; right: 8px; display: flex; gap: 5px; }
+        .tool-btn { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font-size: 12px; cursor: pointer; font-weight: bold; color: #333; }
+        .tool-btn:hover { background: #f1f5f9; }
+        
+        .steps-box { border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 15px 0; background: #f8fafc; display: none; }
+        .steps-box.show { display: block; }
+        .step-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #cbd5e1; }
+        .step-item:last-child { border: none; margin: 0; padding: 0; }
+        .step-title { font-weight: bold; color: var(--blue); margin-bottom: 4px; }
+        
+        /* Комментарий */
+        .comment-box { margin-top: 15px; }
+        .comment-box textarea { width: 100%; height: 70px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 9px; font: inherit; resize: vertical; }
+
+        .actions { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 16px; margin-top: 20px; }
+        
+        /* Модалка и теория */
+        .overlay { display: none; position: fixed; inset: 0; background: #17263dd0; z-index: 20; align-items: center; justify-content: center; padding: 18px; }
+        .overlay.show { display: flex; }
+        .modal { background: white; border-radius: 15px; padding: 22px; max-width: 950px; width: 100%; max-height: 90vh; overflow: auto; }
+        
+        .sticker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0; }
+        .sticker { padding: 15px; border-radius: 12px; box-shadow: 2px 4px 10px rgba(0,0,0,0.1); position: relative; font-size: 14px; }
+        .sticker:nth-child(1) { background: #fff9c4; border: 2px solid #fbc02d; transform: rotate(-1deg); }
+        .sticker:nth-child(2) { background: #e1f5fe; border: 2px solid #4fc3f7; transform: rotate(1deg); }
+        .sticker:nth-child(3) { background: #e8f5e9; border: 2px solid #81c784; transform: rotate(-1deg); grid-column: span 2; }
+        .sticker h4 { margin: 0 0 8px 0; font-size: 16px; }
+        .sticker .math { font-size: 18px; font-weight: bold; text-align: center; margin: 10px 0; font-family: monospace; }
+
+        /* Отчёт */
+        .report { font-size: 13px; }
+        .report table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .report th, .report td { border: 1px solid #cbd5e1; padding: 6px; text-align: left; vertical-align: top; }
+        .report th { background: #f4f7fb; }
+        .report .status-cell { font-weight: bold; text-align: center; }
+        .report .status-ok { color: var(--good); background: #e8f8ee; }
+        .report .status-bad { color: var(--bad); background: #fee2e2; }
+        .report .status-skip { color: #b45309; background: #fef3c7; }
+        .report .status-hint { color: #7c3aed; font-size: 11px; display: block; }
+        .report img { max-width: 250px; width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; display: block; margin-top: 5px; }
+        .report textarea { width: 100%; height: 60px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px; font: inherit; resize: vertical; }
+        
+        @media(max-width: 850px) { 
+            .layout { grid-template-columns: 1fr; } 
+            .side { position: static; max-height: none; } 
+            .sticker-grid { grid-template-columns: 1fr; }
+            .sticker:nth-child(3) { grid-column: span 1; }
+        }
+        @media print {
+            body { background: #fff !important; }
+            header, .side, .actions, .buttons { display: none !important; }
+            .layout { display: block; padding: 0; margin: 0; }
+            .main { border: none; box-shadow: none; padding: 0; }
+            .overlay.show { display: block !important; position: static !important; background: transparent !important; padding: 0 !important; }
+            .overlay.show .modal { display: block !important; position: static !important; max-width: none !important; max-height: none !important; overflow: visible !important; box-shadow: none !important; padding: 0 !important; }
+            .report th, .report td { padding: 4px; font-size: 11px; }
+            .report img { max-width: 150px; }
+            .report .report-actions { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="brand">
+        <small>ОГЭ • ИНФОРМАТИКА</small>
+        <strong>Задание 3: Логика и высказывания</strong>
+        <span id="studentNameDisplay" style="font-size: 13px; color: var(--blue);">Ученик</span>
+    </div>
+    <div class="buttons">
+        <button class="btn" id="guideBtn">📚 Методичка</button>
+        <button class="btn" id="saveBtn">💾 Сохранить</button>
+        <button class="btn" id="resetBtn" style="color: var(--bad);">🔄 Сброс</button>
+        <button class="btn primary" id="reportBtn">📋 Отчёт</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="side">
+        <h2>Все задания</h2>
+        <div class="progress"><div id="progressbar" style="width: 5%;"></div></div>
+        <div id="tasknav" class="tasknav"><button class=" " onclick="openTask(1)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 1</span>
+            </button><button class=" " onclick="openTask(2)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 2</span>
+            </button><button class=" " onclick="openTask(3)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 3</span>
+            </button><button class=" " onclick="openTask(4)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 4</span>
+            </button><button class=" " onclick="openTask(5)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 5</span>
+            </button><button class=" " onclick="openTask(6)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 6</span>
+            </button><button class=" " onclick="openTask(7)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 7</span>
+            </button><button class=" " onclick="openTask(8)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 8</span>
+            </button><button class=" " onclick="openTask(9)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 9</span>
+            </button><button class=" status-done" onclick="openTask(10)">
+                <span class="statusmark">✅</span>
+                <span>Задание 10</span>
+            </button><button class="active " onclick="openTask(11)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 11</span>
+            </button><button class=" " onclick="openTask(12)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 12</span>
+            </button><button class=" " onclick="openTask(13)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 13</span>
+            </button><button class=" " onclick="openTask(14)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 14</span>
+            </button><button class=" " onclick="openTask(15)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 15</span>
+            </button><button class=" " onclick="openTask(16)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 16</span>
+            </button><button class=" " onclick="openTask(17)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 17</span>
+            </button><button class=" " onclick="openTask(18)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 18</span>
+            </button><button class=" " onclick="openTask(19)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 19</span>
+            </button><button class=" " onclick="openTask(20)">
+                <span class="statusmark">⚪</span>
+                <span>Задание 20</span>
+            </button></div>
+    </aside>
+    <main class="main" id="view" style="background: rgb(255, 255, 255); border: 1px solid var(--line); border-radius: 15px;">
+        
+        <div class="badge">Прототип</div>
+        <h1 class="task-title">Задание 11</h1>
+        <div class="condition">
+            <div class="label">Условие</div>
+            Наибольшее двузначное x:<br>(только первая цифра чётная) ∧ ¬(x делится на 7) ∧ (x делится на 9)
+        </div>
+
+        <div class="buttons" style="margin-bottom: 15px;">
+            <button class="btn" onclick="useHint()">💡 Подсказка</button>
+        </div>
+
+        
+        <div class="steps-box " id="stepsBox">
+            
+                <div class="step-item">
+                    <div class="step-title">Шаг 1</div>
+                    <div>¬(делится на 7) = не делится на 7.</div>
+                </div>
+            
+                <div class="step-item">
+                    <div class="step-title">Шаг 2</div>
+                    <div>Кратные 9: 18, 27... 81, 90.</div>
+                </div>
+            
+                <div class="step-item">
+                    <div class="step-title">Шаг 3</div>
+                    <div>Только первая чётная: 81 (8-чёт, 1-нечёт).<br>81 не делится на 7. Ответ: 81.</div>
+                </div>
+            
+        </div>
+        
+
+        <div class="label">Черновик / Числовая прямая</div>
+        <div class="canvas-container">
+            <canvas id="board" width="800" height="220"></canvas>
+            <div class="canvas-tools">
+                <button class="tool-btn" onclick="clearCanvas()">Очистить</button>
+            </div>
+        </div>
+
+        <div class="comment-box">
+            <div class="label">Комментарий к решению (необязательно)</div>
+            <textarea placeholder="Напишите, что было сложно или как вы рассуждали..." oninput="state.comments[state.current]=this.value; save();"></textarea>
+        </div>
+
+        <div class="answerrow">
+            <input id="answer" value="" placeholder="Введите ответ" oninput="state.answers[state.current]=this.value;save()" onkeydown="if(event.key==='Enter') check()">
+            <button class="btn primary" onclick="check()">Проверить</button>
+        </div>
+        <div class="feedback" id="feedback">
+            
+        </div>
+
+        <div class="actions">
+            <div class="buttons"><button class="btn" onclick="skipTask()">Пропустить задание ⏭️</button></div>
+        </div>
+    </main>
+</div>
+
+<div class="overlay" id="modal">
+    <div class="modal" id="modalcontent">
+        <div class="report">
+            <h2 style="text-align:center; margin-top:0;">Отчёт для учителя</h2>
+            <p style="text-align:center; margin-bottom: 10px;">Ученик: <b>Ученик</b> · 04.11.2026</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">№</th>
+                        <th>Условие</th>
+                        <th style="width: 60px;">Ответ</th>
+                        <th style="width: 110px;">Статус</th>
+                        <th style="width: 280px;">Черновик и Комментарий</th>
+                    </tr>
+                </thead>
+                <tbody><tr>
+            <td style="text-align:center;"><b>1</b></td>
+            <td style="font-size:12px;">Напишите наибольшее целое число x, для которого истинно высказывание:<br>¬(x ≤ 10) ∧ ¬(x &gt; 16)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <img src="data:image/png;base64,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" alt="Рисунок">
+                <textarea placeholder="Комментарий..." onchange="state.comments['1']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>2</b></td>
+            <td style="font-size:12px;">Напишите наименьшее число x:<br>¬(x &lt; 25) ∧ ¬(сумма цифр x &gt; 6)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['2']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>3</b></td>
+            <td style="font-size:12px;">Напишите наибольшее целое число x:<br>¬(x чётное) ∧ ¬(x ≥ 11)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['3']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>4</b></td>
+            <td style="font-size:12px;">Дано: 638, 442, 357, 123.<br>Для какого числа истинно:<br>¬(Первая цифра чётная) ∧ (Сумма цифр чётная)?</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['4']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>5</b></td>
+            <td style="font-size:12px;">Напишите наибольшее двузначное число:<br>(первая цифра нечётная) ∧ ¬(число делится на 3)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['5']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>6</b></td>
+            <td style="font-size:12px;">Напишите наименьшее целое число x:<br>¬(x ≤ 8) ∧ ¬(x ≥ 15) ∧ (x чётное)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['6']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>7</b></td>
+            <td style="font-size:12px;">Напишите количество натуральных чисел:<br>¬(Число &gt; 15) ∧ ¬(Число чётное)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['7']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>8</b></td>
+            <td style="font-size:12px;">Для какого целого X ЛОЖНО:<br>(X &gt; 7) ∨ ¬(X &gt; 6)?</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['8']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>9</b></td>
+            <td style="font-size:12px;">Наибольшее натуральное x:<br>¬((x ≥ 23) ∨ (x &lt; 18))</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['9']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>10</b></td>
+            <td style="font-size:12px;">Наибольшее целое x:<br>¬(x ≤ 11) ∧ ¬(x ≥ 17) ∧ (x нечётное)</td>
+            <td style="text-align:center; font-weight:bold;">15</td>
+            <td class="status-cell status-ok">✅ Решено<br><span class="status-hint">(была подсказка)</span><br><span style="font-size:11px; color:green;">(с 1-й попытки)</span> <span style="color:green; font-size:11px; display:block; margin-top:4px;">✅ Аналог решён</span></td>
+            <td>
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAyAAAADcCAYAAACIyMWXAAAFPElEQVR4Xu3dMW7TYBiA4d9d6Ck4ACvqZbL2XEVMXKbJ0KHpwgBB4gQMIJS4aqSydUteEfl5Nk/2N776ftvTAAAAiEzRfQAAAAQIAADQsQEBAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAABZo8/Rjf5jnzzcf3t+W4wsQAABYmKevPz/++vN3fRx7mn6PMb5UISJAAABgge63u7sxxmrM8/Vx/ChEBAgAACxYHSICBAAAyELk5AFy//h9/ncBAABcthMfzRIgAADA2/73AAEAAC7PZru7O1yN1dif96X0k29AAACAy7F53H3aT2M1zfO741OfKTxeCRAAAFigl/A4TMfP8Cbh8UqAAADAwvgRIQAAkFpvv63ncfVwrqNWb7EBAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgMwztWtf3QkkiYAAAAAASUVORK5CYII=" alt="Рисунок">
+                <textarea placeholder="Комментарий..." onchange="state.comments['10']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>11</b></td>
+            <td style="font-size:12px;">Наибольшее двузначное x:<br>(только первая цифра чётная) ∧ ¬(x делится на 7) ∧ (x делится на 9)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAyAAAADcCAYAAACIyMWXAAAFO0lEQVR4Xu3dMW7UUBRA0e9sAykbCDX7SZYwBbuALbAfLCQk4kjphoGOJYBihDShg2rmKiOf07myX3n1vu1pAAAARKboPgAAAAIEAADo2IAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAABs0Pxx+rOt4++bm+kM5vgABAICN+fz47dXPX0/fj2Pfr2N6X4WIAAEAgA36uBxup7Huxhivj+MnISJAAABgw+oQESAAAEAWIicPkHn5uv69AAAALt1Jj2YJEAAA4H9edoAAAACX59NyuH2a1t1Yz/tS+sk3IAAAwOWYv+zv1qtpN41xc3zqs4THMwECAAAbNC/7uzGmP5/hTcLjmQABAICN8SNCAAAgNS/7d+u4uj/XUat/sQEBAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAzG/3m2DdyXz9yQAAAABJRU5ErkJggg==" alt="Рисунок">
+                <textarea placeholder="Комментарий..." onchange="state.comments['11']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>12</b></td>
+            <td style="font-size:12px;">Наименьшее натуральное X:<br>(¬(X &gt; 7) ∧ (X ≤ 12)) ∨ (X ≥ 4)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['12']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>13</b></td>
+            <td style="font-size:12px;">Наибольшее число x:<br>¬(x &gt; 43) ∧ ¬(сумма цифр x &lt; 9)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['13']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>14</b></td>
+            <td style="font-size:12px;">Количество двузначных X:<br>¬(X &lt; 64) ∧ (все цифры чётные)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['14']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>15</b></td>
+            <td style="font-size:12px;">Наибольшее x, для которого ЛОЖНО:<br>(x &gt; 95) ∨ ¬(x кратно 14)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['15']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>16</b></td>
+            <td style="font-size:12px;">Наибольшее натуральное X, для которого ЛОЖНО:<br>((X &lt; 8) ∧ (X ≥ 2)) ∨ ¬(X &lt; 12)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['16']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>17</b></td>
+            <td style="font-size:12px;">Наибольшее двузначное:<br>(первая цифра нечётная) ∧ ¬(число делится на 3)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['17']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>18</b></td>
+            <td style="font-size:12px;">Наименьшее натуральное трёхзначное:<br>¬(Число нечётное) ∧ (Число кратно 3)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['18']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>19</b></td>
+            <td style="font-size:12px;">Количество натуральных двузначных:<br>¬(x чётное) ∧ ¬(x &gt; 67)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['19']=this.value; save();"></textarea>
+            </td>
+        </tr><tr>
+            <td style="text-align:center;"><b>20</b></td>
+            <td style="font-size:12px;">Количество трёхзначных X:<br>(X ≥ 250) ∧ (X кратно 30) ∧ ¬(X &lt; 700)</td>
+            <td style="text-align:center; font-weight:bold;">—</td>
+            <td class="status-cell status-bad">Не решено </td>
+            <td>
+                <span style="color:#94a3b8;">Нет рисунка</span>
+                <textarea placeholder="Комментарий..." onchange="state.comments['20']=this.value; save();"></textarea>
+            </td>
+        </tr></tbody>
+            </table>
+            <div class="report-actions" style="margin-top:20px; text-align:center;">
+                <button class="btn primary" onclick="window.print()">🖨️ Печать / PDF</button>
+                <button class="btn" onclick="closeModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const TASKS = [
+    { id:1, type:'p', text:"Напишите наибольшее целое число x, для которого истинно высказывание:\n¬(x ≤ 10) ∧ ¬(x > 16)", answer:"16",
+      steps:[{t:"Шаг 1", c:"¬(x ≤ 10) = x > 10.<br>¬(x > 16) = x ≤ 16."},{t:"Шаг 2", c:"(x > 10) ∧ (x ≤ 16)."},{t:"Шаг 3", c:"x ∈ (10; 16]. Наибольшее целое: 16."}]},
+    { id:101, type:'a', text:"Наибольшее целое x:\n¬(x ≤ 11) ∧ ¬(x ≥ 17) ∧ (x нечётное)", answer:"15"},
+    
+    { id:2, type:'p', text:"Напишите наименьшее число x:\n¬(x < 25) ∧ ¬(сумма цифр x > 6)", answer:"30",
+      steps:[{t:"Шаг 1", c:"¬(x < 25) = x ≥ 25.<br>¬(сумма > 6) = сумма ≤ 6."},{t:"Шаг 2", c:"x ≥ 25, сумма цифр ≤ 6."},{t:"Шаг 3", c:"25 (7), 26 (8), 27 (9), 28 (10), 29 (11) — не подходят.<br>30: 3+0=3 (≤6) — подходит."}]},
+    { id:102, type:'a', text:"Наименьшее число x:\n¬(x < 30) ∧ ¬(сумма цифр x > 3)", answer:"30"}, 
+    
+    { id:3, type:'p', text:"Напишите наибольшее целое число x:\n¬(x чётное) ∧ ¬(x ≥ 11)", answer:"9",
+      steps:[{t:"Шаг 1", c:"¬(x чётное) = x нечётное.<br>¬(x ≥ 11) = x < 11."},{t:"Шаг 2", c:"x < 11, x нечётное."},{t:"Шаг 3", c:"Наибольшее нечётное < 11: 9."}]},
+    { id:103, type:'a', text:"Наибольшее целое x:\n¬(x чётное) ∧ ¬(x ≥ 15)", answer:"13"},
+    
+    { id:4, type:'p', text:"Дано: 638, 442, 357, 123.\nДля какого числа истинно:\n¬(Первая цифра чётная) ∧ (Сумма цифр чётная)?", answer:"123",
+      steps:[{t:"Шаг 1", c:"¬(Первая цифра чётная) = Первая цифра нечётная."},{t:"Шаг 2", c:"638 (6-чёт), 442 (4-чёт).<br>357 (3-нечёт), 123 (1-нечёт)."},{t:"Шаг 3", c:"357: 3+5+7=15 (нечёт).<br>123: 1+2+3=6 (чёт).<br>Ответ: 123."}]},
+    { id:104, type:'a', text:"Дано: 890, 521, 734, 457.\nИстинно:\n¬(Последняя цифра чётная) ∧ (Сумма цифр чётная)", answer:"457"},
+    
+    { id:5, type:'p', text:"Напишите наибольшее двузначное число:\n(первая цифра нечётная) ∧ ¬(число делится на 3)", answer:"98",
+      steps:[{t:"Шаг 1", c:"¬(делится на 3) = не делится на 3."},{t:"Шаг 2", c:"Ищем от 99 вниз с нечётной первой цифрой."},{t:"Шаг 3", c:"99 (делится).<br>98 (не делится, первая 9 — нечёт).<br>Ответ: 98."}]},
+    { id:105, type:'a', text:"Наибольшее двузначное:\n(вторая цифра чётная) ∧ ¬(число делится на 5)", answer:"98"}, 
+    
+    { id:6, type:'p', text:"Напишите наименьшее целое число x:\n¬(x ≤ 8) ∧ ¬(x ≥ 15) ∧ (x чётное)", answer:"10",
+      steps:[{t:"Шаг 1", c:"¬(x ≤ 8) = x > 8.<br>¬(x ≥ 15) = x < 15."},{t:"Шаг 2", c:"8 < x < 15, x чётное."},{t:"Шаг 3", c:"Чётные: 10, 12, 14. Наименьшее: 10."}]},
+    { id:106, type:'a', text:"Наименьшее целое x:\n¬(x ≤ 5) ∧ ¬(x ≥ 12) ∧ (x нечётное)", answer:"7"},
+    
+    { id:7, type:'p', text:"Напишите количество натуральных чисел:\n¬(Число > 15) ∧ ¬(Число чётное)", answer:"8",
+      steps:[{t:"Шаг 1", c:"¬(Число > 15) = Число ≤ 15.<br>¬(Число чётное) = Число нечётное."},{t:"Шаг 2", c:"Нечётные от 1 до 15."},{t:"Шаг 3", c:"1, 3, 5, 7, 9, 11, 13, 15. Всего 8."}]},
+    { id:107, type:'a', text:"Количество натуральных чисел:\n¬(Число > 12) ∧ ¬(Число нечётное)", answer:"6"}, 
+    
+    { id:8, type:'p', text:"Для какого целого X ЛОЖНО:\n(X > 7) ∨ ¬(X > 6)?", answer:"7",
+      steps:[{t:"Шаг 1", c:"Ложно, значит отрицание ИСТИННО."},{t:"Шаг 2", c:"¬((X > 7) ∨ ¬(X > 6)) = ¬(X > 7) ∧ (X > 6)."},{t:"Шаг 3", c:"(X ≤ 7) ∧ (X > 6) → X = 7."}]},
+    { id:108, type:'a', text:"Для какого целого X ЛОЖНО:\n(X > 5) ∨ ¬(X > 4)?", answer:"5"},
+    
+    { id:9, type:'p', text:"Наибольшее натуральное x:\n¬((x ≥ 23) ∨ (x < 18))", answer:"22",
+      steps:[{t:"Шаг 1", c:"¬(A ∨ B) = ¬A ∧ ¬B."},{t:"Шаг 2", c:"(x < 23) ∧ (x ≥ 18)."},{t:"Шаг 3", c:"18 ≤ x < 23. Наибольшее: 22."}]},
+    { id:109, type:'a', text:"Наибольшее натуральное x:\n¬((x ≥ 30) ∨ (x < 25))", answer:"29"},
+    
+    { id:10, type:'p', text:"Наибольшее целое x:\n¬(x ≤ 11) ∧ ¬(x ≥ 17) ∧ (x нечётное)", answer:"15",
+      steps:[{t:"Шаг 1", c:"x > 11 ∧ x < 17 ∧ x нечётное."},{t:"Шаг 2", c:"11 < x < 17."},{t:"Шаг 3", c:"Нечётные: 13, 15. Наибольшее: 15."}]},
+    { id:110, type:'a', text:"Наибольшее целое x:\n¬(x ≤ 20) ∧ ¬(x ≥ 25) ∧ (x чётное)", answer:"24"},
+    
+    { id:11, type:'p', text:"Наибольшее двузначное x:\n(только первая цифра чётная) ∧ ¬(x делится на 7) ∧ (x делится на 9)", answer:"81",
+      steps:[{t:"Шаг 1", c:"¬(делится на 7) = не делится на 7."},{t:"Шаг 2", c:"Кратные 9: 18, 27... 81, 90."},{t:"Шаг 3", c:"Только первая чётная: 81 (8-чёт, 1-нечёт).<br>81 не делится на 7. Ответ: 81."}]},
+    { id:111, type:'a', text:"Наибольшее двузначное x:\n(только первая цифра чётная) ∧ ¬(x делится на 5) ∧ (x делится на 3)", answer:"81"}, 
+    
+    { id:12, type:'p', text:"Наименьшее натуральное X:\n(¬(X > 7) ∧ (X ≤ 12)) ∨ (X ≥ 4)", answer:"1",
+      steps:[{t:"Шаг 1", c:"¬(X > 7) = X ≤ 7."},{t:"Шаг 2", c:"(X ≤ 7) ∨ (X ≥ 4) — истинно для любого X."},{t:"Шаг 3", c:"Наименьшее натуральное: 1."}]},
+    { id:112, type:'a', text:"Наименьшее натуральное X:\n(¬(X > 10) ∧ (X ≤ 15)) ∨ (X ≥ 5)", answer:"1"},
+    
+    { id:13, type:'p', text:"Наибольшее число x:\n¬(x > 43) ∧ ¬(сумма цифр x < 9)", answer:"39",
+      steps:[{t:"Шаг 1", c:"x ≤ 43 ∧ сумма цифр ≥ 9."},{t:"Шаг 2", c:"43: 4+3=7 (нет).<br>...<br>39: 3+9=12 (да)."},{t:"Шаг 3", c:"Ответ: 39."}]},
+    { id:113, type:'a', text:"Наибольшее число x:\n¬(x > 52) ∧ ¬(сумма цифр x < 7)", answer:"49"}, 
+    
+    { id:14, type:'p', text:"Количество двузначных X:\n¬(X < 64) ∧ (все цифры чётные)", answer:"8",
+      steps:[{t:"Шаг 1", c:"X ≥ 64 ∧ все цифры чётные."},{t:"Шаг 2", c:"6x: 64, 66, 68.<br>8x: 80, 82, 84, 86, 88."},{t:"Шаг 3", c:"Всего 3 + 5 = 8."}]},
+    { id:114, type:'a', text:"Количество двузначных X:\n¬(X < 80) ∧ (все цифры чётные)", answer:"5"}, 
+    
+    { id:15, type:'p', text:"Наибольшее x, для которого ЛОЖНО:\n(x > 95) ∨ ¬(x кратно 14)", answer:"84",
+      steps:[{t:"Шаг 1", c:"Отрицание истинно: (x ≤ 95) ∧ (x кратно 14)."},{t:"Шаг 2", c:"95 / 14 = 6.78."},{t:"Шаг 3", c:"14 * 6 = 84. Ответ: 84."}]},
+    { id:115, type:'a', text:"Наибольшее x, для которого ЛОЖНО:\n(x > 50) ∨ ¬(x кратно 12)", answer:"48"},
+    
+    { id:16, type:'p', text:"Наибольшее натуральное X, для которого ЛОЖНО:\n((X < 8) ∧ (X ≥ 2)) ∨ ¬(X < 12)", answer:"11",
+      steps:[{t:"Шаг 1", c:"Отрицание: ¬((X < 8) ∧ (X ≥ 2)) ∧ (X < 12)."},{t:"Шаг 2", c:"((X ≥ 8) ∨ (X < 2)) ∧ (X < 12)."},{t:"Шаг 3", c:"X = 8, 9, 10, 11 или 1. Наибольшее: 11."}]},
+    { id:116, type:'a', text:"Наибольшее натуральное X, для которого ЛОЖНО:\n((X < 5) ∧ (X ≥ 3)) ∨ ¬(X < 10)", answer:"9"},
+    
+    { id:17, type:'p', text:"Наибольшее двузначное:\n(первая цифра нечётная) ∧ ¬(число делится на 3)", answer:"97",
+      steps:[{t:"Шаг 1", c:"¬(делится на 3) = не делится на 3."},{t:"Шаг 2", c:"От 99 вниз."},{t:"Шаг 3", c:"98 (дел на 3? нет, 17). 97 (9+7=16). Ответ: 97."}]},
+    { id:117, type:'a', text:"Наибольшее двузначное:\n(вторая цифра нечётная) ∧ ¬(число делится на 5)", answer:"99"},
+    
+    { id:18, type:'p', text:"Наименьшее натуральное трёхзначное:\n¬(Число нечётное) ∧ (Число кратно 3)", answer:"102",
+      steps:[{t:"Шаг 1", c:"¬(нечётное) = чётное."},{t:"Шаг 2", c:"Чётное, кратно 3, 3-значное."},{t:"Шаг 3", c:"100 (не дел), 102 (1+2=3, чёт). Ответ: 102."}]},
+    { id:118, type:'a', text:"Наименьшее натуральное трёхзначное:\n¬(Число нечётное) ∧ (Число кратно 5)", answer:"100"},
+    
+    { id:19, type:'p', text:"Количество натуральных двузначных:\n¬(x чётное) ∧ ¬(x > 67)", answer:"29",
+      steps:[{t:"Шаг 1", c:"x нечётное, x ≤ 67."},{t:"Шаг 2", c:"От 10 до 67 включительно: 58 чисел."},{t:"Шаг 3", c:"Нечётных ровно половина: 29."}]},
+    { id:119, type:'a', text:"Количество натуральных двузначных:\n¬(x чётное) ∧ ¬(x > 45)", answer:"18"},
+    
+    { id:20, type:'p', text:"Количество трёхзначных X:\n(X ≥ 250) ∧ (X кратно 30) ∧ ¬(X < 700)", answer:"10",
+      steps:[{t:"Шаг 1", c:"X ≥ 700, кратно 30."},{t:"Шаг 2", c:"Наименьшее: 720."},{t:"Шаг 3", c:"От 720 до 990: 720, 750... 990. Всего 10."}]},
+    { id:120, type:'a', text:"Количество трёхзначных X:\n(X ≥ 150) ∧ (X кратно 40) ∧ ¬(X < 600)", answer:"10"} 
+];
+
+TASKS.sort((a,b) => a.id - b.id);
+
+let state = {
+    name: 'Ученик',
+    current: 1,
+    done: {}, 
+    drawings: {}, 
+    comments: {}, 
+    answers: {}
+};
+
+let embeddedData = null;
+try {
+    let scriptTag = document.getElementById('embedded-state');
+    if (scriptTag) embeddedData = JSON.parse(scriptTag.textContent);
+} catch(e) {}
+
+if (embeddedData) {
+    state = { ...state, ...embeddedData };
+} else {
+    try {
+        let old = JSON.parse(localStorage.getItem('oge_logic_v13') || 'null');
+        if(old) state = { ...state, ...old };
+    } catch(e) {}
+}
+
+// Принудительно приводим ID текущего задания к числу
+state.current = Number(state.current) || 1;
+if (!state.done) state.done = {};
+
+const $ = id => document.getElementById(id);
+const getTask = (id) => TASKS.find(t => t.id == id);
+const isAnalog = (id) => Number(id) >= 100;
+const getProtoId = (id) => isAnalog(id) ? (Number(id) % 100) : Number(id);
+
+const PROTO_IDS = TASKS.filter(t => !isAnalog(t.id)).map(t => t.id);
+
+function save() { localStorage.setItem('oge_logic_v13', JSON.stringify(state)); }
+
+function renderNav() {
+    try {
+        $('tasknav').innerHTML = PROTO_IDS.map(pid => {
+            let pStat = state.done[pid] || {};
+            let aStat = state.done[pid + 100] || {};
+            
+            let statusClass = '';
+            let mark = '⚪';
+            
+            if (pStat.correct) { 
+                if (aStat.correct) { statusClass = 'status-done'; mark = '✅'; }
+                else if (pStat.hintUsed) { statusClass = 'status-skipped'; mark = '⚠️'; }
+                else { statusClass = 'status-done'; mark = '✅'; }
+            }
+            else if (pStat.skipped) { statusClass = 'status-skipped'; mark = '⏭️'; }
+
+            let isActive = (state.current === pid) || (state.current === pid + 100);
+
+            return `<button class="${isActive ? 'active' : ''} ${statusClass}" onclick="openTask(${pid})">
+                <span class="statusmark">${mark}</span>
+                <span>Задание ${pid}</span>
+            </button>`;
+        }).join('');
+        
+        let doneCount = PROTO_IDS.filter(pid => state.done[pid] && state.done[pid].correct).length;
+        $('progressbar').style.width = (100 * doneCount / PROTO_IDS.length) + '%';
+    } catch(e) {
+        console.error("Ошибка в renderNav", e);
+    }
+}
+
+function openTask(id) {
+    state.current = Number(id);
+    save();
+    render();
+    window.scrollTo(0, 0);
+}
+
+/* --- ИСПРАВЛЕННАЯ ЛОГИКА ПЕРЕХОДА --- */
+function goNext() {
+    let currentProto = getProtoId(state.current);
+    let nextProto = currentProto + 1;
+    if (nextProto > 20) nextProto = 1; // Если это было 20-е, идем в начало
+    
+    if (isAnalog(state.current)) {
+        // Из аналога всегда идем на СЛЕДУЮЩИЙ прототип в списке
+        openTask(nextProto);
+    } else {
+        // Из прототипа проверяем: была ли подсказка и решен ли аналог?
+        let pStat = state.done[currentProto] || {};
+        let aStat = state.done[currentProto + 100] || {};
+        
+        if (pStat.hintUsed && !aStat.correct) {
+            // Если аналог не решен - кидаем на него
+            openTask(currentProto + 100);
+        } else {
+            // Иначе - на следующий прототип
+            openTask(nextProto);
+        }
+    }
+}
+/* ------------------------------------- */
+
+function render() {
+    renderNav();
+    $('studentNameDisplay').textContent = state.name;
+    
+    let t = getTask(state.current);
+    if (!t) {
+        // Если задание не найдено, ставим дефолтное
+        state.current = 1;
+        t = getTask(1);
+    }
+
+    let stat = state.done[t.id] || {};
+    let isDone = stat.correct;
+    let isRep = isAnalog(t.id);
+    let protoId = getProtoId(t.id);
+    
+    let mainBg = '#fff';
+    let borderStyle = '1px solid var(--line)';
+    if (isDone) { mainBg = '#e8f8ee'; borderStyle = '2px solid #2c9b5d'; }
+    else if (stat.skipped) { mainBg = '#fff5db'; borderStyle = '2px solid #f0d17a'; }
+    else if (stat.attempts > 0) { mainBg = '#fef2f2'; borderStyle = '2px solid #fecaca'; }
+
+    $('view').style.background = mainBg;
+    $('view').style.border = borderStyle;
+    $('view').style.borderRadius = '15px';
+
+    let navHtml = '';
+    if (isRep) {
+        navHtml = `<div style="background: #fef08a; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; color: #854d0e;">
+            📝 Работа над ошибками. Аналог к заданию ${protoId}
+            <button class="btn" style="float: right; padding: 2px 8px;" onclick="openTask(${protoId})">Вернуться</button>
+        </div>`;
+    }
+
+    let hintBtn = (!isRep && !isDone && !stat.hintUsed) ? `<button class="btn" onclick="useHint()">💡 Подсказка</button>` : '';
+
+    $('view').innerHTML = `
+        ${navHtml}
+        <div class="badge">${isRep ? 'Аналог (без подсказок)' : 'Прототип'}</div>
+        <h1 class="task-title">Задание ${t.id}</h1>
+        <div class="condition">
+            <div class="label">Условие</div>
+            ${t.text.replace(/\n/g, '<br>')}
+        </div>
+
+        <div class="buttons" style="margin-bottom: 15px;">
+            ${hintBtn}
+        </div>
+
+        ${!isRep ? `
+        <div class="steps-box ${stat.hintUsed ? 'show' : ''}" id="stepsBox">
+            ${t.steps.map(s => `
+                <div class="step-item">
+                    <div class="step-title">${s.t}</div>
+                    <div>${s.c}</div>
+                </div>
+            `).join('')}
+        </div>
+        ` : ''}
+
+        <div class="label">Черновик / Числовая прямая</div>
+        <div class="canvas-container">
+            <canvas id="board" width="800" height="220"></canvas>
+            <div class="canvas-tools">
+                <button class="tool-btn" onclick="clearCanvas()">Очистить</button>
+            </div>
+        </div>
+
+        <div class="comment-box">
+            <div class="label">Комментарий к решению (необязательно)</div>
+            <textarea placeholder="Напишите, что было сложно или как вы рассуждали..." oninput="state.comments[state.current]=this.value; save();">${state.comments[state.current] || ''}</textarea>
+        </div>
+
+        <div class="answerrow">
+            <input id="answer" value="${state.answers[t.id] || ''}" placeholder="Введите ответ" oninput="state.answers[state.current]=this.value;save()" onkeydown="if(event.key==='Enter') check()">
+            <button class="btn primary" onclick="check()">Проверить</button>
+        </div>
+        <div class="feedback" id="feedback">
+            ${isDone ? '<span style="color:var(--good)">✅ Верно! Задание выполнено.</span>' : 
+              stat.skipped ? '<span style="color:#b45309">⏭️ Пропущено. Попробуйте решить аналог.</span>' : 
+              stat.attempts > 0 ? '<span style="color:var(--bad)">❌ Есть ошибки. Попробуйте ещё раз.</span>' : ''}
+        </div>
+
+        <div class="actions">
+            ${!isDone ? `<div class="buttons"><button class="btn" onclick="skipTask()">Пропустить задание ⏭️</button></div>` : ''}
+        </div>
+    `;
+
+    initCanvas(t.id);
+}
+
+function useHint() {
+    let t = getTask(state.current);
+    if (!t || isAnalog(t.id)) return;
+    if (!state.done[t.id]) state.done[t.id] = { attempts: 0, hintUsed: false, correct: false };
+    if (!state.done[t.id].hintUsed) {
+        state.done[t.id].hintUsed = true;
+        save();
+        render();
+        
+        if (!state.done[t.id].correct) {
+            openModal(`
+                <h2>💡 Подсказка использована</h2>
+                <p>Вы посмотрели подсказку. Теперь, чтобы закрепить материал, после правильного решения этого задания вам будет предложено решить <b>аналог</b> для работы над ошибками.</p>
+                <button class="btn primary" onclick="closeModal()">Понятно</button>
+            `);
+        }
+    }
+}
+
+function skipTask() {
+    let id = state.current;
+    if (!state.done[id]) state.done[id] = { attempts: 0, hintUsed: false, correct: false };
+    state.done[id].skipped = true;
+    save();
+    goNext();
+}
+
+function check() {
+    let t = getTask(state.current);
+    if (!t) return;
+    let v = $('answer').value.trim();
+    if (!v) return;
+
+    if (!state.done[t.id]) state.done[t.id] = { attempts: 0, hintUsed: false, correct: false };
+    state.done[t.id].attempts += 1;
+
+    let isCorrect = (v.toLowerCase() === t.answer.toLowerCase());
+
+    if (isCorrect) {
+        state.done[t.id].correct = true;
+        state.done[t.id].skipped = false;
+        state.done[t.id].firstTry = (state.done[t.id].attempts === 1);
+        
+        if (canvas) state.drawings[t.id] = canvas.toDataURL();
+        save();
+        
+        $('feedback').innerHTML = '<span style="color:var(--good); font-size: 20px;">✅ Верно! 🎉</span>';
+        $('view').style.background = '#e8f8ee';
+        $('view').style.border = '2px solid #2c9b5d';
+        renderNav();
+
+        setTimeout(() => {
+            if (!isAnalog(t.id) && state.done[t.id].hintUsed) {
+                openTask(t.id + 100); 
+            } else {
+                goNext();
+            }
+        }, 1500);
+
+    } else {
+        $('feedback').innerHTML = '<span style="color:var(--bad); font-size: 18px;">❌ Неверно. Попробуйте ещё раз.</span>';
+        $('view').style.background = '#fef2f2';
+        $('view').style.border = '2px solid #fecaca';
+        save();
+        renderNav();
+    }
+}
+
+/* --- Рисовалка --- */
+let canvas, ctx, drawing = false;
+
+function initCanvas(taskId) {
+    canvas = $('board');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(20, 150); ctx.lineTo(780, 150); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(770, 145); ctx.lineTo(780, 150); ctx.lineTo(770, 155); ctx.stroke();
+
+    if (state.drawings[taskId]) {
+        let img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = state.drawings[taskId];
+    }
+
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#e11d48'; // Красный
+
+    canvas.onmousedown = startDraw;
+    canvas.onmousemove = draw;
+    canvas.onmouseup = stopDraw;
+    canvas.onmouseout = stopDraw;
+
+    canvas.ontouchstart = (e) => { e.preventDefault(); startDraw(e.touches[0]); };
+    canvas.ontouchmove = (e) => { e.preventDefault(); draw(e.touches[0]); };
+    canvas.ontouchend = stopDraw;
+}
+
+function getPos(e) {
+    let rect = canvas.getBoundingClientRect();
+    return {
+        x: (e.clientX - rect.left) * (canvas.width / rect.width),
+        y: (e.clientY - rect.top) * (canvas.height / rect.height)
+    };
+}
+
+function startDraw(e) {
+    drawing = true;
+    let pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+}
+
+function draw(e) {
+    if (!drawing) return;
+    let pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+}
+
+function stopDraw() {
+    drawing = false;
+    if (state.current) {
+        state.drawings[state.current] = canvas.toDataURL();
+        save();
+    }
+}
+
+function clearCanvas() {
+    if (!canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(20, 150); ctx.lineTo(780, 150); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(770, 145); ctx.lineTo(780, 150); ctx.lineTo(770, 155); ctx.stroke();
+    
+    ctx.strokeStyle = '#e11d48';
+    ctx.lineWidth = 3;
+    
+    delete state.drawings[state.current];
+    save();
+}
+
+/* --- Модалки и Отчёт --- */
+function openModal(content) { $('modalcontent').innerHTML = content; $('modal').classList.add('show'); }
+function closeModal() { $('modal').classList.remove('show'); }
+
+$('guideBtn').onclick = () => {
+    openModal(`
+        <h2 style="text-align:center;">📚 Методичка: Логика</h2>
+        <div class="sticker-grid">
+            <div class="sticker">
+                <h4>🔄 Отрицание неравенств</h4>
+                <p>Строгое неравенство меняется на нестрогое и наоборот:</p>
+                <div class="math">¬(x > a) = x ≤ a</div>
+                <div class="math">¬(x < a) = x ≥ a</div>
+                <div class="math">¬(x ≥ a) = x < a</div>
+                <div class="math">¬(x ≤ a) = x > a</div>
+            </div>
+            <div class="sticker">
+                <h4>⚖️ Законы де Моргана</h4>
+                <p>Помогают раскрывать скобки с отрицанием:</p>
+                <div class="math">¬(A ∨ B) = ¬A ∧ ¬B</div>
+                <div class="math">¬(A ∧ B) = ¬A ∨ ¬B</div>
+                <p style="font-size:12px; margin-top:5px;">Отрицание суммы — это произведение отрицаний, и наоборот.</p>
+            </div>
+            <div class="sticker">
+                <h4>🤔 Двойное отрицание</h4>
+                <p>Два минуса дают плюс. Двойное отрицание уничтожается:</p>
+                <div class="math" style="font-size: 24px;">¬(¬A) = A</div>
+                <p>Если видите два знака «не» подряд, их можно просто убрать. <b>Подробнее смотри в теории!</b></p>
+            </div>
+            <div class="sticker">
+                <h4>📐 Пересечение и объединение</h4>
+                <p><b>∧ (И)</b> — пересечение. Число должно удовлетворять <u>обоим</u> условиям.</p>
+                <p><b>∨ (ИЛИ)</b> — объединение. Число удовлетворяет <u>хотя бы одному</u> условию.</p>
+            </div>
+        </div>
+        <div style="text-align:center;">
+            <button class="btn primary" onclick="closeModal()">Закрыть</button>
+        </div>
+    `);
+};
+
+$('resetBtn').onclick = () => {
+    if(confirm('Вы уверены, что хотите сбросить весь прогресс? Все рисунки, ответы и комментарии будут удалены.')) {
+        localStorage.removeItem('oge_logic_v13');
+        location.reload();
+    }
+};
+
+$('saveBtn').onclick = () => {
+    let clone = document.documentElement.cloneNode(true);
+    
+    let script = document.createElement('script');
+    script.id = 'embedded-state';
+    script.type = 'application/json';
+    script.textContent = JSON.stringify(state);
+    clone.querySelector('body').appendChild(script);
+    
+    let overlay = clone.querySelector('#modal');
+    if (overlay) overlay.classList.remove('show');
+    
+    let htmlStr = '<!doctype html>\n' + clone.outerHTML;
+    let blob = new Blob([htmlStr], {type: 'text/html'});
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = 'oge_logic_trainer_saved.html';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+$('reportBtn').onclick = () => {
+    let rows = PROTO_IDS.map(pid => {
+        let t = getTask(pid);
+        let stat = state.done[pid] || {};
+        let analogStat = state.done[pid + 100] || {};
+        
+        let statusText = 'Не решено';
+        let statusClass = 'status-bad';
+        
+        if (stat.correct) {
+            statusText = '✅ Решено';
+            statusClass = 'status-ok';
+            if (stat.hintUsed) statusText += '<br><span class="status-hint">(была подсказка)</span>';
+            if (stat.firstTry) statusText += '<br><span style="font-size:11px; color:green;">(с 1-й попытки)</span>';
+            else statusText += `<br><span style="font-size:11px; color:orange;">(попыток: ${stat.attempts})</span>`;
+        } else if (stat.skipped) {
+            statusText = '⏭️ Пропущено';
+            statusClass = 'status-skip';
+        } else if (stat.attempts > 0) {
+            statusText = `❌ Ошибки (${stat.attempts})`;
+        }
+
+        let imgHtml = state.drawings[pid] ? `<img src="${state.drawings[pid]}" alt="Рисунок">` : '<span style="color:#94a3b8;">Нет рисунка</span>';
+        let commentVal = state.comments[pid] || '';
+        
+        let analogStatus = analogStat.correct ? '<span style="color:green; font-size:11px; display:block; margin-top:4px;">✅ Аналог решён</span>' : '';
+
+        return `<tr>
+            <td style="text-align:center;"><b>${pid}</b></td>
+            <td style="font-size:12px;">${t.text.replace(/\n/g, '<br>')}</td>
+            <td style="text-align:center; font-weight:bold;">${state.answers[pid] || '—'}</td>
+            <td class="status-cell ${statusClass}">${statusText} ${analogStatus}</td>
+            <td>
+                ${imgHtml}
+                <textarea placeholder="Комментарий..." onchange="state.comments['${pid}']=this.value; save();">${commentVal}</textarea>
+            </td>
+        </tr>`;
+    }).join('');
+
+    openModal(`
+        <div class="report">
+            <h2 style="text-align:center; margin-top:0;">Отчёт для учителя</h2>
+            <p style="text-align:center; margin-bottom: 10px;">Ученик: <b>${state.name}</b> · ${new Date().toLocaleDateString('ru-RU')}</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">№</th>
+                        <th>Условие</th>
+                        <th style="width: 60px;">Ответ</th>
+                        <th style="width: 110px;">Статус</th>
+                        <th style="width: 280px;">Черновик и Комментарий</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+            <div class="report-actions" style="margin-top:20px; text-align:center;">
+                <button class="btn primary" onclick="window.print()">🖨️ Печать / PDF</button>
+                <button class="btn" onclick="closeModal()">Закрыть</button>
+            </div>
+        </div>
+    `);
+};
+
+function init() {
+    if(!localStorage.getItem('oge_logic_v13') && !embeddedData) {
+        openModal(`
+            <h2>Начало работы</h2>
+            <p>Введите имя ученика:</p>
+            <input id="studentName" value="Ученик" style="padding:10px; width:100%; margin-bottom:15px; font-size:16px; border: 1px solid #ccc; border-radius: 6px;">
+            <button class="btn primary" onclick="state.name=document.getElementById('studentName').value.trim()||'Ученик'; save(); closeModal(); render();">Начать</button>
+        `);
+    }
+    render();
+}
+
+init();
+</script>
+
+<script id="embedded-state" type="application/json">{"name":"Ученик","current":11,"done":{"10":{"attempts":1,"hintUsed":true,"correct":true,"skipped":false,"firstTry":true},"110":{"attempts":1,"hintUsed":false,"correct":true,"skipped":false,"firstTry":true}},"drawings":{"1":"data:image/png;base64,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","10":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAyAAAADcCAYAAACIyMWXAAAFPElEQVR4Xu3dMW7TYBiA4d9d6Ck4ACvqZbL2XEVMXKbJ0KHpwgBB4gQMIJS4aqSydUteEfl5Nk/2N776ftvTAAAAiEzRfQAAAAQIAADQsQEBAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAABZo8/Rjf5jnzzcf3t+W4wsQAABYmKevPz/++vN3fRx7mn6PMb5UISJAAABgge63u7sxxmrM8/Vx/ChEBAgAACxYHSICBAAAyELk5AFy//h9/ncBAABcthMfzRIgAADA2/73AAEAAC7PZru7O1yN1dif96X0k29AAACAy7F53H3aT2M1zfO741OfKTxeCRAAAFigl/A4TMfP8Cbh8UqAAADAwvgRIQAAkFpvv63ncfVwrqNWb7EBAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgIwAAQAAMgIEAADICBAAACAjQAAAgMwztWtf3QkkiYAAAAAASUVORK5CYII=","11":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAyAAAADcCAYAAACIyMWXAAAFO0lEQVR4Xu3dMW7UUBRA0e9sAykbCDX7SZYwBbuALbAfLCQk4kjphoGOJYBihDShg2rmKiOf07myX3n1vu1pAAAARKboPgAAAAIEAADo2IAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAAGQECAAAkBEgAABARoAAAAAZAQIAABs0Pxx+rOt4++bm+kM5vgABAICN+fz47dXPX0/fj2Pfr2N6X4WIAAEAgA36uBxup7Huxhivj+MnISJAAABgw+oQESAAAEAWIicPkHn5uv69AAAALt1Jj2YJEAAA4H9edoAAAACX59NyuH2a1t1Yz/tS+sk3IAAAwOWYv+zv1qtpN41xc3zqs4THMwECAAAbNC/7uzGmP5/hTcLjmQABAICN8SNCAAAgNS/7d+u4uj/XUat/sQEBAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAjAABAAAyAgQAAMgIEAAAICNAAACAzG/3m2DdyXz9yQAAAABJRU5ErkJggg==","110":"data:image/png;base64,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"},"comments":{},"answers":{"10":"15","110":"24"}}</script></body></html>

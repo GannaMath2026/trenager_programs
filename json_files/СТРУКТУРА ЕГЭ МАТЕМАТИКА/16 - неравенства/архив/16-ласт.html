@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Неравенства: разбор по шагам</title>
+<style>
+:root{
+  --bg:#f0f4f8;--cd:#fff;--tx:#1e293b;--mu:#64748b;--ac:#3b82f6;
+  --ok:#10b981;--bad:#ef4444;--wa:#f59e0b;--br:#e2e8f0;
+  --axis:#475569;--ans:#3b82f6;
+  --font-base: 16px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px)
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f172a;--cd:#1e293b;--tx:#f1f5f9;--mu:#94a3b8;--ac:#60a5fa;
+    --ok:#34d399;--bad:#f87171;--wa:#fbbf24;--br:#334155;
+    --axis:#cbd5e1;--ans:#60a5fa;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f172a;--cd:#1e293b;--tx:#f1f5f9;--mu:#94a3b8;--ac:#60a5fa;
+  --ok:#34d399;--bad:#f87171;--wa:#fbbf24;--br:#334155;
+  --axis:#cbd5e1;--ans:#60a5fa;
+}
+body.text-small { --font-base: 14px; }
+body.text-medium { --font-base: 16px; }
+body.text-large { --font-base: 18px; }
+
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:var(--font-base)/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; transition: font-size 0.2s ease;}
+header{display:flex;gap:8px;align-items:center;padding:10px 16px;background:var(--cd);border-bottom:1px solid var(--br);flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+header h1{flex:1;margin:0;font-size:18px;min-width:200px;font-weight:800;letter-spacing:-0.5px}
+main{max-width:1100px;margin:auto;padding:16px}
+button,select,input,textarea{font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--br);border-radius:10px;padding:8px 12px;transition:.15s}
+button{cursor:pointer}
+button:hover{background:var(--br)}
+button.on,button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+button.pri:hover{filter:brightness(1.1)}
+button.ghost{background:transparent}
+
+.btn-theory{background:#8b5cf6;color:#fff;border-color:#8b5cf6}
+.btn-add{background:#10b981;color:#fff;border-color:#10b981}
+.btn-import{background:#f59e0b;color:#fff;border-color:#f59e0b}
+.btn-export{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+.btn-print{background:#64748b;color:#fff;border-color:#64748b}
+.btn-theme{background:#475569;color:#fff;border-color:#475569}
+.btn-theory:hover,.btn-add:hover,.btn-import:hover,.btn-export:hover,.btn-print:hover,.btn-theme:hover{filter:brightness(1.1)}
+
+.card{background:var(--cd);border:1px solid var(--br);border-radius:16px;padding:16px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.02)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.meta{font-size:13px;color:var(--mu)}
+.tag{font-size:12px;border:1px solid var(--br);border-radius:8px;padding:2px 8px;color:var(--mu);background:var(--bg)}
+.tx{margin:8px 0;overflow-x:auto}
+.eq{font-size:1.5em;overflow-x:auto;overflow-y:hidden;padding:12px 0;text-align:center;background:var(--bg);border-radius:10px;margin:8px 0}
+.q{font-weight:600;margin:0 0 12px;font-size:17px}
+.row.done{border-left:6px solid var(--ok);background:color-mix(in srgb,var(--ok) 10%,var(--cd))}
+.stk{display:inline-block;background:var(--ok);color:#fff;font-weight:800;font-size:12px;letter-spacing:.5px;padding:3px 10px;border-radius:8px;transform:rotate(-3deg);box-shadow:0 2px 4px rgba(0,0,0,.1);margin-left:8px}
+.d-basic{color:var(--ok);font-weight:600}.d-medium{color:var(--wa);font-weight:600}.d-hard{color:var(--bad);font-weight:600}
+
+.opt-ax{display:flex;flex-direction:column;gap:8px}
+.axwrap{overflow-x:auto;padding:2px 0;pointer-events:none;margin-top:8px}
+.axsvg{display:block;width:100%;height:110px}
+.ax-label{font:13px system-ui,sans-serif;fill:var(--mu)}
+.ax-num{font:14px ui-monospace,monospace;fill:var(--tx);font-weight:bold}
+
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000;backdrop-filter:blur(2px)}
+.modal-box{background:var(--cd);border-radius:16px;padding:20px;width:100%;max-width:800px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 10px 25px rgba(0,0,0,.2)}
+.modal-box h3{margin:0 0 16px 0;font-size:18px}
+.modal-box textarea{flex:1;min-height:300px;font-family:ui-monospace,Consolas,monospace;font-size:13px;resize:none;background:var(--bg);color:var(--tx);border:1px solid var(--br);border-radius:8px;padding:12px;margin-bottom:12px}
+.modal-box .bar{margin:0;justify-content:flex-end}
+.print-options{max-width:620px;gap:12px}
+.print-fields{display:flex;gap:12px 22px;flex-wrap:wrap;padding:10px 12px;background:var(--bg);border:1px solid var(--br);border-radius:10px}
+.print-fields label,.print-task-list label{display:flex;align-items:center;gap:8px;cursor:pointer}
+.print-fields input,.print-task-list input{width:17px;height:17px;accent-color:#2563eb}
+.print-task-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.print-task-head span{display:flex;gap:6px}
+.print-task-list{max-height:38vh;overflow:auto;border:1px solid var(--br);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.print-options .bar{margin-top:4px}
+
+.solution-answer{padding:16px;border:1px solid var(--br);border-left:5px solid var(--ok);border-radius:12px;background:color-mix(in srgb,var(--ok) 7%,var(--cd));line-height:1.55;font-size:1.15em;}
+.solution-axis{padding:12px 0;pointer-events:auto}
+.solution-axis .axsvg{height:110px;min-width:340px}
+.step-navigator{padding:12px 16px}
+.step-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.step-head button{white-space:nowrap}
+#stepSlider{display:block;width:100%;padding:0;margin:14px 0 4px;accent-color:var(--ac);cursor:pointer}
+.step-scale{display:flex;justify-content:space-between;color:var(--mu);font-size:12px}
+
+@media print {
+  header, .bar, .btn-theory, .btn-add, .btn-import, .btn-export, .btn-print, .btn-theme, #btnTheory, #btnAdd, #btnImport, #btnExport, #btnPrint, #btnTheme, .row .bar, .modal, button {
+    display: none !important;
+  }
+  body { background: #fff; color: #000; }
+  main { max-width: 100%; padding: 0; }
+  .card { box-shadow: none; border: none; padding: 0; margin-bottom: 24px; page-break-inside: avoid; }
+  .row { border: none !important; margin-bottom: 30px; padding: 0; background: none !important; }
+  .row .tag, .row .meta { display: none; }
+  h3 { font-size: 20px; margin-bottom: 8px; }
+}
+
+@media (max-width: 600px) {
+  .theory-grid{grid-template-columns:1fr}
+  .eq{font-size:1.2em}
+  main{padding:12px}
+  header h1{font-size:16px}
+}
+</style>
+<script>
+window.MathJax={
+  tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},
+  svg:{fontCache:'global'},
+  startup:{typeset:false}
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+</head>
+<body class="text-medium">
+<header>
+  <h1>Неравенства</h1>
+  <button id="btnTheory" class="btn-theory" title="Шпаргалка">💡 Теория</button>
+  <button id="btnAdd" class="btn-add" title="Добавить задачу">➕ Добавить</button>
+  <button id="btnImport" class="btn-import" title="Загрузить JSON">📥 Импорт</button>
+  <button id="btnExport" class="btn-export" title="Скачать JSON">💾 JSON</button>
+  <button id="btnSaveApp" class="btn-export" title="Сохранить приложение целиком">⬇️ Сохранить приложение</button>
+  <button id="btnPrint" class="btn-print" title="Печать задач">🖨 Печать</button>
+  <button id="btnTheme" class="btn-theme" title="Сменить тему">🌗</button>
+  <select id="fontSizeSel" style="padding:4px 8px; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer;">
+    <option value="small">A- Мелкий</option>
+    <option value="medium" selected>A Средний</option>
+    <option value="large">A+ Крупный</option>
+  </select>
+</header>
+<main id="app"></main>
+<div id="modalRoot"></div>
+
+<script type="application/json" id="seed">
+[
+  {
+    "id": 900001, "n": "001", "s": "01 · ПОКАЗАТЕЛЬНЫЕ", "d": "medium",
+    "t": "Решите неравенство: \\( 2\\left(18^{x}+8^{x}\\right) > 12^{x}+27^{x} \\).",
+    "c": "Решите неравенство: \\( 2\\left(18^{x}+8^{x}\\right) > 12^{x}+27^{x} \\).",
+    "a": "Ответ: \\( \\left(-\\infty;\\ \\log_{2/3}\\tfrac{1}{2}\\right) \\).",
+    "ap": "\\left(-\\infty;\\ \\log_{2/3}\\tfrac{1}{2}\\right)",
+    "ch": [
+      { "e": "2\\left(18^{x}+8^{x}\\right) > 12^{x}+27^{x}", "q": "С чего начать? Степени записаны разными основаниями.", "o": [{"t": "Расписать основания $18, 8, 12, 27$ через простые множители $2, 3$", "ok": true}] },
+      { "e": "2\\left(2^{x}\\cdot 3^{2x}+2^{3x}\\right) > 2^{2x}\\cdot 3^{x}+3^{3x}", "q": "Теперь основания видны. Как привести к одной замене?", "o": [{"t": "Разделить обе части на $3^{3x}>0$", "ok": true}] },
+      { "e": "2\\left(\\left(\\tfrac{2}{3}\\right)^{x}+\\left(\\tfrac{2}{3}\\right)^{3x}\\right) > \\left(\\tfrac{2}{3}\\right)^{2x}+1", "q": "Какая замена упростит неравенство?", "o": [{"t": "$t=\\left(\\frac{2}{3}\\right)^{x}$, причём $t>0$", "ok": true}] },
+      { "e": "2t+2t^{3} > t^{2}+1 \\quad \\Longleftrightarrow\\quad 2t^{3}-t^{2}+2t-1 > 0", "q": "Как разложить левую часть на множители?", "o": [{"t": "Сгруппировать: $t^{2}(2t-1)+(2t-1)=(2t-1)(t^{2}+1)$", "ok": true}] },
+      { "e": "(2t-1)(t^{2}+1) > 0", "q": "Что можно сказать о втором множителе?", "o": [{"t": "$t^{2}+1>0$ при всех $t$ ($D=-4<0$), поэтому $2t-1>0$", "ok": true}] },
+      { "e": "2t-1 > 0 \\iff t > \\tfrac{1}{2}", "q": "Нарисуйте решение на числовой оси $t$.", "o": [{"t": "Луч вправо от $1/2$, точка выколотая", "ok": true, "axis": {"points": [{ "x": 0, "label": "", "type": "hidden" }, { "x": 1, "label": "\\frac{1}{2}", "type": "open" }, { "x": 2, "label": "", "type": "hidden" }],"intervals": [{ "from": 0, "to": 1, "color": "bad", "label": "-", "arc": true }, { "from": 1, "to": 2, "color": "ok", "label": "+", "arc": true, "shade": true }]}}] },
+      { "e": "t > \\tfrac{1}{2}, \\quad t=\\left(\\tfrac{2}{3}\\right)^{x}", "q": "Обратная замена. Какое неравенство получится для $x$?", "o": [{"t": "$\\left(\\frac{2}{3}\\right)^{x}>\\frac{1}{2}$", "ok": true}] },
+      { "e": "\\left(\\tfrac{2}{3}\\right)^{x} > \\tfrac{1}{2}", "q": "Как свести к сравнимому виду, чтобы «сбросить» основания?", "o": [{"t": "Записать $\\tfrac12=\\left(\\tfrac23\\right)^{\\log_{2/3}(1/2)}$ по основному логарифмическому тождеству", "ok": true}] },
+      { "e": "\\left(\\tfrac{2}{3}\\right)^{x} > \\left(\\tfrac{2}{3}\\right)^{\\log_{2/3}(1/2)}", "q": "Основание степени $\\tfrac{2}{3}<1$. Что происходит со знаком при сравнении показателей?", "o": [{"t": "Знак меняется: $x<\\log_{2/3}(1/2)$ — функция $y=(2/3)^t$ убывает", "ok": true}] },
+      { "e": "x < \\log_{2/3}\\!\\left(\\tfrac{1}{2}\\right)", "q": "Нарисуйте решение на числовой оси $x$.", "o": [{"t": "Луч влево от $\\log_{2/3}\\tfrac12$, точка выколотая", "ok": true, "axis": {"points": [{ "x": 0, "label": "", "type": "hidden" }, { "x": 1, "label": "\\log_{2/3}\\!\\frac{1}{2}", "type": "open" }, { "x": 2, "label": "", "type": "hidden" }],"intervals": [{ "from": 0, "to": 1, "color": "ok", "label": "+", "arc": true, "shade": true }, { "from": 1, "to": 2, "color": "bad", "label": "-", "arc": true }]}}] },
+      { "e": "x \\in \\left(-\\infty;\\ \\log_{2/3}\\!\\left(\\tfrac{1}{2}\\right)\\right)", "q": "END" }
+    ]
+  },
+  {
+    "id": 900003, "n": "003", "s": "01 · ПОКАЗАТЕЛЬНЫЕ", "d": "medium",
+    "t": "Решите неравенство: \\( 2\\left(50^{x}+8^{x}\\right) > 20^{x}+3\\cdot 125^{x} \\).",
+    "c": "Решите неравенство: \\( 2\\left(50^{x}+8^{x}\\right) > 20^{x}+3\\cdot 125^{x} \\).",
+    "a": "Ответ: \\( x \\in (-\\infty; 0) \\).", "ap": "x \\in (-\\infty; 0)",
+    "ch": [
+      { "e": "2\\left(50^{x}+8^{x}\\right) > 20^{x}+3\\cdot 125^{x}", "q": "С чего начать? Степени записаны разными основаниями.", "o": [{"t": "Расписать основания $50, 8, 20, 125$ через простые множители $2, 5$", "ok": true}] },
+      { "e": "2\\left(5^{2x}\\cdot 2^{x}+2^{3x}\\right) > 2^{2x}\\cdot 5^{x}+3\\cdot 5^{3x}", "q": "Теперь основания видны. Как привести к одной замене?", "o": [{"t": "Разделить обе части на $5^{3x}>0$", "ok": true}] },
+      { "e": "2\\left(\\left(\\tfrac{2}{5}\\right)^{x}+\\left(\\tfrac{2}{5}\\right)^{3x}\\right) > \\left(\\tfrac{2}{5}\\right)^{2x}+3", "q": "Какая замена упростит неравенство?", "o": [{"t": "$t=\\left(\\frac{2}{5}\\right)^{x}$, причём $t>0$", "ok": true}] },
+      { "e": "2t^{3}-t^{2}+2t-3 > 0", "q": "Как разложить левую часть на множители?", "o": [{"t": "Заметить корень $t=1$ и разделить по схеме Горнера: $(t-1)(2t^{2}+t+3)>0$", "ok": true}] },
+      { "e": "(t-1)(2t^{2}+t+3) > 0", "q": "Что можно сказать о втором множителе?", "o": [{"t": "Дискриминант $D=1-24=-23<0$, корней нет — парабола всегда $>0$, значит $t-1>0$", "ok": true}] },
+      { "e": "t - 1 > 0 \\iff t > 1", "q": "Нарисуйте решение на числовой оси $t$.", "o": [{"t": "Луч вправо от $1$, точка выколотая", "ok": true, "axis": {"points": [{ "x": 0, "label": "", "type": "hidden" }, { "x": 1, "label": "1", "type": "open" }, { "x": 2, "label": "", "type": "hidden" }],"intervals": [{ "from": 0, "to": 1, "color": "bad", "label": "-", "arc": true }, { "from": 1, "to": 2, "color": "ok", "label": "+", "arc": true, "shade": true }]}}] },
+      { "e": "t > 1, \\quad t=\\left(\\tfrac{2}{5}\\right)^{x}", "q": "Обратная замена. Какое неравенство получится для $x$?", "o": [{"t": "$\\left(\\frac{2}{5}\\right)^{x}>1$", "ok": true}] },
+      { "e": "\\left(\\tfrac{2}{5}\\right)^{x} > 1", "q": "Как записать $1$ в виде степени с основанием $2/5$, чтобы сбросить основания?", "o": [{"t": "$1=\\left(\\frac{2}{5}\\right)^0$", "ok": true}] },
+      { "e": "\\left(\\tfrac{2}{5}\\right)^{x} > \\left(\\tfrac{2}{5}\\right)^{0}", "q": "Основание степени $\\tfrac{2}{5}<1$. Что происходит со знаком при сравнении показателей?", "o": [{"t": "Знак меняется: $x < 0$ — функция убывает", "ok": true}] },
+      { "e": "x < 0", "q": "Нарисуйте решение на числовой оси $x$.", "o": [{"t": "Луч влево от нуля, точка выколотая", "ok": true, "axis": {"points": [{ "x": 0, "label": "", "type": "hidden" }, { "x": 1, "label": "0", "type": "open" }, { "x": 2, "label": "", "type": "hidden" }],"intervals": [{ "from": 0, "to": 1, "color": "ok", "label": "+", "arc": true, "shade": true }, { "from": 1, "to": 2, "color": "bad", "label": "-", "arc": true }]}}] },
+      { "e": "x \\in (-\\infty; 0)", "q": "END" }
+    ]
+  },
+  {
+    "id": 900004, "n": "004", "s": "01 · ПОКАЗАТЕЛЬНЫЕ", "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{2\\cdot 3^{2x+1} - 7\\cdot 6^x + 2\\cdot 4^x}{3\\cdot 9^x - 3\\cdot 2^{x+1}} \\le 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{2\\cdot 3^{2x+1} - 7\\cdot 6^x + 2\\cdot 4^x}{3\\cdot 9^x - 3\\cdot 2^{x+1}} \\le 0 \\).",
+    "a": "Ответ: \\( x \\in (-\\infty;\\ -1) \\cup (1;\\ +\\infty) \\).", "ap": "x \\in (-\\infty;\\ -1) \\cup (1;\\ +\\infty)",
+    "ch": [
+      { "e": "\\dfrac{2\\cdot 3^{2x+1} - 7\\cdot 6^x + 2\\cdot 4^x}{3\\cdot 9^x - 3\\cdot 2^{x+1}} \\le 0", "q": "Шаг 1. Избавьтесь от 'хвостов' в показателях.", "o": [{"t": "Расписать степени: $3^{2x+1} = 3\\cdot 9^x$, $2^{x+1} = 2\\cdot 2^x$", "ok": true}] },
+      { "e": "\\dfrac{6\\cdot 9^x - 7\\cdot 6^x + 2\\cdot 4^x}{3\\cdot 9^x - 6\\cdot 2^x} \\le 0", "q": "Шаг 5. Разделите числитель и знаменатель на $4^x > 0$, чтобы перейти к одному основанию.", "o": [{"t": "Разделить на $4^x$", "ok": true}] },
+      { "e": "\\dfrac{6\\left(\\tfrac{3}{2}\\right)^{2x} - 7\\left(\\tfrac{3}{2}\\right)^x + 2}{3\\left(\\tfrac{3}{2}\\right)^{2x} - 6\\left(\\tfrac{3}{2}\\right)^x} \\le 0", "q": "Шаг 5. Введите замену переменной.", "o": [{"t": "$t = \\left(\\frac{3}{2}\\right)^x$", "ok": true}] },
+      { "e": "\\dfrac{6t^2 - 7t + 2}{3t^2 - 6t} \\le 0", "q": "Шаг 6. Как разложить числитель и знаменатель на множители?", "o": [{"t": "Числитель: $6(t - 1/2)(t - 2/3)$. Знаменатель: $3t(t - 2)$.", "ok": true}] },
+      { "e": "\\dfrac{6\\left(t - \\tfrac{1}{2}\\right)\\left(t - \\tfrac{2}{3}\\right)}{3t(t - 2)} \\le 0", "q": "Шаг 7. Решите методом интервалов (без сокращения дроби).", "o": [{"t": "", "ok": true, "axis": {"points": [{ "x": 0, "label": "", "type": "hidden" }, { "x": 1, "label": "0", "type": "open" }, { "x": 2, "label": "\\frac{1}{2}", "type": "closed" }, { "x": 3, "label": "\\frac{2}{3}", "type": "closed" }, { "x": 4, "label": "2", "type": "open" }, { "x": 5, "label": "", "type": "hidden" }],"intervals": [{ "from": 0, "to": 1, "color": "bad", "label": "-", "arc": true }, { "from": 1, "to": 2, "color": "ok", "label": "+", "arc": true, "shade": true }, { "from": 2, "to": 3, "color": "bad", "label": "-", "arc": true }, { "from": 3, "to": 4, "color": "ok", "label": "+", "arc": true, "shade": true }, { "from": 4, "to": 5, "color": "bad", "label": "-", "arc": true }]}}] },
+      { "e": "t \\in (-\\infty; 0) \\cup \\left(0; \\tfrac{1}{2}\\right] \\cup \\left[\\tfrac{2}{3}; 2\\right)", "q": "Шаг 8. Запишите полученные промежутки для $t$ в виде совокупности неравенств.", "o": [{"t": "$\\left[ \\begin{array}{l} t < 0 \\\\ 0 < t \\le \\frac{1}{2} \\\\ \\frac{2}{3} \\le t < 2 \\end{array} \\right.$", "ok": true}] },
+      { "e": "\\left[ \\begin{array}{l} \\left(\\tfrac{3}{2}\\right)^x < 0 \\\\ 0 < \\left(\\tfrac{3}{2}\\right)^x \\le \\tfrac{1}{2} \\\\ \\tfrac{2}{3} \\le \\left(\\tfrac{3}{2}\\right)^x < 2 \\end{array} \\right.", "q": "Шаг 9. Запишите числа $\\tfrac{1}{2}$, $\\tfrac{2}{3}$ и $2$ в виде степеней с основанием $\\tfrac{3}{2}$, чтобы перейти к сравнению показателей.", "o": [{"t": "$\\left[ \\begin{array}{l} \\left(\\tfrac{3}{2}\\right)^x < 0 \\\\ \\left(\\tfrac{3}{2}\\right)^x \\le \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(1/2)} \\\\ \\left(\\tfrac{3}{2}\\right)^{-1} \\le \\left(\\tfrac{3}{2}\\right)^x < \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(2)} \\end{array} \\right.$", "ok": true}] },
+      { "e": "\\left[ \\begin{array}{l} \\left(\\tfrac{3}{2}\\right)^x < 0 \\\\ \\left(\\tfrac{3}{2}\\right)^x \\le \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(1/2)} \\\\ \\left(\\tfrac{3}{2}\\right)^{-1} \\le \\left(\\tfrac{3}{2}\\right)^x < \\left(\\tfrac{3}{2}\\right)^{\\log_{3/2}(2)} \\end{array} \\right.", "q": "Шаг 10. Вспомните, что $0 < \\left(\\tfrac{3}{2}\\right)^x$ всегда, и перейдите от степеней к показателям (основание $\\tfrac{3}{2} > 1$, знак сохраняется).", "o": [{"t": "$\\left[ \\begin{array}{l} x < \\log_{3/2}(1/2) \\\\ -1 \\le x < \\log_{3/2}(2) \\end{array} \\right.$", "ok": true}] },
+      { "e": "x \\in (-\\infty;\\ -1) \\cup (1;\\ +\\infty)", "q": "END" }
+    ]
+  },
+  {
+    "id": 900005, "n": "005", "s": "01 · ПОКАЗАТЕЛЬНЫЕ", "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{2\\cdot 5^{2x} - 3\\cdot 5^x\\cdot 2^{x+1} + 4^{x+1}}{10^x - 2^{2x}} \\le 1 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{2\\cdot 5^{2x} - 3\\cdot 5^x\\cdot 2^{x+1} + 4^{x+1}}{10^x - 2^{2x}} \\le 1 \\).",
+    "a": "Ответ: \\( x \\in (-\\infty;\\ 0) \\cup (0;\\ 1] \\).", "ap": "x \\in (-\\infty; 0) \\cup (0; 1]",
+    "ch": [
+      { "e": "\\dfrac{2\\cdot 5^{2x} - 3\\cdot 5^x\\cdot 2^{x+1} + 4^{x+1}}{10^x - 2^{2x}} \\le 1", "q": "Шаг 1. Преобразуйте степени в числителе и знаменателе.", "o": [{"t": "$2^{x+1}=2\\cdot2^x$, $4^{x+1}=4\\cdot2^{2x}$, $10^x=2^x\\cdot5^x$", "ok": true}] },
+      { "e": "\\dfrac{2\\cdot5^{2x}-6\\cdot5^x\\cdot2^x+4\\cdot2^{2x}}{2^x\\cdot5^x-2^{2x}}\\le1", "q": "Шаг 2. Упростите выражения после преобразования степеней.", "o": [{"t": "$-3\\cdot5^x\\cdot2^{x+1}=-6\\cdot5^x\\cdot2^x$ и $4^{x+1}=4\\cdot2^{2x}$", "ok": true}] },
+      { "e": "\\dfrac{2\\cdot5^{2x}-6\\cdot5^x\\cdot2^x+4\\cdot2^{2x}}{2^x\\cdot5^x-2^{2x}}-1\\le0", "q": "Шаг 3. Перенесите 1 в левую часть неравенства.", "o": [{"t": "Вычесть 1 из дроби: $\\frac ND-1\\le0$", "ok": true}] },
+      { "e": "\\dfrac{2\\cdot5^{2x}-6\\cdot5^x\\cdot2^x+4\\cdot2^{2x}-(2^x\\cdot5^x-2^{2x})}{2^x\\cdot5^x-2^{2x}}\\le0", "q": "Шаг 4. Приведите числитель к общему знаменателю.", "o": [{"t": "Получить числитель $N-D$, вычитая весь знаменатель", "ok": true}] },
+      { "e": "\\dfrac{2\\cdot5^{2x}-7\\cdot5^x\\cdot2^x+5\\cdot2^{2x}}{2^x\\cdot5^x-2^{2x}}\\le0", "q": "Шаг 5. Раскройте скобки и приведите подобные слагаемые.", "o": [{"t": "$2\\cdot5^{2x}-7\\cdot5^x\\cdot2^x+5\\cdot2^{2x}$", "ok": true}] },
+      { "e": "\\dfrac{2\\left(\\frac52\\right)^{2x}-7\\left(\\frac52\\right)^x+5}{\\left(\\frac52\\right)^x-1}\\le0", "q": "Шаг 6. Разделите числитель и знаменатель на $2^{2x}>0$.", "o": [{"t": "$\\frac{2(\\frac52)^{2x}-7(\\frac52)^x+5}{(\\frac52)^x-1}\\le0$", "ok": true}] },
+      { "e": "\\dfrac{2t^2-7t+5}{t-1}\\le0,\\quad t=\\left(\\frac52\\right)^x>0,\\quad t\\ne1", "q": "Шаг 7. Сделайте замену переменной и разложите числитель на множители.", "o": [{"t": "$t=(\\frac52)^x>0$, $t\\ne1$; $2t^2-7t+5=(2t-5)(t-1)$", "ok": true}] },
+      { "e": "\\dfrac{2(t-1)(t-\\frac52)}{t-1}\\le0,\\quad t>0,\\quad t\\ne1", "q": "Шаг 8. Сократите дробь, учитывая область допустимых значений.", "o": [{"t": "$2(t-\\frac52)\\le0$, при этом $t>0$ и $t\\ne1$", "ok": true}] },
+      { "e": "t\\le\\frac52,\\quad t>0,\\quad t\\ne1", "q": "Шаг 9. Решите неравенство методом интервалов.", "o": [{"t": "$t\\in(0;1)\\cup(1;\\frac52]$", "ok": true, "axis": {"points": [{ "x": 0, "label": "", "type": "hidden" }, { "x": 1, "label": "0", "type": "open" }, { "x": 2, "label": "1", "type": "open" }, { "x": 3, "label": "\\frac{5}{2}", "type": "closed" }, { "x": 4, "label": "", "type": "hidden" }],"intervals": [{ "from": 0, "to": 1, "color": "bad", "label": "-", "arc": true }, { "from": 1, "to": 2, "color": "ok", "label": "+", "arc": true, "shade": true }, { "from": 2, "to": 3, "color": "ok", "label": "+", "arc": true, "shade": true }, { "from": 3, "to": 4, "color": "bad", "label": "-", "arc": true }]}}] },
+      { "e": "0<\\left(\\frac52\\right)^x\\le\\frac52,\\quad \\left(\\frac52\\right)^x\\ne1", "q": "Шаг 10. Вернитесь к переменной $x$.", "o": [{"t": "$x\\le1$, $x\\ne0$", "ok": true}] },
+      { "e": "x\\in(-\\infty;0)\\cup(0;1]", "q": "END" }
+    ]
+  },
+  {
+    "id": 900006, "n": "006", "s": "01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ", "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{4^{x^2+x-4} - 0{,}5^{2x^2-2x-1}}{0{,}2 \\cdot 5^x - 1} \\le 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{4^{x^2+x-4} - 0{,}5^{2x^2-2x-1}}{0{,}2 \\cdot 5^x - 1} \\le 0 \\).",
+    "a": "Ответ: \\( x \\in (-\\infty;\\ -1{,}5] \\cup (1;\\ 1{,}5] \\).", "ap": "x \\in (-\\infty;\\ -1{,}5] \\cup (1;\\ 1{,}5]",
+    "ch": [
+      { "e": "\\dfrac{4^{x^2+x-4} - 0{,}5^{2x^2-2x-1}}{0{,}2 \\cdot 5^x - 1} \\le 0", "q": "С чего начнем решение?", "o": [{"t": "Привести степени к одинаковым основаниям: в числителе к 4, в знаменателе к 5", "ok": true}] },
+      { "e": "\\dfrac{4^{x^2+x-4} - 0{,}5^{2x^2-2x-1}}{0{,}2 \\cdot 5^x - 1} \\le 0", "q": "Преобразуем только числитель. Как записать $0{,}5^{2x^2-2x-1}$ через основание 4?", "o": [{"t": "$0{,}5 = 2^{-1}$, поэтому $0{,}5^{2x^2-2x-1} = (2^{-1})^{2x^2-2x-1} = 2^{-2x^2+2x+1} = 4^{-x^2+x+0{,}5}$", "ok": true}] },
+      { "e": "\\dfrac{4^{x^2+x-4} - 4^{-x^2+x+0{,}5}}{0{,}2 \\cdot 5^x - 1} \\le 0", "q": "Теперь преобразуем знаменатель. Как записать $0{,}2 \\cdot 5^x$ через основание 5?", "o": [{"t": "$0{,}2 = 5^{-1}$, поэтому $0{,}2 \\cdot 5^x = 5^{-1} \\cdot 5^x = 5^{x-1}$", "ok": true}] },
+      { "e": "\\dfrac{4^{x^2+x-4} - 4^{-x^2+x+0{,}5}}{5^{x-1} - 1} \\le 0", "q": "Теперь найдем нули числителя.", "o": [{"t": "$x^2+x-4 = -x^2+x+0{,}5 \\Rightarrow 2x^2 = 4{,}5 \\Rightarrow x^2 = 2{,}25 \\Rightarrow x = \\pm 1{,}5$", "ok": true}] },
+      { "e": "\\dfrac{4^{x^2+x-4} - 4^{-x^2+x+0{,}5}}{5^{x-1} - 1} \\le 0", "q": "А теперь найдем нули знаменателя.", "o": [{"t": "$5^{x-1} = 1 = 5^0 \\Rightarrow x - 1 = 0 \\Rightarrow x = 1$", "ok": true}] },
+      { "e": "\\dfrac{4^{x^2+x-4} - 4^{-x^2+x+0{,}5}}{5^{x-1} - 1} \\le 0", "q": "Отметьте точки на числовой оси и расставьте знаки дроби.", "o": [{"t": "Точки $-1{,}5$ и $1{,}5$ закрашены, точка $1$ выколота. Знаки: $-, +, -, +$.", "ok": true, "axis": {"points": [{ "x": 0, "label": "", "type": "hidden" }, { "x": 1, "label": "-1{,}5", "type": "closed" }, { "x": 2, "label": "1", "type": "open" }, { "x": 3, "label": "1{,}5", "type": "closed" }, { "x": 4, "label": "", "type": "hidden" }],"intervals": [{ "from": 0, "to": 1, "color": "bad", "label": "-", "arc": true }, { "from": 1, "to": 2, "color": "ok", "label": "+", "arc": true, "shade": true }, { "from": 2, "to": 3, "color": "bad", "label": "-", "arc": true }, { "from": 3, "to": 4, "color": "ok", "label": "+", "arc": true, "shade": true }]}}] },
+      { "e": "x \\in (-\\infty;\\ -1{,}5] \\cup (1;\\ 1{,}5]", "q": "END" }
+    ]
+  },
+  {
+    "id": 900007, "n": "007", "s": "01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ", "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{27^x - 3\\cdot 9^{x+1} + 3^{x+5} - 729}{50x^2 + 10x + 0{,}5} \\le 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{27^x - 3\\cdot 9^{x+1} + 3^{x+5} - 729}{50x^2 + 10x + 0{,}5} \\le 0 \\).",
+    "a": "Ответ: \\( x \\in (-\\infty;\\ -0{,}1) \\cup (-0{,}1;\\ 2] \\).", "ap": "x \\in (-\\infty;\\ -0{,}1) \\cup (-0{,}1;\\ 2]",
+    "ch": [
+      { "e": "\\dfrac{27^x - 3\\cdot 9^{x+1} + 3^{x+5} - 729}{50x^2 + 10x + 0{,}5} \\le 0", "q": "С чего начнем?", "o": [{"t": "Приравнять числитель к нулю, чтобы найти его корни", "ok": true}] },
+      { "e": "27^x - 3\\cdot 9^{x+1} + 3^{x+5} - 729 = 0", "q": "Как привести все степени к одному основанию 3?", "o": [{"t": "$27^x = 3^{3x}$, $3\\cdot 9^{x+1} = 3\\cdot 3^{2x+2} = 3^{2x+3}$, $3^{x+5} = 3^{x+5}$, $729 = 3^6$", "ok": true}] },
+      { "e": "3^{3x} - 3^{2x+3} + 3^{x+5} - 3^6 = 0", "q": "Какая замена упростит уравнение?", "o": [{"t": "$t = 3^x$", "ok": true}] },
+      { "e": "t^3 - 27t^2 + 243t - 729 = 0", "q": "Как разложить кубическое уравнение на множители?", "o": [{"t": "Заметить корень $t=9$ и разделить по схеме Горнера: $(t-9)(t^2 - 18t + 81) = 0$", "ok": true}] },
+      { "e": "(t-9)(t^2 - 18t + 81) = 0", "q": "Что можно сказать о втором множителе?", "o": [{"t": "Это полный квадрат: $(t-9)^2$, значит все уравнение имеет вид $(t-9)^3 = 0$", "ok": true}] },
+      { "e": "(t-9)^3 = 0 \\Rightarrow t = 9 \\Rightarrow 3^x = 9 \\Rightarrow x = 2", "q": "Теперь перейдем к знаменателю. Как найти его нули?", "o": [{"t": "Приравнять к нулю: $50x^2 + 10x + 0{,}5 = 0$, разделить на 50, получить $x^2 + 0{,}2x + 0{,}01 = 0$", "ok": true}] },
+      { "e": "50x^2 + 10x + 0{,}5 = 0 \\Rightarrow x^2 + 0{,}2x + 0{,}01 = 0 \\Rightarrow (x+0{,}1)^2 = 0 \\Rightarrow x = -0{,}1", "q": "Что означает, что корень $-0{,}1$ — это полный квадрат?", "o": [{"t": "Корень имеет чётную кратность, поэтому при переходе через него знак неравенства не меняется", "ok": true}] },
+      { "e": "\\dfrac{(3^x - 9)^3}{50(x+0{,}1)^2} \\le 0", "q": "Отметьте точки на числовой оси и расставьте знаки.", "o": [{"t": "Точка $-0{,}1$ выколота (знак не меняется); точка $2$ закрашена. Нужны промежутки со знаком минус.", "ok": true, "axis": {"points": [{ "x": 0, "label": "", "type": "hidden" }, { "x": 1, "label": "-0{,}1", "type": "open", "mark": "!" }, { "x": 2, "label": "2", "type": "closed" }, { "x": 3, "label": "", "type": "hidden" }],"intervals": [{ "from": 0, "to": 1, "color": "ok", "label": "+", "arc": true, "shade": true }, { "from": 1, "to": 2, "color": "ok", "label": "+", "arc": true, "shade": true }, { "from": 2, "to": 3, "color": "bad", "label": "-", "arc": true }]}}] },
+      { "e": "x \\in (-\\infty;\\ -0{,}1) \\cup (-0{,}1;\\ 2]", "q": "END" }
+    ]
+  },
+  {
+    "id": 900008, "n": "008", "s": "01 · ДРОБНО-ПОКАЗАТЕЛЬНЫЕ", "d": "hard",
+    "t": "Решите неравенство: \\( \\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0 \\).",
+    "c": "Решите неравенство: \\( \\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0 \\).",
+    "a": "Ответ: \\( x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty) \\).", "ap": "x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty)",
+    "ch": [
+      { "e": "\\dfrac{27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1}{50x^2 + 50x + 12{,}5} \\ge 0", "q": "С чего начнем решение?", "o": [{"t": "Приравняем числитель к нулю, чтобы найти его корни", "ok": true}] },
+      { "e": "27^{x+1} - 3\\cdot 9^{x+1} + 3^{x+2} - 1 = 0", "q": "Преобразуем первое слагаемое. Раскладываем степень с хвостом.", "o": [{"t": "$27^{x+1} = 27^x \\cdot 27^1 = 3^{3x} \\cdot 27$", "ok": true}] },
+      { "e": "3^{3x} \\cdot 27 - 3\\cdot 9^{x+1} + 3^{x+2} - 1 = 0", "q": "Преобразуем второе слагаемое. Раскладываем степень с хвостом.", "o": [{"t": "$3\\cdot 9^{x+1} = 3 \\cdot 9^x \\cdot 9^1 = 3 \\cdot 3^{2x} \\cdot 9 = 27 \\cdot 3^{2x}$", "ok": true}] },
+      { "e": "3^{3x} \\cdot 27 - 27 \\cdot 3^{2x} + 3^{x+2} - 1 = 0", "q": "Преобразуем третье слагаемое. Раскладываем степень с хвостом.", "o": [{"t": "$3^{x+2} = 3^x \\cdot 3^2 = 9 \\cdot 3^x$", "ok": true}] },
+      { "e": "27 \\cdot 3^{3x} - 27 \\cdot 3^{2x} + 9 \\cdot 3^x - 1 = 0", "q": "Сделаем замену переменной \\(t = 3^x\\).", "o": [{"t": "$t = 3^x$", "ok": true}] },
+      { "e": "27t^3 - 27t^2 + 9t - 1 = 0", "q": "Найдем корень кубического уравнения по схеме Горнера. Подбором проверяем делители свободного члена. Подходит \\( t = \\frac{1}{3} \\).", "o": [{"t": "Заполняем таблицу:\n\n$\\begin{array}{c|cccc}\n & 27 & -27 & 9 & -1 \\\\\n\\hline\n\\frac{1}{3} & 27 & -18 & 3 & 0\n\\end{array}$\n\nПолучили остаток 0 и коэффициенты квадратного трехчлена: $27t^2 - 18t + 3$.", "ok": true}] },
+      { "e": "(t - \\frac{1}{3})(27t^2 - 18t + 3) = 0", "q": "Упростим квадратный трехчлен, разделив на 3: \\( 9t^2 - 6t + 1 = 0 \\).", "o": [{"t": "$(3t - 1)^2 = 0 \\Rightarrow t = \\frac{1}{3}$", "ok": true}] },
+      { "e": "(t - \\frac{1}{3}) \\cdot (3t - 1)^2 = 0", "q": "Возвращаемся к переменной \\(x\\).", "o": [{"t": "$3^x = \\frac{1}{3} \\Rightarrow 3^x = 3^{-1} \\Rightarrow x = -1$", "ok": true}] },
+      { "e": "50x^2 + 50x + 12{,}5 = 0", "q": "Теперь найдем нули знаменателя. Для удобства разделим на 50.", "o": [{"t": "$x^2 + x + 0{,}25 = 0$", "ok": true}] },
+      { "e": "x^2 + x + 0{,}25 = 0", "q": "Свернем по формуле квадрата суммы.", "o": [{"t": "$(x + 0{,}5)^2 = 0 \\Rightarrow x = -0{,}5$", "ok": true}] },
+      { "e": "\\dfrac{(3^x - 3^{-1})^3}{50(x+0{,}5)^2} \\ge 0", "q": "Переходим к методу интервалов. Корень \\(-1\\) имеет нечетную кратность (знак меняется), корень \\(-0{,}5\\) имеет четную кратность (знак не меняется). Точка \\(-1\\) закрашена, \\(-0{,}5\\) выколота.", "o": [{"t": "Ответ: \\(x \\in [-1; -0{,}5) \\cup (-0{,}5; +\\infty)\\)", "ok": true, "axis": {"points": [{ "x": 0, "label": "", "type": "hidden" }, { "x": 1, "label": "-1", "type": "closed" }, { "x": 2, "label": "-0{,}5", "type": "open", "mark": "!" }, { "x": 3, "label": "", "type": "hidden" }],"intervals": [{ "from": 0, "to": 1, "color": "bad", "label": "-", "arc": true }, { "from": 1, "to": 2, "color": "ok", "label": "+", "arc": true, "shade": true }, { "from": 2, "to": 3, "color": "ok", "label": "+", "arc": true, "shade": true }]}}] },
+      { "e": "x \\in [-1;\\ -0{,}5) \\cup (-0{,}5;\\ +\\infty)", "q": "END" }
+    ]
+  }
+]
+</script>
+<script type="application/json" id="seed-state">{}</script>
+
+<script>
+(function(){
+  'use strict';
+
+  const $ = id => document.getElementById(id);
+  const H = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const DF = {basic:'базовый', medium:'средний', hard:'сложный'};
+
+  let T = [], S = {};
+  let fl = {sec:'', st:'all', df:'', q:''};
+  let shown = 12, cur = null, ch = null, si = 0, err = 0, hist = [], ord = [], lock = 0;
+
+  function persistTasks(){ try { localStorage.setItem('ineq.v2.tasks', JSON.stringify(T)); } catch(e) {} }
+  function sv() { try { localStorage.setItem('ineq.v2.s', JSON.stringify(S)); } catch(e) {} }
+  function correctOption(step){ return (step && Array.isArray(step.o) ? step.o.find(o=>o && o.ok) : null) || null; }
+  function g(id) { return S[id] || (S[id] = {}); }
+  function showErr(e) { console.error(e); alert('Ошибка: ' + (e.message || e)); }
+
+  function loadSeed() {
+    try {
+      const raw = $('seed').textContent;
+      const embedded = JSON.parse(raw);
+      const seedEl = $('seed');
+      const isSnapshot = seedEl && seedEl.dataset.snapshot === '1';
+      
+      if (isSnapshot) {
+        // Если открыт сохраненный файл, принудительно сбрасываем старую память браузера
+        localStorage.removeItem('ineq.v2.tasks');
+        localStorage.removeItem('ineq.v2.s');
+        T = embedded;
+        try {
+           const stRaw = $('seed-state')?.textContent;
+           if (stRaw && stRaw !== '{}') S = JSON.parse(stRaw);
+           else S = {};
+        } catch(e) { S = {}; }
+      } else {
+        // Обычный режим: берем из памяти, если есть
+        let saved = null;
+        try { saved = JSON.parse(localStorage.getItem('ineq.v2.tasks') || 'null'); } catch(e) {}
+        T = Array.isArray(saved) && saved.length ? saved : embedded;
+        try { S = JSON.parse(localStorage.getItem('ineq.v2.s')) || {}; } catch(e) { S = {}; }
+      }
+    } catch(e) { T = []; showErr(e); }
+    T.sort((a,b) => String(a.n||'').localeCompare(String(b.n||''), 'ru', {numeric:true}));
+  }
+
+  function tx(el, n) {
+    n = n || 0;
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([el]).catch(e => console.warn('MathJax', e));
+    } else if (n < 80) setTimeout(() => tx(el, n + 1), 250);
+  }
+
+  function SEC() {
+    return [...new Set(T.map(t => t.s))].sort((a,b)=>String(a).localeCompare(String(b),'ru',{numeric:true}));
+  }
+  function okf(t) {
+    const x = S[t.id] || {};
+    return fl.st === 'all'
+      || (fl.st === 'new'  && !x.done)
+      || (fl.st === 'done' && x.done)
+      || (fl.st === 'hw'   && x.hw)
+      || (fl.st === 'fav'  && x.fav);
+  }
+
+  /* ---------- Список ---------- */
+  function menu() {
+    cur = null;
+    $('app').innerHTML = `
+      <div class="card">
+        <div class="bar">
+          <select id="fSec">
+            <option value="">Все разделы</option>
+            ${SEC().map(s => `<option ${fl.sec===s?'selected':''}>${H(s)}</option>`).join('')}
+          </select>
+          <select id="fDf">
+            <option value="">Любая сложность</option>
+            ${Object.keys(DF).map(k => `<option value="${k}" ${fl.df===k?'selected':''}>${DF[k]}</option>`).join('')}
+          </select>
+          <input id="fQ" placeholder="Поиск по номеру или тексту" value="${H(fl.q)}" style="flex:1;min-width:140px">
+        </div>
+        <div class="bar" id="chips" style="margin:0"></div>
+      </div>
+      <div id="rows"></div>`;
+
+    $('fSec').addEventListener('change', e => { fl.sec = e.target.value; shown = 12; rows(); });
+    $('fDf').addEventListener('change', e => { fl.df = e.target.value; shown = 12; rows(); });
+    $('fQ').addEventListener('input', e => { fl.q = e.target.value.toLowerCase(); shown = 12; rows(); });
+
+    rows();
+  }
+
+  function rows() {
+    const C = [['all','Все'],['new','Не разобраны'],['done','Разобраны'],['hw','ДЗ'],['fav','Избранное']];
+    const cnt = k => {
+      const s = fl.st; fl.st = k;
+      const r = T.filter(okf).length;
+      fl.st = s; return r;
+    };
+    const chips = $('chips');
+    if (chips) {
+      chips.innerHTML = C.map(c =>
+        `<button class="${fl.st===c[0]?'on':''}" data-st="${c[0]}">${c[1]} · ${cnt(c[0])}</button>`
+      ).join('');
+      chips.querySelectorAll('button[data-st]').forEach(b => {
+        b.addEventListener('click', () => { fl.st = b.getAttribute('data-st'); shown = 12; rows(); });
+      });
+    }
+    const L = T.filter(t =>
+      (!fl.sec || t.s === fl.sec) &&
+      (!fl.df  || t.d === fl.df) &&
+      (!fl.q   || ((t.n||'') + ' ' + (t.c||'') + ' ' + (t.s||'')).toLowerCase().includes(fl.q)) &&
+      okf(t)
+    );
+    const rowsEl = $('rows');
+    if (!rowsEl) return;
+    rowsEl.innerHTML = L.slice(0, shown).map(t => {
+      const x = S[t.id] || {};
+      return `<div class="card row ${x.done?'done':''} ${x.hw?'hw':''}">
+        <div class="bar" style="margin:0">
+          <b>№ ${H(t.n)}</b>
+          <span class="tag">${H(t.s)}</span>
+          ${t.ch && t.ch.length ? '<span class="tag" style="color:var(--ok);border-color:var(--ok)">✓ разбор</span>' : ''}
+          <span class="${'d-'+(t.d||'basic')}">● ${DF[t.d] || ''}</span>
+          ${x.done ? '<span class="stk">✓ РАЗОБРАНО</span>' : ''}
+          ${x.hw ? '<span class="meta" style="font-weight:600">ДЗ</span>' : ''}
+        </div>
+        <div class="tx" style="margin:10px 0;font-size:16px">${t.c}</div>
+        <div class="bar" style="margin:0">
+          <button class="pri" data-act="open" data-id="${t.id}">Разбирать</button>
+          <button data-act="fav" data-id="${t.id}">${x.fav?'★':'☆'}</button>
+          <button data-act="hw" data-id="${t.id}">${x.hw?'✓ ДЗ':'+ ДЗ'}</button>
+          <button data-act="edit" data-id="${t.id}" style="margin-left:auto" title="Редактировать">✏️</button>
+          <button data-act="del" data-id="${t.id}" style="color:var(--bad);border-color:var(--bad)" title="Удалить">🗑</button>
+        </div>
+      </div>`;
+    }).join('') || '<div class="card meta">Ничего не найдено</div>';
+    if (L.length > shown) {
+      rowsEl.innerHTML += `<button id="moreBtn" style="width:100%;padding:12px">Показать ещё (${L.length - shown})</button>`;
+      $('moreBtn').addEventListener('click', () => { shown += 12; rows(); });
+    }
+    rowsEl.querySelectorAll('button[data-act]').forEach(b => {
+      b.addEventListener('click', () => {
+        const id = b.getAttribute('data-id');
+        const act = b.getAttribute('data-act');
+        if (act === 'open') openT(id);
+        else if (act === 'edit') editTask(id);
+        else if (act === 'del') delTask(id);
+        else tg(id, act);
+      });
+    });
+    tx(rowsEl);
+  }
+
+  function tg(id, k) {
+    const x = g(id); x[k] = !x[k]; sv();
+    if (cur) view(); else rows();
+  }
+
+  /* ---------- Карточка ---------- */
+  function openT(id) {
+    cur = T.find(t => String(t.id) === String(id));
+    if (!cur) return;
+    ch = Array.isArray(cur.ch) ? JSON.parse(JSON.stringify(cur.ch)) : null;
+    si = 0; err = 0; hist = [];
+    shuf();
+    view();
+  }
+
+  function shuf() {
+    const s = ch && ch[si];
+    ord = s && Array.isArray(s.o) ? s.o.map((_, i) => i).sort(() => Math.random() - .5) : [];
+  }
+
+  function view() {
+    const t = cur, x = g(t.id);
+    $('app').innerHTML = `
+      <div class="card">
+        <div class="bar">
+          <button id="backBtn" class="ghost">← К списку</button>
+          <button id="favBtn">${x.fav?'★':'☆'} Избранное</button>
+          <button id="hwBtn">${x.hw?'✓ ДЗ':'+ ДЗ'}</button>
+          <button id="doneBtn">${x.done?'✓ Разобрано':'Отметить разобранным'}</button>
+          <button id="editBtn" style="margin-left:auto">✏️ Редактировать</button>
+          <button id="delBtn" style="color:var(--bad);border-color:var(--bad)">🗑 Удалить</button>
+        </div>
+        <b>№ ${H(t.n)}</b> <span class="tag">${H(t.s)}</span>
+        <div class="tx" style="font-size:1.1em;margin-top:12px">${t.t}</div>
+      </div>
+      <div id="ch"></div>`;
+    $('backBtn').addEventListener('click', menu);
+    $('favBtn').addEventListener('click', () => tg(t.id,'fav'));
+    $('hwBtn').addEventListener('click', () => tg(t.id,'hw'));
+    $('doneBtn').addEventListener('click', () => tg(t.id,'done'));
+    $('editBtn').addEventListener('click', () => editTask(t.id));
+    $('delBtn').addEventListener('click', () => delTask(t.id));
+    chain();
+    tx($('app'));
+  }
+
+  function chain() {
+    const el = $('ch');
+    if (!el) return;
+    if (!ch) {
+      el.innerHTML = '<div class="card"><p>Разбора пока нет. Нажмите «Загрузить JSON» и вставьте разбор.</p></div>';
+      return;
+    }
+    si = Math.max(0, Math.min(si, ch.length - 1));
+    const s = ch[si], fin = String(s.q||'').toUpperCase() === 'END';
+    const chosen = correctOption(s);
+    const answer = chosen ? chosen.t : '';
+    const axis = chosen && chosen.axis;
+    const total = ch.length;
+    
+    let varName = 'x';
+    if (s.q) {
+        const match = s.q.match(/\$([a-zA-Z])\$/);
+        if (match) varName = match[1];
+    }
+    
+    let body = '';
+    if (fin) {
+      body = `<div class="card">
+        <b style="color:var(--ok)">✓ Ответ получен</b>
+        <div class="tx" style="font-size:1.15em;margin-top:8px">${H(cur.a || s.e || '')}</div>
+        <div class="meta" style="margin-top:8px">Ошибок: ${err}</div>
+        <div class="bar" style="margin-top:12px">
+          <button class="pri" id="redoBtn">Сначала</button>
+          <button id="nextBtn">Следующее задание →</button>
+        </div>
+      </div>`;
+    } else {
+      body = `<div class="card">
+        ${s.q ? `<p class="q">${H(s.q)}</p>` : ''}
+        ${answer ? `<div class="solution-answer">${H(answer)}</div>` : '<div class="meta">Для этого шага в JSON не найдено поле правильного ответа.</div>'}
+        ${axis ? `<div class="axwrap solution-axis">${axisSvg(axis, varName)}</div>` : ''}
+      </div>`;
+    }
+    
+    el.innerHTML = `
+      <div class="card step-navigator">
+        <div class="step-head">
+          <button id="prevStep" ${si===0?'disabled':''}>← Назад</button>
+          <b>Шаг ${si+1} из ${total}</b>
+          <button id="nextStep" ${si>=total-1?'disabled':''}>Вперёд →</button>
+        </div>
+        <input id="stepSlider" aria-label="Шаг решения" type="range" min="0" max="${total-1}" step="1" value="${si}">
+        <div class="step-scale"><span>Начало</span><span>${fin?'Ответ':'Можно перемещаться по шагам'}</span><span>Конец</span></div>
+      </div>
+      <div class="card">
+        <div class="meta">Промежуточное выражение</div>
+        <div class="eq">$$${H(s.e || '')}$$</div>
+      </div>
+      ${body}`;
+      
+    $('prevStep').addEventListener('click',()=>goStep(si-1));
+    $('nextStep').addEventListener('click',()=>goStep(si+1));
+    $('stepSlider').addEventListener('change',e=>goStep(Number(e.target.value)));
+    if ($('redoBtn')) $('redoBtn').addEventListener('click', redo);
+    if ($('nextBtn')) $('nextBtn').addEventListener('click', nxt);
+    tx(el);
+  }
+
+  function goStep(n) {
+    if (!ch) return;
+    si = Math.max(0, Math.min(ch.length-1, Number(n)||0));
+    chain();
+    $('stepSlider')?.focus({preventScroll:true});
+  }
+
+  function redo() { si = 0; err = 0; hist = []; shuf(); chain(); }
+  function nxt() {
+    const i = T.findIndex(t => String(t.id) === String(cur.id));
+    const n = T[i + 1];
+    if (n) openT(n.id); else menu();
+  }
+
+  /* ---------- ИДЕАЛЬНАЯ ОСЬ (Плавные дуги, без загибов на бесконечностях) ---------- */
+  function axisSvg(axis, varName = 'x') {
+    if (!axis) return '';
+    const W = 600, Hh = 100, PAD = 40;
+    const pts = (axis.points || []).slice().sort((a,b) => a.x - b.x);
+    const n = Math.max(pts.length, 1);
+    const span = W - 2 * PAD;
+    
+    const xs = pts.map((_, i) => n === 1 ? W/2 : PAD + i * span / (n - 1));
+    const y = 70; 
+    const hillHeight = 25; // Высота дуги
+
+    const X = p => { const i = pts.indexOf(p); return xs[i] != null ? xs[i] : W/2; };
+    const xInf = d => {
+      if (d === '-Infinity' || d === -Infinity) return 10;
+      if (d === '+Infinity' || d ===  Infinity) return W - 10;
+      const p = pts.find(q => q.x === d);
+      return p ? X(p) : W/2;
+    };
+
+    let svg = `<svg class="axsvg" viewBox="0 0 ${W} ${Hh}" xmlns="http://www.w3.org/2000/svg">`;
+
+    // 1. Дуги и штриховка
+    for (const it of (axis.intervals || [])) {
+      const isLeftInf = (it.from === '-Infinity' || it.from === -Infinity);
+      const isRightInf = (it.to === '+Infinity' || it.to === Infinity);
+      
+      const x1 = isLeftInf ? 10 : xInf(it.from);
+      const x2 = isRightInf ? W - 10 : xInf(it.to);
+
+      if (Math.abs(x2 - x1) < 1 && !isLeftInf && !isRightInf) continue;
+
+      let col = 'var(--axis)';
+      if (it.color === 'ok' || it.label === '+') col = 'var(--ok)';
+      if (it.color === 'bad' || it.label === '-') col = 'var(--bad)';
+
+      let curvePath = "";
+      
+      // Строим кривую в зависимости от того, уходит ли она в бесконечность
+      if (isLeftInf && isRightInf) {
+        curvePath = `M ${x1} ${y - hillHeight} L ${x2} ${y - hillHeight}`;
+      } else if (isLeftInf) {
+        curvePath = `M ${x1} ${y - hillHeight} C ${x1 + 50} ${y - hillHeight}, ${x2 - 40} ${y - hillHeight}, ${x2} ${y}`;
+      } else if (isRightInf) {
+        curvePath = `M ${x1} ${y} C ${x1 + 40} ${y - hillHeight}, ${x2 - 50} ${y - hillHeight}, ${x2} ${y - hillHeight}`;
+      } else {
+        const dist = Math.abs(x2 - x1);
+        const c1x = x1 + dist * 0.2;
+        const c2x = x1 + dist * 0.8;
+        curvePath = `M ${x1} ${y} C ${c1x} ${y - hillHeight}, ${c2x} ${y - hillHeight}, ${x2} ${y}`;
+      }
+
+      // Штриховка (заливка под кривой)
+      if (it.shade) {
+        if (isLeftInf && isRightInf) {
+          svg += `<rect x="${x1}" y="${y - hillHeight}" width="${x2 - x1}" height="${hillHeight}" fill="${col}" opacity=".15"/>`;
+        } else if (isLeftInf) {
+          svg += `<path d="${curvePath} L ${x2} ${y} L ${x1} ${y} Z" fill="${col}" opacity=".15"/>`;
+        } else if (isRightInf) {
+          svg += `<path d="${curvePath} L ${x2} ${y} L ${x1} ${y} Z" fill="${col}" opacity=".15"/>`;
+        } else {
+          svg += `<path d="${curvePath} L ${x2} ${y} L ${x1} ${y} Z" fill="${col}" opacity=".15"/>`;
+        }
+      }
+
+      // Сама кривая
+      if (it.arc) {
+        svg += `<path d="${curvePath}" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" opacity=".8"/>`;
+      }
+
+      // Знак + или -
+      if (it.label) {
+        let labelX = (x1 + x2) / 2;
+        if (isLeftInf) labelX = x2 - 50;
+        if (isRightInf) labelX = x1 + 50;
+        if (isLeftInf && isRightInf) labelX = W/2;
+        svg += `<text x="${labelX}" y="${y - hillHeight - 2}" text-anchor="middle" font-weight="bold" font-size="18" fill="${col}">${it.label}</text>`;
+      }
+    }
+
+    // 2. Ось
+    svg += `<line x1="10" y1="${y}" x2="${W-10}" y2="${y}" stroke="var(--axis)" stroke-width="2"/>`;
+    svg += `<polygon points="${W-10},${y} ${W-18},${y-4} ${W-18},${y+4}" fill="var(--axis)"/>`;
+    svg += `<text class="ax-label" x="${W-24}" y="${y-8}">${varName}</text>`;
+
+    // 3. Точки и подписи
+    pts.forEach((p, i) => {
+      const cx = xs[i];
+      if (p.type === 'hidden') return;
+
+      if (p.type === 'closed') {
+        svg += `<circle cx="${cx}" cy="${y}" r="6" fill="var(--axis)"/>`;
+      } else {
+        svg += `<circle cx="${cx}" cy="${y}" r="5" fill="var(--cd)" stroke="var(--axis)" stroke-width="2.5"/>`;
+      }
+      
+      if (p.mark === '!') {
+        svg += `<text x="${cx}" y="${y-12}" text-anchor="middle" font-weight="bold" font-size="20" fill="var(--bad)">!</text>`;
+      }
+
+      const label = String(p.label || p.x);
+      const isLatex = /[\\^_$]|frac|log|sqrt/.test(label);
+      const lw = 200, lh = 26;
+      const cxClamp = Math.max(lw/2, Math.min(W - lw/2, cx));
+      
+      if (isLatex) {
+        svg += `<foreignObject x="${cxClamp-lw/2}" y="${y+8}" width="${lw}" height="${lh}">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="text-align:center;font:14px system-ui,sans-serif;color:var(--tx);line-height:1.1">\\(${label}\\)</div>
+        </foreignObject>`;
+      } else {
+        svg += `<text class="ax-num" x="${cx}" y="${y+22}" text-anchor="middle">${H(label)}</text>`;
+      }
+    });
+
+    svg += `</svg>`;
+    return svg;
+  }
+
+  /* ---------- Экспорт / Импорт / Печать ---------- */
+  function getFiltered() {
+    return T.filter(t =>
+      (!fl.sec || t.s === fl.sec) &&
+      (!fl.df  || t.d === fl.df) &&
+      (!fl.q   || ((t.n||'') + ' ' + (t.c||'') + ' ' + (t.s||'')).toLowerCase().includes(fl.q)) &&
+      okf(t)
+    );
+  }
+
+  function exportJson() {
+    const data = getFiltered();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'inequalities_export.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function saveWholeApp(){
+    try {
+      const doc = document.documentElement.cloneNode(true);
+      
+      // Удаляем отрендеренный MathJax, чтобы не раздувать файл
+      doc.querySelectorAll('mjx-container').forEach(el => el.remove());
+      
+      // Обновляем данные задач
+      const seed = doc.querySelector('#seed');
+      if (seed) {
+        seed.textContent = JSON.stringify(T).replace(/</g, '\\u003c');
+        seed.dataset.snapshot = '1';
+      }
+      
+      // Обновляем состояние
+      let state = doc.querySelector('#seed-state');
+      if (!state) {
+        state = doc.createElement('script');
+        state.type = 'application/json';
+        state.id = 'seed-state';
+        if (seed) seed.after(state);
+      }
+      state.textContent = JSON.stringify(S).replace(/</g, '\\u003c');
+      
+      // Очищаем контейнер приложения, чтобы при открытии файла был чистый список
+      const app = doc.querySelector('#app');
+      if (app) app.innerHTML = '';
+      
+      // Восстанавливаем выбранный шрифт
+      const bodyClass = document.body.className;
+      const clonedBody = doc.querySelector('body');
+      if (clonedBody) clonedBody.className = bodyClass;
+      
+      const html = '<!doctype html>\n' + doc.outerHTML;
+      const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'НЕРАВЕНСТВА_сохранённое_приложение.html';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } catch (e) {
+      alert('Ошибка сохранения: ' + e.message);
+      console.error(e);
+    }
+  }
+
+  function importJson() {
+    const root = $('modalRoot');
+    root.innerHTML = `
+      <div class="modal" id="importModal">
+        <div class="modal-box import-box" style="max-width:760px">
+          <h3>📥 Загрузка заданий JSON</h3>
+          <p>Можно вставить содержимое JSON в поле или выбрать файл на устройстве.</p>
+          <label style="display:block;margin:10px 0 6px;font-weight:700">Выбрать файл JSON</label>
+          <input id="jsonFile" type="file" accept=".json,application/json,text/json" style="width:100%">
+          <label style="display:block;margin:14px 0 6px;font-weight:700">Или вставить JSON</label>
+          <div id="jsonPaste" contenteditable="true" role="textbox" aria-multiline="true" style="width:100%;box-sizing:border-box;font-family:monospace;white-space:pre;overflow:auto;border:1px solid var(--br);border-radius:10px;padding:12px;min-height:180px;max-height:320px;background:var(--bg);color:var(--tx);outline:none"></div>
+          <div class="bar" style="justify-content:flex-end;margin-top:12px">
+            <button type="button" class="ghost" id="cancelImport">Отмена</button>
+            <button type="button" class="pri" id="applyImport" style="font-size:16px;font-weight:800;padding:13px 22px;min-width:230px">✓ ПОДТВЕРДИТЬ И ЗАГРУЗИТЬ</button>
+          </div>
+          <div id="importHint" style="font-size:13px;color:var(--mu);margin-top:8px">При совпадении id существующее задание будет обновлено, остальные добавятся.</div>
+        </div>
+      </div>`;
+    $('cancelImport').addEventListener('click', () => { root.innerHTML = ''; });
+    $('jsonFile').addEventListener('change', async ev => {
+      const file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      try {
+        $('jsonPaste').textContent = await file.text();
+        $('importHint').textContent = '✓ Файл выбран: ' + file.name + '. Теперь нажмите большую кнопку «ПОДТВЕРДИТЬ И ЗАГРУЗИТЬ» внизу окна.';
+        $('applyImport').scrollIntoView({block:'nearest'});
+      } catch(e) {
+        $('importHint').textContent = 'Не удалось прочитать файл: ' + (e.message || e);
+      }
+    });
+    $('applyImport').addEventListener('click', () => {
+      const raw = $('jsonPaste').innerText.trim();
+      if (!raw) { alert('Вставьте JSON или выберите файл.'); return; }
+      let data;
+      try { data = JSON.parse(raw); }
+      catch(e) { alert('Ошибка JSON: ' + e.message); return; }
+      const arr = Array.isArray(data) ? data : [data];
+      let added = 0, upd = 0, skipped = 0;
+      for (const source of arr) {
+        if (!source || typeof source !== 'object' || Array.isArray(source)) { skipped++; continue; }
+        const t = Object.assign({}, source);
+        if (!t.id) t.id = Date.now() + Math.floor(Math.random()*100000) + added;
+        if (!t.n) t.n = String(T.length + added + 1).padStart(3,'0');
+        if (!t.s) t.s = 'Без раздела';
+        if (!t.d) t.d = 'basic';
+        if (!t.c) t.c = t.t || '';
+        const i = T.findIndex(x => String(x.id) === String(t.id));
+        if (i >= 0) { T[i] = Object.assign({}, T[i], t); upd++; }
+        else { T.push(t); added++; }
+      }
+      T.sort((a,b) => String(a.n||'').localeCompare(String(b.n||''), 'ru', {numeric:true}));
+      persistTasks();
+      root.innerHTML = '';
+      alert('Добавлено: ' + added + ', обновлено: ' + upd + (skipped ? ', пропущено: ' + skipped : ''));
+      menu();
+    });
+  }
+
+  function printTasks() {
+    const items = getFiltered();
+    if (!items.length) { alert('Нет задач для печати (отфильтровано).'); return; }
+    const root = $('modalRoot');
+    root.innerHTML = `
+      <div class="modal" id="printModal">
+        <div class="modal-box print-options">
+          <h3>🖨 Настройки печати</h3>
+          <div class="print-fields">
+            <label><input type="checkbox" id="pfCondition" checked> Условия задач</label>
+            <label><input type="checkbox" id="pfSteps" checked> Пошаговый разбор</label>
+            <label><input type="checkbox" id="pfAnswer" checked> Ответы</label>
+          </div>
+          <div class="print-task-head"><b>Какие задачи печатать?</b><span>
+            <button type="button" class="ghost" id="printAll">Выбрать все</button>
+            <button type="button" class="ghost" id="printNone">Снять все</button></span>
+          </div>
+          <div class="print-task-list">${items.map((t,i)=>`<label><input type="checkbox" class="print-task-check" data-index="${i}" checked> № ${H(t.n)} (${H(t.s)})</label>`).join('')}</div>
+          <div class="bar">
+            <button type="button" class="ghost" id="cancelPrint">Отмена</button>
+            <button type="button" class="primary" id="confirmPrint">Печатать</button>
+          </div>
+        </div>
+      </div>`;
+    const close = () => { root.innerHTML=''; };
+    $('cancelPrint').onclick = close;
+    $('printAll').onclick = () => root.querySelectorAll('.print-task-check').forEach(x=>x.checked=true);
+    $('printNone').onclick = () => root.querySelectorAll('.print-task-check').forEach(x=>x.checked=false);
+    $('confirmPrint').onclick = () => {
+      const fields = {
+        condition: $('pfCondition').checked,
+        steps: $('pfSteps').checked,
+        answer: $('pfAnswer').checked
+      };
+      const selected = [...root.querySelectorAll('.print-task-check')]
+        .filter(x=>x.checked).map(x=>items[Number(x.dataset.index)]);
+      if (!selected.length) { alert('Отметьте хотя бы одну задачу.'); return; }
+      const printWin = window.open('about:blank', '_blank');
+      if (!printWin) {
+        alert('Браузер заблокировал окно печати. Разрешите всплывающие окна для этой страницы и нажмите «Печатать» ещё раз.');
+        return;
+      }
+      close();
+      buildPrintWindow(selected, fields, printWin);
+    };
+  }
+
+  function buildPrintWindow(items, fields, win) {
+    let html = `<!doctype html><html lang="ru"><head>
+      <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>Печать задач</title>
+      <style>
+        :root { --tx: #1e293b; --axis: #475569; --ok: #10b981; --bad: #ef4444; --cd: #fff; --mu: #64748b; }
+        @page{size:auto;margin:16mm}
+        *{box-sizing:border-box}
+        body{font-family:Arial,"DejaVu Sans",sans-serif;padding:0;line-height:1.5;color:#111;background:#fff;font-size:12pt}
+        h3{margin:0 0 9px;font-size:15pt;font-weight:700;break-after:avoid}
+        .task{margin:0 0 25px;break-inside:avoid;page-break-inside:avoid}
+        .condition{margin:7px 0 10px}
+        .steps{margin:8px 0 0;padding:0 0 0 18px;border-left:1px solid #bbb;color:#222}
+        .step{margin:4px 0;break-inside:avoid}
+        .step .expr{margin:2px 0}
+        .ans{margin-top:10px;font-weight:600;color:#0645ad}
+        mjx-container{color:#111!important;max-width:100%;overflow:visible!important}
+        mjx-container[display="true"]{display:block;text-align:left!important;margin:7px 0!important}
+        
+        /* Стили для осей в печати */
+        .axwrap { overflow: hidden; padding: 2px 0; margin-top: 10px; max-width: 500px; }
+        .axsvg { display: block; width: 100%; height: 100px; }
+        .ax-label { font: 13px system-ui, sans-serif; fill: var(--mu); }
+        .ax-num { font: 14px ui-monospace, monospace; fill: var(--tx); font-weight: bold; }
+
+        @media print{body{padding:0}.task{break-inside:avoid}}
+      </style>
+      <script>
+        window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$','$$'],['\\\\[','\\\\]']]},svg:{fontCache:'none'},startup:{typeset:false}};
+      <\/script>
+      <script async id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"><\/script>
+    </head><body>`;
+
+    for (const t of items) {
+        html += `<section class="task"><h3>№ ${H(t.n)} (${H(t.s)})</h3>`;
+        if (fields.condition) html += `<div class="condition">${t.t || ''}</div>`;
+        if (fields.steps && t.ch && t.ch.length) {
+          html += '<div class="steps"><b>Шаги:</b>';
+          t.ch.forEach((step, idx) => {
+            if (step.q === 'END') return;
+            const good = (step.o || []).find(o => o.ok);
+            const answerText = good ? good.t : '';
+            html += `<div class="step"><div class="expr">${idx+1}. $${step.e || ''}$</div>`;
+            if (step.q) html += `<div>${step.q}</div>`;
+            if (answerText) html += `<div>${answerText}</div>`;
+            
+            // Добавляем ось, если она есть на этом шаге
+            if (good && good.axis) {
+                let vName = 'x';
+                if (step.q) {
+                    const m = step.q.match(/\$([a-zA-Z])\$/);
+                    if (m) vName = m[1];
+                }
+                html += `<div class="axwrap">${axisSvg(good.axis, vName)}</div>`;
+            }
+            
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+        if (fields.answer) html += `<div class="ans">${t.a || ''}</div>`;
+        html += '</section>';
+    }
+    html += `<script>
+      (function(){
+        let started=false;
+        async function renderAndPrint(){
+          if(started) return; started=true;
+          try {
+            if(window.MathJax){
+              if(window.MathJax.startup && window.MathJax.startup.promise) await window.MathJax.startup.promise;
+              if(window.MathJax.typesetPromise) await window.MathJax.typesetPromise();
+            }
+            if(document.fonts && document.fonts.ready) await document.fonts.ready;
+          } catch(e){ console.error('Ошибка отрисовки формул:',e); }
+          setTimeout(()=>window.print(),300);
+        }
+        const mj=document.getElementById('MathJax-script');
+        if(mj){mj.addEventListener('load',renderAndPrint,{once:true});mj.addEventListener('error',()=>setTimeout(()=>window.print(),500),{once:true});}
+        window.addEventListener('load',()=>{if(window.MathJax && window.MathJax.typesetPromise) renderAndPrint();else setTimeout(renderAndPrint,1800);},{once:true});
+      })();
+    <\/script></body></html>`;
+
+    if (!win || win.closed) { alert('Не удалось открыть окно печати. Разрешите всплывающие окна для этой страницы.'); return; }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  }
+
+  /* ---------- Редактирование/Добавление/Удаление ---------- */
+  function openModal(taskObj, isNew, originalId) {
+    $('modalRoot').innerHTML = `
+      <div class="modal" id="editModal">
+        <div class="modal-box">
+          <h3>${isNew ? '➕ Новая задача' : '✏️ Редактирование задачи №'+H(taskObj.n)}</h3>
+          <textarea id="editJson" spellcheck="false">${JSON.stringify(taskObj, null, 2)}</textarea>
+          <div class="bar">
+            <button class="ghost" id="cancelEdit">Отмена</button>
+            <button class="pri" id="saveEdit">Сохранить</button>
+          </div>
+        </div>
+      </div>`;
+    
+    $('cancelEdit').addEventListener('click', () => { $('modalRoot').innerHTML = ''; });
+    $('saveEdit').addEventListener('click', () => {
+      try {
+        const parsed = JSON.parse($('editJson').value);
+        if (!parsed || typeof parsed !== 'object' || !parsed.id) throw new Error('Некорректный объект (нет id)');
+        
+        if (isNew) {
+          T.push(parsed);
+        } else {
+          const idx = T.findIndex(x => String(x.id) === String(originalId));
+          if (idx >= 0) T[idx] = parsed;
+        }
+        T.sort((a,b) => String(a.n||'').localeCompare(String(b.n||''), 'ru', {numeric:true}));
+        persistTasks();
+        $('modalRoot').innerHTML = '';
+        
+        if (cur && String(cur.id) === String(parsed.id)) {
+          cur = parsed;
+          ch = Array.isArray(cur.ch) ? JSON.parse(JSON.stringify(cur.ch)) : null;
+          si = 0; err = 0; hist = [];
+          shuf();
+          view();
+        } else {
+          menu();
+        }
+      } catch(e) {
+        alert('Ошибка JSON: ' + e.message);
+      }
+    });
+  }
+
+  function editTask(id) {
+    const t = T.find(x => String(x.id) === String(id));
+    if (!t) return;
+    openModal(t, false, id);
+  }
+
+  function addTask() {
+    const newTask = {
+      id: Date.now(),
+      n: String(T.length + 1).padStart(3,'0'),
+      s: "Без раздела",
+      d: "basic",
+      t: "Условие в LaTeX",
+      c: "Условие для карточки",
+      a: "Ответ",
+      ap: "Ответ (LaTeX)",
+      ch: []
+    };
+    openModal(newTask, true, null);
+  }
+
+  function delTask(id) {
+    if (!confirm('Вы уверены, что хотите удалить эту задачу?')) return;
+    T = T.filter(x => String(x.id) !== String(id));
+    persistTasks(); delete S[id]; sv();
+    if (cur && String(cur.id) === String(id)) menu();
+    else rows();
+  }
+
+  /* ---------- Теория ---------- */
+  function theory() {
+    cur = null;
+    $('app').innerHTML = `
+      <div class="card" style="background:transparent;border:none;box-shadow:none;padding:0">
+        <button id="backBtn2" style="margin-bottom:16px">← К списку</button>
+        <h2 style="margin-top:0;font-size:24px;letter-spacing:-0.5px">📚 Шпаргалка по неравенствам</h2>
+        <div class="theory-grid">
+          
+          <div class="sticker st-blue">
+            <h3>📈 Метод интервалов</h3>
+            <p>Приводим к виду $\\frac{P(x)}{Q(x)} \\gtrless 0$. Находим нули числителя (закрашенные при $\\le, \\ge$, выколотые при $<, >$) и знаменателя (всегда выколотые).</p>
+            <p>Кратные корни чётной кратности не меняют знак — отмечаем их восклицательным знаком <b>!</b>.</p>
+            <div class="ex">$\\frac{(x-1)^2}{(x+2)(x-4)} \\le 0$</div>
+          </div>
+
+          <div class="sticker st-green">
+            <h3>🌱 Показательные</h3>
+            <p>Если $a > 1$: $a^{f} \\gtrless a^{g} \\iff f \\gtrless g$.</p>
+            <p>Если $0 < a < 1$: знак неравенства <b>меняется</b> на противоположный.</p>
+            <p>Правую часть $b > 0$ записываем как $a^{\\log_a b}$, чтобы сбросить основания.</p>
+            <div class="ex">$2^x < 8 \\Rightarrow 2^x < 2^3 \\Rightarrow x < 3$</div>
+          </div>
+
+          <div class="sticker st-purple">
+            <h3>📝 Логарифмические</h3>
+            <p>ОДЗ: аргумент $>0$, основание $>0, \\ne 1$.</p>
+            <p>При $a > 1$ знак сохраняется, при $0 < a < 1$ — меняется.</p>
+            <div class="ex">$\\log_2(x-1) < 3 \\Rightarrow 0 < x-1 < 8$</div>
+          </div>
+
+          <div class="sticker st-orange">
+            <h3>📐 Иррациональные</h3>
+            <p>$\\sqrt{A} < B \\iff \\begin{cases} A \\ge 0 \\\\ B > 0 \\\\ A < B^2 \\end{cases}$</p>
+            <p>$\\sqrt{A} > B \\iff \\left[ \\begin{array}{l} B < 0 \\\\ \\begin{cases} B \\ge 0 \\\\ A > B^2 \\end{cases} \\end{array} \\right.$</p>
+          </div>
+
+          <div class="sticker st-red">
+            <h3>⚖️ Системы и совокупности</h3>
+            <p><b>Система</b> — это <b>И</b> (пересечение): $\\begin{cases} A > 0 \\\\ B < 0 \\end{cases}$</p>
+            <p><b>Совокупность</b> — это <b>ИЛИ</b> (объединение): $\\left[ \\begin{array}{l} A = 0 \\\\ B = 0 \\end{array} \\right.$</p>
+            <p>ОДЗ добавляем к системе под общую фигурную скобку.</p>
+          </div>
+
+          <div class="sticker st-cyan">
+            <h3>🎯 Оценка знака</h3>
+            <p>Часто удобно подставить $x=0$ или $x \\to +\\infty$, чтобы определить знак на крайнем правом промежутке.</p>
+            <p>Помните: при переходе через корень <b>нечётной</b> кратности знак меняется, чётной — нет.</p>
+          </div>
+
+        </div>
+      </div>
+    `;
+    $('backBtn2').addEventListener('click', menu);
+    tx($('app'));
+  }
+
+  function th() {
+    const r = document.documentElement;
+    const d = r.dataset.theme || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+    r.dataset.theme = d === 'dark' ? 'light' : 'dark';
+  }
+
+  /* ---------- Старт ---------- */
+  function init() {
+    loadSeed();
+    if(!localStorage.getItem('ineq.v2.tasks')) persistTasks();
+    
+    const savedSize = localStorage.getItem('ineq.v2.fontSize');
+    if (savedSize) {
+      document.body.className = 'text-' + savedSize;
+      $('fontSizeSel').value = savedSize;
+    }
+
+    $('btnTheory').addEventListener('click', theory);
+    $('btnAdd').addEventListener('click', addTask);
+    $('btnImport').addEventListener('click', importJson);
+    $('btnExport').addEventListener('click', exportJson);
+    $('btnSaveApp').addEventListener('click', saveWholeApp);
+    $('btnPrint').addEventListener('click', printTasks);
+    $('btnTheme').addEventListener('click', th);
+    
+    $('fontSizeSel').addEventListener('change', e => {
+        document.body.className = 'text-' + e.target.value;
+        localStorage.setItem('ineq.v2.fontSize', e.target.value);
+    });
+    
+    menu();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Метод координат — тренажёр по стереометрии</title>
+<script>
+window.__mj = {ready:false, failed:false};
+window.MathJax = {
+  tex: {inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']]},
+  svg: {fontCache: 'global'},
+  startup: {typeset: false, pageReady() { return MathJax.startup.defaultPageReady().then(() => { window.__mj.ready = true; if (window.typesetAll) window.typesetAll(); }); }}
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" onerror="window.__mj.failed=true; if(window.typesetAll) window.typesetAll();"></script>
+<style>
+:root{
+  --bg:#12161f; --panel:#1a202c; --panel2:#222a38; --line:#2e3849; --text:#e6ebf2; --muted:#93a0b4;
+  --acc:#4fa3ff; --ok:#2ecc71; --bad:#ff5c6c; --warn:#ffb84d;
+  --edge:#5ec8ff; --axis:#f5d142; --pt:#ffffff; --upt:#ffa94d; --kpt:#38e08c;
+  --face:rgba(94,200,255,.05); --sec:rgba(56,224,140,.28); --secs:#38e08c;
+  --field:#0f141c; --chip:#2a3446;
+}
+body.light{
+  --bg:#f3f5f9; --panel:#ffffff; --panel2:#f0f3f8; --line:#d8dee8; --text:#1b2330; --muted:#5d6b80;
+  --acc:#1f6fe0; --ok:#1d9d55; --bad:#d93448; --warn:#c77700;
+  --edge:#1769c9; --axis:#c99a00; --pt:#1b2330; --upt:#d9670b; --kpt:#119a55;
+  --face:rgba(23,105,201,.05); --sec:rgba(17,154,85,.22); --secs:#119a55;
+  --field:#ffffff; --chip:#e8edf5;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+#app{display:grid;grid-template-columns:46% 54%;grid-template-rows:minmax(0,1fr);height:100vh}
+#app>div{min-height:0}
+#left{position:relative;display:flex;flex-direction:column;border-right:1px solid var(--line);min-width:0}
+#toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 10px;background:var(--panel);border-bottom:1px solid var(--line)}
+#toolbar .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+button{font:inherit;color:var(--text);background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--acc)}
+button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+button.danger{background:var(--bad);color:#fff;border-color:var(--bad)}
+button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
+button.okb{background:var(--ok);color:#fff;border-color:var(--ok)}
+button:disabled{opacity:.45;cursor:default}
+button.sm{padding:2px 8px;font-size:13px;border-radius:6px}
+input[type=range]{width:110px}
+#stage{position:relative;flex:1;min-height:300px;overflow:hidden;user-select:none}
+#svg{position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none}
+#svg.drag{cursor:grabbing}
+#draw{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#draw.active{pointer-events:auto;cursor:crosshair}
+#sceneCap{position:absolute;left:10px;bottom:8px;right:10px;font-size:13px;color:var(--muted);pointer-events:none}
+#hint3d{position:absolute;right:10px;top:8px;font-size:12px;color:var(--muted);pointer-events:none}
+.ptHit{cursor:pointer}
+#right{display:flex;flex-direction:column;min-width:0;background:var(--panel)}
+#tabs{display:flex;gap:4px;padding:8px 10px 0;border-bottom:1px solid var(--line);background:var(--panel)}
+#tabs button{border-radius:8px 8px 0 0;border-bottom:none;background:transparent}
+#tabs button.on{background:var(--panel2);color:var(--text);border-color:var(--line)}
+.pane{flex:1;overflow:auto;padding:14px 16px 40px;display:none;background:var(--panel2)}
+.pane.on{display:block}
+h2{font-size:18px;margin:4px 0 10px}
+h3{font-size:16px;margin:14px 0 8px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0}
+.mod{margin:14px 0 4px;font-weight:700;color:var(--acc);font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.skill{cursor:pointer}
+.skill .hd{display:flex;align-items:center;gap:10px}
+.skill .num{flex:none;width:28px;height:28px;border-radius:50%;background:var(--chip);display:grid;place-items:center;font-weight:700;font-size:13px}
+.skill .num.full{background:var(--ok);color:#fff}
+.skill .ttl{flex:1;font-weight:600}
+.skill .prog{font-size:12px;color:var(--muted)}
+.skill .body{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px;cursor:default}
+.theory{background:var(--panel2);border-radius:8px;padding:8px 10px;font-size:14px}
+.tlist{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.titem{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:8px;background:var(--panel2);cursor:pointer}
+.titem:hover{outline:1px solid var(--acc)}
+.titem .st{width:18px;text-align:center}
+.titem .tt{flex:1;font-size:14px}
+.badge{font-size:11px;padding:1px 6px;border-radius:10px;background:var(--chip);color:var(--muted)}
+.sticker{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;background:var(--ok);color:#fff;font-weight:700}
+.cond{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:10px;padding:10px 12px}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:10px 0}
+.step.done{border-color:color-mix(in srgb,var(--ok) 55%,var(--line))}
+.step.cur{border-color:var(--acc);box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 25%,transparent)}
+.step .sh{display:flex;align-items:center;gap:8px;font-weight:700}
+.step .sn{width:24px;height:24px;border-radius:50%;background:var(--chip);display:grid;place-items:center;font-size:12px}
+.step.done .sn{background:var(--ok);color:#fff}
+.step.cur .sn{background:var(--acc);color:#fff}
+.rows{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.rows.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}
+.row{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.row .rl{min-width:64px;margin-right:4px}
+.row input{width:76px;padding:4px 6px;border-radius:6px;border:1px solid var(--line);background:var(--field);color:var(--text);font:inherit;text-align:center}
+.row input.okf{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--field))}
+.row input.badf{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--field))}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.hint{background:color-mix(in srgb,var(--warn) 12%,var(--panel));border:1px solid color-mix(in srgb,var(--warn) 40%,var(--line));border-radius:8px;padding:6px 10px;margin-top:8px;font-size:14px}
+.sol{background:color-mix(in srgb,var(--ok) 10%,var(--panel));border:1px solid color-mix(in srgb,var(--ok) 40%,var(--line));border-radius:8px;padding:6px 10px;margin-top:8px;font-size:14px;overflow-x:auto}
+.msg{margin-top:6px;font-size:14px}
+.msg.bad{color:var(--bad)} .msg.ok{color:var(--ok)}
+.choice{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.choice button{text-align:left}
+.choice button.right{background:var(--ok);color:#fff}
+.choice button.wrong{background:var(--bad);color:#fff}
+.checks{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.checks label{background:var(--chip);border-radius:8px;padding:3px 9px;cursor:pointer;border:1px solid var(--line)}
+.checks label.okf{border-color:var(--ok)} .checks label.badf{border-color:var(--bad)}
+.form{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center}
+.form input,.form select,select,textarea,input[type=text]{background:var(--field);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:4px 6px;font:inherit}
+.form input{width:110px}
+.plist{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
+.pchip{background:var(--chip);border:1px solid var(--line);border-radius:14px;padding:2px 9px;font-size:14px;cursor:pointer}
+.pchip.user{border-color:var(--upt)} .pchip.k{border-color:var(--kpt)}
+.pchip.sel{background:var(--acc);color:#fff}
+.slotrow{display:flex;align-items:center;gap:8px;margin:4px 0}
+.slotrow.act{font-weight:700}
+.slotrow .lab{flex:1}
+#err{position:fixed;left:10px;bottom:10px;max-width:60%;background:var(--bad);color:#fff;padding:8px 12px;border-radius:8px;display:none;z-index:50;font-size:13px;white-space:pre-wrap}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.9em;margin:0 2px}
+.fr>span:first-child{border-bottom:1px solid currentColor;padding:0 2px}
+.sq{border-top:1px solid currentColor;padding-left:1px}
+.vec{position:relative;display:inline-block}
+.vec:before{content:"→";position:absolute;top:-.85em;left:0;right:0;text-align:center;font-size:.8em}
+mjx-container{font-size:105%!important}
+.kbd{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+textarea{width:100%;min-height:120px;font:12px monospace}
+@media (max-width:900px){#app{grid-template-columns:1fr;grid-template-rows:55vh auto;height:auto}#right{min-height:60vh}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="left">
+    <div id="toolbar">
+      <button id="bReset" title="Вернуть вид">⟲ Вид</button>
+      <button id="bZm" title="Уменьшить">−</button>
+      <input id="zoom" type="range" min="0.4" max="3" step="0.05" value="1">
+      <button id="bZp" title="Увеличить">+</button>
+      <span class="sep"></span>
+      <button id="bAxes" class="on">Оси</button>
+      <button id="bLabels" class="on">Подписи</button>
+      <span class="sep"></span>
+      <button id="bDraw" title="Режим маркера (Esc — выйти)">✏ Рисовать</button>
+      <button id="bUndo" title="Отменить (Ctrl+Z)">↶</button>
+      <button id="bClear" title="Стереть рисунок (нажать дважды)">🗑 Стереть</button>
+      <span class="sep"></span>
+      <button id="bTheme" title="Тема">☀</button>
+    </div>
+    <div id="stage">
+      <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+      <canvas id="draw"></canvas>
+      <div id="hint3d">вращение — зажать мышь · колесо — масштаб</div>
+      <div id="sceneCap"></div>
+    </div>
+  </div>
+  <div id="right">
+    <div id="tabs">
+      <button data-tab="skills" class="on">Навыки</button>
+      <button data-tab="solve">Решение</button>
+      <button data-tab="scene">Сцена</button>
+      <button data-tab="data">Сохранение</button>
+    </div>
+    <div id="pane-skills" class="pane on"></div>
+    <div id="pane-solve" class="pane"></div>
+    <div id="pane-scene" class="pane"></div>
+    <div id="pane-data" class="pane"></div>
+  </div>
+</div>
+<div id="err"></div>
+
+<script>
+'use strict';
+/* =========================================================
+   1. ТОЧНАЯ АРИФМЕТИКА: дроби и корни
+   ========================================================= */
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=a%b;a=b;b=t}return a}
+function lcm(a,b){return a/gcd(a,b)*b}
+function safe(n){if(!Number.isSafeInteger(n))throw new Error('Слишком большие числа');return n}
+class Frac{
+  constructor(n,d=1){
+    if(d===0)throw new Error('Деление на ноль');
+    if(!Number.isInteger(n)||!Number.isInteger(d))throw new Error('Frac: не целое');
+    if(d<0){n=-n;d=-d}
+    const g=gcd(n,d)||1; this.n=safe(n/g)+0; this.d=safe(d/g);
+  }
+  static of(x){return x instanceof Frac?x:new Frac(x,1)}
+  add(o){o=Frac.of(o);return new Frac(this.n*o.d+o.n*this.d,this.d*o.d)}
+  sub(o){o=Frac.of(o);return new Frac(this.n*o.d-o.n*this.d,this.d*o.d)}
+  mul(o){o=Frac.of(o);return new Frac(this.n*o.n,this.d*o.d)}
+  div(o){o=Frac.of(o);if(o.n===0)throw new Error('Деление на ноль');return new Frac(this.n*o.d,this.d*o.n)}
+  neg(){return new Frac(-this.n,this.d)}
+  abs(){return new Frac(Math.abs(this.n),this.d)}
+  isZero(){return this.n===0}
+  sign(){return Math.sign(this.n)}
+  eq(o){o=Frac.of(o);return this.n===o.n&&this.d===o.d}
+  val(){return this.n/this.d}
+  tex(){return this.d===1?String(this.n):(this.n<0?'-':'')+'\\frac{'+Math.abs(this.n)+'}{'+this.d+'}'}
+  txt(){return this.d===1?String(this.n):this.n+'/'+this.d}
+}
+const F0=new Frac(0),F1=new Frac(1);
+// n = k^2 * m, m без квадратов
+function sqf(n){let k=1,m=n;for(let p=2;p*p<=m;p++){while(m%(p*p)===0){m/=p*p;k*=p}}return [k,m]}
+// Число вида q·√r (q — дробь, r — свободно от квадратов). Упрощение корней — в конструкторе.
+class Surd{
+  constructor(q,r=1){
+    q=Frac.of(q);
+    if(q.isZero()){this.q=F0;this.r=1;return}
+    if(!(r>0)||!Number.isInteger(r))throw new Error('Surd: плохой корень');
+    const [k,m]=sqf(r); this.q=q.mul(k); this.r=m;
+  }
+  static of(x){return x instanceof Surd?x:new Surd(Frac.of(x),1)}
+  static sqrt(f){f=Frac.of(f);if(f.n<0)throw new Error('Корень из отрицательного');if(f.isZero())return new Surd(F0);return new Surd(new Frac(1,f.d),f.n*f.d)}
+  mul(o){o=Surd.of(o);return new Surd(this.q.mul(o.q),safe(this.r*o.r))}
+  div(o){o=Surd.of(o);if(o.isZero())throw new Error('Деление на ноль');return new Surd(this.q.div(o.q).div(o.r),safe(this.r*o.r))}
+  add(o){o=Surd.of(o);if(o.isZero())return this;if(this.isZero())return o;if(o.r!==this.r)throw new Error('MIXED');return new Surd(this.q.add(o.q),this.r)}
+  sub(o){return this.add(Surd.of(o).neg())}
+  neg(){return new Surd(this.q.neg(),this.r)}
+  abs(){return new Surd(this.q.abs(),this.r)}
+  isZero(){return this.q.isZero()}
+  sign(){return this.q.sign()}
+  sq(){return this.q.mul(this.q).mul(this.r)}
+  val(){return this.q.val()*Math.sqrt(this.r)}
+  eq(o){o=Surd.of(o);return this.r===o.r&&this.q.eq(o.q)}
+  tex(){
+    if(this.r===1)return this.q.tex();
+    const n=this.q.n,d=this.q.d,a=Math.abs(n),s=n<0?'-':'';
+    const num=(a===1?'':a)+'\\sqrt{'+this.r+'}';
+    return d===1?s+num:s+'\\frac{'+num+'}{'+d+'}';
+  }
+  txt(){
+    if(this.r===1)return this.q.txt();
+    const n=this.q.n,d=this.q.d,a=Math.abs(n);
+    return (n<0?'-':'')+(a===1?'':a)+'√'+this.r+(d>1?'/'+d:'');
+  }
+}
+// "3", "3/2", "1.5", "√2", "2√3", "√6/2", "sqrt(2)"
+function parseSurd(str){
+  let s=String(str||'').replace(/\s+/g,'').replace(/,/g,'.').replace(/sqrt/gi,'√').replace(/\*/g,'');
+  const m=s.match(/^(\d+(?:\.\d+)?)?(?:√\(?(\d+)\)?)?(?:\/(\d+))?$/);
+  if(!m||(!m[1]&&!m[2]))return null;
+  let c=F1;
+  if(m[1]){const [i,f='']=m[1].split('.');c=new Frac(parseInt(i+f,10),Math.pow(10,f.length))}
+  if(m[3])c=c.div(parseInt(m[3],10));
+  return new Surd(c,m[2]?parseInt(m[2],10):1);
+}
+// Разбор ввода ученика -> число (для проверки). Поддерживает дроби, √, sqrt, скобки, ^.
+function parseNum(str){
+  let s=String(str).trim().replace(/[−–—]/g,'-').replace(/,/g,'.').replace(/[·×]/g,'*').replace(/sqrt/gi,'√').replace(/\s+/g,'');
+  if(!s)return NaN;
+  let i=0;
+  const peek=()=>s[i];
+  function expr(){let v=term();while(peek()==='+'||peek()==='-'){const op=s[i++];const t=term();v=op==='+'?v+t:v-t}return v}
+  function term(){let v=unary();for(;;){const c=peek();if(c==='*'){i++;v*=unary()}else if(c==='/'){i++;v/=unary()}else if(c==='√'||c==='('||(c&&/[0-9.]/.test(c))){v*=unary()}else break}return v}
+  function unary(){if(peek()==='-'){i++;return -unary()}if(peek()==='+'){i++;return unary()}return power()}
+  function power(){const b=atom();if(peek()==='^'){i++;return Math.pow(b,unary())}return b}
+  function atom(){const c=peek();
+    if(c==='('){i++;const v=expr();if(s[i]!==')')throw 0;i++;return v}
+    if(c==='√'){i++;return Math.sqrt(power())}
+    const m=s.slice(i).match(/^\d*\.?\d+/);if(!m)throw 0;i+=m[0].length;return parseFloat(m[0])}
+  try{const v=expr();if(i!==s.length)return NaN;return v}catch(e){return NaN}
+}
+const near=(a,b)=>Math.abs(a-b)<=1e-7*Math.max(1,Math.abs(a),Math.abs(b));
+
+/* =========================================================
+   2. ВЕКТОРЫ (работают и с Frac, и с Surd)
+   ========================================================= */
+const V={
+  sub:(a,b)=>a.map((x,i)=>x.sub(b[i])),
+  add:(a,b)=>a.map((x,i)=>x.add(b[i])),
+  scale:(a,k)=>a.map(x=>x.mul(k)),
+  cross:(u,v)=>[u[1].mul(v[2]).sub(u[2].mul(v[1])),u[2].mul(v[0]).sub(u[0].mul(v[2])),u[0].mul(v[1]).sub(u[1].mul(v[0]))],
+  dot:(u,v)=>u[0].mul(v[0]).add(u[1].mul(v[1])).add(u[2].mul(v[2])),
+  isZero:u=>u.every(x=>x.isZero()),
+  eq:(a,b)=>a.every((x,i)=>x.eq(b[i])),
+};
+const Vf={
+  sub:(a,b)=>a.map((x,i)=>x-b[i]), add:(a,b)=>a.map((x,i)=>x+b[i]), mul:(a,k)=>a.map(x=>x*k),
+  dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  cross:(u,v)=>[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],
+  len:a=>Math.hypot(a[0],a[1],a[2]), norm:a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return a.map(x=>x/l)}
+};
+
+/* =========================================================
+   3. ТЕКСТ / TeX
+   ========================================================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function splitName(n){const m=String(n).match(/^(\D*?)(\d+)$/);return m?[m[1],m[2]]:[String(n),'']}
+function tn(n){const [a,b]=splitName(n);return b?a+'_{'+b+'}':a}
+const T=x=>'\\('+x+'\\)';
+function pn(s){const t=s.tex();return (s.sign()<0)?'\\left('+t+'\\right)':t}
+function sqTex(s){return (s.sign()<0||s.r!==1||s.q.d!==1)?'\\left('+s.tex()+'\\right)^2':s.tex()+'^2'}
+function tv(v){return '\\left('+v.map(s=>s.tex()).join(';\\ ')+'\\right)'}
+function vn(a,b){return '\\overrightarrow{'+tn(a)+tn(b)+'}'}
+function texEq(arr,vars=['x','y','z','']){
+  let out='';
+  arr.forEach((s,i)=>{
+    if(s.isZero())return;
+    const first=out==='';const neg=s.sign()<0;const a=s.abs();
+    let body=(vars[i]&&a.eq(Surd.of(1)))?'':a.tex();
+    if(vars[i]&&a.r!==1&&a.q.d!==1)body='\\left('+body+'\\right)';
+    out+=(first?(neg?'-':''):(neg?' - ':' + '))+body+vars[i];
+  });
+  return (out||'0')+' = 0';
+}
+function niceScale(arr){
+  const nz=arr.filter(s=>!s.isZero());if(!nz.length)return arr.slice();
+  const rads=[...new Set(nz.map(s=>s.r))];
+  let best=null;
+  for(const m of [1,...rads]){
+    const sc=arr.map(s=>s.mul(new Surd(1,m)));
+    const irr=sc.filter(s=>!s.isZero()&&s.r!==1).length;
+    if(!best||irr<best.irr)best={sc,irr};
+  }
+  let sc=best.sc,L=1,G=0;
+  sc.forEach(s=>{if(!s.isZero())L=lcm(L,s.q.d)});
+  sc=sc.map(s=>s.mul(L));
+  sc.forEach(s=>{if(!s.isZero())G=gcd(G,s.q.n)});
+  sc=sc.map(s=>s.div(G||1));
+  const f=sc.slice(0,3).find(s=>!s.isZero())||sc.find(s=>!s.isZero());
+  if(f&&f.sign()<0)sc=sc.map(s=>s.neg());
+  return sc;
+}
+// Известные значения тригонометрии
+function angleName(c,fn){
+  const tab=[[1,0],[Math.sqrt(3)/2,30],[Math.SQRT2/2,45],[0.5,60],[0,90]];
+  for(const [v,deg] of tab){if(near(c,v)){const d=fn==='sin'?90-deg:deg;return d+'^\\circ'}}
+  return null;
+}
+
+/* =========================================================
+   4. ТЕЛА
+   ========================================================= */
+const BODY={
+  box:{title:'Прямоугольный параллелепипед',short:'параллелепипед',params:[['a','AB'],['b','AD'],['c','AA₁']],def:{a:'3',b:'4',c:'5'}},
+  prism3:{title:'Правильная треугольная призма',short:'треугольная призма',params:[['a','сторона основания'],['h','боковое ребро']],def:{a:'2',h:'3'}},
+  prism6:{title:'Правильная шестиугольная призма',short:'шестиугольная призма',params:[['a','сторона основания'],['h','боковое ребро']],def:{a:'1',h:'2'}},
+  pyr3:{title:'Правильная треугольная пирамида',short:'треугольная пирамида',pyr:true,params:[['a','сторона основания']],def:{a:'6',hmode:'h',h:'4',l:'5'}},
+  pyr4:{title:'Правильная четырёхугольная пирамида',short:'четырёхугольная пирамида',pyr:true,params:[['a','сторона основания']],def:{a:'2',hmode:'l',h:'2',l:'2'}},
+  pyr6:{title:'Правильная шестиугольная пирамида',short:'шестиугольная пирамида',pyr:true,params:[['a','сторона основания']],def:{a:'1',hmode:'l',h:'2',l:'2'}},
+};
+const R3=new Surd(1,3);
+const fr=(n,d=1)=>new Frac(n,d);
+const TRI=[[0,0],[1,0],[fr(1,2),fr(1,2)]];
+const SQ=[[0,0],[1,0],[1,1],[0,1]];
+const HEX=[[0,0],[1,0],[fr(3,2),fr(1,2)],[1,1],[0,1],[fr(-1,2),fr(1,2)]];
+function bodyHeight(type,p,a){
+  if(p.hmode==='l'){
+    const l=parseSurd(p.l);if(!l||l.sign()<=0)throw new Error('Неверное боковое ребро');
+    const k={pyr3:fr(1,3),pyr4:fr(1,2),pyr6:F1}[type];
+    const h2=l.sq().sub(a.sq().mul(k));
+    if(h2.sign()<=0)throw new Error('Боковое ребро слишком короткое: высота не существует');
+    return Surd.sqrt(h2);
+  }
+  const h=parseSurd(p.h);if(!h||h.sign()<=0)throw new Error('Неверная высота');return h;
+}
+function buildBody(spec){
+  const t=spec.type,p=spec.params||{};const info=BODY[t];if(!info)throw new Error('Неизвестное тело');
+  const a=parseSurd(p.a);if(!a||a.sign()<=0)throw new Error('Неверная сторона a');
+  let U,base,names,apex=null,top=true,h;
+  if(t==='box'){const b=parseSurd(p.b),c=parseSurd(p.c);if(!b||!c||b.sign()<=0||c.sign()<=0)throw new Error('Неверные размеры');U=[a,b,c];base=SQ;names='ABCD';h=c}
+  else if(t==='prism3'||t==='prism6'){h=parseSurd(p.h);if(!h||h.sign()<=0)throw new Error('Неверное боковое ребро');U=[a,a.mul(R3),h];base=t==='prism3'?TRI:HEX;names=t==='prism3'?'ABC':'ABCDEF'}
+  else{h=bodyHeight(t,p,a);top=false;
+    if(t==='pyr4'){U=[a,a,h];base=SQ;names='ABCD';apex=[fr(1,2),fr(1,2)]}
+    else{U=[a,a.mul(R3),h];base=t==='pyr3'?TRI:HEX;names=t==='pyr3'?'ABC':'ABCDEF';apex=t==='pyr3'?[fr(1,2),fr(1,6)]:[fr(1,2),fr(1,2)]}
+  }
+  const rad=U.map(u=>u.r),uq=U.map(u=>u.q);
+  const mk=(x,y,z)=>[Frac.of(x).mul(uq[0]),Frac.of(y).mul(uq[1]),Frac.of(z).mul(uq[2])];
+  const verts=[];
+  names.split('').forEach((n,i)=>verts.push({name:n,p:mk(base[i][0],base[i][1],0)}));
+  const N=names.length,faces=[];
+  faces.push(names.split(''));
+  if(top){
+    names.split('').forEach((n,i)=>verts.push({name:n+'1',p:mk(base[i][0],base[i][1],1)}));
+    faces.push(names.split('').map(n=>n+'1'));
+    for(let i=0;i<N;i++){const a1=names[i],b1=names[(i+1)%N];faces.push([a1,b1,b1+'1',a1+'1'])}
+  }else{
+    verts.unshift({name:'S',p:mk(apex[0],apex[1],1)});
+    for(let i=0;i<N;i++){const a1=names[i],b1=names[(i+1)%N];faces.push(['S',a1,b1])}
+  }
+  const ek=new Set(),edges=[];
+  faces.forEach(f=>f.forEach((v,i)=>{const w=f[(i+1)%f.length];const k=[v,w].sort().join('|');if(!ek.has(k)){ek.add(k);edges.push([v,w])}}));
+  // сортировка рёбер: сначала основание
+  return {type:t,info,a,h,U,rad,verts,faces,edges,params:p,
+    fullName: t==='box'?'ABCDA_1B_1C_1D_1':(top?(names+names.split('').map(n=>n+'_1').join('')):'S'+names)};
+}
+function bodyDesc(b){
+  const p=b.params,t=b.type;
+  if(t==='box')return `Дан прямоугольный параллелепипед ${T('ABCDA_1B_1C_1D_1')}, ${T('AB='+b.U[0].tex())}, ${T('AD='+b.U[1].tex())}, ${T('AA_1='+b.U[2].tex())}.`;
+  if(t==='prism3'||t==='prism6')return `Дана ${b.info.title.toLowerCase()} ${T(b.fullName)}, сторона основания ${T(b.a.tex())}, боковое ребро ${T(b.h.tex())}.`;
+  const tail=p.hmode==='l'?`боковое ребро ${T(parseSurd(p.l).tex())}`:`высота ${T(b.h.tex())}`;
+  return `Дана ${b.info.title.toLowerCase()} ${T(b.fullName)}, сторона основания ${T(b.a.tex())}, ${tail}.`;
+}
+function axesDesc(b){
+  const t=b.type;
+  if(t==='box')return `Система координат: начало в точке ${T('A')}, ось ${T('Ox')} — вдоль ${T('AB')}, ${T('Oy')} — вдоль ${T('AD')}, ${T('Oz')} — вдоль ${T('AA_1')}.`;
+  if(t==='pyr4')return `Система координат: начало в точке ${T('A')}, ось ${T('Ox')} — вдоль ${T('AB')}, ${T('Oy')} — вдоль ${T('AD')}, ${T('Oz')} — вверх, перпендикулярно основанию.`;
+  return `Система координат: начало в точке ${T('A')}, ось ${T('Ox')} — вдоль ${T('AB')}, ${T('Oy')} — в плоскости основания перпендикулярно ${T('AB')}, ${T('Oz')} — вверх, перпендикулярно основанию.`;
+}
+
+/* =========================================================
+   5. СЦЕНА: тело + точки пользователя
+   ========================================================= */
+function buildScene(spec){
+  const body=buildBody(spec.body);
+  const map=new Map(),order=[];
+  body.verts.forEach(v=>{map.set(v.name,{name:v.name,p:v.p,kind:'vertex'});order.push(v.name)});
+  const sc={spec,body,rad:body.rad,map,order,
+    get(n){const p=map.get(n);if(!p)throw new Error('Нет точки '+n);return p},
+    has(n){return map.has(n)},
+    find(p){for(const n of order){if(V.eq(map.get(n).p,p))return map.get(n)}return null}};
+  (spec.points||[]).forEach(d=>{
+    if(map.has(d.name))throw new Error('Имя занято: '+d.name);
+    let p;
+    if(d.kind==='ratio'){const A=sc.get(d.A).p,B=sc.get(d.B).p;const k=new Frac(d.m,d.m+d.n);p=A.map((x,i)=>x.add(B[i].sub(x).mul(k)))}
+    else if(d.kind==='center'){const ps=d.of.map(n=>sc.get(n).p);p=[0,1,2].map(i=>ps.reduce((s,q)=>s.add(q[i]),F0).div(ps.length))}
+    else throw new Error('Неизвестный тип точки');
+    map.set(d.name,{name:d.name,p,kind:'user',def:d});order.push(d.name);
+  });
+  return sc;
+}
+function realOf(sc,p){return p.map((c,i)=>new Surd(c,sc.rad[i]))}
+function fOf(sc,p){return p.map((c,i)=>c.val()*Math.sqrt(sc.rad[i]))}
+function pointDesc(sc,n){
+  const P=sc.get(n);if(P.kind!=='user')return '';const d=P.def;
+  if(d.kind==='ratio'){
+    const seg=tn(d.A)+tn(d.B);
+    const isEdge=sc.body.edges.some(e=>(e[0]===d.A&&e[1]===d.B)||(e[0]===d.B&&e[1]===d.A));
+    if(d.m===d.n)return `${T(tn(n))} — середина ${isEdge?'ребра':'отрезка'} ${T(seg)}.`;
+    return `Точка ${T(tn(n))} лежит на ${isEdge?'ребре':'отрезке'} ${T(seg)}, ${T(tn(d.A)+tn(n)+':'+tn(n)+tn(d.B)+'='+d.m+':'+d.n)}.`;
+  }
+  if(d.kind==='center'){
+    const f=d.of.map(tn).join('');
+    return d.of.length===2?`${T(tn(n))} — середина отрезка ${T(f)}.`:`${T(tn(n))} — центр ${isFace(sc,d.of)?'грани':'многоугольника'} ${T(f)}.`;
+  }
+  return '';
+}
+function isFace(sc,names){return sc.body.faces.some(f=>f.length===names.length&&names.every(x=>f.includes(x)))}
+function depsOf(sc,names){
+  const out=[],seen=new Set();
+  const visit=n=>{if(seen.has(n))return;seen.add(n);const P=sc.map.get(n);if(!P||P.kind!=='user')return;
+    const d=P.def;(d.kind==='ratio'?[d.A,d.B]:d.of).forEach(visit);out.push(n)};
+  names.forEach(visit);return out;
+}
+
+/* =========================================================
+   6. ПЛОСКОСТИ И СЕЧЕНИЯ (точно)
+   ========================================================= */
+function redPlane3(P,Q,R){const n=V.cross(V.sub(Q,P),V.sub(R,P));return {n,d:V.dot(n,P).neg()}}
+function eqFromNormal(nR,P){return niceScale([...nR,V.dot(nR,P).neg()])}
+function evalEq(eq,X){return V.dot(eq.slice(0,3),X).add(eq[3])}
+function redFromEq(sc,eq){
+  const arr=[0,1,2].map(i=>eq[i].mul(new Surd(1,sc.rad[i]))).concat([eq[3]]);
+  const f=arr.find(s=>!s.isZero());if(!f)throw new Error('Пустая плоскость');
+  const r0=f.r;const q=arr.map(s=>{const t=s.div(new Surd(1,r0));if(!t.isZero()&&t.r!==1)throw new Error('MIXED');return t.q});
+  return {n:q.slice(0,3),d:q[3]};
+}
+function sectionExact(sc,pl){
+  const F=p=>V.dot(pl.n,p).add(pl.d);
+  const vals={};sc.body.verts.forEach(v=>vals[v.name]=F(v.p));
+  const pts=[];
+  const push=(p,edge)=>{if(!pts.some(q=>V.eq(q.p,p)))pts.push({p,edge})};
+  sc.body.verts.forEach(v=>{if(vals[v.name].isZero())push(v.p,null)});
+  sc.body.edges.forEach(([a,b])=>{const fa=vals[a],fb=vals[b];
+    if(fa.sign()*fb.sign()<0){const k=fa.div(fa.sub(fb));const pa=sc.get(a).p,pb=sc.get(b).p;
+      push(pa.map((x,i)=>x.add(pb[i].sub(x).mul(k))),{a,b,k})}});
+  if(pts.length>=3){
+    const fl=pts.map(q=>fOf(sc,q.p));const c=[0,1,2].map(i=>fl.reduce((s,x)=>s+x[i],0)/fl.length);
+    const N=Vf.norm(pl.n.map((x,i)=>x.val()/Math.sqrt(sc.rad[i])));
+    let e1=null;for(const x of fl){const d=Vf.sub(x,c);if(Vf.len(d)>1e-9){e1=Vf.norm(d);break}}
+    const e2=Vf.cross(N,e1);
+    pts.forEach((q,i)=>{const d=Vf.sub(fl[i],c);q.ang=Math.atan2(Vf.dot(d,e2),Vf.dot(d,e1))});
+    pts.sort((a,b)=>a.ang-b.ang);
+  }
+  pts.forEach(q=>{const ex=sc.find(q.p);q.name=ex?ex.name:null});
+  return {pts,vals};
+}
+
+/* =========================================================
+   7. КОНТЕКСТ ЗАДАЧИ И СТРОИТЕЛИ ШАГОВ
+   ========================================================= */
+class Ctx{
+  constructor(sc,slots){this.sc=sc;this.s=slots}
+  nm(k){return this.s[k]}
+  t(k){return tn(this.s[k])}
+  red(k){return this.sc.get(this.s[k]).p}
+  R(k){return realOf(this.sc,this.red(k))}
+  vec(a,b){return V.sub(this.R(b),this.R(a))}
+  vn(a,b){return vn(this.s[a],this.s[b])}
+  fl(k){return fOf(this.sc,this.red(k))}
+  flR(v){return v.map(s=>s.val())}
+}
+const fld=s=>({v:s.val(),a:s.txt()});
+const COL={v1:'#ff9f43',v2:'#b18cff',n:'#ff5c8a',line:'#ff6bd6',line2:'#4dd9e8',perp:'#ff4757',plane:'#38e08c',plane2:'#ffb84d'};
+
+function coordHint(c,n){
+  const sc=c.sc,P=sc.get(n);
+  if(P.kind==='user'){
+    const d=P.def;
+    if(d.kind==='ratio'){const k=new Frac(d.m,d.m+d.n);
+      return `${T(tn(n)+' = '+tn(d.A)+' + '+k.tex()+'\\cdot'+vn(d.A,d.B))} — точка делит отрезок ${T(tn(d.A)+tn(d.B))} в отношении ${T(d.m+':'+d.n)}, считая от ${T(tn(d.A))}, поэтому берём ${T('\\frac{'+d.m+'}{'+(d.m+d.n)+'}')} вектора.`}
+    return `Координаты центра — среднее арифметическое координат точек ${T(d.of.map(tn).join(',\\ '))}.`;
+  }
+  const b=sc.body;
+  if(n==='S'){return `Вершина ${T('S')} проектируется в центр основания ${T('O')}: ${T('x,y')} — как у ${T('O')}, ${T('z')} — высота пирамиды${b.params.hmode==='l'?' (найдите её по теореме Пифагора из бокового ребра и радиуса описанной окружности основания)':''}.`}
+  if(b.type==='box'||b.type==='pyr4')return `Двигайтесь от ${T('A')} вдоль рёбер: по ${T('Ox')} — длина ${T('AB')}, по ${T('Oy')} — ${T('AD')}, по ${T('Oz')} — ${T('AA_1')}.`;
+  return `В правильном ${b.type.endsWith('3')?'треугольнике':'шестиугольнике'} со стороной ${T('a')} используйте высоту правильного треугольника ${T('\\frac{a\\sqrt3}{2}')} и половину стороны ${T('\\frac a2')}.`;
+}
+function coordSol(c,n){
+  const sc=c.sc,P=sc.get(n),R=realOf(sc,P.p);
+  if(P.kind==='user'&&P.def.kind==='ratio'){const d=P.def,k=new Frac(d.m,d.m+d.n);
+    const A=realOf(sc,sc.get(d.A).p),B=realOf(sc,sc.get(d.B).p);
+    return T(tn(n)+' = '+tn(d.A)+' + '+k.tex()+'\\cdot'+vn(d.A,d.B)+' = '+tv(A)+' + '+k.tex()+'\\cdot'+tv(V.sub(B,A))+' = '+tv(R));}
+  if(P.kind==='user'&&P.def.kind==='center'){return T(tn(n)+tv(R))+' (среднее координат '+T(P.def.of.map(tn).join(',\\ '))+')'}
+  return T(tn(n)+tv(R));
+}
+function stepCoords(c,keys,title){
+  const names=[...new Set(keys.map(k=>c.nm(k)))];
+  return {title:title||'Координаты точек',
+    intro:`Найдите координаты ${names.length>1?'точек':'точки'} ${T(names.map(tn).join(',\\ '))}.`,
+    rows:names.map(n=>({label:T(tn(n)),tuple:true,fields:realOf(c.sc,c.sc.get(n).p).map(fld)})),
+    hints:[axesDesc(c.sc.body),names.map(n=>T(tn(n))+': '+coordHint(c,n)).join('<br>')],
+    sol:names.map(n=>coordSol(c,n)).join('<br>'),
+    ov:names.map(n=>({t:'ring',name:n}))};
+}
+function stepVectors(c,pairs,title,colors){
+  const vs=pairs.map(([a,b])=>c.vec(a,b));
+  return {title:title||'Координаты векторов',
+    intro:`Найдите координаты ${pairs.length>1?'векторов':'вектора'} ${T(pairs.map(([a,b])=>c.vn(a,b)).join(',\\ '))}.`,
+    rows:pairs.map(([a,b],i)=>({label:T(c.vn(a,b)),tuple:true,fields:vs[i].map(fld)})),
+    hints:['Из координат конца вычитаем координаты начала: '+T('\\overrightarrow{PQ}=(x_Q-x_P;\\ y_Q-y_P;\\ z_Q-z_P)'),
+      pairs.map(([a,b])=>{const A=c.R(a),B=c.R(b);return T(c.vn(a,b)+'=\\left('+[0,1,2].map(i=>B[i].tex()+'-'+pn(A[i])).join(';\\ ')+'\\right)')}).join('<br>')],
+    sol:pairs.map(([a,b],i)=>T(c.vn(a,b)+'='+tv(vs[i]))).join('<br>'),
+    ov:pairs.map(([a,b],i)=>({t:'vec',a:c.fl(a),b:c.fl(b),color:(colors||[COL.v1,COL.v2,COL.v1])[i]}))};
+}
+function crossSol(u,v,un,vnm,res){
+  const comp=(i,j)=>'('+pn(u[i])+'\\cdot'+pn(v[j])+')-('+pn(u[j])+'\\cdot'+pn(v[i])+')';
+  return T('\\vec n='+un+'\\times '+vnm+'=\\begin{vmatrix}\\vec i&\\vec j&\\vec k\\\\ '+u.map(s=>s.tex()).join('&')+'\\\\ '+v.map(s=>s.tex()).join('&')+'\\end{vmatrix}')+'<br>'+
+    T('n_x='+comp(1,2)+'='+res[0].tex())+'<br>'+T('n_y='+comp(2,0)+'='+res[1].tex())+'<br>'+T('n_z='+comp(0,1)+'='+res[2].tex())+'<br>'+T('\\vec n='+tv(res));
+}
+function stepCross(c,u,v,un,vnm,fromKey,title){
+  const n=V.cross(u,v);
+  return {title:title||'Вектор нормали — векторное произведение',
+    intro:`Нормаль перпендикулярна обоим векторам: ${T('\\vec n='+un+'\\times '+vnm)}. Вычислите её координаты (без сокращения).`,
+    rows:[{label:T('\\vec n'),tuple:true,fields:n.map(fld)}],
+    hints:['Формула: '+T('\\vec n=(a_2t_3-a_3t_2;\\ a_3t_1-a_1t_3;\\ a_1t_2-a_2t_1)')+', где '+T(un+'=(a_1;a_2;a_3)')+', '+T(vnm+'=(t_1;t_2;t_3)')+'.',
+      T('n_x=('+pn(u[1])+'\\cdot'+pn(v[2])+')-('+pn(u[2])+'\\cdot'+pn(v[1])+')')+',&nbsp; '+T('n_y=('+pn(u[2])+'\\cdot'+pn(v[0])+')-('+pn(u[0])+'\\cdot'+pn(v[2])+')')+',&nbsp; '+T('n_z=('+pn(u[0])+'\\cdot'+pn(v[1])+')-('+pn(u[1])+'\\cdot'+pn(v[0])+')')],
+    sol:crossSol(u,v,un,vnm,n),
+    ov:[{t:'normal',from:c.fl(fromKey),n:n.map(s=>s.val())}],n};
+}
+function stepPlane(c,nR,ptKey,planeTex,extraHint){
+  const P=c.R(ptKey);const eq=eqFromNormal(nR,P);
+  const nn=eq.slice(0,3);
+  const body=nn.map((s,i)=>pn(s)+'(' + ['x','y','z'][i]+'-'+pn(P[i])+')').join('+');
+  return {title:'Уравнение плоскости'+(planeTex?' '+T(planeTex):''),
+    intro:`Составьте уравнение ${T('Ax+By+Cz+D=0')}${planeTex?' плоскости '+T(planeTex):''}. Нормаль можно сократить (и сменить знак) — подойдёт любое пропорциональное уравнение.`,
+    rows:[{form:'eq',prop:true,fields:eq.map(fld)}],
+    hints:[(extraHint?extraHint+'<br>':'')+'Через точку '+T(c.t(ptKey)+tv(P))+' и нормаль '+T('(A;B;C)')+': '+T('A(x-x_0)+B(y-y_0)+C(z-z_0)=0'),
+      'Сокращённая нормаль: '+T(tv(nn))+'. Подставьте: '+T(body+'=0')],
+    sol:T('\\vec n='+tv(nR)+'\\ \\parallel\\ '+tv(nn))+'<br>'+T(body+'=0')+'<br>'+T('\\boxed{'+texEq(eq)+'}'),
+    eq};
+}
+function plane3(c,kP,kQ,kR){
+  const u=c.vec(kP,kQ),v=c.vec(kP,kR),n=V.cross(u,v);
+  const eq=eqFromNormal(n,c.R(kP));
+  return {u,v,n,eq,red:redFromEq(c.sc,eq),name:'('+c.t(kP)+c.t(kQ)+c.t(kR)+')'};
+}
+// шаг «уравнение плоскости через 3 точки» одним блоком (для задач, где это подзадача)
+function stepPlane3(c,kP,kQ,kR,color){
+  const pl=plane3(c,kP,kQ,kR);
+  const s=stepPlane(c,pl.n,kP,pl.name);
+  s.intro=`Составьте уравнение плоскости ${T(pl.name)}. Принимается любое пропорциональное уравнение.`;
+  s.hints=['Алгоритм: векторы '+T(c.vn(kP,kQ))+' и '+T(c.vn(kP,kR))+' → нормаль '+T('\\vec n')+' их векторным произведением → '+T('A(x-x_0)+B(y-y_0)+C(z-z_0)=0')+'. Координаты: '+['P','Q','R'].map((x,i)=>T([kP,kQ,kR].map(k=>c.t(k)+tv(c.R(k)))[i])).join(', '),
+    T(c.vn(kP,kQ)+'='+tv(pl.u))+', '+T(c.vn(kP,kR)+'='+tv(pl.v))+', '+T('\\vec n='+tv(pl.n))].concat(s.hints.slice(1));
+  s.sol=[kP,kQ,kR].map(k=>T(c.t(k)+tv(c.R(k)))).join(', ')+'<br>'+T(c.vn(kP,kQ)+'='+tv(pl.u)+',\\ \\ '+c.vn(kP,kR)+'='+tv(pl.v))+'<br>'+T('\\vec n='+c.vn(kP,kQ)+'\\times'+c.vn(kP,kR)+'='+tv(pl.n))+'<br>'+s.sol;
+  s.ov=[{t:'plane',pl:pl.red,color:color||COL.plane,at:c.fl(kP)}];
+  s.pl=pl;return s;
+}
+function stepCheckZero(c,eq,k){
+  const X=c.R(k);const terms=[0,1,2].map(i=>pn(eq[i])+'\\cdot'+pn(X[i])).join('+')+'+'+pn(eq[3]);
+  return {title:'Проверка',intro:`Подставьте координаты точки ${T(c.t(k))} в найденное уравнение. Чему равна левая часть?`,
+    rows:[{label:'Левая часть =',fields:[fld(evalEq(eq,X))]}],
+    hints:[T(terms)],sol:T(terms+'='+evalEq(eq,X).tex())+' — точка лежит в плоскости, уравнение верное.'};
+}
+function stepDist(c,eq,mk,mtex){
+  const M=c.R(mk);const num=evalEq(eq,M).abs();const den2=eq.slice(0,3).reduce((s,x)=>s.add(x.sq()),F0);const den=Surd.sqrt(den2);const d=num.div(den);
+  const sub='\\left|'+[0,1,2].map(i=>pn(eq[i])+'\\cdot'+pn(M[i])).join('+')+'+'+pn(eq[3])+'\\right|';
+  const dn='\\sqrt{'+eq.slice(0,3).map(sqTex).join('+')+'}';
+  return {title:'Расстояние по формуле',
+    intro:`${T('\\rho(M,\\alpha)=\\dfrac{|Ax_0+By_0+Cz_0+D|}{\\sqrt{A^2+B^2+C^2}}')}. Используем уравнение ${T(texEq(eq))} и точку ${T((mtex||c.t(mk))+tv(M))}.`,
+    rows:[{label:'Числитель',fields:[fld(num)]},{label:'Знаменатель',fields:[fld(den)]},{label:T('\\rho='),fields:[fld(d)]}],
+    hints:['Числитель: '+T(sub),'Знаменатель: '+T(dn)+'. Не забудьте избавиться от иррациональности в знаменателе.'],
+    sol:T('\\rho=\\dfrac{'+sub+'}{'+dn+'}=\\dfrac{'+num.tex()+'}{'+den.tex()+'}=\\boxed{'+d.tex()+'}'),
+    d};
+}
+function footOnPlane(sc,red,Mred){
+  const F=V.dot(red.n,Mred).add(red.d);const N2=red.n.reduce((s,a,i)=>s.add(a.mul(a).div(sc.rad[i])),F0);
+  const t=F.div(N2);return Mred.map((x,i)=>x.sub(t.mul(red.n[i]).div(sc.rad[i])));
+}
+function lenS(v){return Surd.sqrt(V.dot(v,v).q)}
+
+/* =========================================================
+   8. НАВЫКИ
+   ========================================================= */
+const MODULES=[['coord','1. Координаты'],['plane','2. Уравнение плоскости'],['sec','3. Сечения'],['dist','4. Расстояния'],['ang','5. Углы']];
+const SK={};
+function skill(o){SK[o.id]=o}
+
+skill({id:'k1',mod:'coord',title:'Координаты точек',
+  slots:[['P1','1-я точка'],['P2','2-я точка'],['P3','3-я точка']],
+  goal:c=>`Найдите координаты точек ${T([c.t('P1'),c.t('P2'),c.t('P3')].join(',\\ '))}.`,
+  theory:`Начало координат — в вершине ${T('A')}. Координаты вершин читаем по рёбрам. Точка на отрезке ${T('XY')}, делящая его в отношении ${T('m:n')} от ${T('X')}: ${T('M=X+\\frac{m}{m+n}\\overrightarrow{XY}')}. Середина — полусумма координат.`,
+  steps:c=>['P1','P2','P3'].map((k,i)=>stepCoords(c,[k],'Координаты точки '+T(c.t(k))))});
+
+skill({id:'k2',mod:'coord',title:'Координаты вектора и его длина',
+  slots:[['P','начало'],['Q','конец']],lines:[['P','Q']],
+  goal:c=>`Найдите координаты вектора ${T(c.vn('P','Q'))} и его длину.`,
+  theory:`${T('\\overrightarrow{PQ}=(x_Q-x_P;\\ y_Q-y_P;\\ z_Q-z_P)')}, ${T('|\\vec a|=\\sqrt{a_1^2+a_2^2+a_3^2}')}. Корень упрощаем: выносим множитель из-под знака корня.`,
+  check:c=>V.isZero(c.vec('P','Q'))?'Точки совпадают':null,
+  steps:c=>{const v=c.vec('P','Q'),L=lenS(v);return [stepCoords(c,['P','Q']),stepVectors(c,[['P','Q']]),
+    {title:'Длина вектора',intro:`Найдите ${T('|'+c.vn('P','Q')+'|')}.`,rows:[{label:T('|'+c.vn('P','Q')+'|='),fields:[fld(L)]}],
+     hints:[T('|\\vec a|=\\sqrt{a_1^2+a_2^2+a_3^2}'),T('\\sqrt{'+v.map(sqTex).join('+')+'}')],
+     sol:T('|'+c.vn('P','Q')+'|=\\sqrt{'+v.map(sqTex).join('+')+'}=\\sqrt{'+V.dot(v,v).tex()+'}'+(L.tex()==='\\sqrt{'+V.dot(v,v).tex()+'}'?'':'='+L.tex()))}]}});
+
+skill({id:'p3',mod:'plane',title:'Плоскость через три точки',
+  slots:[['P','1-я точка'],['Q','2-я точка'],['R','3-я точка']],
+  goal:c=>`Составьте уравнение плоскости ${T('('+c.t('P')+c.t('Q')+c.t('R')+')')}.`,
+  theory:`1) Векторы ${T('\\overrightarrow{PQ}')} и ${T('\\overrightarrow{PR}')}. 2) Нормаль ${T('\\vec n=\\overrightarrow{PQ}\\times\\overrightarrow{PR}')}. 3) Сократить нормаль. 4) ${T('A(x-x_0)+B(y-y_0)+C(z-z_0)=0')} через точку ${T('P')}. 5) Проверить третьей точкой.<br><span class="muted">Другие способы из ваших форм: система из трёх уравнений (если плоскость через начало — ${T('D=0')}) или определитель с ${T('\\overrightarrow{PM}')}.</span>`,
+  check:c=>V.isZero(V.cross(c.vec('P','Q'),c.vec('P','R')))?'Точки лежат на одной прямой — плоскость не определена':null,
+  steps:c=>{const u=c.vec('P','Q'),v=c.vec('P','R');const cr=stepCross(c,u,v,c.vn('P','Q'),c.vn('P','R'),'P');
+    const pl=stepPlane(c,cr.n,'P','('+c.t('P')+c.t('Q')+c.t('R')+')');pl.ov=[{t:'plane',pl:redFromEq(c.sc,pl.eq),at:c.fl('P'),color:COL.plane,named:true}];
+    return [stepCoords(c,['P','Q','R']),stepVectors(c,[['P','Q'],['P','R']]),cr,pl,stepCheckZero(c,pl.eq,'R')]}});
+
+skill({id:'p2l',mod:'plane',title:'Через две точки параллельно прямой',
+  slots:[['P','1-я точка'],['Q','2-я точка'],['M','прямая: 1-я точка'],['N','прямая: 2-я точка']],lines:[['M','N']],
+  goal:c=>`Составьте уравнение плоскости, проходящей через точки ${T(c.t('P'))} и ${T(c.t('Q'))} параллельно прямой ${T(c.t('M')+c.t('N'))}.`,
+  theory:`Плоскость содержит вектор ${T('\\overrightarrow{PQ}')} и параллельна направляющему вектору ${T('\\overrightarrow{MN}')}. Строим третью точку ${T('T=P+\\overrightarrow{MN}')} — «клон» прямой через ${T('P')} — и сводим к плоскости через три точки. Нормаль: ${T('\\vec n=\\overrightarrow{PQ}\\times\\overrightarrow{MN}')}.`,
+  check:c=>V.isZero(V.cross(c.vec('P','Q'),c.vec('M','N')))?'Прямая PQ параллельна MN — таких плоскостей бесконечно много':null,
+  steps:c=>{const u=c.vec('P','Q'),s=c.vec('M','N'),Tp=V.add(c.R('P'),s);
+    const cr=stepCross(c,u,s,c.vn('P','Q'),c.vn('M','N'),'P');const pl=stepPlane(c,cr.n,'P');pl.ov=[{t:'plane',pl:redFromEq(c.sc,pl.eq),at:c.fl('P'),color:COL.plane}];
+    return [stepCoords(c,['P','Q','M','N']),stepVectors(c,[['P','Q'],['M','N']],null,[COL.v1,COL.line]),
+     {title:'Третья точка T',intro:`Отложим от ${T(c.t('P'))} вектор ${T(c.vn('M','N'))}: ${T('T='+c.t('P')+'+'+c.vn('M','N'))}. Найдите координаты ${T('T')}.`,
+      rows:[{label:T('T'),tuple:true,fields:Tp.map(fld)}],hints:[T('T=(x_P+s_1;\\ y_P+s_2;\\ z_P+s_3)')],
+      sol:T('T='+tv(c.R('P'))+'+'+tv(s)+'='+tv(Tp))+'. Прямая '+T(c.t('P')+'T')+' параллельна '+T(c.t('M')+c.t('N'))+'.',
+      ov:[{t:'vec',a:c.fl('P'),b:c.flR(Tp),color:COL.line,dash:true},{t:'pt',p:c.flR(Tp),name:'T',color:COL.line}]},
+     cr,pl]}});
+
+skill({id:'p1ll',mod:'plane',title:'Через точку параллельно двум прямым',
+  slots:[['P','точка'],['A','1-я прямая: точка 1'],['B','1-я прямая: точка 2'],['C','2-я прямая: точка 1'],['D','2-я прямая: точка 2']],lines:[['A','B'],['C','D']],
+  goal:c=>`Составьте уравнение плоскости, проходящей через точку ${T(c.t('P'))} параллельно прямым ${T(c.t('A')+c.t('B'))} и ${T(c.t('C')+c.t('D'))}.`,
+  theory:`Направляющие векторы ${T('\\vec u=\\overrightarrow{AB}')}, ${T('\\vec v=\\overrightarrow{CD}')} лежат в плоскости (после переноса в ${T('P')}). Точки ${T('T=P+\\vec u')}, ${T('R=P+\\vec v')} — и плоскость через три точки. Нормаль: ${T('\\vec n=\\vec u\\times\\vec v')}.`,
+  check:c=>V.isZero(V.cross(c.vec('A','B'),c.vec('C','D')))?'Прямые параллельны — плоскость не определена однозначно':null,
+  steps:c=>{const u=c.vec('A','B'),v=c.vec('C','D'),P=c.R('P'),Tp=V.add(P,u),Rp=V.add(P,v);
+    const cr=stepCross(c,u,v,c.vn('A','B'),c.vn('C','D'),'P');const pl=stepPlane(c,cr.n,'P');pl.ov=[{t:'plane',pl:redFromEq(c.sc,pl.eq),at:c.fl('P'),color:COL.plane}];
+    return [stepCoords(c,['P','A','B','C','D']),stepVectors(c,[['A','B'],['C','D']],null,[COL.line,COL.line2]),
+     {title:'Переносим векторы в точку '+T(c.t('P')),intro:`Найдите ${T('T='+c.t('P')+'+'+c.vn('A','B'))} и ${T('R='+c.t('P')+'+'+c.vn('C','D'))}.`,
+      rows:[{label:T('T'),tuple:true,fields:Tp.map(fld)},{label:T('R'),tuple:true,fields:Rp.map(fld)}],hints:['Складываем координаты точки и вектора.'],
+      sol:T('T='+tv(Tp))+', '+T('R='+tv(Rp)),
+      ov:[{t:'vec',a:c.fl('P'),b:c.flR(Tp),color:COL.line,dash:true},{t:'vec',a:c.fl('P'),b:c.flR(Rp),color:COL.line2,dash:true},{t:'pt',p:c.flR(Tp),name:'T',color:COL.line},{t:'pt',p:c.flR(Rp),name:'R',color:COL.line2}]},
+     cr,pl]}});
+
+skill({id:'p1perp',mod:'plane',title:'Через точку перпендикулярно прямой',
+  slots:[['P','точка'],['M','прямая: 1-я точка'],['N','прямая: 2-я точка']],lines:[['M','N']],
+  goal:c=>`Составьте уравнение плоскости, проходящей через точку ${T(c.t('P'))} перпендикулярно прямой ${T(c.t('M')+c.t('N'))}.`,
+  theory:`Направляющий вектор прямой сам является нормалью: ${T('\\vec n=\\overrightarrow{MN}=(A;B;C)')}. Тогда ${T('A(x-x_0)+B(y-y_0)+C(z-z_0)=0')}.`,
+  check:c=>V.isZero(c.vec('M','N'))?'Точки прямой совпадают':null,
+  steps:c=>{const s=c.vec('M','N');const st=stepVectors(c,[['M','N']],'Нормаль = направляющий вектор',[COL.n]);
+    st.intro=`Вектор ${T(c.vn('M','N'))} перпендикулярен плоскости. Найдите его координаты.`;
+    const pl=stepPlane(c,s,'P');pl.ov=[{t:'plane',pl:redFromEq(c.sc,pl.eq),at:c.fl('P'),color:COL.plane},{t:'normal',from:c.fl('P'),n:s.map(x=>x.val())}];
+    return [stepCoords(c,['P','M','N']),st,pl]}});
+
+skill({id:'p2perpPl',mod:'plane',title:'Через две точки перпендикулярно плоскости',
+  slots:[['P','1-я точка'],['Q','2-я точка'],['X','плоскость α: точка 1'],['Y','плоскость α: точка 2'],['Z','плоскость α: точка 3']],
+  goal:c=>`Составьте уравнение плоскости, проходящей через точки ${T(c.t('P'))} и ${T(c.t('Q'))} перпендикулярно плоскости ${T('('+c.t('X')+c.t('Y')+c.t('Z')+')')}.`,
+  theory:`Искомая плоскость ПАРАЛЛЕЛЬНА нормали ${T('\\vec n_\\alpha')} данной плоскости. Строим ${T('T=P+\\vec n_\\alpha')} и плоскость через ${T('P,Q,T')}. Нормаль: ${T('\\vec n=\\overrightarrow{PQ}\\times\\vec n_\\alpha')}.`,
+  check:c=>{const na=V.cross(c.vec('X','Y'),c.vec('X','Z'));if(V.isZero(na))return 'Точки плоскости α на одной прямой';if(V.isZero(V.cross(c.vec('P','Q'),na)))return 'PQ перпендикулярна α — плоскостей бесконечно много';return null},
+  steps:c=>{const pa=plane3(c,'X','Y','Z');const na=pa.eq.slice(0,3);const P=c.R('P'),Tp=V.add(P,na);const u=c.vec('P','Q');
+    const s1=stepPlane3(c,'X','Y','Z',COL.plane2);s1.title='Нормаль плоскости α = '+T(pa.name);s1.intro='Найдите уравнение плоскости '+T('\\alpha='+pa.name)+' — её коэффициенты '+T('A,B,C')+' дадут нормаль '+T('\\vec n_\\alpha')+'.';
+    s1.sol+='<br>'+T('\\vec n_\\alpha='+tv(na));
+    const cr=stepCross(c,u,na,c.vn('P','Q'),'\\vec n_\\alpha','P');const pl=stepPlane(c,cr.n,'P');pl.ov=[{t:'plane',pl:redFromEq(c.sc,pl.eq),at:c.fl('P'),color:COL.plane}];
+    return [stepCoords(c,['P','Q','X','Y','Z']),s1,
+      {title:'Точка T',intro:`${T('T='+c.t('P')+'+\\vec n_\\alpha')}, где ${T('\\vec n_\\alpha='+tv(na))}. Найдите ${T('T')}.`,rows:[{label:T('T'),tuple:true,fields:Tp.map(fld)}],hints:['Складываем координаты.'],
+       sol:T('T='+tv(Tp)),ov:[{t:'vec',a:c.fl('P'),b:c.flR(Tp),color:COL.n,dash:true},{t:'pt',p:c.flR(Tp),name:'T',color:COL.n}]},
+      cr,pl]}});
+
+skill({id:'sec1',mod:'sec',title:'Точка пересечения плоскости с ребром',
+  slots:[['P','плоскость: точка 1'],['Q','плоскость: точка 2'],['R','плоскость: точка 3'],['E','начало отрезка (ребра)'],['G','конец отрезка (ребра)']],lines:[['E','G']],
+  goal:c=>`Пересекает ли плоскость ${T('('+c.t('P')+c.t('Q')+c.t('R')+')')} отрезок ${T(c.t('E')+c.t('G'))}? Если да — найдите точку пересечения.`,
+  theory:`Точка отрезка: ${T('X=E+k\\cdot\\overrightarrow{EG}')}. Подставляем в уравнение плоскости и находим ${T('k')}. Если ${T('0<k<1')} — плоскость пересекает отрезок внутри; ${T('k=0')} или ${T('k=1')} — проходит через конец; ${T('k<0')} или ${T('k>1')} — отрезок не пересекается (пересекается его продолжение).`,
+  check:c=>{if(V.isZero(V.cross(c.vec('P','Q'),c.vec('P','R'))))return 'Точки плоскости на одной прямой';if(V.isZero(c.vec('E','G')))return 'Концы отрезка совпадают';return null},
+  steps:c=>{
+    const s1=stepPlane3(c,'P','Q','R');const eq=s1.eq;const E=c.R('E'),G=c.R('G'),EG=V.sub(G,E);
+    const beta=evalEq(eq,E),alpha=evalEq(eq,G).sub(beta);
+    const steps=[s1,stepCoords(c,['E','G'])];
+    const xs=[0,1,2].map(i=>E[i].tex()+(EG[i].isZero()?'':(EG[i].sign()<0?'-':'+')+(EG[i].abs().eq(Surd.of(1))?'':EG[i].abs().tex())+'k'));
+    steps.push({title:'Подстановка точки отрезка',intro:`${T('X='+c.t('E')+'+k\\cdot'+c.vn('E','G'))}, ${T(c.vn('E','G')+'='+tv(EG))}. Подставьте ${T('X')} в ${T(texEq(eq))} и приведите к виду ${T('\\alpha k+\\beta=0')}.`,
+      rows:[{form:'lin',prop:true,fields:[fld(alpha),fld(beta)]}],
+      hints:[T('X=\\left('+xs.join(';\\ ')+'\\right)'),'Подставьте эти выражения вместо '+T('x,y,z')+'.'],
+      sol:T('X=\\left('+xs.join(';\\ ')+'\\right)')+'<br>'+T(texEq([alpha,beta],['k',''])),
+      ov:[{t:'seg',a:c.fl('E'),b:c.fl('G'),color:COL.line,w:4}]});
+    if(alpha.isZero()){
+      steps.push({title:'Вывод',intro:'Коэффициент при '+T('k')+' равен нулю. Что это значит?',choice:{options:['Отрезок параллелен плоскости и не пересекает её','Отрезок лежит в плоскости'],correct:beta.isZero()?1:0},sol:beta.isZero()?'Уравнение верно при любом '+T('k')+' — отрезок лежит в плоскости.':'Получилось '+T(beta.tex()+'=0')+' — неверно, пересечения нет: '+T(c.t('E')+c.t('G')+'\\parallel\\alpha')+'.'});
+      return steps;
+    }
+    const k=beta.neg().div(alpha);const kv=k.val();
+    steps.push({title:'Параметр k',intro:'Найдите '+T('k')+'.',rows:[{label:T('k='),fields:[fld(k)]}],hints:[T('k=-\\dfrac{\\beta}{\\alpha}')],sol:T('k=-\\dfrac{'+beta.tex()+'}{'+alpha.tex()+'}='+k.tex())});
+    const cls=(kv>1e-12&&kv<1-1e-12)?0:(near(kv,0)||near(kv,1))?1:2;
+    steps.push({title:'Вывод',intro:'Где находится точка пересечения?',choice:{options:['Внутри отрезка: '+T('0<k<1'),'В конце отрезка: '+T('k=0')+' или '+T('k=1'),'Вне отрезка: '+T('k<0')+' или '+T('k>1')+' — плоскость не пересекает отрезок']},sol:['Плоскость пересекает отрезок во внутренней точке.','Плоскость проходит через конец отрезка.','Пересекается только продолжение отрезка — в сечение эта точка не входит.'][cls]});
+    steps[steps.length-1].choice.correct=cls;
+    const X=V.add(E,EG.map(s=>s.mul(Surd.of(k.q))));
+    const Xred=V.add(c.red('E'),V.sub(c.red('G'),c.red('E')).map(x=>x.mul(k.q)));const ex=c.sc.find(Xred);
+    const nm=ex?ex.name:'K';
+    steps.push({title:'Координаты точки пересечения',intro:`Найдите координаты точки ${T(tn(nm))} (подставьте ${T('k')}).`+(ex&&ex.kind==='user'?` <span class="muted">Это уже существующая точка ${T(tn(nm))}!</span>`:''),
+      rows:[{label:T(tn(nm)),tuple:true,fields:X.map(fld)}],hints:[T('X=\\left('+xs.join(';\\ ')+'\\right)')+' при '+T('k='+k.tex())],
+      sol:T(tn(nm)+tv(X))+(ex?' — совпадает с точкой '+T(tn(nm))+', новую точку не вводим.':''),
+      ov:[{t:'pt',p:c.flR(X),name:nm,color:'var(--kpt)'}]});
+    return steps;
+  }});
+
+skill({id:'sec',mod:'sec',title:'Построение сечения целиком',
+  slots:[['P','1-я точка'],['Q','2-я точка'],['R','3-я точка']],
+  goal:c=>`Постройте сечение многогранника плоскостью ${T('('+c.t('P')+c.t('Q')+c.t('R')+')')}: найдите все его вершины.`,
+  theory:`1) Уравнение плоскости ${T('F(x,y,z)=Ax+By+Cz+D=0')}. 2) Подставляем ВСЕ вершины тела: знак ${T('F')} показывает, по какую сторону плоскости лежит вершина. 3) Плоскость пересекает ребро, если на его концах знаки ${T('F')} разные; вершины с ${T('F=0')} лежат в сечении. 4) На ребре ${T('XY')}: ${T('k=\\dfrac{F(X)}{F(X)-F(Y)}')}, точка ${T('X+k\\overrightarrow{XY}')}. 5) Если точка совпала с уже введённой (${T('M_1')}) — новую не вводим.`,
+  check:c=>V.isZero(V.cross(c.vec('P','Q'),c.vec('P','R')))?'Точки лежат на одной прямой':null,
+  steps:c=>{
+    const s1=stepPlane3(c,'P','Q','R');s1.ov=[];const eq=s1.eq,sc=c.sc;
+    const verts=sc.body.verts.map(v=>v.name);
+    const Fv={};verts.forEach(n=>Fv[n]=evalEq(eq,realOf(sc,sc.get(n).p)));
+    const crossed=sc.body.edges.filter(([a,b])=>Fv[a].sign()*Fv[b].sign()<0);
+    const red=redFromEq(sc,eq);const sec=sectionExact(sc,red);
+    let kc=0;const kname=new Map();
+    sec.pts.forEach(q=>{if(!q.name){kc++;q.name='K'+kc;q.fresh=true}});
+    const ptOf=(a,b)=>sec.pts.find(q=>q.edge&&((q.edge.a===a&&q.edge.b===b)||(q.edge.a===b&&q.edge.b===a)));
+    const signs={};verts.forEach(n=>signs[n]=Fv[n].sign());
+    const steps=[s1,
+      {title:'Значения F во всех вершинах',intro:`${T('F(x,y,z)='+texEq(eq).replace(' = 0',''))}. Подставьте координаты каждой вершины.`,grid:true,
+       rows:verts.map(n=>({label:T('F('+tn(n)+')'),fields:[fld(Fv[n])]})),
+       hints:['Координаты вершин: '+verts.map(n=>T(tn(n)+tv(realOf(sc,sc.get(n).p)))).join(', ')],
+       sol:verts.map(n=>T('F('+tn(n)+')='+Fv[n].tex())).join(', ')+'<br><span style="color:#ff6b6b">●</span> плюс, <span style="color:#4dabf7">●</span> минус, <span style="color:#38e08c">●</span> ноль — вершины раскрашены на чертеже.',
+       ov:[{t:'signs',signs}]},
+      {title:'Какие рёбра пересекает плоскость?',intro:'Отметьте рёбра, на концах которых '+T('F')+' имеет разные знаки (вершины с '+T('F=0')+' сами лежат в сечении).',
+       checks:{items:sc.body.edges.map(([a,b])=>({label:T(tn(a)+tn(b)),ok:Fv[a].sign()*Fv[b].sign()<0}))},
+       sol:crossed.length?'Пересекаются рёбра: '+crossed.map(([a,b])=>T(tn(a)+tn(b))).join(', '):'Ни одно ребро не пересекается во внутренней точке.',
+       ov:crossed.map(([a,b])=>({t:'seg',a:fOf(sc,sc.get(a).p),b:fOf(sc,sc.get(b).p),color:COL.line,w:4}))}];
+    if(crossed.length){
+      steps.push({title:'Точки на рёбрах',intro:'Для каждого ребра '+T('XY')+' найдите '+T('k=\\dfrac{F(X)}{F(X)-F(Y)}')+' (точка '+T('X+k\\overrightarrow{XY}')+').',
+        rows:crossed.map(([a,b])=>{const k=Fv[a].div(Fv[a].sub(Fv[b]));return {label:T(tn(a)+tn(b)+':\\ k='),fields:[fld(k)]}}),
+        hints:crossed.map(([a,b])=>T('k=\\dfrac{'+Fv[a].tex()+'}{'+pn(Fv[a])+'-'+pn(Fv[b])+'}')).slice(0,1).concat([crossed.map(([a,b])=>T(tn(a)+tn(b)+':\\ \\dfrac{'+Fv[a].tex()+'}{'+pn(Fv[a])+'-'+pn(Fv[b])+'}')).join(', ')]),
+        sol:crossed.map(([a,b])=>{const k=Fv[a].div(Fv[a].sub(Fv[b]));const q=ptOf(a,b);return T(tn(a)+tn(b)+':\\ k='+k.tex()+',\\ '+tn(q.name)+tv(realOf(sc,q.p)))+(q.fresh?'':' — это уже введённая точка '+T(tn(q.name)))}).join('<br>'),
+        ov:sec.pts.filter(q=>q.edge).map(q=>({t:'pt',p:fOf(sc,q.p),name:q.name,color:'var(--kpt)'}))});
+    }
+    const shapes={3:'треугольник',4:'четырёхугольник',5:'пятиугольник',6:'шестиугольник',7:'семиугольник',8:'восьмиугольник'};
+    steps.push({title:'Многоугольник сечения',intro:'Сколько вершин у сечения? (вершины тела с '+T('F=0')+' плюс точки на рёбрах)',
+      rows:[{label:'Вершин:',fields:[{v:sec.pts.length,a:String(sec.pts.length)}]}],hints:['Посчитайте: '+T('F=0')+' в вершинах '+(verts.filter(n=>Fv[n].isZero()).map(tn).map(T).join(', ')||'— нет')+', плюс '+crossed.length+' точек на рёбрах.'],
+      sol:'Сечение — '+(shapes[sec.pts.length]||sec.pts.length+'-угольник')+' '+T(sec.pts.map(q=>tn(q.name)).join(''))+'.',
+      ov:[{t:'plane',pl:red,color:COL.plane,names:sec.pts.map(q=>q.name)}]});
+    return steps;
+  }});
+
+skill({id:'dpp',mod:'dist',title:'Расстояние от точки до плоскости',
+  slots:[['P','плоскость: точка 1'],['Q','плоскость: точка 2'],['R','плоскость: точка 3'],['M','точка']],
+  goal:c=>`Найдите расстояние от точки ${T(c.t('M'))} до плоскости ${T('('+c.t('P')+c.t('Q')+c.t('R')+')')}.`,
+  theory:`${T('\\rho(M,\\alpha)=\\dfrac{|Ax_0+By_0+Cz_0+D|}{\\sqrt{A^2+B^2+C^2}}')}, где ${T('Ax+By+Cz+D=0')} — уравнение плоскости, ${T('M(x_0;y_0;z_0)')}. Основание перпендикуляра: ${T('H=M-t\\vec n')}, ${T('t=\\dfrac{F(M)}{|\\vec n|^2}')}.`,
+  check:c=>{if(V.isZero(V.cross(c.vec('P','Q'),c.vec('P','R'))))return 'Точки плоскости на одной прямой';const pl=plane3(c,'P','Q','R');if(evalEq(pl.eq,c.R('M')).isZero())return 'Точка лежит в плоскости — расстояние 0';return null},
+  steps:c=>{const s1=stepPlane3(c,'P','Q','R');const sd=stepDist(c,s1.eq,'M');
+    const H=footOnPlane(c.sc,s1.pl.red,c.red('M'));sd.ov=[{t:'perp',a:c.fl('M'),b:fOf(c.sc,H)}];sd.sol+='<br><span class="muted">Основание перпендикуляра: '+T('H'+tv(realOf(c.sc,H)))+'</span>';
+    return [s1,stepCoords(c,['M']),sd]}});
+
+skill({id:'dlp',mod:'dist',title:'Расстояние от прямой до параллельной плоскости',
+  slots:[['M','прямая: 1-я точка'],['N','прямая: 2-я точка'],['P','плоскость: точка 1'],['Q','плоскость: точка 2'],['R','плоскость: точка 3']],lines:[['M','N']],
+  goal:c=>`Докажите, что прямая ${T(c.t('M')+c.t('N'))} параллельна плоскости ${T('('+c.t('P')+c.t('Q')+c.t('R')+')')}, и найдите расстояние между ними.`,
+  theory:`Прямая ${T('\\parallel')} плоскости, если ${T('\\vec s\\cdot\\vec n=0')} (направляющий вектор перпендикулярен нормали) и точка прямой не лежит в плоскости. Все точки прямой равноудалены от плоскости — берём любую, например ${T('M')}, и считаем расстояние от точки до плоскости.`,
+  check:c=>{if(V.isZero(V.cross(c.vec('P','Q'),c.vec('P','R'))))return 'Точки плоскости на одной прямой';const pl=plane3(c,'P','Q','R');
+    if(!V.dot(pl.eq.slice(0,3),c.vec('M','N')).isZero())return 'Прямая не параллельна плоскости';if(evalEq(pl.eq,c.R('M')).isZero())return 'Прямая лежит в плоскости';return null},
+  steps:c=>{const s1=stepPlane3(c,'P','Q','R');const eq=s1.eq,n=eq.slice(0,3),s=c.vec('M','N');
+    const sd=stepDist(c,eq,'M');const H=footOnPlane(c.sc,s1.pl.red,c.red('M'));sd.ov=[{t:'perp',a:c.fl('M'),b:fOf(c.sc,H)}];
+    return [s1,stepCoords(c,['M','N']),
+      {title:'Проверка параллельности',intro:`${T('\\vec s='+c.vn('M','N'))}, ${T('\\vec n='+tv(n))}. Найдите ${T('\\vec s')} и скалярное произведение ${T('\\vec s\\cdot\\vec n')}.`,
+       rows:[{label:T('\\vec s'),tuple:true,fields:s.map(fld)},{label:T('\\vec s\\cdot\\vec n='),fields:[fld(V.dot(s,n))]}],
+       hints:[T('\\vec s\\cdot\\vec n=s_1A+s_2B+s_3C')],
+       sol:T('\\vec s='+tv(s)+',\\ \\ \\vec s\\cdot\\vec n='+[0,1,2].map(i=>pn(s[i])+'\\cdot'+pn(n[i])).join('+')+'=0')+' ⇒ '+T('\\vec s\\perp\\vec n')+'. Точка '+T(c.t('M'))+': '+T('F='+evalEq(eq,c.R('M')).tex()+'\\ne0')+' — прямая не лежит в плоскости, значит параллельна ей.',
+       ov:[{t:'vec',a:c.fl('M'),b:c.fl('N'),color:COL.line}]},sd]}});
+
+skill({id:'dpl2',mod:'dist',title:'Расстояние между параллельными плоскостями',
+  slots:[['P','1-я плоскость: точка 1'],['Q','1-я плоскость: точка 2'],['R','1-я плоскость: точка 3'],['X','2-я плоскость: точка 1'],['Y','2-я плоскость: точка 2'],['Z','2-я плоскость: точка 3']],
+  goal:c=>`Найдите расстояние между плоскостями ${T('('+c.t('P')+c.t('Q')+c.t('R')+')')} и ${T('('+c.t('X')+c.t('Y')+c.t('Z')+')')}.`,
+  theory:`Плоскости параллельны, если их нормали коллинеарны. Запишем обе с ОДИНАКОВЫМИ ${T('A,B,C')}: ${T('Ax+By+Cz+D_1=0')}, ${T('Ax+By+Cz+D_2=0')}. Тогда ${T('\\rho=\\dfrac{|D_1-D_2|}{\\sqrt{A^2+B^2+C^2}}')}. (Или: расстояние от любой точки одной плоскости до другой.)`,
+  check:c=>{const a=V.cross(c.vec('P','Q'),c.vec('P','R')),b=V.cross(c.vec('X','Y'),c.vec('X','Z'));if(V.isZero(a)||V.isZero(b))return 'Точки на одной прямой';
+    if(!V.isZero(V.cross(plane3(c,'P','Q','R').eq.slice(0,3),plane3(c,'X','Y','Z').eq.slice(0,3))))return 'Плоскости не параллельны';
+    if(evalEq(plane3(c,'P','Q','R').eq,c.R('X')).isZero())return 'Плоскости совпадают';return null},
+  steps:c=>{const s1=stepPlane3(c,'P','Q','R');const s2=stepPlane3(c,'X','Y','Z',COL.plane2);s2.title='Уравнение второй плоскости';
+    const eq1=s1.eq,n=eq1.slice(0,3);const D2=V.dot(n,c.R('X')).neg();const num=eq1[3].sub(D2).abs();
+    const den=Surd.sqrt(n.reduce((s,x)=>s.add(x.sq()),F0));const d=num.div(den);
+    return [s1,s2,{title:'Одинаковые нормали и расстояние',intro:`Запишем вторую плоскость с той же нормалью: ${T(texEq([...n,D2]))} (это то же уравнение, умноженное на число). Найдите расстояние.`,
+      rows:[{label:T('|D_1-D_2|='),fields:[fld(num)]},{label:T('\\sqrt{A^2+B^2+C^2}='),fields:[fld(den)]},{label:T('\\rho='),fields:[fld(d)]}],
+      hints:[T('D_1='+eq1[3].tex()+',\\ D_2='+D2.tex()),T('\\rho=\\dfrac{|D_1-D_2|}{\\sqrt{A^2+B^2+C^2}}')],
+      sol:T('\\rho=\\dfrac{|'+eq1[3].tex()+'-'+pn(D2)+'|}{\\sqrt{'+n.map(sqTex).join('+')+'}}=\\dfrac{'+num.tex()+'}{'+den.tex()+'}=\\boxed{'+d.tex()+'}'),
+      ov:[{t:'perp',a:c.fl('X'),b:fOf(c.sc,footOnPlane(c.sc,s1.pl.red,c.red('X')))}]}]}});
+
+skill({id:'dskew',mod:'dist',title:'Расстояние между скрещивающимися прямыми',
+  slots:[['A','1-я прямая: точка 1'],['B','1-я прямая: точка 2'],['C','2-я прямая: точка 1'],['D','2-я прямая: точка 2']],lines:[['A','B'],['C','D']],
+  goal:c=>`Найдите расстояние между прямыми ${T(c.t('A')+c.t('B'))} и ${T(c.t('C')+c.t('D'))}.`,
+  theory:`Через прямую ${T('AB')} проводим плоскость ${T('\\alpha\\parallel CD')} (навык «через две точки параллельно прямой»): ${T('\\vec n=\\overrightarrow{AB}\\times\\overrightarrow{CD}')}. Тогда ${T('CD\\parallel\\alpha')}, и искомое расстояние = расстояние от любой точки ${T('CD')} (например ${T('C')}) до ${T('\\alpha')}. Общий перпендикуляр перпендикулярен обеим прямым.<br><span class="muted">Если ${T('F(C)=0')} — прямые пересекаются (лежат в одной плоскости).</span>`,
+  check:c=>{const n=V.cross(c.vec('A','B'),c.vec('C','D'));if(V.isZero(n))return 'Прямые параллельны (или совпадают)';if(V.dot(n,c.vec('A','C')).isZero())return 'Прямые пересекаются — расстояние 0';return null},
+  steps:c=>{const u=c.vec('A','B'),v=c.vec('C','D');const cr=stepCross(c,u,v,c.vn('A','B'),c.vn('C','D'),'A','Нормаль плоскости α');
+    cr.intro=`Плоскость ${T('\\alpha')} содержит ${T(c.t('A')+c.t('B'))} и параллельна ${T(c.t('C')+c.t('D'))}, значит ${T('\\vec n=\\overrightarrow{'+c.t('A')+c.t('B')+'}\\times\\overrightarrow{'+c.t('C')+c.t('D')+'}')}. Вычислите.`;
+    const pl=stepPlane(c,cr.n,'A','\\alpha');const red=redFromEq(c.sc,pl.eq);
+    const A=c.R('A'),cp=V.add(A,v);
+    pl.ov=[{t:'plane',pl:red,color:COL.plane,at:c.fl('A')},{t:'vec',a:c.fl('A'),b:c.flR(cp),color:COL.line2,dash:true}];
+    const sd=stepDist(c,pl.eq,'C');sd.title='Расстояние от '+T(c.t('C'))+' до α';
+    sd.ov=[{t:'perp',a:c.fl('C'),b:fOf(c.sc,footOnPlane(c.sc,red,c.red('C')))}];
+    sd.sol+='<br>Это и есть '+T('\\rho('+c.t('A')+c.t('B')+','+c.t('C')+c.t('D')+')')+'.';
+    return [stepCoords(c,['A','B','C','D']),stepVectors(c,[['A','B'],['C','D']],'Направляющие векторы',[COL.line,COL.line2]),cr,pl,sd]}});
+
+skill({id:'dpline',mod:'dist',title:'Расстояние от точки до прямой',
+  slots:[['M','точка'],['A','прямая: точка 1'],['B','прямая: точка 2']],lines:[['A','B']],
+  goal:c=>`Найдите расстояние от точки ${T(c.t('M'))} до прямой ${T(c.t('A')+c.t('B'))}.`,
+  theory:`Точка прямой: ${T('H=A+t\\vec s')}, ${T('\\vec s=\\overrightarrow{AB}')}. Условие ${T('\\overrightarrow{MH}\\perp\\vec s')} даёт ${T('t=\\dfrac{\\overrightarrow{AM}\\cdot\\vec s}{\\vec s\\cdot\\vec s}')}. Расстояние ${T('=|\\overrightarrow{MH}|')}.`,
+  check:c=>{if(V.isZero(c.vec('A','B')))return 'Точки прямой совпадают';if(V.isZero(V.cross(c.vec('A','B'),c.vec('A','M'))))return 'Точка лежит на прямой';return null},
+  steps:c=>{const s=c.vec('A','B'),am=c.vec('A','M');const as=V.dot(am,s).q,ss=V.dot(s,s).q,t=as.div(ss);
+    const H=V.add(c.R('A'),s.map(x=>x.mul(Surd.of(t))));const MH=V.sub(H,c.R('M'));const d=lenS(MH);
+    return [stepCoords(c,['M','A','B']),stepVectors(c,[['A','B'],['A','M']],null,[COL.line,COL.v1]),
+      {title:'Параметр t',intro:`Найдите скалярные произведения и ${T('t=\\dfrac{\\overrightarrow{AM}\\cdot\\vec s}{\\vec s\\cdot\\vec s}')}.`,
+       rows:[{label:T(c.vn('A','M')+'\\cdot\\vec s='),fields:[fld(Surd.of(as))]},{label:T('\\vec s\\cdot\\vec s='),fields:[fld(Surd.of(ss))]},{label:T('t='),fields:[fld(Surd.of(t))]}],
+       hints:[T('\\vec a\\cdot\\vec b=a_1b_1+a_2b_2+a_3b_3')],sol:T('t=\\dfrac{'+as.tex()+'}{'+ss.tex()+'}='+t.tex())},
+      {title:'Основание перпендикуляра H',intro:`${T('H='+c.t('A')+'+t\\cdot\\vec s')}. Найдите координаты ${T('H')}.`,rows:[{label:T('H'),tuple:true,fields:H.map(fld)}],
+       hints:[T('H='+tv(c.R('A'))+'+'+t.tex()+'\\cdot'+tv(s))],sol:T('H'+tv(H)),ov:[{t:'pt',p:c.flR(H),name:'H',color:COL.perp}]},
+      {title:'Расстояние',intro:`${T('\\rho=|\\overrightarrow{'+c.t('M')+'H}|')}.`,rows:[{label:T('\\rho='),fields:[fld(d)]}],
+       hints:[T('\\overrightarrow{'+c.t('M')+'H}='+tv(MH))],sol:T('\\overrightarrow{'+c.t('M')+'H}='+tv(MH)+',\\ \\rho=\\sqrt{'+MH.map(sqTex).join('+')+'}=\\boxed{'+d.tex()+'}'),
+       ov:[{t:'perp',a:c.fl('M'),b:c.flR(H)}]}]}});
+
+function angSteps(c,u,v,uname,vname,fn){
+  const dot=V.dot(u,v),lu=lenS(u),lv=lenS(v);const val=dot.abs().div(lu.mul(lv));const nm=angleName(val.val(),fn);
+  return {title:(fn==='sin'?'Синус':'Косинус')+' угла',intro:`${T('\\'+fn+'\\varphi=\\dfrac{|'+uname+'\\cdot '+vname+'|}{|'+uname+'|\\cdot|'+vname+'|}')}. Найдите величины.`,
+    rows:[{label:T(uname+'\\cdot '+vname+'='),fields:[fld(dot)]},{label:T('|'+uname+'|='),fields:[fld(lu)]},{label:T('|'+vname+'|='),fields:[fld(lv)]},{label:T('\\'+fn+'\\varphi='),fields:[fld(val)]}],
+    hints:[T(uname+'\\cdot '+vname+'='+[0,1,2].map(i=>pn(u[i])+'\\cdot'+pn(v[i])).join('+')),T('|'+uname+'|=\\sqrt{'+u.map(sqTex).join('+')+'}')+', '+T('|'+vname+'|=\\sqrt{'+v.map(sqTex).join('+')+'}')],
+    sol:T('\\'+fn+'\\varphi=\\dfrac{|'+dot.tex()+'|}{'+pn(lu)+'\\cdot'+pn(lv)+'}=\\boxed{'+val.tex()+'}')+(nm?T('\\ \\Rightarrow\\ \\varphi='+nm):T('\\ \\Rightarrow\\ \\varphi=\\arc'+fn+' '+val.tex()))};
+}
+skill({id:'ang_ll',mod:'ang',title:'Угол между прямыми',
+  slots:[['A','1-я прямая: точка 1'],['B','1-я прямая: точка 2'],['C','2-я прямая: точка 1'],['D','2-я прямая: точка 2']],lines:[['A','B'],['C','D']],
+  goal:c=>`Найдите угол между прямыми ${T(c.t('A')+c.t('B'))} и ${T(c.t('C')+c.t('D'))}.`,
+  theory:`${T('\\cos\\varphi=\\dfrac{|\\vec u\\cdot\\vec v|}{|\\vec u|\\cdot|\\vec v|}')}, где ${T('\\vec u,\\vec v')} — направляющие векторы. Модуль — потому что угол между прямыми не больше ${T('90^\\circ')}.`,
+  check:c=>(V.isZero(c.vec('A','B'))||V.isZero(c.vec('C','D')))?'Точки прямой совпадают':null,
+  steps:c=>[stepCoords(c,['A','B','C','D']),stepVectors(c,[['A','B'],['C','D']],'Направляющие векторы',[COL.line,COL.line2]),angSteps(c,c.vec('A','B'),c.vec('C','D'),'\\vec u','\\vec v','cos')]});
+skill({id:'ang_lp',mod:'ang',title:'Угол между прямой и плоскостью',
+  slots:[['M','прямая: точка 1'],['N','прямая: точка 2'],['P','плоскость: точка 1'],['Q','плоскость: точка 2'],['R','плоскость: точка 3']],lines:[['M','N']],
+  goal:c=>`Найдите угол между прямой ${T(c.t('M')+c.t('N'))} и плоскостью ${T('('+c.t('P')+c.t('Q')+c.t('R')+')')}.`,
+  theory:`${T('\\sin\\varphi=\\dfrac{|\\vec s\\cdot\\vec n|}{|\\vec s|\\cdot|\\vec n|}')} — синус, потому что угол между прямой и нормалью равен ${T('90^\\circ-\\varphi')}.`,
+  check:c=>V.isZero(V.cross(c.vec('P','Q'),c.vec('P','R')))?'Точки плоскости на одной прямой':(V.isZero(c.vec('M','N'))?'Точки прямой совпадают':null),
+  steps:c=>{const s1=stepPlane3(c,'P','Q','R');const n=s1.eq.slice(0,3),s=c.vec('M','N');const st=stepVectors(c,[['M','N']],'Направляющий вектор',[COL.line]);
+    return [s1,stepCoords(c,['M','N']),st,angSteps(c,s,n,'\\vec s','\\vec n','sin')]}});
+skill({id:'ang_pp',mod:'ang',title:'Угол между плоскостями',
+  slots:[['P','1-я плоскость: точка 1'],['Q','1-я плоскость: точка 2'],['R','1-я плоскость: точка 3'],['X','2-я плоскость: точка 1'],['Y','2-я плоскость: точка 2'],['Z','2-я плоскость: точка 3']],
+  goal:c=>`Найдите угол между плоскостями ${T('('+c.t('P')+c.t('Q')+c.t('R')+')')} и ${T('('+c.t('X')+c.t('Y')+c.t('Z')+')')}.`,
+  theory:`Угол между плоскостями равен углу между нормалями (острому): ${T('\\cos\\varphi=\\dfrac{|\\vec n_1\\cdot\\vec n_2|}{|\\vec n_1|\\cdot|\\vec n_2|}')}.`,
+  check:c=>(V.isZero(V.cross(c.vec('P','Q'),c.vec('P','R')))||V.isZero(V.cross(c.vec('X','Y'),c.vec('X','Z'))))?'Точки плоскости на одной прямой':null,
+  steps:c=>{const s1=stepPlane3(c,'P','Q','R');const s2=stepPlane3(c,'X','Y','Z',COL.plane2);s2.title='Уравнение второй плоскости';
+    return [s1,s2,angSteps(c,s1.eq.slice(0,3),s2.eq.slice(0,3),'\\vec n_1','\\vec n_2','cos')]}});
+
+/* =========================================================
+   9. ГОТОВЫЕ СЦЕНЫ И ЗАДАЧИ
+   ========================================================= */
+const SCENES={
+  box345:{title:'Параллелепипед 3×4×5',body:{type:'box',params:{a:'3',b:'4',c:'5'}},points:[{name:'M1',kind:'ratio',A:'A1',B:'B1',m:2,n:1}]},
+  cube2:{title:'Куб, ребро 2',body:{type:'box',params:{a:'2',b:'2',c:'2'}},points:[{name:'M1',kind:'ratio',A:'C',B:'C1',m:1,n:1},{name:'M2',kind:'ratio',A:'A1',B:'D1',m:1,n:1}]},
+  cube6:{title:'Куб, ребро 6, точки 1:2',body:{type:'box',params:{a:'6',b:'6',c:'6'}},points:[{name:'M1',kind:'ratio',A:'A',B:'A1',m:1,n:2},{name:'M2',kind:'ratio',A:'C1',B:'D1',m:1,n:2},{name:'M3',kind:'ratio',A:'B',B:'C',m:2,n:1}]},
+  prism3:{title:'Треугольная призма, a=2, h=3',body:{type:'prism3',params:{a:'2',h:'3'}},points:[{name:'M1',kind:'ratio',A:'B1',B:'C1',m:1,n:1}]},
+  prism6:{title:'Шестиугольная призма, a=1, h=2',body:{type:'prism6',params:{a:'1',h:'2'}},points:[{name:'M1',kind:'ratio',A:'A',B:'A1',m:1,n:1}]},
+  pyr3:{title:'Треугольная пирамида, a=6, h=4',body:{type:'pyr3',params:{a:'6',hmode:'h',h:'4',l:'5'}},points:[{name:'M1',kind:'ratio',A:'S',B:'A',m:1,n:1},{name:'O',kind:'center',of:['A','B','C']}]},
+  pyr4:{title:'Четырёхугольная пирамида, все рёбра 2',body:{type:'pyr4',params:{a:'2',hmode:'l',h:'2',l:'2'}},points:[{name:'M1',kind:'ratio',A:'S',B:'C',m:1,n:1}]},
+  pyr6:{title:'Шестиугольная пирамида, a=1, ребро 2',body:{type:'pyr6',params:{a:'1',hmode:'l',h:'2',l:'2'}},points:[{name:'M1',kind:'ratio',A:'S',B:'D',m:1,n:1}]},
+};
+const PRESETS=[
+  ['k1','box345',{P1:'C1',P2:'D1',P3:'M1'}],['k1','prism6',{P1:'C',P2:'E1',P3:'F'}],['k1','pyr4',{P1:'C',P2:'S',P3:'M1'}],['k1','pyr3',{P1:'C',P2:'S',P3:'M1'}],
+  ['k2','box345',{P:'A',Q:'C1'}],['k2','prism3',{P:'B1',Q:'C'}],['k2','pyr6',{P:'A',Q:'S'}],
+  ['p3','box345',{P:'A1',Q:'B',R:'D'}],['p3','cube2',{P:'B',Q:'D',R:'M1'}],['p3','prism3',{P:'A',Q:'B1',R:'C1'}],['p3','pyr4',{P:'B',Q:'D',R:'M1'}],['p3','cube6',{P:'M1',Q:'M2',R:'M3'}],
+  ['p2l','box345',{P:'A',Q:'C1',M:'B',N:'D'}],['p2l','cube2',{P:'B1',Q:'D',M:'A',N:'C'}],['p2l','pyr4',{P:'A',Q:'M1',M:'B',N:'D'}],['p2l','prism3',{P:'A',Q:'M1',M:'B',N:'C'}],
+  ['p1ll','box345',{P:'M1',A:'B',B:'D',C:'A',D:'A1'}],['p1ll','pyr4',{P:'M1',A:'S',B:'A',C:'B',D:'D'}],['p1ll','prism6',{P:'M1',A:'B',B:'D',C:'C',D:'C1'}],
+  ['p1perp','box345',{P:'A',M:'B',N:'D1'}],['p1perp','pyr4',{P:'S',M:'A',N:'C'}],['p1perp','cube2',{P:'M1',M:'A',N:'C1'}],
+  ['p2perpPl','box345',{P:'A',Q:'C1',X:'A',Y:'B',Z:'C'}],['p2perpPl','pyr4',{P:'S',Q:'A',X:'S',Y:'B',Z:'D'}],['p2perpPl','cube2',{P:'B1',Q:'D',X:'A',Y:'A1',Z:'C'}],
+  ['sec1','pyr4',{P:'A',Q:'B',R:'M1',E:'S',G:'D'}],['sec1','box345',{P:'A',Q:'C',R:'M1',E:'B1',G:'C1'}],['sec1','cube2',{P:'B',Q:'D',R:'M1',E:'A1',G:'D1'}],['sec1','cube6',{P:'M1',Q:'M2',R:'M3',E:'A',G:'D'}],
+  ['sec','pyr4',{P:'A',Q:'B',R:'M1'}],['sec','box345',{P:'A',Q:'C',R:'M1'}],['sec','cube6',{P:'M1',Q:'M2',R:'M3'}],['sec','prism6',{P:'A',Q:'C',R:'D1'}],['sec','pyr3',{P:'M1',Q:'B',R:'C'}],
+  ['dpp','box345',{P:'A1',Q:'B',R:'D',M:'A'}],['dpp','pyr4',{P:'S',Q:'C',R:'D',M:'A'}],['dpp','cube2',{P:'B',Q:'D',R:'M1',M:'C1'}],['dpp','prism3',{P:'A',Q:'B1',R:'C',M:'B'}],['dpp','pyr6',{P:'S',Q:'C',R:'D',M:'A'}],
+  ['dlp','box345',{M:'A1',N:'B1',P:'A',Q:'B',R:'C1'}],['dlp','cube2',{M:'B1',N:'D1',P:'B',Q:'D',R:'C1'}],['dlp','pyr4',{M:'B',N:'C',P:'S',Q:'A',R:'D'}],
+  ['dpl2','cube2',{P:'A',Q:'B1',R:'D1',X:'C1',Y:'B',Z:'D'}],['dpl2','box345',{P:'A1',Q:'B',R:'D',X:'C',Y:'B1',Z:'D1'}],
+  ['dskew','box345',{A:'B',B:'D1',C:'A',D:'C'}],['dskew','cube2',{A:'A1',B:'D',C:'C',D:'D1'}],['dskew','prism3',{A:'A',B:'B1',C:'B',D:'C1'}],['dskew','pyr4',{A:'S',B:'A',C:'B',D:'D'}],['dskew','prism6',{A:'A',B:'B1',C:'C',D:'D1'}],
+  ['dpline','pyr4',{M:'A',A:'S',B:'C'}],['dpline','box345',{M:'B',A:'A',B:'C1'}],['dpline','cube2',{M:'M1',A:'A1',B:'B'}],['dpline','prism6',{M:'A1',A:'C',B:'E'}],
+  ['ang_ll','cube2',{A:'A1',B:'B',C:'B1',D:'C'}],['ang_ll','pyr4',{A:'S',B:'A',C:'B',D:'C'}],['ang_ll','box345',{A:'A',B:'C1',C:'B',D:'D'}],
+  ['ang_lp','pyr4',{M:'S',N:'A',P:'A',Q:'B',R:'C'}],['ang_lp','box345',{M:'A',N:'C1',P:'A',Q:'B',R:'C'}],['ang_lp','prism3',{M:'A',N:'M1',P:'A',Q:'B',R:'B1'}],
+  ['ang_pp','pyr4',{P:'S',Q:'A',R:'B',X:'A',Y:'B',Z:'C'}],['ang_pp','cube2',{P:'A',Q:'B1',R:'D1',X:'A',Y:'B',Z:'C'}],['ang_pp','box345',{P:'A1',Q:'B',R:'D',X:'A',Y:'B',Z:'C'}],
+].map(([skill,scene,slots],i)=>({id:'pre_'+skill+'_'+i,skill,sceneKey:scene,slots,preset:true}));
+function taskSceneSpec(t){return t.sceneKey?SCENES[t.sceneKey]:t.scene}
+
+/* =========================================================
+   10. ХРАНЕНИЕ
+   ========================================================= */
+const LSKEY='stereo-coord-trainer-v1';
+const Store={
+  data:{v:1,done:{},tasks:[],scenes:[],theme:'dark',t:0},db:null,uid:null,timer:null,busy:false,again:false,status:'локально (этот браузер)',
+  load(){try{const s=localStorage.getItem(LSKEY);if(s)this.merge(JSON.parse(s))}catch(e){}},
+  merge(o){if(!o||typeof o!=='object')return;const d=this.data;
+    Object.assign(d.done,o.done||{});
+    for(const k of ['tasks','scenes']){(o[k]||[]).forEach(x=>{if(x&&x.id&&!d[k].some(y=>y.id===x.id))d[k].push(x)})}
+    if(o.theme)d.theme=o.theme;},
+  save(){this.data.t=Date.now();try{localStorage.setItem(LSKEY,JSON.stringify(this.data))}catch(e){}
+    if(this.db){clearTimeout(this.timer);this.timer=setTimeout(()=>this.flush(),1200)}},
+  async flush(){if(!this.db)return;if(this.busy){this.again=true;return}this.busy=true;
+    try{await this.db.doc('data/users/'+this.uid+'/state').set({json:JSON.stringify(this.data),t:Date.now()});this.status='в облаке (ваш аккаунт) и в браузере'}
+    catch(e){this.status='облако недоступно, сохранено в браузере'}
+    this.busy=false;if(this.again){this.again=false;this.flush()}if(app.tab==='data')renderData()},
+  async initCloud(){
+    try{if(!window.claude||typeof window.claude.use!=='function')return;
+      const db=await window.claude.use('db');const user=await window.claude.use('user');if(!db||!user)return;
+      const id=await user.id();if(!id)return;this.db=db;this.uid=id;
+      const snap=await db.doc('data/users/'+id+'/state').get();
+      if(snap.exists){const j=JSON.parse(snap.data().json||'{}');this.merge(j)}
+      this.status='в облаке (ваш аккаунт) и в браузере';this.save();renderAll();
+    }catch(e){console.warn('cloud',e)}
+  }
+};
+
+/* =========================================================
+   11. СОСТОЯНИЕ ПРИЛОЖЕНИЯ
+   ========================================================= */
+const app={
+  tab:'skills',sceneSpec:JSON.parse(JSON.stringify(SCENES.box345)),scene:null,
+  view:{th:-1.08,ph:0.36,zoom:1},showAxes:true,showLabels:true,
+  openSkill:null,task:null,pick:null,sandbox:{sel:[]},demo:false,
+};
+const defTh=t=>(t==='prism3'||t==='pyr3')?-1.38:-1.08;
+function setScene(spec){
+  const sc=buildScene(spec);if(!app.scene||app.scene.body.type!==sc.body.type)app.view.th=defTh(sc.body.type);app.sceneSpec=JSON.parse(JSON.stringify(spec));app.scene=sc;
+}
+function sceneTitle(){const b=app.scene.body;return b.info.title+' '+b.fullName.replace(/_/g,'').replace(/(\D)1/g,'$1₁')}
+
+/* =========================================================
+   12. РЕНДЕР 3D (SVG, ортогональная проекция)
+   ========================================================= */
+const svg=$('#svg');
+let geo=null; // кэш геометрии
+function camera(){const {th,ph}=app.view;
+  const Vc=[Math.cos(ph)*Math.cos(th),Math.cos(ph)*Math.sin(th),Math.sin(ph)];
+  const R=[-Math.sin(th),Math.cos(th),0];const U=[-Math.sin(ph)*Math.cos(th),-Math.sin(ph)*Math.sin(th),Math.cos(ph)];return {Vc,R,U}}
+function computeGeo(){
+  const sc=app.scene,b=sc.body;
+  const P={};sc.order.forEach(n=>P[n]=fOf(sc,sc.get(n).p));
+  const vs=b.verts.map(v=>P[v.name]);const c=[0,1,2].map(i=>(Math.min(...vs.map(p=>p[i]))+Math.max(...vs.map(p=>p[i])))/2);
+  const rad=Math.max(...vs.map(p=>Vf.len(Vf.sub(p,c))));
+  const faces=b.faces.map(f=>{const pts=f.map(n=>P[n]);let N=[0,0,0];
+    for(let i=0;i<pts.length;i++){const a=pts[i],q=pts[(i+1)%pts.length];N[0]+=(a[1]-q[1])*(a[2]+q[2]);N[1]+=(a[2]-q[2])*(a[0]+q[0]);N[2]+=(a[0]-q[0])*(a[1]+q[1])}
+    N=Vf.norm(N);const cen=[0,1,2].map(i=>pts.reduce((s,x)=>s+x[i],0)/pts.length);if(Vf.dot(N,Vf.sub(cen,c))<0)N=Vf.mul(N,-1);
+    return {names:f,pts,N,off:Vf.dot(N,pts[0])}});
+  geo={P,c,rad,faces};
+}
+function proj(X){const {Vc,R,U}=geo.cam;const d=Vf.sub(X,geo.c);return [geo.cx+geo.s*Vf.dot(d,R),geo.cy-geo.s*Vf.dot(d,U),Vf.dot(d,Vc)]}
+function faceVis(f){return Vf.dot(f.N,geo.cam.Vc)>1e-9}
+function facesContaining(p){return geo.faces.filter(f=>Math.abs(Vf.dot(f.N,p)-f.off)<1e-7*Math.max(1,geo.rad))}
+function segVisible(a,b){const m=Vf.mul(Vf.add(a,b),.5);const fs=facesContaining(m);if(!fs.length)return null;return fs.some(faceVis)}
+function svgLabel(name,x,y,color,size){const [a,b]=splitName(name);
+  return `<text x="${x}" y="${y}" fill="${color}" font-size="${size||15}" font-weight="600" text-anchor="middle" dominant-baseline="middle" style="paint-order:stroke;stroke:var(--bg);stroke-width:3px">${esc(a)}${b?`<tspan dy="4" font-size="${(size||15)*0.7}">${esc(b)}</tspan>`:''}</text>`}
+function labelPos(X,off){const p=proj(X);const cc=proj(geo.c);let dx=p[0]-cc[0],dy=p[1]-cc[1];const l=Math.hypot(dx,dy)||1;off=off||15;return [p[0]+dx/l*off,p[1]+dy/l*off]}
+function line(a,b,color,w,dash,op){const p=proj(a),q=proj(b);return `<line x1="${p[0].toFixed(1)}" y1="${p[1].toFixed(1)}" x2="${q[0].toFixed(1)}" y2="${q[1].toFixed(1)}" stroke="${color}" stroke-width="${w||2}" ${dash?`stroke-dasharray="${dash===true?'6 5':dash}"`:''} stroke-linecap="round" ${op?`opacity="${op}"`:''}/>`}
+function arrow(a,b,color,w,dash){const p=proj(a),q=proj(b);const dx=q[0]-p[0],dy=q[1]-p[1],l=Math.hypot(dx,dy);if(l<2)return '';const ux=dx/l,uy=dy/l,s=11;
+  const h1=[q[0]-ux*s-uy*s*.45,q[1]-uy*s+ux*s*.45],h2=[q[0]-ux*s+uy*s*.45,q[1]-uy*s-ux*s*.45];
+  return line(a,b,color,w||2.5,dash)+`<polygon points="${q[0]},${q[1]} ${h1[0]},${h1[1]} ${h2[0]},${h2[1]}" fill="${color}"/>`}
+function polyFill(pts,fill,stroke){return `<polygon points="${pts.map(p=>{const q=proj(p);return q[0].toFixed(1)+','+q[1].toFixed(1)}).join(' ')}" fill="${fill}" ${stroke?`stroke="${stroke}"`:'stroke="none"'}/>`}
+
+function render(){
+  try{
+    if(!app.scene)return;
+    if(!geo)computeGeo();
+    const W=svg.clientWidth||600,H=svg.clientHeight||500;
+    geo.cam=camera();geo.cx=W/2;geo.cy=H/2+10;geo.s=Math.min(W,H)*0.36/geo.rad*app.view.zoom;
+    const sc=app.scene,b=sc.body;let out='';
+    // грани (лёгкая заливка видимых)
+    geo.faces.forEach(f=>{if(faceVis(f))out+=polyFill(f.pts,'var(--face)')});
+    // оверлеи-плоскости (под рёбрами)
+    const ovs=currentOverlays();
+    ovs.filter(o=>o.t==='plane').forEach(o=>out+=drawPlane(o));
+    // рёбра
+    const adj={};geo.faces.forEach(f=>f.names.forEach((n,i)=>{const k=[n,f.names[(i+1)%f.names.length]].sort().join('|');(adj[k]=adj[k]||[]).push(f)}));
+    let hid='',vis='';
+    b.edges.forEach(([a,c])=>{const fs=adj[[a,c].sort().join('|')]||[];const v=fs.some(faceVis);const s=line(geo.P[a],geo.P[c],'var(--edge)',v?2.2:1.4,v?false:'5 5',v?1:.75);if(v)vis+=s;else hid+=s});
+    out+=hid+vis;
+    // оси
+    if(app.showAxes)out+=drawAxes();
+    // прочие оверлеи
+    ovs.filter(o=>o.t!=='plane').forEach(o=>out+=drawOv(o));
+    // точки
+    const signs=(ovs.find(o=>o.t==='signs')||{}).signs;
+    const sel=selectedNames();
+    sc.order.forEach(n=>{const P=sc.get(n);const X=geo.P[n];const p=proj(X);
+      let col=P.kind==='user'?'var(--upt)':'var(--pt)';if(signs&&signs[n]!==undefined)col=signs[n]>0?'#ff6b6b':signs[n]<0?'#4dabf7':'#38e08c';
+      const r=signs&&signs[n]!==undefined?6.5:4.6;
+      if(sel[n])out+=`<circle cx="${p[0]}" cy="${p[1]}" r="10" fill="none" stroke="${sel[n]}" stroke-width="2.5"/>`;
+      out+=`<circle cx="${p[0]}" cy="${p[1]}" r="${r}" fill="${col}" stroke="var(--bg)" stroke-width="1.5"/>`;
+      out+=`<circle class="ptHit" data-name="${esc(n)}" cx="${p[0]}" cy="${p[1]}" r="13" fill="transparent"><title>${esc(n)}</title></circle>`;
+      if(app.showLabels){const l=labelPos(X);out+=svgLabel(n,l[0],l[1],col)}
+    });
+    (app.sandbox.kpts||[]).forEach(q=>{if(app.task||app.pick)return;const X=fOf(sc,q.p);const p=proj(X);
+      out+=`<circle cx="${p[0]}" cy="${p[1]}" r="4.6" fill="var(--kpt)" stroke="var(--bg)" stroke-width="1.5"/>`;if(app.showLabels){const l=labelPos(X);out+=svgLabel(q.name,l[0],l[1],'var(--kpt)')}});
+    svg.innerHTML=out;
+    $('#sceneCap').textContent=sceneTitle();
+  }catch(e){showErr(e)}
+}
+function drawAxes(){
+  let out='';const L=geo.rad*1.25+0.6;const names=['x','y','z'];
+  for(let i=0;i<3;i++){const e=[0,0,0];e[i]=1;
+    let t1=Infinity;geo.faces.forEach(f=>{const a=Vf.dot(f.N,e);if(a>1e-12)t1=Math.min(t1,(f.off+1e-9)/a)});
+    if(!isFinite(t1)||t1<0)t1=0;t1=Math.min(t1,L);
+    const O=[0,0,0];
+    if(t1>1e-9){const m=Vf.mul(e,t1/2);const strictly=geo.faces.every(f=>Vf.dot(f.N,m)-f.off<-1e-7*geo.rad);
+      let dash=true;if(!strictly){const fs=facesContaining(m);dash=!fs.some(faceVis)}
+      out+=line(O,Vf.mul(e,t1),'var(--axis)',1.8,dash?'4 4':false)}
+    out+=arrow(Vf.mul(e,t1),Vf.mul(e,L),'var(--axis)',1.8);
+    const lp=proj(Vf.mul(e,L*1.06));out+=`<text x="${lp[0]}" y="${lp[1]}" fill="var(--axis)" font-size="15" font-style="italic" text-anchor="middle" dominant-baseline="middle">${names[i]}</text>`;
+  }
+  const o=proj([0,0,0]);out+=`<text x="${o[0]-12}" y="${o[1]+14}" fill="var(--axis)" font-size="12">O</text>`;
+  return out;
+}
+function drawPlane(o){
+  const sc=app.scene;let out='';const sec=sectionExact(sc,o.pl);
+  const color=o.color||COL.plane;
+  if(sec.pts.length>=3){
+    const fl=sec.pts.map(q=>fOf(sc,q.p));
+    out+=polyFill(fl,color==COL.plane?'var(--sec)':'rgba(255,184,77,.22)');
+    fl.forEach((p,i)=>{const q=fl[(i+1)%fl.length];const v=segVisible(p,q);out+=line(p,q,color,v===false?1.6:2.4,v===false?'5 4':false)});
+    if(o.names||o.named)sec.pts.forEach((q,i)=>{const X=fl[i];const nm=o.names?o.names[i]:q.name;if(!nm||sc.has(nm))return;const p=proj(X);
+      out+=`<circle cx="${p[0]}" cy="${p[1]}" r="4.6" fill="var(--kpt)"/>`;if(app.showLabels){const l=labelPos(X);out+=svgLabel(nm,l[0],l[1],'var(--kpt)')}});
+  }else{
+    const N=Vf.norm(o.pl.n.map((x,i)=>x.val()/Math.sqrt(sc.rad[i])));const at=o.at||geo.c;
+    let e1=Vf.cross(N,[0,0,1]);if(Vf.len(e1)<1e-6)e1=Vf.cross(N,[1,0,0]);e1=Vf.norm(e1);const e2=Vf.cross(N,e1);const s=geo.rad*.55;
+    const pts=[[1,1],[1,-1],[-1,-1],[-1,1]].map(([a,b])=>Vf.add(at,Vf.add(Vf.mul(e1,a*s),Vf.mul(e2,b*s))));
+    out+=polyFill(pts,'rgba(56,224,140,.18)',color);
+  }
+  return out;
+}
+function drawOv(o){
+  switch(o.t){
+    case 'vec':return arrow(o.a,o.b,o.color,2.6,o.dash?'7 5':false);
+    case 'normal':{const l=Vf.len(o.n)||1;const b=Vf.add(o.from,Vf.mul(o.n,geo.rad*.55/l));return arrow(o.from,b,COL.n,2.8)+(()=>{const p=labelPos(b,12);return `<text x="${p[0]}" y="${p[1]}" fill="${COL.n}" font-size="15" font-style="italic" text-anchor="middle">n</text>`})()}
+    case 'seg':return line(o.a,o.b,o.color,o.w||3,o.dash);
+    case 'line':{const d=Vf.sub(o.b,o.a);const ext=geo.rad*.35/(Vf.len(d)||1);return line(Vf.sub(o.a,Vf.mul(d,ext)),o.a,o.color,1.6,'2 4')+line(o.b,Vf.add(o.b,Vf.mul(d,ext)),o.color,1.6,'2 4')+line(o.a,o.b,o.color,3.2,o.dash)}
+    case 'pt':{const p=proj(o.p);let s=`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="${o.color}" stroke="var(--bg)" stroke-width="1.5"/>`;if(o.name&&app.showLabels){const l=labelPos(o.p);s+=svgLabel(o.name,l[0],l[1],o.color)}return s}
+    case 'perp':{let s=line(o.a,o.b,COL.perp,2.8);const p=proj(o.b);s+=`<circle cx="${p[0]}" cy="${p[1]}" r="4.5" fill="${COL.perp}"/>`;if(app.showLabels){const l=labelPos(o.b,14);s+=svgLabel('H',l[0],l[1],COL.perp,14)}return s}
+    case 'ring':return '';
+    default:return '';
+  }
+}
+function selectedNames(){
+  const m={};
+  if(app.pick){Object.values(app.pick.slots).forEach(n=>{if(n)m[n]='var(--acc)'})}
+  else if(app.task){Object.values(app.task.slots).forEach(n=>m[n]='var(--acc)')}
+  else app.sandbox.sel.forEach((n,i)=>m[n]=i<3?'var(--acc)':COL.perp);
+  return m;
+}
+function currentOverlays(){
+  const out=[];
+  if(app.task){const t=app.task,c=t.ctx,sk=SK[t.skill];
+    (sk.lines||[]).forEach(([a,b],i)=>out.push({t:'line',a:c.fl(a),b:c.fl(b),color:i?COL.line2:COL.line}));
+    t.steps.forEach((s,i)=>{if(i<t.idx||(i===t.idx&&t.st[i].done))(s.ov||[]).forEach(o=>out.push(o))});
+  }else if(app.pick){const sk=SK[app.pick.skill];const sc=app.scene;
+    (sk.lines||[]).forEach(([a,b],i)=>{const A=app.pick.slots[a],B=app.pick.slots[b];if(A&&B&&A!==B)out.push({t:'line',a:fOf(sc,sc.get(A).p),b:fOf(sc,sc.get(B).p),color:i?COL.line2:COL.line})});
+  }else if(app.sandbox.ov)out.push(...app.sandbox.ov);
+  // поздние оверлеи затирают ранние для signs
+  return out;
+}
+
+/* ---------- мышь ---------- */
+let drag=null;
+svg.addEventListener('pointerdown',e=>{
+  const hit=e.target.closest&&e.target.closest('.ptHit');
+  if(hit){onPointClick(hit.dataset.name);return}
+  drag={x:e.clientX,y:e.clientY};svg.classList.add('drag');svg.setPointerCapture(e.pointerId)});
+svg.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag={x:e.clientX,y:e.clientY};
+  app.view.th-=dx*0.009;app.view.ph=Math.max(-1.5,Math.min(1.5,app.view.ph+dy*0.009));render()});
+const endDrag=()=>{drag=null;svg.classList.remove('drag')};
+svg.addEventListener('pointerup',endDrag);svg.addEventListener('pointercancel',endDrag);
+svg.addEventListener('wheel',e=>{e.preventDefault();setZoom(app.view.zoom*(e.deltaY<0?1.1:1/1.1))},{passive:false});
+function setZoom(z){app.view.zoom=Math.max(.4,Math.min(3,z));$('#zoom').value=app.view.zoom;render()}
+
+/* =========================================================
+   13. РИСОВАНИЕ НА СЦЕНЕ
+   ========================================================= */
+const cv=$('#draw'),cx=cv.getContext('2d');let strokes=[],cur=null,drawOn=false,clearArm=null;
+function sizeCanvas(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;cx.setTransform(d,0,0,d,0,0);redraw()}
+function redraw(){cx.clearRect(0,0,cv.width,cv.height);cx.lineCap='round';cx.lineJoin='round';cx.strokeStyle='#ff2e3a';cx.lineWidth=3;
+  for(const s of strokes){cx.beginPath();s.forEach((p,i)=>i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1]));cx.stroke()}}
+function setDraw(on){drawOn=on;cv.classList.toggle('active',on);$('#bDraw').classList.toggle('on',on)}
+cv.addEventListener('pointerdown',e=>{if(!drawOn)return;const r=cv.getBoundingClientRect();cur=[[e.clientX-r.left,e.clientY-r.top]];strokes.push(cur);cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointermove',e=>{if(!cur)return;const r=cv.getBoundingClientRect();cur.push([e.clientX-r.left,e.clientY-r.top]);redraw()});
+cv.addEventListener('pointerup',()=>{cur=null});
+function undoDraw(){strokes.pop();redraw()}
+$('#bDraw').onclick=()=>setDraw(!drawOn);
+$('#bUndo').onclick=undoDraw;
+$('#bClear').onclick=()=>{const b=$('#bClear');if(clearArm){clearTimeout(clearArm);clearArm=null;strokes=[];redraw();b.classList.remove('danger');b.textContent='🗑 Стереть';return}
+  b.classList.add('danger');b.textContent='Точно стереть?';clearArm=setTimeout(()=>{clearArm=null;b.classList.remove('danger');b.textContent='🗑 Стереть'},2500)};
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&drawOn)setDraw(false);
+  if((e.ctrlKey||e.metaKey)&&(e.key==='z'||e.key==='я')&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();undoDraw()}
+});
+
+/* =========================================================
+   14. MathJax / запасной вывод формул
+   ========================================================= */
+function texToHtml(s){
+  let i=0;
+  const sym={cdot:'·',times:'×',Rightarrow:'⇒',parallel:'∥',perp:'⟂',ne:'≠',le:'≤',ge:'≥',varphi:'φ',alpha:'α',beta:'β',rho:'ρ',circ:'°',quad:'&emsp;',dots:'…',ldots:'…',in:'∈',infty:'∞',to:'→',approx:'≈',cos:'cos',sin:'sin',arccos:'arccos',arcsin:'arcsin',left:'',right:'',dfrac:null,frac:null};
+  function group(){if(s[i]==='{'){i++;const r=seq('}');i++;return r}return atom()}
+  function atom(){const ch=s[i];
+    if(ch==='\\'){i++;const m=s.slice(i).match(/^[A-Za-z]+/);if(!m){const c=s[i++];return c===' '||c===','||c===';'||c==='!'?' ':c==='\\'?'<br>':esc(c)}i+=m[0].length;const cmd=m[0];
+      if(cmd==='frac'||cmd==='dfrac'){const a=group(),b=group();return `<span class="fr"><span>${a}</span><span>${b}</span></span>`}
+      if(cmd==='sqrt'){return '√<span class="sq">'+group()+'</span>'}
+      if(cmd==='overrightarrow'||cmd==='vec'){return '<span class="vec">'+group()+'</span>'}
+      if(cmd==='boxed'||cmd==='text'||cmd==='mathrm'){return '<b>'+group()+'</b>'}
+      if(cmd==='begin'){group();const r=seq('\\end');i+=4;group();return '|'+r.replace(/&amp;|&/g,' ')+'|'}
+      if(cmd in sym)return sym[cmd]===null?'':sym[cmd];
+      return cmd}
+    i++;
+    if(ch==='_')return '<sub>'+group()+'</sub>';
+    if(ch==='^')return '<sup>'+group()+'</sup>';
+    if(ch==='{'){const r=seq('}');i++;return r}
+    return esc(ch)}
+  function seq(end){let r='';while(i<s.length&&!s.startsWith(end,i))r+=atom();return r}
+  return '<i style="font-style:normal">'+seq('\u0000')+'</i>';
+}
+function setHTML(el,h){
+  if(window.__mj.failed)h=h.replace(/\\\(([\s\S]*?)\\\)/g,(m,t)=>texToHtml(t.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')));
+  el.innerHTML=h;typeset(el);
+}
+function typeset(el){
+  if(!el)return;
+  if(window.__mj.ready&&window.MathJax&&MathJax.typesetPromise){try{MathJax.typesetClear&&MathJax.typesetClear([el])}catch(e){}MathJax.typesetPromise([el]).catch(e=>console.warn(e));return}
+}
+window.typesetAll=()=>{if(window.__mj.ready)document.querySelectorAll('.pane').forEach(typeset);else if(typeof renderTab==='function')try{renderTab()}catch(e){}};
+setTimeout(()=>{if(!window.__mj.ready&&!window.__mj.failed){window.__mj.failed=true;window.typesetAll()}},9000);
+
+/* =========================================================
+   15. ИНТЕРФЕЙС: вкладки
+   ========================================================= */
+function showErr(e){console.error(e);const b=$('#err');b.textContent='Ошибка: '+(e&&e.message||e);b.style.display='block';clearTimeout(showErr.t);showErr.t=setTimeout(()=>b.style.display='none',6000)}
+function setTab(t){app.tab=t;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='pane-'+t));renderTab()}
+function renderTab(){({skills:renderSkills,solve:renderSolve,scene:renderScenePane,data:renderData})[app.tab]()}
+function renderAll(){applyTheme();renderTab();render()}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+
+function tasksOf(skill){return PRESETS.filter(t=>t.skill===skill).concat(Store.data.tasks.filter(t=>t.skill===skill))}
+function taskTitle(t){
+  const spec=taskSceneSpec(t);const sk=SK[t.skill];
+  const pts=sk.slots.map(([k])=>t.slots[k]);
+  return (t.title?esc(t.title)+' · ':'')+(BODY[spec.body.type].short)+': '+T(pts.map(tn).join(',\\ '));
+}
+function renderSkills(){
+  const el=$('#pane-skills');let h=`<h2>Тренажёр «Метод координат»</h2><p class="muted small">Навыки идут от простого к сложному. Каждый навык — пошаговое решение с проверкой каждого шага. Можно взять готовую задачу или составить свою на любой сцене.</p>`;
+  let num=0;
+  MODULES.forEach(([m,mt])=>{h+=`<div class="mod">${mt}</div>`;
+    Object.values(SK).filter(s=>s.mod===m).forEach(s=>{num++;s.num=num;const ts=tasksOf(s.id);const dn=ts.filter(t=>Store.data.done[t.id]).length;const open=app.openSkill===s.id;
+      h+=`<div class="card skill" data-sk="${s.id}"><div class="hd"><div class="num ${dn&&dn===ts.length?'full':''}">${num}</div><div class="ttl">${s.title}</div><div class="prog">${dn}/${ts.length}</div></div>`;
+      if(open){h+=`<div class="body"><div class="theory">${s.theory}</div><div class="tlist">`;
+        ts.forEach(t=>{const st=Store.data.done[t.id];h+=`<div class="titem" data-task="${t.id}"><span class="st">${st?'<span class="sticker">'+(st==='ok'?'✓':'✓*')+'</span>':'○'}</span><span class="tt">${taskTitle(t)}</span>${t.preset?'':`<span class="badge">моя</span><button class="sm" data-del="${t.id}" title="Удалить">✕</button>`}</div>`});
+        h+=`</div><div class="btns"><button class="primary sm" data-new="${s.id}">+ Своя задача на текущей сцене</button></div></div>`}
+      h+='</div>'})});
+  h+=`<div class="mod">Свободный режим</div><div class="card"><b>Песочница</b><div class="small muted">Кликните 3 точки — сразу строится сечение и показывается решение по шагам; 4-я точка — расстояние до плоскости.</div><div class="btns"><button class="sm" id="goSandbox">Открыть песочницу</button></div></div>`;
+  setHTML(el,h);
+  el.querySelectorAll('.skill .hd').forEach(d=>d.onclick=()=>{const id=d.parentNode.dataset.sk;app.openSkill=app.openSkill===id?null:id;renderSkills()});
+  el.querySelectorAll('[data-task]').forEach(d=>d.onclick=e=>{if(e.target.closest('[data-del]'))return;startTaskById(d.dataset.task)});
+  el.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const id=b.dataset.del;if(b.dataset.arm){Store.data.tasks=Store.data.tasks.filter(t=>t.id!==id);delete Store.data.done[id];Store.save();renderSkills()}else{b.dataset.arm=1;b.textContent='Удалить?';b.classList.add('danger')}});
+  el.querySelectorAll('[data-new]').forEach(b=>b.onclick=()=>startPick(b.dataset.new));
+  const gs=$('#goSandbox');if(gs)gs.onclick=()=>{app.task=null;app.pick=null;resetSandbox();setTab('solve');render()};
+}
+
+/* ---------- запуск задач ---------- */
+function findTask(id){return PRESETS.find(t=>t.id===id)||Store.data.tasks.find(t=>t.id===id)}
+function startTaskById(id){const t=findTask(id);if(t)startTask(t)}
+function startTask(t){
+  try{
+    const spec=taskSceneSpec(t);setScene(spec);geo=null;
+    const c=new Ctx(app.scene,t.slots);const sk=SK[t.skill];
+    const err=sk.check&&sk.check(c);if(err)throw new Error(err);
+    const steps=sk.steps(c);
+    app.task={def:t,id:t.id,skill:t.skill,slots:t.slots,ctx:c,steps,idx:0,st:steps.map(()=>({done:false,shown:false,hint:0,tries:0,msg:''})),used:false};
+    app.pick=null;app.openSkill=t.skill;setTab('solve');render();
+  }catch(e){if(e.message==='MIXED')showErr('Эта конфигурация не поддерживается точной арифметикой');else showErr(e)}
+}
+function startPick(skill){app.task=null;app.pick={skill,slots:{},active:SK[skill].slots[0][0],title:''};app.openSkill=skill;setTab('solve');render()}
+function onPointClick(n){
+  if(app.pick){const p=app.pick;const sl=SK[p.skill].slots.map(s=>s[0]);let k=p.active||sl.find(x=>!p.slots[x]);if(!k)k=sl[sl.length-1];
+    p.slots[k]=n;const i=sl.indexOf(k);p.active=sl.slice(i+1).find(x=>!p.slots[x])||sl.find(x=>!p.slots[x])||null;renderSolve();render();return}
+  if(app.task){return}
+  // песочница
+  const s=app.sandbox;if(s.sel.length>=4)s.sel=[];
+  if(s.sel.length<3&&s.sel.includes(n))return;
+  s.sel.push(n);buildSandbox();if(app.tab!=='solve')setTab('solve');else renderSolve();render();
+}
+
+/* ---------- песочница ---------- */
+function resetSandbox(){app.sandbox={sel:[],ov:[],kpts:[],steps:null,shown:0}}
+function buildSandbox(){
+  const s=app.sandbox;s.ov=[];s.kpts=[];s.steps=null;s.err='';s.shown=1;
+  const sc=app.scene;if(s.sel.length<3)return;
+  try{
+    const slots={P:s.sel[0],Q:s.sel[1],R:s.sel[2]};if(s.sel[3])slots.M=s.sel[3];
+    const c=new Ctx(sc,slots);
+    if(V.isZero(V.cross(c.vec('P','Q'),c.vec('P','R')))){s.err='Точки лежат на одной прямой — выберите другие.';s.sel=[];return}
+    const u=c.vec('P','Q'),v=c.vec('P','R');const cr=stepCross(c,u,v,c.vn('P','Q'),c.vn('P','R'),'P');const pl=stepPlane(c,cr.n,'P','('+c.t('P')+c.t('Q')+c.t('R')+')');
+    const red=redFromEq(sc,pl.eq);const sec=sectionExact(sc,red);let k=0;sec.pts.forEach(q=>{if(!q.name){k++;q.name='K'+k;q.fresh=true}});
+    s.kpts=sec.pts.filter(q=>q.fresh);
+    const fresh=sec.pts.filter(q=>q.fresh);
+    const steps=[stepCoords(c,['P','Q','R']),stepVectors(c,[['P','Q'],['P','R']]),cr,pl];
+    steps.push({title:'Сечение',sol:(fresh.length?'Точки пересечения с рёбрами: '+fresh.map(q=>T(tn(q.name)+tv(realOf(sc,q.p)))+' (ребро '+T(tn(q.edge.a)+tn(q.edge.b))+', '+T('k='+q.edge.k.tex())+')').join('; ')+'<br>':'')+
+      'Сечение: '+T(sec.pts.map(q=>tn(q.name)).join(''))+' ('+sec.pts.length+' вершин).'+(sec.pts.some(q=>!q.fresh&&sc.get(q.name).kind==='user')?' <span class="muted">Точки пользователя распознаны — новые K не созданы.</span>':''),
+      ov:[{t:'plane',pl:red,color:COL.plane,at:c.fl('P')}]});
+    if(slots.M){
+      if(evalEq(pl.eq,c.R('M')).isZero())steps.push({title:'Расстояние',sol:'Точка '+T(c.t('M'))+' лежит в плоскости: расстояние 0.'});
+      else{const sd=stepDist(c,pl.eq,'M');sd.ov=[{t:'perp',a:c.fl('M'),b:fOf(sc,footOnPlane(sc,red,c.red('M')))}];steps.push(stepCoords(c,['M'],'Четвёртая точка'),sd)}
+    }
+    s.steps=steps;s.shown=slots.M?steps.length:1;
+  }catch(e){s.err=e.message==='MIXED'?'Не поддерживается':e.message}
+  updateSandboxOv();
+}
+function updateSandboxOv(){const s=app.sandbox;s.ov=[];if(s.steps)s.steps.slice(0,s.shown).forEach(st=>(st.ov||[]).forEach(o=>s.ov.push(o)));
+  // сечение показываем сразу
+  if(s.steps){const last=s.steps.find(x=>x.title==='Сечение');if(last&&!s.ov.includes(last.ov[0]))s.ov.unshift(last.ov[0])}}
+
+/* ---------- вкладка «Решение» ---------- */
+function rowHtml(r,si,ri){
+  const inp=(f,fi)=>`<input data-s="${si}" data-r="${ri}" data-f="${fi}" autocomplete="off" spellcheck="false">`;
+  if(r.form==='eq')return `<div class="row">${inp(0,0)}${T('x\\,+')}${inp(0,1)}${T('y\\,+')}${inp(0,2)}${T('z\\,+')}${inp(0,3)}${T('=0')}</div>`;
+  if(r.form==='lin')return `<div class="row">${inp(0,0)}${T('k\\,+')}${inp(0,1)}${T('=0')}</div>`;
+  return `<div class="row"><span class="rl">${r.label||''}</span>${r.tuple?'(':''}${r.fields.map((f,fi)=>inp(f,fi)).join(r.tuple?' ; ':'')}${r.tuple?')':''}</div>`;
+}
+function renderSolve(){
+  const el=$('#pane-solve');
+  if(app.pick)return renderPick(el);
+  if(!app.task)return renderSandbox(el);
+  const t=app.task,sk=SK[t.skill],c=t.ctx,sc=c.sc;
+  const used=[...new Set(Object.values(t.slots))];
+  const pd=depsOf(sc,used).map(n=>pointDesc(sc,n)).join(' ');
+  let h=`<div class="flex" style="justify-content:space-between"><div class="muted small">Навык ${sk.num||''}: ${sk.title}</div><label class="small"><input type="checkbox" id="demo" ${app.demo?'checked':''}> режим показа (без ввода)</label></div>
+    <div class="cond" style="margin-top:6px">${bodyDesc(sc.body)} ${pd} ${sk.goal(c)}<div class="small muted" style="margin-top:4px">${axesDesc(sc.body)}</div></div>`;
+  t.steps.forEach((s,i)=>{if(i>t.idx)return;const st=t.st[i];const cur=i===t.idx&&!st.done;
+    h+=`<div class="step ${st.done?'done':''} ${cur?'cur':''}"><div class="sh"><span class="sn">${i+1}</span><span>${s.title}</span>${st.shown?'<span class="badge">показано</span>':''}</div>`;
+    if(s.intro)h+=`<div style="margin-top:6px">${s.intro}</div>`;
+    if(app.demo&&!st.done){st.done=true;st.shown=true}
+    if(s.rows&&!app.demo)h+=`<div class="rows ${s.grid?'grid2':''}">${s.rows.map((r,ri)=>rowHtml(r,i,ri)).join('')}</div>`;
+    if(s.choice&&!app.demo)h+=`<div class="choice">${s.choice.options.map((o,oi)=>`<button data-ch="${oi}" data-s="${i}" class="${st.done&&oi===s.choice.correct?'right':''} ${st.wrong&&st.wrong.includes(oi)?'wrong':''}" ${st.done?'disabled':''}>${o}</button>`).join('')}</div>`;
+    if(s.checks&&!app.demo)h+=`<div class="checks">${s.checks.items.map((it,ii)=>`<label data-ci="${ii}"><input type="checkbox" data-s="${i}" data-ck="${ii}" ${st.done&&it.ok?'checked':''}> ${it.label}</label>`).join('')}</div>`;
+    if(st.hint&&!st.done)h+=(s.hints||[]).slice(0,st.hint).map(x=>`<div class="hint">💡 ${x}</div>`).join('');
+    if(st.msg)h+=`<div class="msg ${st.done?'ok':'bad'}">${st.msg}</div>`;
+    if(st.done&&s.sol)h+=`<div class="sol">${s.sol}</div>`;
+    if(cur){h+=`<div class="btns">${(s.rows||s.checks)?'<button class="primary" id="bCheck">Проверить</button>':''}${s.info?'<button class="primary" id="bOk">Понятно</button>':''}${(s.hints||[]).length&&st.hint<(s.hints||[]).length?'<button id="bHint">Подсказка</button>':''}<button id="bShow">Показать решение</button></div>`}
+    h+='</div>';
+  });
+  const last=t.st[t.idx];
+  if(last.done){
+    if(t.idx<t.steps.length-1)h+=`<div class="btns"><button class="primary" id="bNext">Далее →</button></div>`;
+    else{
+      const res=t.st.some(x=>x.shown)?'hint':'ok';
+      if(t.id&&!Store.data.done[t.id]||(t.id&&Store.data.done[t.id]==='hint'&&res==='ok')){Store.data.done[t.id]=res;Store.save()}
+      h+=`<div class="card" style="border-color:var(--ok)"><b>🎉 Задача решена${res==='hint'?' (с подсказками)':''}!</b><div class="btns"><button class="primary" id="bNextTask">Следующая задача →</button><button id="bAgain">Решить заново</button>${t.id?'':'<button id="bSaveTask">Сохранить в мои задачи</button>'}</div></div>`;
+    }
+  }
+  setHTML(el,h);
+  const q=s=>el.querySelector(s);
+  q('#demo').onchange=e=>{app.demo=e.target.checked;renderSolve();render()};
+  if(q('#bCheck'))q('#bCheck').onclick=checkStep;
+  if(q('#bOk'))q('#bOk').onclick=()=>{last.done=true;renderSolve();render()};
+  if(q('#bHint'))q('#bHint').onclick=()=>{t.st[t.idx].hint++;renderSolve()};
+  if(q('#bShow'))q('#bShow').onclick=()=>revealStep();
+  if(q('#bNext'))q('#bNext').onclick=()=>{t.idx++;renderSolve();render();setTimeout(()=>{const f=el.querySelector('.step.cur input');if(f)f.focus();const cs=el.querySelector('.step.cur');if(cs)cs.scrollIntoView({block:'nearest',behavior:'smooth'})},30)};
+  if(q('#bNextTask'))q('#bNextTask').onclick=nextTask;
+  if(q('#bAgain'))q('#bAgain').onclick=()=>startTask(t.def);
+  if(q('#bSaveTask'))q('#bSaveTask').onclick=()=>{const d=JSON.parse(JSON.stringify(t.def));d.id='u_'+Date.now();Store.data.tasks.push(d);Store.data.done[d.id]=t.st.some(x=>x.shown)?'hint':'ok';t.id=d.id;t.def=d;Store.save();renderSolve()};
+  el.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{const s=t.steps[t.idx],st=t.st[t.idx];const oi=+b.dataset.ch;
+    if(oi===s.choice.correct){st.done=true;st.msg='Верно!'}else{st.wrong=(st.wrong||[]).concat(oi);st.tries++;st.msg='Неверно, подумайте ещё.';if(st.tries>=2&&!st.hint&&s.hints)st.hint=1}renderSolve();render()});
+  el.querySelectorAll('.step.cur input[data-r]').forEach(inp=>{const k=t.idx+'_'+inp.dataset.r+'_'+inp.dataset.f;if(t.vals&&t.vals[k]!==undefined)inp.value=t.vals[k];
+    inp.oninput=()=>{t.vals=t.vals||{};t.vals[k]=inp.value;inp.classList.remove('okf','badf')};
+    inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();checkStep()}}});
+  el.querySelectorAll('.step.cur input[data-ck]').forEach(inp=>{const k='ck'+t.idx+'_'+inp.dataset.ck;if(t.vals&&t.vals[k])inp.checked=true;inp.onchange=()=>{t.vals=t.vals||{};t.vals[k]=inp.checked}});
+  if(t.marks)applyMarks(el);
+}
+function applyMarks(el){const t=app.task;if(!t.marks||t.marks.idx!==t.idx)return;
+  for(const [k,cls] of Object.entries(t.marks.m)){const [r,f]=k.split('_');const inp=el.querySelector(`.step.cur input[data-r="${r}"][data-f="${f}"]`);if(inp)inp.classList.add(cls)}
+  for(const [k,cls] of Object.entries(t.marks.c||{})){const lb=el.querySelector(`.step.cur label[data-ci="${k}"]`);if(lb)lb.classList.add(cls)}}
+function checkStep(){
+  const t=app.task,s=t.steps[t.idx],st=t.st[t.idx];const el=$('#pane-solve');const m={},cm={};let ok=true;
+  if(s.rows){s.rows.forEach((r,ri)=>{
+    const vals=r.fields.map((f,fi)=>{const inp=el.querySelector(`.step.cur input[data-r="${ri}"][data-f="${fi}"]`);return parseNum(inp?inp.value:'')});
+    if(r.prop){const exp=r.fields.map(f=>f.v);const j=exp.reduce((b,x,i)=>Math.abs(x)>Math.abs(exp[b])?i:b,0);
+      const good=vals.every(x=>!isNaN(x))&&Math.abs(vals[j])>1e-12&&vals.every((x,i)=>near(x,exp[i]*vals[j]/exp[j]));
+      r.fields.forEach((f,fi)=>m[ri+'_'+fi]=good?'okf':'badf');if(!good)ok=false}
+    else r.fields.forEach((f,fi)=>{const g=!isNaN(vals[fi])&&near(vals[fi],f.v);m[ri+'_'+fi]=g?'okf':'badf';if(!g)ok=false});
+  })}
+  if(s.checks){s.checks.items.forEach((it,ii)=>{const inp=el.querySelector(`.step.cur input[data-ck="${ii}"]`);const v=!!(inp&&inp.checked);if(v!==it.ok){ok=false;if(v)cm[ii]='badf'}else if(v)cm[ii]='okf'})}
+  if(ok){st.done=true;st.msg='Верно! ✓';t.marks=null}
+  else{st.tries++;st.msg=s.rows&&s.rows.some(r=>r.prop)?'Не совпадает. Проверьте вычисления (принимается любое пропорциональное уравнение).':'Есть ошибки — неверные поля подсвечены красным.';
+    if(st.tries>=2&&st.hint===0&&(s.hints||[]).length)st.hint=1;t.marks={idx:t.idx,m,c:cm}}
+  renderSolve();render();
+}
+function revealStep(){const t=app.task,s=t.steps[t.idx],st=t.st[t.idx];st.done=true;st.shown=true;st.msg='';
+  t.vals=t.vals||{};if(s.rows)s.rows.forEach((r,ri)=>r.fields.forEach((f,fi)=>t.vals[t.idx+'_'+ri+'_'+fi]=f.a));
+  renderSolve();render()}
+function nextTask(){
+  const t=app.task;const list=tasksOf(t.skill);let i=list.findIndex(x=>x.id===t.id);
+  let nx=list.slice(i+1).find(x=>!Store.data.done[x.id])||list.find(x=>!Store.data.done[x.id]&&x.id!==t.id);
+  if(!nx){const ids=Object.keys(SK);const j=ids.indexOf(t.skill);for(let k=j+1;k<ids.length&&!nx;k++){nx=tasksOf(ids[k]).find(x=>!Store.data.done[x.id])||null}}
+  if(nx)startTask(nx);else{app.task=null;setTab('skills')}
+}
+function renderPick(el){
+  const p=app.pick,sk=SK[p.skill],sc=app.scene;
+  const opts=sel=>`<option value="">—</option>`+sc.order.map(n=>`<option ${n===sel?'selected':''}>${esc(n)}</option>`).join('');
+  let h=`<h2>Своя задача: ${sk.title}</h2><div class="cond small">Сцена: ${bodyDesc(sc.body)} Выберите точки: кликайте по ним на чертеже (заполняется подсвеченная строка) или выбирайте в списках. Добавить свои точки ${T('M_1,M_2,\\dots')} можно на вкладке «Сцена».</div><div class="card">`;
+  sk.slots.forEach(([k,lab])=>{h+=`<div class="slotrow ${p.active===k?'act':''}" data-slot="${k}"><span class="lab">${p.active===k?'▶ ':''}${lab}</span><select data-sel="${k}">${opts(p.slots[k])}</select></div>`});
+  const full=sk.slots.every(([k])=>p.slots[k]);let preview='',err='';
+  if(full){try{const c=new Ctx(sc,p.slots);err=(sk.check&&sk.check(c))||'';if(!err)preview=bodyDesc(sc.body)+' '+depsOf(sc,Object.values(p.slots)).map(n=>pointDesc(sc,n)).join(' ')+' '+sk.goal(c)}catch(e){err=e.message==='MIXED'?'Конфигурация не поддерживается':e.message}}
+  h+=`</div>${preview?`<div class="cond">${preview}</div>`:''}${err?`<div class="msg bad">${err}</div>`:''}
+    <div class="flex" style="margin-top:8px"><input type="text" id="ptitle" placeholder="название (необязательно)" value="${esc(p.title||'')}" style="flex:1"></div>
+    <div class="btns"><button class="primary" id="pStart" ${full&&!err?'':'disabled'}>Начать решение</button><button class="okb" id="pSave" ${full&&!err?'':'disabled'}>Сохранить в мои задачи</button><button id="pCancel">Отмена</button></div>`;
+  setHTML(el,h);
+  el.querySelectorAll('[data-slot]').forEach(r=>r.onclick=e=>{if(e.target.tagName==='SELECT')return;p.active=r.dataset.slot;renderPick(el)});
+  el.querySelectorAll('[data-sel]').forEach(s=>s.onchange=()=>{p.slots[s.dataset.sel]=s.value||undefined;renderPick(el);render()});
+  $('#ptitle').oninput=e=>p.title=e.target.value;
+  const mk=()=>({skill:p.skill,scene:JSON.parse(JSON.stringify(app.sceneSpec)),slots:Object.assign({},p.slots),title:p.title||''});
+  $('#pStart').onclick=()=>{const d=mk();d.id=null;startTask(d)};
+  $('#pSave').onclick=()=>{const d=mk();d.id='u_'+Date.now();Store.data.tasks.push(d);Store.save();startTask(d)};
+  $('#pCancel').onclick=()=>{app.pick=null;setTab('skills');render()};
+}
+function renderSandbox(el){
+  const s=app.sandbox,sc=app.scene;
+  let h=`<h2>Песочница</h2><div class="cond small">${bodyDesc(sc.body)} ${axesDesc(sc.body)}<br>Кликните <b>3 точки</b> на чертеже — сразу появится сечение. Кнопка «Далее» раскрывает решение по шагам. <b>4-я точка</b> — расстояние от неё до плоскости. 5-й клик начинает заново.</div>
+    <div class="small" style="margin:8px 0">Выбрано: ${s.sel.length?T(s.sel.map(tn).join(',\\ ')):'—'} ${s.sel.length?'<button class="sm" id="sbReset">Сбросить</button>':''}</div>`;
+  if(s.err)h+=`<div class="msg bad">${s.err}</div>`;
+  if(s.steps){s.steps.slice(0,s.shown).forEach((st,i)=>{h+=`<div class="step done"><div class="sh"><span class="sn">${i+1}</span>${st.title}</div>${st.sol?`<div class="sol">${st.sol}</div>`:''}</div>`});
+    h+=`<div class="btns">${s.shown<s.steps.length?'<button class="primary" id="sbNext">Далее →</button><button id="sbAll">Показать всё</button>':''}</div>`}
+  setHTML(el,h);
+  const q=x=>el.querySelector(x);
+  if(q('#sbReset'))q('#sbReset').onclick=()=>{resetSandbox();renderSolve();render()};
+  if(q('#sbNext'))q('#sbNext').onclick=()=>{s.shown++;updateSandboxOv();renderSolve();render()};
+  if(q('#sbAll'))q('#sbAll').onclick=()=>{s.shown=s.steps.length;updateSandboxOv();renderSolve();render()};
+}
+
+/* ---------- вкладка «Сцена» ---------- */
+let sceneDraft=null;
+function renderScenePane(){
+  const el=$('#pane-scene');const spec=app.sceneSpec;if(!sceneDraft)sceneDraft=JSON.parse(JSON.stringify(spec.body));
+  const d=sceneDraft,info=BODY[d.type];d.params=Object.assign({},info.def,d.params);
+  let h=`<h2>Сцена</h2><div class="card"><div class="form"><span>Тело</span><select id="bType">${Object.entries(BODY).map(([k,v])=>`<option value="${k}" ${k===d.type?'selected':''}>${v.title}</option>`).join('')}</select>`;
+  if(d.type==='box')h+=`<span>${T('AB')} (ось x)</span><input data-p="a" value="${esc(d.params.a)}"><span>${T('AD')} (ось y)</span><input data-p="b" value="${esc(d.params.b)}"><span>${T('AA_1')} (ось z)</span><input data-p="c" value="${esc(d.params.c)}">`;
+  else if(!info.pyr)h+=`<span>сторона основания</span><input data-p="a" value="${esc(d.params.a)}"><span>боковое ребро</span><input data-p="h" value="${esc(d.params.h)}">`;
+  else h+=`<span>сторона основания</span><input data-p="a" value="${esc(d.params.a)}"><span><select id="hmode"><option value="h" ${d.params.hmode!=='l'?'selected':''}>высота</option><option value="l" ${d.params.hmode==='l'?'selected':''}>боковое ребро</option></select></span><input data-p="${d.params.hmode==='l'?'l':'h'}" value="${esc(d.params.hmode==='l'?d.params.l:d.params.h)}">`;
+  h+=`</div><div class="small muted" style="margin-top:6px">Можно вводить дроби и корни: ${T('3/2')}, ${T('√2')} (2√3, √6/2).</div><div class="btns"><button class="primary" id="bApply">Применить тело</button></div></div>`;
+  const sc=app.scene;
+  h+=`<h3>Точки сцены</h3><div class="plist">${sc.order.map(n=>{const P=sc.get(n);return `<span class="pchip ${P.kind==='user'?'user':''}" title="${esc(fOf(sc,P.p).map(x=>+x.toFixed(3)).join('; '))}">${T(tn(n))}${P.kind==='user'?` <a data-rm="${esc(n)}" style="cursor:pointer">✕</a>`:''}</span>`}).join('')}</div>`;
+  const opts=sc.order.map(n=>`<option>${esc(n)}</option>`).join('');
+  const nextName=(()=>{let i=1;while(sc.has('M'+i))i++;return 'M'+i})();
+  h+=`<div class="card"><b>Точка на отрезке (ребре)</b><div class="form" style="margin-top:6px"><span>от</span><select id="rA">${opts}</select><span>до</span><select id="rB">${opts}</select><span>отношение</span><span><input id="rm" value="1" style="width:50px"> : <input id="rn" value="1" style="width:50px"></span><span>имя</span><input id="rName" value="${nextName}"></div><div class="small muted">Например ребро ${T('A_1B_1')}, отношение ${T('2:3')} — считая от первой точки.</div><div class="btns"><button id="bAddR" class="primary sm">Добавить</button></div></div>`;
+  h+=`<div class="card"><b>Центр грани / середина нескольких точек</b><div class="form" style="margin-top:6px"><span>точки</span><input id="cOf" placeholder="A B C D" style="width:160px"><span>имя</span><input id="cName" value="O"></div><div class="btns"><button id="bAddC" class="primary sm">Добавить</button></div></div>`;
+  h+=`<h3>Мои сцены</h3><div class="flex"><input type="text" id="scTitle" placeholder="название сцены" style="flex:1"><button class="okb" id="bSaveScene">Сохранить текущую</button></div><div class="tlist">`;
+  Object.entries(SCENES).forEach(([k,s])=>h+=`<div class="titem" data-ls="pre:${k}"><span class="st">★</span><span class="tt">${esc(s.title)}</span><span class="badge">готовая</span></div>`);
+  Store.data.scenes.forEach(s=>h+=`<div class="titem" data-ls="${s.id}"><span class="st">●</span><span class="tt">${esc(s.title)}</span><button class="sm" data-dels="${s.id}">✕</button></div>`);
+  h+='</div>';
+  setHTML(el,h);
+  const q=x=>el.querySelector(x);
+  if(q('#rB').options.length>1)q('#rB').selectedIndex=1;
+  q('#bType').onchange=e=>{sceneDraft={type:e.target.value,params:Object.assign({},BODY[e.target.value].def)};renderScenePane()};
+  if(q('#hmode'))q('#hmode').onchange=e=>{d.params.hmode=e.target.value;renderScenePane()};
+  el.querySelectorAll('[data-p]').forEach(i=>i.oninput=()=>d.params[i.dataset.p]=i.value);
+  q('#bApply').onclick=()=>{try{const spec2={title:'',body:JSON.parse(JSON.stringify(d)),points:[]};
+      // сохраняем пользовательские точки, если вершины подходят
+      const keep=[];for(const p of app.sceneSpec.points){try{buildScene({body:spec2.body,points:keep.concat([p])});keep.push(p)}catch(e){}}
+      spec2.points=keep;changeScene(spec2)}catch(e){showErr(e)}};
+  q('#bAddR').onclick=()=>{try{const A=q('#rA').value,B=q('#rB').value,m=parseInt(q('#rm').value,10),n=parseInt(q('#rn').value,10),name=q('#rName').value.trim();
+      if(A===B)throw new Error('Выберите разные точки');if(!(m>=0&&n>=0&&m+n>0))throw new Error('Неверное отношение');if(!/^[A-Za-z]+\d*$/.test(name))throw new Error('Имя: латинская буква и цифры, например M1');
+      const s2=JSON.parse(JSON.stringify(app.sceneSpec));s2.points.push({name,kind:'ratio',A,B,m,n});changeScene(s2)}catch(e){showErr(e)}};
+  q('#bAddC').onclick=()=>{try{const of=q('#cOf').value.trim().split(/[\s,]+/).filter(Boolean),name=q('#cName').value.trim();if(of.length<2)throw new Error('Нужно минимум 2 точки');
+      if(!/^[A-Za-z]+\d*$/.test(name))throw new Error('Имя: латинская буква и цифры');const s2=JSON.parse(JSON.stringify(app.sceneSpec));s2.points.push({name,kind:'center',of});changeScene(s2)}catch(e){showErr(e)}};
+  el.querySelectorAll('[data-rm]').forEach(a=>a.onclick=()=>{const n=a.dataset.rm;const s2=JSON.parse(JSON.stringify(app.sceneSpec));
+    const dead=new Set([n]);let ch=true;while(ch){ch=false;s2.points.forEach(p=>{if(dead.has(p.name))return;const refs=p.kind==='ratio'?[p.A,p.B]:p.of;if(refs.some(r=>dead.has(r))){dead.add(p.name);ch=true}})}
+    s2.points=s2.points.filter(p=>!dead.has(p.name));changeScene(s2)});
+  q('#bSaveScene').onclick=()=>{const title=q('#scTitle').value.trim()||sceneTitle();Store.data.scenes.push({id:'s_'+Date.now(),title,spec:JSON.parse(JSON.stringify(app.sceneSpec))});Store.save();renderScenePane()};
+  el.querySelectorAll('[data-ls]').forEach(it=>it.onclick=e=>{if(e.target.closest('[data-dels]'))return;const k=it.dataset.ls;const s=k.startsWith('pre:')?SCENES[k.slice(4)]:Store.data.scenes.find(x=>x.id===k).spec;changeScene(JSON.parse(JSON.stringify(s)))});
+  el.querySelectorAll('[data-dels]').forEach(b=>b.onclick=()=>{if(b.dataset.arm){Store.data.scenes=Store.data.scenes.filter(s=>s.id!==b.dataset.dels);Store.save();renderScenePane()}else{b.dataset.arm=1;b.textContent='Удалить?';b.classList.add('danger')}});
+}
+function changeScene(spec){
+  setScene(spec);geo=null;sceneDraft=null;app.task=null;if(app.pick){app.pick.slots={};app.pick.active=SK[app.pick.skill].slots[0][0]}resetSandbox();renderTab();render();
+}
+
+/* ---------- вкладка «Сохранение» ---------- */
+async function getDownloads(){try{return (window.claude&&window.claude.use)?await window.claude.use('downloads'):null}catch(e){return null}}
+function renderData(){
+  const el=$('#pane-data');const d=Store.data;const doneN=Object.keys(d.done).length;
+  el.innerHTML=`<h2>Сохранение</h2><div class="card">Где хранится: <b>${Store.status}</b><br>Решено задач: <b>${doneN}</b>, своих задач: <b>${d.tasks.length}</b>, своих сцен: <b>${d.scenes.length}</b>.</div>
+   <div class="card"><b>Резервная копия</b><div class="small muted">Скопируйте текст и сохраните где угодно — потом вставьте его сюда, чтобы восстановить задачи и сцены.</div>
+   <div class="btns"><button id="dCopy" class="primary sm">Копировать</button><button id="dFile" class="sm">Скачать файл</button></div><textarea id="dTxt" readonly>${esc(JSON.stringify({tasks:d.tasks,scenes:d.scenes,done:d.done}))}</textarea></div>
+   <div class="card"><b>Восстановить</b><div class="small muted">Вставьте текст копии или выберите файл. Данные добавятся к текущим.</div><textarea id="dIn" placeholder="вставьте сюда"></textarea><div class="btns"><button id="dImp" class="primary sm">Восстановить из текста</button><input type="file" id="dFileIn" accept=".json,.txt"></div><div class="msg" id="dMsg"></div></div>
+   <div class="card"><b>Сбросить отметки «решено»</b><div class="btns"><button id="dReset" class="sm">Сбросить</button></div></div>`;
+  const q=x=>el.querySelector(x);
+  q('#dCopy').onclick=async()=>{try{await navigator.clipboard.writeText(q('#dTxt').value);q('#dCopy').textContent='Скопировано ✓'}catch(e){q('#dTxt').select();q('#dCopy').textContent='Выделено — нажмите Ctrl+C'}};
+  q('#dFile').onclick=async()=>{const dl=await getDownloads();if(!dl){q('#dFile').textContent='Недоступно — используйте «Копировать»';return}try{await dl.save({filename:'stereo-trainer-backup.json',data:q('#dTxt').value})}catch(e){}};
+  const imp=txt=>{try{const o=JSON.parse(txt);Store.merge(o);Store.save();q('#dMsg').className='msg ok';q('#dMsg').textContent='Готово!';renderData()}catch(e){q('#dMsg').className='msg bad';q('#dMsg').textContent='Не удалось прочитать: '+e.message}};
+  q('#dImp').onclick=()=>imp(q('#dIn').value);
+  q('#dFileIn').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>imp(r.result);r.readAsText(f)};
+  q('#dReset').onclick=()=>{const b=q('#dReset');if(b.dataset.arm){Store.data.done={};Store.save();renderData()}else{b.dataset.arm=1;b.textContent='Точно сбросить?';b.classList.add('danger')}};
+}
+
+/* ---------- панель инструментов ---------- */
+function applyTheme(){document.body.classList.toggle('light',Store.data.theme==='light');$('#bTheme').textContent=Store.data.theme==='light'?'☾':'☀'}
+$('#bTheme').onclick=()=>{Store.data.theme=Store.data.theme==='light'?'dark':'light';Store.save();applyTheme();render()};
+$('#bReset').onclick=()=>{app.view={th:defTh(app.scene.body.type),ph:0.36,zoom:1};$('#zoom').value=1;render()};
+$('#bZm').onclick=()=>setZoom(app.view.zoom/1.15);$('#bZp').onclick=()=>setZoom(app.view.zoom*1.15);
+$('#zoom').oninput=e=>{app.view.zoom=+e.target.value;render()};
+$('#bAxes').onclick=e=>{app.showAxes=!app.showAxes;e.target.classList.toggle('on',app.showAxes);render()};
+$('#bLabels').onclick=e=>{app.showLabels=!app.showLabels;e.target.classList.toggle('on',app.showLabels);render()};
+window.addEventListener('resize',()=>{render();sizeCanvas()});
+
+/* =========================================================
+   16. ЗАПУСК
+   ========================================================= */
+try{
+  Store.load();
+  setScene(app.sceneSpec);resetSandbox();
+  applyTheme();renderTab();render();sizeCanvas();
+  if(window.ResizeObserver)new ResizeObserver(()=>{render();sizeCanvas()}).observe($('#stage'));
+  Store.initCloud();
+}catch(e){
+  showErr(e);document.getElementById('pane-skills').innerHTML='<div class="card" style="border-color:var(--bad)"><b>Не удалось запустить приложение.</b><br>'+esc(e.message)+'</div>';
+}
+</script>
+</body>
+</html>

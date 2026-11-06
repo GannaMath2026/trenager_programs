@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тренажёр разборов</title>
+<style>
+  body{font-family:system-ui,Segoe UI,Roboto,sans-serif;background:#f7f8fc;margin:0;color:#263238}
+  .wrap{max-width:1040px;margin:0 auto;padding:16px}
+  .card{background:#fff;border:1px solid #e3e7f0;border-radius:14px;padding:16px;margin:10px 0;box-shadow:0 1px 3px rgba(30,40,90,.06)}
+  .flex{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+  .left{flex:1;min-width:320px}
+  .right{width:320px;background:#eef1fb;border-radius:14px;padding:14px;border:1px solid #dfe3f2}
+  button{font:inherit;cursor:pointer}
+  .primary{background:#5c6cf5;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:600}
+  .primary:hover{background:#4a5ae0}
+  .ghost{background:#fff;border:2px solid #dfe3ec;border-radius:10px;padding:8px 14px}
+  .danger{background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:10px;padding:8px 14px}
+  .opt{display:block;width:100%;text-align:left;margin:7px 0;padding:11px 13px;border:2px solid #dfe3ec;border-radius:11px;background:#fff}
+  .opt:hover{border-color:#7c8cf8}
+  .opt.ok{background:#e8f5e9;border-color:#2e7d32;font-weight:600}
+  .opt.bad{background:#ffebee;border-color:#e57373}
+  .opt:disabled{cursor:default;opacity:.9}
+  .badge{padding:3px 12px;border-radius:999px;font-weight:700;font-size:13px;white-space:nowrap}
+  .b-done{background:#e8f5e9;color:#2e7d32}
+  .b-prog{background:#fff8e1;color:#b26a00}
+  .b-none{background:#eceff1;color:#546e7a}
+  .bar{height:10px;background:#eceff1;border-radius:6px;overflow:hidden;margin:8px 0}
+  .bar>div{height:100%;background:linear-gradient(90deg,#7c8cf8,#4caf50)}
+  details.hint{margin:10px 0;background:#fffde7;border:1px solid #ffe082;border-radius:10px;padding:8px 12px}
+  details.hint summary{cursor:pointer;font-weight:600;color:#8d6e00}
+  .fb{min-height:24px;margin:8px 0;font-weight:600}
+  .fb.err{color:#c62828}.fb.good{color:#2e7d32}
+  table.rep{width:100%;border-collapse:collapse;margin-top:10px}
+  table.rep td,table.rep th{border:1px solid #e0e0e0;padding:8px 10px;text-align:left;font-size:14px}
+  table.rep th{background:#f5f6ff}
+  @media print{
+    .noprint{display:none!important}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+/* ============ ДАННЫЕ РАЗБОРОВ ============
+   Остальные готовые разборы (всего 99) вставляются в массив TASKS
+   в точно таком же формате: {id,title,formulas[],steps[]}.
+   Тип шага: обычный выбор или circle (окружность с дугой и точками). */
+const TASKS=[
+ {id:'t1',title:'Задание 1. 4t² + (2 − 2√3)t − √3 = 0 — решить группировкой + отбор корней',
+  formulas:['ac-подбор пары: p + q = b, p·q = a·c','Вынесение множителя: kx + ky = k(x + y)','Знаки: −(m + n) = −m − n','A·B = 0 ⇔ A = 0 или B = 0','Оценка: 0 < x < y ⇒ √x < √y; деление на c > 0 знак сохраняет','3 < 4 ⇒ √3 < 2 ⇒ √3/2 < 1; √3 ≈ 1,73','Отбор: цепочка неравенств, сравнение с рациональными числами'],
+  steps:[
+   {q:'Шаг 1/8. ОДНО действие: расписать среднее слагаемое (2 − 2√3)t на два. Как верно?',
+    opts:[{t:'2t − 2√3·t',ok:1},{t:'−2t + 2√3·t'},{t:'2t + 2√3·t'},{t:'2t − 2√3'}],
+    hint:{label:'🔘 Хитрый факт: как подобрана пара (2; −2√3)',body:'a = 4, b = 2 − 2√3, c = −√3. Ищем p и q: p + q = b и p·q = a·c = −4√3. Пара p = 2, q = −2√3: сумма 2 − 2√3 ✔, произведение −4√3 ✔.'}},
+   {q:'Шаг 2/8. ОДНО действие: разбить четыре слагаемых на две пары со скобками. Как верно?',
+    opts:[{t:'(4t² + 2t) − (2√3·t + √3)',ok:1},{t:'(4t² + 2t) − (2√3·t − √3)'},{t:'(4t² − 2t) + (2√3·t + √3)'},{t:'(4t² + √3) + (2t − 2√3·t)'}]},
+   {q:'Шаг 3/8. ОДНО действие: вынести ОБЩИЙ множитель из первой пары (4t² + 2t).',
+    opts:[{t:'2t(2t + 1)',ok:1},{t:'t(4t + 2)'},{t:'2t(2t − 1)'},{t:'4t(t + 2)'}]},
+   {q:'Шаг 4/8. ОДНО действие: вынести общий множитель из второй пары −(2√3·t + √3).',
+    opts:[{t:'−√3(2t + 1)',ok:1},{t:'√3(2t + 1)'},{t:'−√3(2t − 1)'},{t:'√3(1 − 2t)'}]},
+   {q:'Шаг 5/8. ОДНО действие: собрать произведение скобок.',
+    opts:[{t:'(2t + 1)(2t − √3) = 0',ok:1},{t:'(2t − 1)(2t + √3) = 0'},{t:'(2t + 1)(2t + √3) = 0'},{t:'(t + 1)(2t − √3) = 0'}]},
+   {q:'Шаг 6/8. ОДНО действие: решить 2t + 1 = 0.',
+    opts:[{t:'t = −1/2',ok:1},{t:'t = 1/2'},{t:'t = −2'},{t:'t = 2'}]},
+   {q:'Шаг 7/8. ОДНО действие: решить 2t − √3 = 0.',
+    opts:[{t:'t = √3/2',ok:1},{t:'t = −√3/2'},{t:'t = √3'},{t:'t = 2/√3'}]},
+   {q:'Шаг 8/8. ОТБОР КОРНЕЙ цепочкой неравенств: сравни оба корня с рациональными числами −1, 0, 1. Какая цепочка верна?',
+    opts:[{t:'−1 < −1/2 < 0 < √3/2 < 1',ok:1},{t:'−1/2 < −1 < 0 < √3/2 < 1'},{t:'−1 < −1/2 < 0 < 1 < √3/2'},{t:'−1 < −1/2 < √3/2 < 0'}],
+    hint:{label:'🔘 Хитрый факт (метод оценки)',body:'3 < 4 ⇒ √3 < 2 ⇒ √3/2 < 1; и √3 > 0 ⇒ √3/2 > 0. Значит √3/2 ∈ (0; 1), а −1/2 ∈ (−1; 0). Оба корня проходят отбор.'},
+    note:'✅ Отбор: оба корня допустимы: t = √3/2 и t = −1/2.'}
+  ]},
+ {id:'t2',title:'Задание 2. 4sin²x + (2 − 2√3)sin x − √3 = 0, отбор корней на [0; π]',
+  formulas:['Замена: t = sin x','sin α = √3/2 ⇒ α = π/3 + 2πk или 2π/3 + 2πk','sin α = −1/2 ⇒ α = −π/6 + 2πk или −5π/6 + 2πk','Отрезку [0; π] соответствует верхняя дуга окружности (от угла 0 до угла π)','Точка попадает в отрезок ⇔ её угол ∈ [0; π]','Цепочка: 0 < π/3 < π/2 < 2π/3 < π'],
+  steps:[
+   {q:'Шаг 1/6. ОДНО действие: выбрать замену.',
+    opts:[{t:'t = sin x',ok:1},{t:'t = cos x'},{t:'t = tg x'},{t:'t = sin²x'}]},
+   {q:'Шаг 2/6. ОДНО действие: записать корни квадратного уравнения через t (из разбора задания 1).',
+    opts:[{t:'t = √3/2 и t = −1/2',ok:1},{t:'t = −√3/2 и t = 1/2'},{t:'t = √3/2 и t = 1/2'},{t:'t = −√3/2 и t = −1/2'}]},
+   {q:'Шаг 3/6. ОДНО действие: серии решений для sin x = √3/2.',
+    opts:[{t:'x = π/3 + 2πk и x = 2π/3 + 2πk',ok:1},{t:'x = π/6 + 2πk и x = 5π/6 + 2πk'},{t:'x = −π/3 + 2πk и x = −2π/3 + 2πk'},{t:'x = π/3 + πk и x = 2π/3 + πk'}]},
+   {q:'Шаг 4/6. ОДНО действие: серии решений для sin x = −1/2.',
+    opts:[{t:'x = −π/6 + 2πk и x = −5π/6 + 2πk',ok:1},{t:'x = π/6 + 2πk и x = 5π/6 + 2πk'},{t:'x = −π/6 + πk и x = −5π/6 + πk'},{t:'x = −π/3 + 2πk и x = −2π/3 + 2πk'}]},
+   {q:'Шаг 5/6. ОТБОР ОКРУЖНОСТЬЮ: отрезок [0; π] — выделенная оранжевая дуга. Какие точки (k = 0) попадают на дугу?',
+    circle:{arc:[0,Math.PI],points:[{a:Math.PI/3,l:'π/3'},{a:2*Math.PI/3,l:'2π/3'},{a:-Math.PI/6,l:'−π/6'},{a:-5*Math.PI/6,l:'−5π/6'}]},
+    opts:[{t:'x = π/3 и x = 2π/3',ok:1},{t:'x = −π/6 и x = −5π/6'},{t:'x = π/3 и x = −π/6'},{t:'все четыре точки'}],
+    hint:{label:'🔘 Как читать дугу',body:'Отрезку [0; π] соответствует дуга против часовой стрелки от угла 0 до угла π — верхняя полуокружность. Берём точки серий при k = 0.'}},
+   {q:'Шаг 6/6. ОТБОР цепочкой неравенств: проверь, что оставленные корни лежат в [0; π].',
+    opts:[{t:'0 < π/3 < π/2 < 2π/3 < π',ok:1},{t:'0 < 2π/3 < π/3 < π'},{t:'π/3 < 0 < π/2 < 2π/3'},{t:'0 < π/3 < π/2 < π < 2π/3'}],
+    note:'✅ Ответ на [0; π]: x = π/3, x = 2π/3.'}
+  ]}
+];
+/* ============ ХРАНИЛИЩЕ ============ */
+const LS_N='tutorStudent',LS_W='tutorWork',LS_P='tutorProgress';
+let student=localStorage.getItem(LS_N)||'';
+let work=localStorage.getItem(LS_W)||'Квадратные и тригонометрические уравнения: группировка и отбор корней';
+let progress=JSON.parse(localStorage.getItem(LS_P)||'{}');
+function save(){localStorage.setItem(LS_P,JSON.stringify(progress));if(student)localStorage.setItem(LS_N,student);localStorage.setItem(LS_W,work);}
+function pOf(id){if(!progress[id])progress[id]={step:0,done:false};return progress[id];}
+const app=document.getElementById('app');
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+/* ============ ОКРУЖНОСТЬ ============ */
+function circleSVG(cfg){
+  const c=130,r=95;let pts=[];
+  for(let a=cfg.arc[0];a<=cfg.arc[1]+1e-9;a+=0.04)pts.push((c+r*Math.cos(a)).toFixed(1)+','+(c-r*Math.sin(a)).toFixed(1));
+  let s='<svg width="270" height="270" viewBox="0 0 260 260" style="background:#fff;border-radius:12px">';
+  s+='<line x1="'+(c-r-15)+'" y1="'+c+'" x2="'+(c+r+15)+'" y2="'+c+'" stroke="#b0bec5"/>';
+  s+='<line x1="'+c+'" y1="'+(c-r-15)+'" x2="'+c+'" y2="'+(c+r+15)+'" stroke="#b0bec5"/>';
+  s+='<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="#546e7a" stroke-width="2"/>';
+  s+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="#ff9800" stroke-width="7" stroke-linecap="round" opacity=".85"/>';
+  cfg.points.forEach(p=>{
+    const x=c+r*Math.cos(p.a),y=c-r*Math.sin(p.a),lx=c+(r+18)*Math.cos(p.a),ly=c-(r+18)*Math.sin(p.a)+4;
+    s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="6" fill="#7c4dff" stroke="#fff" stroke-width="2"/>';
+    s+='<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" font-size="14" text-anchor="middle" fill="#263238">'+p.l+'</text>';
+  });
+  return s+'</svg>';
+}
+/* ============ ЭКРАНЫ ============ */
+function render(){app.innerHTML='';if(!student)return startScreen();mainScreen();}
+function startScreen(){
+  app.innerHTML='<div class="card" style="max-width:520px;margin:40px auto"><h2>👋 Привет! Как тебя зовут?</h2>'+
+   '<p>Имя ученика и название работы попадут в отчёт для учителя и в имя PDF-файла.</p>'+
+   '<p>👤 Имя ученика:<br><input id="nIn" style="width:100%;padding:10px;border:2px solid #dfe3ec;border-radius:10px" placeholder="Например: Анна Иванова"></p>'+
+   '<p>📚 Название работы:<br><input id="wIn" style="width:100%;padding:10px;border:2px solid #dfe3ec;border-radius:10px" value="'+esc(work)+'"></p>'+
+   '<button class="primary" id="go">Начать разбор 🚀</button></div>';
+  document.getElementById('go').onclick=()=>{
+    const n=document.getElementById('nIn').value.trim();
+    if(!n){alert('Введи имя ученика 🙂');return;}
+    student=n;work=document.getElementById('wIn').value.trim()||work;save();render();
+  };
+}
+function statusOf(t){const p=pOf(t.id);if(p.done)return{cls:'b-done',txt:'✅ Разобрано'};if(p.step>0)return{cls:'b-prog',txt:'🕗 В процессе ('+p.step+'/'+t.steps.length+')'};return{cls:'b-none',txt:'⬜ Не разобрано'};}
+function mainScreen(){
+  const done=TASKS.filter(t=>pOf(t.id).done).length;
+  let h='<div class="card"><h2>🎓 Ученик: '+esc(student)+'</h2><div>📚 Работа: '+esc(work)+'</div>'+
+   '<div class="bar"><div style="width:'+(100*done/TASKS.length)+'%"></div></div>'+
+   '<div>📊 Прогресс: '+done+' из '+TASKS.length+' разобрано</div>'+
+   '<div style="margin-top:10px" class="noprint"><button class="primary" id="rep">📄 Отчёт учителю</button> '+
+   '<button class="danger" id="rst">🗑 Сбросить прогресс (очистить localStorage)</button></div></div>';
+  TASKS.forEach(t=>{const s=statusOf(t);
+    h+='<div class="card"><div class="flex" style="align-items:center"><div style="flex:1"><b>'+esc(t.title)+'</b></div>'+
+       '<span class="badge '+s.cls+'">'+s.txt+'</span> '+
+       '<button class="ghost open" data-id="'+t.id+'">'+(pOf(t.id).done?'Повторить 🔁':(pOf(t.id).step>0?'Продолжить ▶':'Открыть 📖'))+'</button></div></div>';});
+  app.innerHTML=h;
+  document.getElementById('rep').onclick=reportScreen;
+  document.getElementById('rst').onclick=()=>{if(confirm('Сбросить весь прогресс и очистить localStorage? Имя ученика тоже забудется.')){localStorage.clear();location.reload();}};
+  app.querySelectorAll('.open').forEach(b=>b.onclick=()=>taskScreen(b.dataset.id));
+}
+function taskScreen(id){
+  const t=TASKS.find(x=>x.id===id),p=pOf(id);
+  if(p.done){
+    app.innerHTML='<div class="card"><h2>🎉 Задание разобрано полностью!</h2><p>'+esc(t.title)+'</p>'+
+      '<button class="primary" id="again">Пройти заново 🔁</button> <button class="ghost" id="back">⬅ К списку</button></div>';
+    document.getElementById('again').onclick=()=>{p.step=0;p.done=false;save();taskScreen(id);};
+    document.getElementById('back').onclick=render;return;
+  }
+  let locked=false;
+  function draw(){
+    const i=p.step,st=t.steps[i];
+    let left='<h3>'+esc(st.q)+'</h3>';
+    if(st.circle)left+=circleSVG(st.circle);
+    left+='<div id="opts">'+st.opts.map((o,j)=>'<button class="opt" data-j="'+j+'">'+esc(o.t)+'</button>').join('')+'</div>';
+    left+='<div class="fb" id="fb"></div>';
+    if(st.hint)left+='<details class="hint"><summary>'+st.hint.label+'</summary><p>'+st.hint.body+'</p></details>';
+    left+='<div id="nav"></div>';
+    const right='<div class="right"><b>📚 Формулы для полного разбора (справа):</b><ol style="padding-left:20px;margin:8px 0">'+
+      t.formulas.map(f=>'<li>'+esc(f)+'</li>').join('')+'</ol><div style="font-size:13px;color:#546e7a">Шаг '+(i+1)+' из '+t.steps.length+'</div></div>';
+    app.innerHTML='<div class="card noprint" style="margin-bottom:8px"><button class="ghost" id="back">⬅ К списку</button> <b>'+esc(t.title)+'</b></div>'+
+      '<div class="flex"><div class="left card">'+left+'</div>'+right+'</div>';
+    document.getElementById('back').onclick=render;
+    locked=false;
+    app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      if(locked)return;
+      const o=st.opts[+b.dataset.j],fb=document.getElementById('fb');
+      if(o.ok){locked=true;b.classList.add('ok');
+        app.querySelectorAll('.opt').forEach(x=>x.disabled=true);
+        fb.className='fb good';fb.textContent=st.note||'✅ Верно! Одно действие выполнено.';
+        document.getElementById('nav').innerHTML='<button class="primary" id="nx">Дальше →</button>';
+        document.getElementById('nx').onclick=()=>{p.step++;if(p.step>=t.steps.length){p.done=true;save();taskScreen(id);}else{save();draw();}};
+      }else{b.classList.add('bad');fb.className='fb err';fb.textContent='❌ Неверно, попробуй ещё раз (подсказка — по кнопке 🔘).';}
+    });
+  }
+  draw();
+}
+function reportScreen(){
+  const done=TASKS.filter(t=>pOf(t.id).done).length;
+  const date=new Date().toLocaleString('ru-RU',{dateStyle:'long',timeStyle:'short'});
+  let rows=TASKS.map((t,i)=>{const s=statusOf(t);
+    return '<tr><td>'+(i+1)+'</td><td>'+esc(t.title)+'</td><td><span class="badge '+s.cls+'">'+s.txt+'</span></td></tr>';}).join('');
+  app.innerHTML='<div class="card"><h2>🎓📊 Отчёт для учителя</h2>'+
+   '<p>👤 Ученик: <b>'+esc(student)+'</b><br>📚 Работа: <b>'+esc(work)+'</b><br>📅 Дата: '+date+'</p>'+
+   '<p>📈 Разобрано: <b>'+done+' из '+TASKS.length+'</b> '+(done===TASKS.length?'':'💪')+'</p>'+
+   '<table class="rep"><tr><th>№</th><th>Задание</th><th>Статус</th></tr>'+rows+'</table>'+
+   '<p class="noprint" style="margin-top:14px"><button class="primary" id="pdf">🖨 Сохранить отчёт в PDF</button> '+
+   '<button class="ghost" id="back">⬅ Назад</button></p>'+
+   '<p class="noprint" style="color:#546e7a;font-size:13px">В диалоге сохранения браузера имя файла уже подставлено: Отчёт_&lt;имя ученика&gt;_&lt;название работы&gt;</p></div>';
+  document.getElementById('back').onclick=render;
+  document.getElementById('pdf').onclick=()=>{
+    const old=document.title;
+    document.title=('Отчет_'+student+'_'+work).replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_');
+    window.print();document.title=old;
+  };
+}
+render();
+</script>
+</body>
+</html>

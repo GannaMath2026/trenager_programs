@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ОГЭ Информатика — тренажёр 5</title>
+<style>
+  body{font-family:system-ui,Segoe UI,Roboto,sans-serif;background:#f7f8fc;margin:0;color:#263238}
+  .wrap{max-width:1040px;margin:0 auto;padding:16px}
+  .card{background:#fff;border:1px solid #e3e7f0;border-radius:14px;padding:16px;margin:10px 0;box-shadow:0 1px 3px rgba(30,40,90,.06)}
+  button{font:inherit;cursor:pointer}
+  .primary{background:#5c6cf5;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:600}
+  .primary:hover{background:#4a5ae0}
+  .ghost{background:#fff;border:2px solid #dfe3ec;border-radius:10px;padding:8px 14px}
+  .danger{background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:10px;padding:8px 14px}
+  .badge{padding:3px 12px;border-radius:999px;font-weight:700;font-size:13px;white-space:nowrap}
+  .b-done{background:#e8f5e9;color:#2e7d32}.b-prog{background:#fff8e1;color:#b26a00}.b-none{background:#eceff1;color:#546e7a}
+  .bar{height:10px;background:#eceff1;border-radius:6px;overflow:hidden;margin:8px 0}
+  .bar>div{height:100%;background:linear-gradient(90deg,#7c8cf8,#4caf50)}
+  .fb{min-height:24px;margin:8px 0;font-weight:600}.fb.err{color:#c62828}.fb.good{color:#2e7d32}
+  details.hint{margin:10px 0;background:#fffde7;border:1px solid #ffe082;border-radius:10px;padding:8px 12px}
+  details.hint summary{cursor:pointer;font-weight:600;color:#8d6e00}
+  table.rep{width:100%;border-collapse:collapse;margin-top:10px}
+  table.rep td,table.rep th{border:1px solid #e0e0e0;padding:8px 10px;text-align:left;font-size:14px}
+  table.rep th{background:#f5f6ff}
+  .sim{background:#eef1fb;border:1px solid #dfe3f2;border-radius:12px;padding:12px;margin:10px 0}
+  .cur{font-size:34px;font-weight:800;color:#5c6cf5}
+  .chip{display:inline-block;background:#5c6cf5;color:#fff;border-radius:8px;padding:2px 8px;margin:0 3px;font-weight:700}
+  .cmd{background:#fff;border:2px solid #7c8cf8;color:#3949ab;border-radius:10px;padding:9px 14px;margin:4px 6px 4px 0;font-weight:700}
+  .cmd:hover{background:#e8eaf6}
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:2px;margin:10px 0}
+  .cv{background:#eef1fb;border:1px solid #dfe3f2;padding:3px 9px;border-radius:9px;font-weight:700}
+  .cv.fin{background:#e8f5e9;border-color:#a5d6a7}
+  .ar{display:inline-flex;flex-direction:column;align-items:center;line-height:1.1;color:#90a4ae;margin:0 3px}
+  .ar .op{font-size:10px;color:#5c6cf5;font-weight:700}
+  input[type=number],input[type=text]{padding:9px;border:2px solid #dfe3ec;border-radius:10px;font:inherit}
+  #ov{position:fixed;inset:0;background:rgba(20,25,60,.45);display:none;padding:20px;overflow:auto;z-index:50}
+  @media print{.noprint{display:none!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="ov"><div class="card" style="max-width:760px;margin:20px auto">
+  <h2>📖 Методичка: задание 5 «Команды исполнителя»</h2>
+  <p>🤖 У исполнителя ровно две команды с номерами <b>1</b> и <b>2</b>. <b>Программа</b> — это запись номеров команд подряд (например, <b>12211</b>): исполнитель применяет их по порядку к числу на экране.</p>
+  <p>🔢 <b>Тип А «найди b»:</b> выполни программу символически, считая b неизвестным, и получи уравнение (или подставляй кандидаты и проверяй). Учитывай ограничение на b (b ≥ 2, 2 &lt; b &lt; 7 и т.п.).</p>
+  <p>🧩 <b>Тип Б «составь алгоритм»:</b> не более 5 команд. Приём: иди <b>от конца</b> (смотрят, какая команда могла получить последнее число), либо пользуйся симулятором: нажимай команды и следи за экраном.</p>
+  <p>✂️ Особые команды: «зачеркни справа/слева» — удалить крайнюю цифру; 📎 «припиши d» — x → x·10 + d; ² «возведи в квадрат».</p>
+  <p>⚠️ Исполнитель натуральных чисел: деление применимо только без остатка, результат не может стать 0 или отрицательным.</p>
+  <button class="primary" onclick="document.getElementById('ov').style.display='none'">Закрыть ✔</button>
+</div></div>
+<script>
+/* ===== ДАННЫЕ: 12 прототипов + 10 аналогов (2 дубля/битых из JSON исключены) ===== */
+var T=[
+{id:'p01',k:'p',num:'01',ex:'Бета',type:'b',cmds:[{l:'прибавь 2',op:{t:'add',v:2}},{l:'умножь на b',op:{t:'mulB'}}],prog:'12111',start:7,target:51,ans:'5',con:{min:2},eq:'(7+2)·b+2+2+2 = 51 ⇒ 9b+6 = 51 ⇒ 9b = 45 ⇒ b = 5',hint:'🔘 Программа 12111 = команды 1,2,1,1,1. Выполняй символически, сохраняя b неизвестным.'},
+{id:'p02',k:'p',num:'02',ex:'Квадратор',type:'b',cmds:[{l:'возведи в квадрат',op:{t:'sq'}},{l:'прибавь b',op:{t:'addB'}}],prog:'12212',start:2,target:37,ans:'1',con:{min:1},eq:'(2²+2b)²+b = 37; при b=1: (4+2)²+1 = 37 ✔',hint:'🔘 Единицы в программе 12212 стоят на местах 1,2 и 5 — квадрат применяется к числу 2 и к сумме (4+2b).'},
+{id:'p03',k:'p',num:'03',ex:'Сима',type:'b',cmds:[{l:'прибавь 1',op:{t:'add',v:1}},{l:'раздели на b',op:{t:'divB'}}],prog:'12111',start:63,target:11,ans:'8',con:{min:2},eq:'(63+1)/b+1+1+1 = 11 ⇒ 64/b = 8 ⇒ b = 8',hint:'🔘 Деление в программе одно и стоит вторым: сначала 63+1, потом /b, потом три раза +1.'},
+{id:'p04',k:'p',num:'04',ex:'Альфа',type:'b',cmds:[{l:'прибавь 2',op:{t:'add',v:2}},{l:'раздели на b',op:{t:'divB'}}],prog:'11211',start:50,target:22,ans:'3',con:{min:2},eq:'(50+2+2)/b+2+2 = 22 ⇒ 54/b = 18 ⇒ b = 3',hint:'🔘 Двойки стоят на местах 1,2 и 4,5: два «+2» до деления и два после.'},
+{id:'p05',k:'p',num:'05',ex:'Вычислитель',type:'a',cmds:[{l:'вычти 1',op:{t:'sub',v:1}},{l:'умножь на 3',op:{t:'mul',v:3}}],start:3,target:53,ans:'12221',hint:'🔘 53 не кратно 3 ⇒ последняя команда не «умножь». Иди от конца: 53 = 54−1.'},
+{id:'p06',k:'p',num:'06',ex:'Вычислитель',type:'a',cmds:[{l:'прибавь 3',op:{t:'add',v:3}},{l:'умножь на 2',op:{t:'mul',v:2}}],start:4,target:50,ans:'21212',hint:'🔘 50 = 25·2, а 25 нечётное ⇒ перед последним «×2» было «+3».'},
+{id:'p07',k:'p',num:'07',ex:'Квадратор',type:'a',cmds:[{l:'возведи в квадрат',op:{t:'sq'}},{l:'прибавь 1',op:{t:'add',v:1}}],start:2,target:37,ans:'12212',hint:'🔘 37 = 36+1, а 36 = 6², 6 = 5+1, 5 = 4+1, 4 = 2².'},
+{id:'p08',k:'p',num:'08',ex:'Делитель',type:'a',cmds:[{l:'раздели на 2',op:{t:'div',v:2}},{l:'вычти 3',op:{t:'sub',v:3}}],start:76,target:5,ans:'11212',hint:'🔘 От конца: 5 = 8−3, 8 = 16/2, 16 = 19−3, 19 и 38 нечётные/… — проверяй делимость.'},
+{id:'p09',k:'p',num:'09',ex:'Квадратор',type:'a',cmds:[{l:'возведи в квадрат',op:{t:'sq'}},{l:'зачеркни справа',op:{t:'delR'}}],start:3,target:6,ans:'11212',hint:'🔘 6 можно получить только зачёркиванием из 64 = 8², а 8 — из 81 = 9².'},
+{id:'p10',k:'p',num:'10',ex:'Вычислитель',type:'a',cmds:[{l:'припиши 1',op:{t:'app',v:1}},{l:'раздели на 3',op:{t:'div',v:3}}],start:5,target:19,ans:'12122',hint:'🔘 19·3 = 57, а 57 получается приписыванием 1 к 5… но 5 уже есть? Смотри цепочку с начала: 5→51.'},
+{id:'p11',k:'p',num:'11',ex:'Вычислитель',type:'a',cmds:[{l:'вычти 4',op:{t:'sub',v:4}},{l:'припиши 2',op:{t:'app',v:2}}],start:9,target:4,ans:'11211',hint:'🔘 Цель 4 меньше старта: приписывание пригодится один раз в середине (1→12).'},
+{id:'p12',k:'p',num:'12',ex:'Квадратор',type:'a',cmds:[{l:'зачеркни слева',op:{t:'delL'}},{l:'возведи в квадрат',op:{t:'sq'}}],start:112,target:4,ans:'112',hint:'🔘 4 = 2², а 2 остаётся от 12 после зачёркивания слева.'},
+{id:'a01',k:'a',num:'01',ex:'Бета',type:'b',cmds:[{l:'прибавь 3',op:{t:'add',v:3}},{l:'умножь на b',op:{t:'mulB'}}],prog:'12111',start:4,target:51,ans:'6',con:{min:2},eq:'(4+3)·b+3+3+3 = 51 ⇒ 7b+9 = 51 ⇒ 7b = 42 ⇒ b = 6',hint:'🔘 Сначала «+3» к старту, затем «×b», затем ещё три «+3».'},
+{id:'a02',k:'a',num:'02',ex:'Квадратор',type:'b',cmds:[{l:'возведи в квадрат',op:{t:'sq'}},{l:'прибавь b',op:{t:'addB'}}],prog:'12212',start:1,target:52,ans:'3',con:{min:1},eq:'(1+2b)²+b = 52; при b=3: 7²+3 = 52 ✔',hint:'🔘 После первого квадрата (1) дважды прибавляется b, затем снова квадрат и ещё +b.'},
+{id:'a04g',k:'a',num:'04',ex:'Гамма',type:'b',cmds:[{l:'возведи в квадрат',op:{t:'sq'}},{l:'вычти b',op:{t:'subB'}}],prog:'12121',start:3,target:121,ans:'5',con:{min:3,max:6},eq:'((3²−b)²−b)² = 121 ⇒ (9−b)²−b = 11 ⇒ b = 5 (учти 2 &lt; b &lt; 7)',hint:'🔘 121 = 11², значит внутреннее выражение равно 11: (9−b)²−b = 11.'},
+{id:'a04k',k:'a',num:'04',ex:'Квадратор',type:'b',cmds:[{l:'возведи в квадрат',op:{t:'sq'}},{l:'прибавь b',op:{t:'addB'}}],prog:'12121',start:1,target:121,ans:'2',con:{min:1},eq:'((1+b)²+b)² = 121 ⇒ (1+b)²+b = 11 ⇒ b = 2',hint:'🔘 121 = 11² ⇒ скобка перед последним квадратом равна 11.'},
+{id:'a04o',k:'a',num:'04',ex:'Омега',type:'b',cmds:[{l:'прибавь 4',op:{t:'add',v:4}},{l:'умножь на b',op:{t:'mulB'}}],prog:'12111',start:9,target:77,ans:'5',con:{min:2},eq:'(9+4)·b+4+4+4 = 77 ⇒ 13b+12 = 77 ⇒ 13b = 65 ⇒ b = 5',hint:'🔘 Структура как у Беты: «+4», «×b», три раза «+4».'},
+{id:'a05',k:'a',num:'05',ex:'Вычислитель',type:'a',cmds:[{l:'вычти 2',op:{t:'sub',v:2}},{l:'умножь на 3',op:{t:'mul',v:3}}],start:4,target:14,ans:'12211',hint:'🔘 14 не кратно 3 ⇒ конец цепочки — два «вычти 2»: 18−2−2.'},
+{id:'a13',k:'a',num:'13',ex:'Квадратор',type:'a',cmds:[{l:'возведи в квадрат',op:{t:'sq'}},{l:'зачеркни справа',op:{t:'delR'}}],start:12,target:19,ans:'1212',hint:'🔘 19obtains из 196 = 14², а 14 — из 144 = 12².'},
+{id:'a14',k:'a',num:'14',ex:'Вычислитель',type:'a',cmds:[{l:'припиши 1',op:{t:'app',v:1}},{l:'раздели на 3',op:{t:'div',v:3}}],start:6,target:71,ans:'2121',hint:'🔘 71 = приписанная 1 к 7 ⇒ перед финишем было «/3» от 21.'},
+{id:'a15',k:'a',num:'15',ex:'Вычислитель',type:'a',cmds:[{l:'вычти 3',op:{t:'sub',v:3}},{l:'припиши 1',op:{t:'app',v:1}}],start:10,target:381,ans:'11212',hint:'🔘 381 = 38 с приписанной 1 ⇒ чередуй «−3» и «припиши 1».'},
+{id:'a16',k:'a',num:'16',ex:'Квадратор',type:'a',cmds:[{l:'зачеркни слева',op:{t:'delL'}},{l:'возведи в квадрат',op:{t:'sq'}}],start:213,target:81,ans:'1122',hint:'🔘 81 = 9², 9 = 3², 3 остаётся от 213 после двух зачёркиваний слева.'}
+];
+/* ===== ХРАНИЛИЩЕ ===== */
+var LS_S='oge5_student',LS_W='oge5_work',LS_P='oge5_progress';
+var student=localStorage.getItem(LS_S)||'';
+var work=localStorage.getItem(LS_W)||'ОГЭ • Информатика • Задание 5: Команды исполнителя';
+var P=JSON.parse(localStorage.getItem(LS_P)||'{}');
+function save(){localStorage.setItem(LS_P,JSON.stringify(P));if(student)localStorage.setItem(LS_S,student);localStorage.setItem(LS_W,work);}
+function pOf(id){if(!P[id])P[id]={done:false,tried:false,seq:''};return P[id];}
+var app=document.getElementById('app');
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+/* ===== ИСПОЛНИТЕЛЬ ===== */
+function applyOp(op,x,b){
+  switch(op.t){
+    case 'add':return x+op.v; case 'sub':return x-op.v; case 'mul':return x*op.v;
+    case 'div':return x%op.v===0?x/op.v:NaN;
+    case 'sq':return x*x;
+    case 'delR':return x>=10?Math.floor(x/10):NaN;
+    case 'delL':var s=String(x);return s.length>1?Number(s.slice(1)):NaN;
+    case 'app':return x*10+op.v;
+    case 'addB':return x+b; case 'subB':return x-b; case 'mulB':return x*b;
+    case 'divB':return b&&x%b===0?x/b:NaN;
+  } return NaN;
+}
+function simulate(t,seq,b){
+  var x=t.start,vals=[x],labels=[],ok=true;
+  for(var i=0;i<seq.length;i++){
+    var c=+seq[i]; if(c!==1&&c!==2){ok=false;break;}
+    var op=t.cmds[c-1].op; x=applyOp(op,x,b);
+    if(!isFinite(x)||x<=0||Math.floor(x)!==x){ok=false;vals.push('✗');labels.push(t.cmds[c-1].l);break;}
+    vals.push(x);labels.push(t.cmds[c-1].l);
+  }
+  return {ok:ok,vals:vals,labels:labels,fin:vals[vals.length-1]};
+}
+function chainHTML(vals,labels){
+  var h='<div class="chain"><span class="cv">'+vals[0]+'</span>';
+  for(var i=0;i<labels.length;i++)
+    h+='<span class="ar"><span class="op">'+esc(labels[i])+'</span><span>→</span></span><span class="cv'+(i===labels.length-1?' fin':'')+'">'+vals[i+1]+'</span>';
+  return h+'</div>';
+}
+function taskTitle(t){return t.num+' '+(t.k==='p'?'Прототип':'Аналог')+' • '+t.ex;}
+function taskText(t){
+  var s='У исполнителя <b>'+t.ex+'</b> две команды, которым присвоены номера:<br>1. <b>'+t.cmds[0].l+'</b>;<br>2. <b>'+t.cmds[1].l+'</b>.';
+  if(t.type==='b'){
+    if(t.con&&t.con.min===3)s+='<br>(b — неизвестное натуральное число, 2 &lt; b &lt; 7).';
+    else if(t.con&&t.con.min===2)s+='<br>(b — неизвестное натуральное число, b ≥ 2).';
+    else s+='<br>(b — неизвестное натуральное число).';
+    s+='<br>Известно, что программа <b>'+t.prog+'</b> переводит число <b style="color:#c62828">'+t.start+'</b> в число <b style="color:#c62828">'+t.target+'</b>. Определите значение b.';
+  } else {
+    s+='<br>Составьте алгоритм получения из числа <b style="color:#c62828">'+t.start+'</b> числа <b style="color:#c62828">'+t.target+'</b>, содержащий не более <b>5</b> команд. В ответе запишите только номера команд.';
+  }
+  return s;
+}
+/* ===== ЭКРАНЫ ===== */
+function render(){if(!student)startScreen();else mainScreen();}
+function startScreen(){
+  app.innerHTML='<div class="card" style="max-width:540px;margin:40px auto"><h2>🤖 Привет! Как тебя зовут?</h2>'+
+  '<p>Имя ученика и название работы попадут в отчёт учителю и в имя PDF-файла.</p>'+
+  '<p>👤 Имя ученика:<br><input type="text" id="nIn" style="width:100%" placeholder="Например: Анна Иванова"></p>'+
+  '<p>📚 Название работы:<br><input type="text" id="wIn" style="width:100%" value="'+esc(work)+'"></p>'+
+  '<button class="primary" id="go">Начать тренировку 🚀</button></div>';
+  document.getElementById('go').onclick=function(){
+    var n=document.getElementById('nIn').value.trim();
+    if(!n){alert('Введи имя ученика 🙂');return;}
+    student=n;work=document.getElementById('wIn').value.trim()||work;save();render();
+  };
+}
+function statusOf(t){var p=pOf(t.id);if(p.done)return{c:'b-done',s:'✅ Разобрано'};if(p.tried)return{c:'b-prog',s:'🕗 В процессе'};return{c:'b-none',s:'⬜ Не начато'};}
+function mainScreen(){
+  var done=T.filter(function(t){return pOf(t.id).done;}).length;
+  var h='<div class="card"><h2>🤖 ОГЭ • Информатика • Задание 5: Команды исполнителя</h2>'+
+  '<div>👤 Ученик: <b>'+esc(student)+'</b> &nbsp;|&nbsp; 📚 '+esc(work)+'</div>'+
+  '<div class="bar"><div style="width:'+(100*done/T.length)+'%"></div></div>'+
+  '<div>📊 Решено: <b>'+done+' из '+T.length+'</b> ('+T.filter(function(t){return t.k==='p';}).length+' прототипов + '+T.filter(function(t){return t.k==='a';}).length+' аналогов)</div>'+
+  '<div style="margin-top:10px" class="noprint"><button class="ghost" id="th">📖 Методичка</button> '+
+  '<button class="primary" id="rep">📄 Отчёт учителю</button> '+
+  '<button class="ghost" id="sav">💾 Сохранить приложение HTML</button> '+
+  '<button class="danger" id="rst">🗑 Сбросить прогресс</button></div></div>';
+  ['p','a'].forEach(function(k){
+    h+='<div class="card"><h3>'+(k==='p'?'🟦 Прототипы (база)':'🟩 Аналоги (закрепление)')+'</h3>';
+    T.filter(function(t){return t.k===k;}).forEach(function(t){
+      var s=statusOf(t);
+      h+='<div style="display:flex;align-items:center;gap:10px;margin:8px 0"><div style="flex:1"><b>'+taskTitle(t)+'</b> <span style="color:#78909c;font-size:13px">'+(t.type==='b'?'найди b':'составь алгоритм')+'</span></div>'+
+         '<span class="badge '+s.c+'">'+s.s+'</span><button class="ghost open" data-id="'+t.id+'">'+(pOf(t.id).done?'Повторить 🔁':'Решать ▶')+'</button></div>';
+    });
+    h+='</div>';
+  });
+  app.innerHTML=h;
+  document.getElementById('th').onclick=function(){document.getElementById('ov').style.display='block';};
+  document.getElementById('rep').onclick=reportScreen;
+  document.getElementById('rst').onclick=function(){if(confirm('Сбросить весь прогресс и очистить localStorage?')){localStorage.clear();location.reload();}};
+  document.getElementById('sav').onclick=function(){
+    var blob=new Blob(['<!DOCTYPE html>\n'+document.documentElement.outerHTML],{type:'text/html'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download='ОГЭ_Информатика_Задание5_тренажер.html';a.click();
+  };
+  Array.prototype.forEach.call(app.querySelectorAll('.open'),function(b){b.onclick=function(){taskScreen(b.getAttribute('data-id'));};});
+}
+function showSolution(t){
+  var seq=t.type==='b'?t.prog:t.ans, b=t.type==='b'?+t.ans:0;
+  var r=simulate(t,seq,b);
+  var h=chainHTML(r.vals,r.labels);
+  if(t.type==='b')h+='<p>Уравнение: '+t.eq+'</p><p>✅ Ответ: <b>b = '+t.ans+'</b></p>';
+  else h+='<p>✅ Команды: <b>'+t.ans+'</b></p>';
+  return h;
+}
+function taskScreen(id){
+  var t=null;T.forEach(function(x){if(x.id===id)t=x;});
+  var p=pOf(id);
+  function header(){return '<div class="card noprint" style="margin-bottom:8px"><button class="ghost" id="back">⬅ К списку</button> <b>'+taskTitle(t)+'</b> <span class="badge '+statusOf(t).c+'">'+statusOf(t).s+'</span></div>';}
+  function solutionBlock(open){
+    return '<details class="noprint" '+(open?'open':'')+' id="sol"><summary>📝 Показать разбор (цепочка)</summary>'+showSolution(t)+'</details>';
+  }
+  function hintBlock(){return '<details class="hint noprint"><summary>🔘 Подсказка</summary><p>'+t.hint+'</p></details>';}
+  function doneBanner(){return '<div class="fb good">🎉 Задание разобрано! '+(t.type==='b'?'Ответ: b = '+t.ans:'Команды: '+p.seq)+'</div>';}
+  if(t.type==='b'){
+    app.innerHTML=header()+'<div class="card"><p>'+taskText(t)+'</p>'+
+      (p.done?doneBanner():'')+
+      '<p class="noprint">Твой ответ b: <input type="number" id="bin" style="width:90px"> <button class="primary" id="chk">Проверить ✔</button></p>'+
+      '<div class="fb" id="fb"></div>'+hintBlock()+solutionBlock(p.done)+
+      '<div class="noprint" id="nav"></div></div>';
+    document.getElementById('back').onclick=render;
+    document.getElementById('chk').onclick=function(){
+      var b=parseInt(document.getElementById('bin').value,10);var fb=document.getElementById('fb');
+      if(!isFinite(b)){fb.className='fb err';fb.textContent='Введи целое число b.';return;}
+      p.tried=true;save();
+      if(t.con&&t.con.min&&b<t.con.min){fb.className='fb err';fb.textContent='⚠️ Учти ограничение: b ≥ '+t.con.min+(t.con.max?' и b < '+t.con.max:'')+'.';return;}
+      if(t.con&&t.con.max&&b>t.con.max){fb.className='fb err';fb.textContent='⚠️ Учти ограничение: 2 < b < 7.';return;}
+      var r=simulate(t,t.prog,b);
+      if(!r.ok){fb.className='fb err';fb.textContent='❌ При b='+b+' программа не исполняется (деление не нацело).';return;}
+      if(r.fin===t.target){p.done=true;save();fb.className='fb good';fb.textContent='✅ Верно! b = '+b+'. Цепочка:';fb.innerHTML+=chainHTML(r.vals,r.labels)+'<p>'+t.eq+'</p>';document.getElementById('sol').open=true;document.getElementById('chk').disabled=true;navNext();}
+      else{fb.className='fb err';fb.textContent='❌ Неверно: программа приводит к числу '+r.fin+', а нужно '+t.target+'. Цепочка при b='+b+':';fb.innerHTML+=chainHTML(r.vals,r.labels);}
+    };
+  } else {
+    var cur=t.start,seq=[];
+    app.innerHTML=header()+'<div class="card"><p>'+taskText(t)+'</p>'+
+      (p.done?doneBanner():'')+
+      '<div class="sim noprint">🖥 Число на экране: <span class="cur" id="cur">'+cur+'</span><br>Команды: <span id="chips">—</span> <span id="cnt">(0/5)</span></div>'+
+      '<div class="noprint" id="cmdb"><button class="cmd" data-c="1">1️⃣ '+t.cmds[0].l+'</button><button class="cmd" data-c="2">2️⃣ '+t.cmds[1].l+'</button><button class="ghost" id="rs">↺ Сброс симулятора</button></div>'+
+      '<p class="noprint">или введи последовательность: <input type="text" id="seqIn" placeholder="например 12221" style="width:120px"> <button class="primary" id="chkS">Проверить ✔</button></p>'+
+      '<div class="fb" id="fb"></div>'+hintBlock()+solutionBlock(p.done)+
+      '<div class="noprint" id="nav"></div></div>';
+    document.getElementById('back').onclick=render;
+    var fb=document.getElementById('fb');
+    function paint(){
+      document.getElementById('cur').textContent=cur;
+      document.getElementById('chips').innerHTML=seq.length?seq.map(function(c){return '<span class="chip">'+c+'</span>';}).join(''):'—';
+      document.getElementById('cnt').textContent='('+seq.length+'/5)';
+    }
+    function win(s){
+      p.done=true;p.seq=s.join('');save();
+      fb.className='fb good';fb.textContent='✅ Верно! Команды: '+s.join('')+'. Цепочка:';
+      var r=simulate(t,s.join(''),0);fb.innerHTML+=chainHTML(r.vals,r.labels);
+      document.getElementById('sol').open=true;
+      Array.prototype.forEach.call(document.querySelectorAll('.cmd'),function(b){b.disabled=true;});
+      navNext();
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('.cmd'),function(b){
+      b.onclick=function(){
+        if(p.done)return;
+        if(seq.length>=5){fb.className='fb err';fb.textContent='⚠️ Уже 5 команд — нажми «↺ Сброс симулятора» и попробуй другой порядок.';return;}
+        p.tried=true;save();
+        var c=+b.getAttribute('data-c');var x=applyOp(t.cmds[c-1].op,cur,0);
+        if(!isFinite(x)||x<=0){fb.className='fb err';fb.textContent='❌ Команда неприменима: результат не натуральное число.';return;}
+        cur=x;seq.push(c);paint();fb.className='fb';fb.textContent='';
+        if(cur===t.target)win(seq.slice());
+      };
+    });
+    document.getElementById('rs').onclick=function(){cur=t.start;seq=[];paint();fb.className='fb';fb.textContent='';};
+    document.getElementById('chkS').onclick=function(){
+      var s=document.getElementById('seqIn').value.replace(/\s/g,'');
+      if(!/^[12]{1,5}$/.test(s)){fb.className='fb err';fb.textContent='⚠️ Введи от 1 до 5 цифр «1» или «2».';return;}
+      p.tried=true;save();
+      var r=simulate(t,s,0);
+      if(!r.ok){fb.className='fb err';fb.textContent='❌ На каком-то шаге команда неприменима (не натуральное число).';return;}
+      if(r.fin===t.target){win(s.split('').map(Number));}
+      else{fb.className='fb err';fb.textContent='❌ Приводит к числу '+r.fin+', а нужно '+t.target+'. Цепочка:';fb.innerHTML+=chainHTML(r.vals,r.labels);}
+    };
+    paint();
+  }
+  function navNext(){
+    var i=-1;T.forEach(function(x,j){if(x.id===id)i=j;});
+    var nx=T[i+1];
+    document.getElementById('nav').innerHTML='<button class="primary" id="nx">'+(nx?'Следующее задание →':'⬅ К списку заданий')+'</button>';
+    document.getElementById('nx').onclick=function(){nx?taskScreen(nx.id):render();};
+  }
+  if(p.done)navNext();
+}
+function reportScreen(){
+  var done=T.filter(function(t){return pOf(t.id).done;}).length;
+  var date=new Date().toLocaleString('ru-RU',{dateStyle:'long',timeStyle:'short'});
+  var rows=T.map(function(t,i){var s=statusOf(t);
+    return '<tr><td>'+(i+1)+'</td><td>'+taskTitle(t)+' — '+(t.type==='b'?'найти b':'составить алгоритм')+'</td><td><span class="badge '+s.c+'">'+s.s+'</span></td><td>'+(pOf(t.id).seq||'—')+'</td></tr>';}).join('');
+  app.innerHTML='<div class="card"><h2>🎓📊 Отчёт для учителя</h2>'+
+   '<p>👤 Ученик: <b>'+esc(student)+'</b><br>📚 Работа: <b>'+esc(work)+'</b><br>📅 Дата: '+date+'</p>'+
+   '<p>📈 Решено: <b>'+done+' из '+T.length+'</b> '+(done===T.length?'':'💪')+'</p>'+
+   '<table class="rep"><tr><th>№</th><th>Задание</th><th>Статус</th><th>Ответ ученика</th></tr>'+rows+'</table>'+
+   '<p class="noprint" style="margin-top:14px"><button class="primary" id="pdf">🖨 Сохранить отчёт в PDF</button> <button class="ghost" id="back">⬅ Назад</button></p>'+
+   '<p class="noprint" style="color:#546e7a;font-size:13px">Имя PDF-файла подставится само: Отчет_&lt;имя ученика&gt;_&lt;название работы&gt;</p></div>';
+  document.getElementById('back').onclick=render;
+  document.getElementById('pdf').onclick=function(){
+    var old=document.title;
+    document.title=('Отчет_'+student+'_'+work).replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_');
+    window.print();document.title=old;
+  };
+}
+render();
+</script>
+</body>
+</html>
