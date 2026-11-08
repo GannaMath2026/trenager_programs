@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Прикладные задачи на экстремум · производная</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},svg:{fontCache:'global'}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>[hidden]{display:none!important}
+:root{color-scheme:light;--bg:#f3f6fb;--panel:#fff;--ink:#1e2d46;--muted:#60728d;--line:#d5dfed;--blue:#3564ed;--blue2:#e8efff;--green:#e5f6ed;--gold:#fff4d9}
+[data-theme=dark]{color-scheme:dark;--bg:#0b0d10;--panel:#151a21;--ink:#edf2f7;--muted:#a8b3c2;--line:#303a46;--blue:#4774ff;--blue2:#202c43;--green:#173629;--gold:#3a3020}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{min-height:62px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}header strong{font-size:19px;margin-right:auto}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 12px;border-radius:9px;cursor:pointer;font:inherit}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn:disabled{opacity:.4;cursor:default}
+.app{display:grid;grid-template-columns:300px minmax(0,1fr);min-height:calc(100vh - 62px)}
+aside{background:var(--panel);border-right:1px solid var(--line);padding:12px;overflow:auto;height:calc(100vh - 62px);position:sticky;top:0}
+#topicSel{width:100%;padding:8px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;margin-bottom:10px}
+.tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:12px}.tab{padding:7px 5px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);cursor:pointer}.tab.active{background:var(--blue2);border-color:#8aa7ff;font-weight:700}
+.tasklist{display:grid;gap:7px}.lvl{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:8px 2px 0;font-weight:700}
+.task{border:1px solid var(--line);border-left:4px solid #b9ccff;border-radius:9px;padding:8px;background:var(--panel)}.task.active{border-color:var(--blue);background:var(--blue2)}
+.taskname{cursor:pointer;font-weight:650;margin-bottom:5px}.taskmeta{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap}.taskmeta label{display:flex;align-items:center;gap:3px;cursor:pointer}.star{border:0;background:none;font-size:18px;padding:0;color:#e5a500;cursor:pointer}
+.content{padding:16px;min-width:0}.condition{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 17px;margin-bottom:14px}.condition h2{font-size:19px;margin:0 0 8px}
+.facts{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}.chip{border:1px solid #b9ccff;background:var(--blue2);color:var(--ink);border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer}
+.answer{margin-top:10px;display:flex;gap:12px;align-items:center}#ans{font-weight:700}
+.workspace{display:grid;grid-template-columns:minmax(300px,1.1fr) minmax(320px,1fr);gap:14px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-width:0}.panel h3{margin:0;padding:10px 13px;border-bottom:1px solid var(--line);font-size:15px}
+.diagram{padding:8px;display:flex;flex-direction:column;position:sticky;top:8px}.diagramTools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 2px}.diagramTools label{display:flex;align-items:center;gap:8px;font-size:13px}.diagramTools input{width:150px}
+#diagram{overflow:hidden;position:relative;border-radius:8px;background:var(--bg);aspect-ratio:600/460;touch-action:none;cursor:grab}.diagramStage{width:100%;height:100%;transform-origin:0 0;position:absolute;left:0;top:0}#diagram svg{width:100%;height:100%;display:block}
+.lbl{paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round;font-family:system-ui,sans-serif}
+.solution{padding:12px;display:flex;flex-direction:column;gap:10px}.step{border:1px solid var(--line);border-radius:9px;padding:11px;background:var(--bg)}.step h4{margin:2px 0 6px;font-size:15px}
+.do{margin-bottom:6px}.res{background:var(--green);border-radius:8px;padding:8px 10px;margin-top:6px}.hint{font-style:italic}
+.eq{text-align:center;font-size:17px;padding:7px 2px;overflow-x:auto}.stepActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.navsteps{display:flex;justify-content:space-between;gap:8px;align-items:center}.finish{color:#18a05e;font-weight:700}
+.stepsnav{display:flex;flex-wrap:wrap;gap:5px;align-items:center}.dot{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;font-size:13px}.dot.done{background:#18a05e;border-color:#18a05e;color:#fff}.dot.cur{background:var(--blue);border-color:var(--blue);color:#fff}.part{font-weight:700;color:var(--muted);margin:0 2px 0 6px}
+.sceneLink{font-size:13px;padding:6px 10px}.drawTools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:0 2px 6px}.drawTools .drawOnly{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.sw{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}.sw.active{outline:3px solid var(--blue);outline-offset:1px}.btn.tool{padding:5px 9px;font-size:13px}.btn.tool.active{background:var(--blue2);border-color:#8aa7ff;font-weight:700}.dataTgl{display:flex;gap:5px;align-items:center;margin-left:auto;cursor:pointer}#diagram.drawing{cursor:crosshair;touch-action:none}#diagram.drawing.erasing{cursor:cell}.small{font-size:12px;color:var(--muted)}
+dialog{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--panel);color:var(--ink);width:min(560px,96vw);box-shadow:0 20px 80px #0004}dialog::backdrop{background:#0009}dialog h2{margin:0 0 12px}.modalActions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.printOnly{display:none}
+@media print{header,aside,.app,dialog{display:none!important}.printOnly{display:block}.ptask{break-inside:avoid-page;margin-bottom:22px;color:#111}.ptask h2{font-size:17px;margin:0 0 6px}.pdiag svg{width:420px;height:auto;color:#111}.pstep{margin:4px 0}.lbl{stroke:#fff}}
+
+.methods{display:flex;gap:6px;margin-bottom:6px}.methods .btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.nav{display:flex;gap:6px;flex-wrap:wrap}.nav .btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+#backBar{padding:8px 16px;background:var(--gold);border-bottom:1px solid var(--line)}
+.statement{font-size:16px;background:var(--blue2);border-radius:9px;padding:10px 12px}
+.params{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px}.params label{display:flex;gap:8px;align-items:center;font-size:13px}.params input{width:150px}
+.ctor{display:grid;grid-template-columns:330px minmax(0,1fr);gap:14px;padding:16px;align-items:start}
+.ctpanel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ctpanel h3{margin:0;font-size:14px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+#ctModes{display:flex;flex-wrap:wrap;gap:5px}#ctPar{display:flex;flex-direction:column;gap:5px}#ctPar input{width:80px;padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.ctslot{border:1px solid var(--line);border-radius:8px;padding:6px 8px;cursor:pointer;margin-bottom:5px}.ctslot.cur{border-color:var(--blue);background:var(--blue2)}.sw2{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}
+#ctScene{width:100%;aspect-ratio:900/600;display:block;background:var(--bg);border-radius:10px;touch-action:none;cursor:crosshair}
+.ctrow{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--line);padding:4px 0;font-size:14px}.ctrow b{text-align:right}.ctwarn{color:#d0403a;font-weight:650}
+.ctopts{display:flex;flex-wrap:wrap;gap:10px;font-size:13px}
+#mainOrig{padding:12px}#origFrame{width:100%;height:calc(100vh - 140px);border:1px solid var(--line);border-radius:12px;background:#0b0d10}
+@media(max-width:900px){.ctor{grid-template-columns:1fr}}
+
+header{min-height:52px;padding:6px 12px}.app{min-height:calc(100vh - 52px)}aside{height:calc(100vh - 52px)}
+.content{padding:10px 12px}.condition{padding:10px 14px;margin-bottom:10px}.condition h2{font-size:17px;margin:0 0 6px}
+.condition.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,290px);gap:6px 18px;align-items:start}
+.condside{display:flex;flex-direction:column;gap:6px;border-left:1px solid var(--line);padding-left:14px}.condside .facts{margin-top:0;flex-direction:column;align-items:stretch}.condside .chip{text-align:left;border-radius:9px}.condside .answer{margin-top:4px;flex-wrap:wrap;gap:8px}
+@media(max-width:1100px){.condition.two{grid-template-columns:1fr}.condside{border-left:0;padding-left:0}.condside .facts{flex-direction:row;flex-wrap:wrap}}
+.dtools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:2px 2px 6px}.dtools input[type=range]{width:110px}.dtools .drawOnly{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.help{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);font-size:12px;color:var(--muted);cursor:help;margin-left:auto}
+.btn.tool{padding:5px 9px;font-size:13px}.dataTgl{display:flex;align-items:center;gap:4px}
+#diagram{width:min(100%,calc((100vh - 120px)*600/460));margin:0 auto;cursor:default}
+.xs{display:flex;align-items:center;gap:6px;flex:1;min-width:160px}.xs input{flex:1}.xs b{font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}.vtabs{display:flex;gap:3px}.vtabs .btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.panel h3{padding:7px 12px}.solution{padding:10px}
+.workspace{gap:10px}
+#mainMatrix{padding:12px}.mtable{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}.mtable th,.mtable td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top;font-size:14px}.mtable th{background:var(--bg);position:sticky;top:0;z-index:1}
+.mtable tr.grp td{background:var(--blue2);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.tchip{display:inline-block;border:1px solid var(--line);border-radius:7px;padding:1px 7px;margin:2px;font-size:12.5px;cursor:pointer;background:var(--panel);color:var(--ink)}.tchip.done{background:var(--green);border-color:#18a05e}.tchip.hw{box-shadow:inset 0 -3px 0 #e5a500}.tchip:hover{border-color:var(--blue)}
+.fchip{display:inline-block;border:1px solid #b9ccff;background:var(--blue2);border-radius:999px;padding:1px 8px;margin:2px;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.mhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.mhead .btn.active{background:var(--blue);border-color:var(--blue);color:#fff}.mstat{margin-left:auto}
+.cnt{display:inline-block;min-width:22px;text-align:center;font-weight:700;color:var(--blue)}
+#stuList{display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow:auto}.sturow{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:6px}.sturow.cur{border-color:var(--blue);background:var(--blue2)}.sturow .stuPick{flex:1;text-align:left;font-weight:650}.sturow .small{white-space:nowrap}
+.stuAdd{display:flex;gap:6px;margin-top:10px}.stuAdd input{flex:1;padding:8px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+#studentBtn{font-weight:650}
+header{flex-wrap:nowrap;gap:6px}header strong{font-size:17px;white-space:nowrap}header .btn{padding:6px 10px}.nav{flex-wrap:nowrap}
+.task{padding:6px 8px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 8px}.taskname{margin-bottom:0}.taskmeta{gap:8px}.tasklist{gap:5px}
+@media(max-width:1100px){header{flex-wrap:wrap}.nav{flex-wrap:wrap}}
+</style></head><body>
+<header><strong>Экстремумы · производная</strong><nav class="nav"><button class="btn" data-view="tasks">Задачи</button><button class="btn" data-view="facts">Справочник</button><button class="btn" data-view="matrix">Сводная таблица</button></nav><button class="btn" id="studentBtn" title="Сменить ученика">👤 —</button><button class="btn" id="printOpen" title="Печать">🖨</button><button class="btn" id="exportApp" title="Сохранить приложение в файл вместе с прогрессом учеников">💾</button><button class="btn" id="theme">☾</button></header>
+<div id="backBar" hidden><button class="btn" id="backBtn">← Вернуться</button></div>
+<div class="app" id="app">
+<aside><select id="topicSel" aria-label="Тема"></select><div class="tabs" id="tabs"><button class="tab active" data-filter="all">Все</button><button class="tab" data-filter="done">Разобрано</button><button class="tab" data-filter="hw">ДЗ</button><button class="tab" data-filter="fav">Избранное</button></div><div class="tasklist" id="taskList"></div></aside>
+<div>
+<section class="content" id="mainTasks"><div class="condition" id="condition"></div>
+<div class="workspace"><section class="panel diagram"><div class="dtools"><span class="vtabs"><button class="btn tool active" id="tabGraph">График</button><button class="btn tool" id="tabModel">Модель</button></span><span class="xs" id="xsWrap"><input id="xs" type="range"><b id="xsVal"></b></span><button class="btn tool" id="toOpt" title="Поставить в точку экстремума">★ оптимум</button><button class="btn tool" id="drawToggle">✏ Рисовать</button><span class="drawOnly"><button class="sw active" data-color="#e34c4c" style="background:#e34c4c" title="Красный"></button><button class="sw" data-color="#3564ed" style="background:#3564ed" title="Синий"></button><button class="sw" data-color="#18a05e" style="background:#18a05e" title="Зелёный"></button><button class="sw" data-color="#1e2d46" style="background:#1e2d46" title="Тёмный"></button><button class="sw" data-color="#ffd400" style="background:#ffd400" title="Маркер"></button><button class="btn tool" id="penBtn">Перо</button><button class="btn tool" id="eraserBtn">Ластик</button><button class="btn tool" id="undoBtn" title="Ctrl+Z">↶</button><button class="btn tool" id="clearInk">Очистить</button></span><span class="help" title="Ползунок двигает точку по графику и меняет модель · ← → — шаги решения">?</span></div><div id="diagram"></div></section>
+<section class="panel"><h3 id="solHead">Пошаговый разбор</h3><div class="solution" id="solution"></div></section></div></section>
+<section id="mainMatrix" hidden></section>
+
+</div></div>
+<div class="printOnly" id="printArea"></div>
+<dialog id="stuModal"><h2>Кто занимается?</h2><div class="small" style="margin-bottom:10px">У каждого ученика свои отметки «Разобрано», «ДЗ», «Избранное» и свои рисунки на чертежах. Всё сохраняется в этом браузере; кнопка «Сохранить приложение» сохраняет и прогресс всех учеников в файл.</div><div id="stuList"></div><div class="stuAdd"><input id="stuNew" placeholder="Имя нового ученика" maxlength="40"><button class="btn primary" id="stuAddBtn">Добавить</button></div><div class="modalActions"><button class="btn" id="stuClose">Готово</button></div></dialog>
+<dialog id="printModal"><h2>Настройки печати</h2><label><input type="checkbox" id="pCondition" checked> Условие / формулировка</label><br><label><input type="checkbox" id="pDiagram" checked> Итоговый чертёж</label><br><label><input type="checkbox" id="pSteps" checked> Все шаги</label><br><label><input type="checkbox" id="pAll"> Все задачи темы / все факты</label><div class="modalActions"><button class="btn" id="printCancel">Отмена</button><button class="btn primary" id="printGo">Печать</button></div></dialog>
+<script id="embedded-data" type="application/json"></script>
+<script>
+// ===== 2D-ГРАФИКИ: функция, знаки производной, экстремум =====
+const R=String.raw;
+const COL={blue:'#3564ed',red:'#e34c4c',green:'#18a05e',orange:'#e08a00',purple:'#8a4fd8',gray:'#8b98ab',ink:'currentColor',teal:'#0b8f8f'};
+const col=c=>COL[c]||c||COL.blue;
+function niceStep(span,n=6){const raw=span/n,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return(m<1.5?1:m<3?2:m<7?5:10)*p}
+function fmtN(v,d=3){if(!isFinite(v))return'—';const a=Math.abs(v);if(a!==0&&(a<1e-3||a>=1e6)){const e=Math.floor(Math.log10(a)),m=v/Math.pow(10,e);return fmtN(m,3)+'·10'+sup(e)}let s=(+v.toFixed(d)).toString();return s.replace('.',',')}
+const sup=e=>String(e).split('').map(c=>'⁰¹²³⁴⁵⁶⁷⁸⁹'['0123456789'.indexOf(c)]||(c==='-'?'⁻':c)).join('');
+const txt=(x,y,s,o={})=>`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="${o.size||13}" fill="${o.c||'currentColor'}" text-anchor="${o.a||'middle'}" font-weight="${o.b?700:400}" class="lbl"${o.it?' font-style="italic"':''}>${s}</text>`;
+function plot2d(S,o={}){const W=o.W||600,H=o.H||460,step=o.step??99,phase=o.phase||'done';
+ const vis=st=>st==null||st<step||(st===step&&phase==='done'),isNew=st=>st===step&&phase==='done';
+ const L=60,Rm=18,T=22,B=S.signs&&vis(S.signs.st)?96:44;const pw=W-L-Rm,ph=H-T-B;
+ const [x0,x1]=S.x,[y0,y1]=S.y;const X=x=>L+(x-x0)/(x1-x0)*pw,Y=y=>T+(y1-y)/(y1-y0)*ph;
+ let g='';const id='c'+Math.random().toString(36).slice(2,8);
+ g+=`<defs><clipPath id="${id}"><rect x="${L}" y="${T}" width="${pw}" height="${ph}"/></clipPath></defs>`;
+ // область определения
+ if(S.dom){const a=Math.max(S.dom[0],x0),b=Math.min(S.dom[1],x1);if(a>x0)g+=`<rect x="${L}" y="${T}" width="${X(a)-L}" height="${ph}" fill="${COL.gray}" opacity=".12"/>`;if(b<x1)g+=`<rect x="${X(b)}" y="${T}" width="${L+pw-X(b)}" height="${ph}" fill="${COL.gray}" opacity=".12"/>`}
+ // сетка и оси
+ const sx=S.xstep||niceStep(x1-x0,7),sy=S.ystep||niceStep(y1-y0,6);const fx=S.xfmt||(v=>fmtN(v)),fy=S.yfmt||(v=>fmtN(v));
+ for(let v=Math.ceil(x0/sx)*sx;v<=x1+1e-9;v+=sx){const px=X(v);g+=`<line x1="${px}" y1="${T}" x2="${px}" y2="${T+ph}" stroke="${COL.gray}" stroke-opacity=".22"/>`+txt(px,T+ph+16,fx(+v.toFixed(10)),{size:11.5,c:COL.gray})}
+ for(let v=Math.ceil(y0/sy)*sy;v<=y1+1e-9;v+=sy){const py=Y(v);g+=`<line x1="${L}" y1="${py}" x2="${L+pw}" y2="${py}" stroke="${COL.gray}" stroke-opacity=".22"/>`+txt(L-6,py+4,fy(+v.toFixed(10)),{size:11.5,c:COL.gray,a:'end'})}
+ if(y0<=0&&y1>=0)g+=`<line x1="${L}" y1="${Y(0)}" x2="${L+pw}" y2="${Y(0)}" stroke="currentColor" stroke-opacity=".55"/>`;
+ if(x0<=0&&x1>=0)g+=`<line x1="${X(0)}" y1="${T}" x2="${X(0)}" y2="${T+ph}" stroke="currentColor" stroke-opacity=".55"/>`;
+ g+=`<rect x="${L}" y="${T}" width="${pw}" height="${ph}" fill="none" stroke="currentColor" stroke-opacity=".35"/>`;
+ g+=txt(L+pw-2,T+ph+32,S.xl||'x',{a:'end',it:true,size:14,b:true})+txt(L+4,T-7,S.yl||'y',{a:'start',it:true,size:14,b:true});
+ // горизонтальные/вертикальные линии
+ for(const v of S.vl||[])if(vis(v.st)){g+=`<line x1="${X(v.x)}" y1="${T}" x2="${X(v.x)}" y2="${T+ph}" stroke="${col(v.c||'gray')}" stroke-dasharray="6 5" stroke-width="1.6"/>`;if(v.label)g+=txt(X(v.x)+4,T+14,v.label,{a:'start',size:12,c:col(v.c||'gray')})}
+ for(const h of S.hl||[])if(vis(h.st)){g+=`<line x1="${L}" y1="${Y(h.y)}" x2="${L+pw}" y2="${Y(h.y)}" stroke="${col(h.c||'gray')}" stroke-dasharray="6 5" stroke-width="1.6"/>`;if(h.label)g+=txt(L+pw-4,Y(h.y)-5,h.label,{a:'end',size:12,c:col(h.c||'gray')})}
+ // функции
+ let fi=0;for(const F of S.fns||[]){if(!vis(F.st))continue;const n=480,a=F.a??Math.max(x0,S.dom?S.dom[0]:x0),b=F.b??Math.min(x1,S.dom?S.dom[1]:x1);let d='',pen=false;const big=(y1-y0)*3;
+  for(let i=0;i<=n;i++){const x=a+(b-a)*i/n;let y;try{y=F.f(x)}catch{y=NaN}if(!isFinite(y)||y>y1+big||y<y0-big){pen=false;continue}d+=(pen?'L':'M')+X(x).toFixed(1)+' '+Y(y).toFixed(1);pen=true}
+  const w=(F.w||2.6)+(isNew(F.st)?1.4:0);g+=`<path d="${d}" fill="none" stroke="${col(F.c||(fi?'orange':'blue'))}" stroke-width="${w}" ${F.dash?`stroke-dasharray="${F.dash}"`:''} clip-path="url(#${id})" stroke-linejoin="round"/>`;
+  if(F.label){const lx=F.lx??(a+(b-a)*.82);let ly;try{ly=F.f(lx)}catch{ly=NaN}if(isFinite(ly)&&ly>y0&&ly<y1)g+=txt(X(lx),Y(ly)-9,F.label,{c:col(F.c||(fi?'orange':'blue')),size:13.5,b:true})}fi++}
+ // отметки
+ for(const m of S.marks||[])if(vis(m.st)){const y=m.y??S.fns[m.fn||0].f(m.x);g+=`<circle cx="${X(m.x)}" cy="${Y(y)}" r="5" fill="${col(m.c||'purple')}"/>`;if(m.label)g+=txt(X(m.x)+(m.dx??0),Y(y)+(m.dy??-12),m.label,{c:col(m.c||'purple'),size:12.5,b:true})}
+ // экстремум
+ if(S.ext&&vis(S.ext.st)){const e=S.ext,F=S.fns[e.fn||0],y=e.y??F.f(e.x),px=X(e.x),py=Y(y),c=COL.red,nw=isNew(e.st);
+  g+=`<line x1="${px}" y1="${py}" x2="${px}" y2="${T+ph}" stroke="${c}" stroke-dasharray="5 4" stroke-width="1.6"/><line x1="${L}" y1="${py}" x2="${px}" y2="${py}" stroke="${c}" stroke-dasharray="5 4" stroke-width="1.6"/>`;
+  g+=`<circle cx="${px}" cy="${py}" r="${nw?8:6.5}" fill="${c}" stroke="#fff" stroke-width="2"/>`;g+=txt(px,py+(e.kind==='max'?-14:24),e.label||(e.kind==='max'?'max':'min'),{c,b:true,size:13.5});
+  g+=`<rect x="${px-24}" y="${T+ph+3}" width="48" height="17" rx="4" fill="${c}"/>`+txt(px,T+ph+16,e.xl||fx(e.x),{c:'#fff',size:12,b:true})}
+ // знаки производной
+ if(S.signs&&vis(S.signs.st)){const sg=S.signs,yy=T+ph+60,a=S.dom?Math.max(S.dom[0],x0):x0,b=S.dom?Math.min(S.dom[1],x1):x1;const zs=(sg.zeros||[]).filter(z=>z>a&&z<b);const pts=[a,...zs,b];
+  g+=`<line x1="${X(a)}" y1="${yy}" x2="${X(b)}" y2="${yy}" stroke="currentColor" stroke-width="1.6"/>`+txt(X(a)-6,yy+4,(sg.name||"f′")+':',{a:'end',size:13,b:true});
+  for(let i=0;i<pts.length-1;i++){const m=(pts[i]+pts[i+1])/2;let dv;const h=(b-a)*1e-5;dv=sg.d?sg.d(m):(S.fns[sg.fn||0].f(m+h)-S.fns[sg.fn||0].f(m-h));const pos=dv>0;
+   g+=txt(X(m),yy-8,pos?'+':'−',{c:pos?COL.green:COL.red,size:18,b:true})+txt(X(m),yy+20,pos?'↗':'↘',{c:pos?COL.green:COL.red,size:17})}
+  for(const z of zs){g+=`<circle cx="${X(z)}" cy="${yy}" r="4.5" fill="#fff" stroke="${COL.red}" stroke-width="2"/>`+txt(X(z),yy+36,sg.zfmt?sg.zfmt(z):fx(z),{c:COL.red,size:12,b:true})}}
+ // текущая точка слайдера
+ if(o.cur!=null&&S.fns&&S.fns[0]){const F=S.fns[S.curFn||0];let y;try{y=F.f(o.cur)}catch{y=NaN}if(isFinite(y)&&y>=y0&&y<=y1){const px=X(o.cur),py=Y(y);g+=`<line x1="${px}" y1="${py}" x2="${px}" y2="${T+ph}" stroke="${COL.teal}" stroke-width="1.4"/><circle cx="${px}" cy="${py}" r="6" fill="${COL.teal}" stroke="#fff" stroke-width="2"/>`}if(o.curText)g+=`<rect x="${L+pw-250}" y="${T+6}" width="244" height="24" rx="6" fill="${COL.teal}" opacity=".14"/>`+txt(L+pw-12,T+23,o.curText,{a:'end',c:COL.teal,b:true,size:13.5})}
+ return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="color:var(--ink,#1e2d46)">${g}</svg>`}
+// утилиты для «моделей»
+const svgWrap=(inner,W=600,H=460)=>`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="color:var(--ink,#1e2d46)">${inner}</svg>`;
+const ln=(x1,y1,x2,y2,c='currentColor',w=2,d='')=>`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col(c)}" stroke-width="${w}" ${d?`stroke-dasharray="${d}"`:''} stroke-linecap="round"/>`;
+const arrow=(x1,y1,x2,y2,c='red',w=3)=>{const a=Math.atan2(y2-y1,x2-x1),s=11;return ln(x1,y1,x2,y2,c,w)+`<path d="M${x2} ${y2} L${(x2-s*Math.cos(a-.4)).toFixed(1)} ${(y2-s*Math.sin(a-.4)).toFixed(1)} L${(x2-s*Math.cos(a+.4)).toFixed(1)} ${(y2-s*Math.sin(a+.4)).toFixed(1)}Z" fill="${col(c)}"/>`};
+const dot=(x,y,c='blue',r=5)=>`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${col(c)}"/>`;
+
+// ===== СПРАВОЧНИК: ПРОИЗВОДНАЯ И ЭКСТРЕМУМЫ =====
+const FN1=[
+ {n:'x^3',f:x=>x**3,d:x=>3*x*x,t:'(x^n)\'=nx^{n-1}'},
+ {n:'\\sqrt x',f:x=>Math.sqrt(x),d:x=>.5/Math.sqrt(x),t:'(\\sqrt x)\'=\\frac1{2\\sqrt x}',a:0},
+ {n:'e^x',f:x=>Math.exp(x),d:x=>Math.exp(x),t:'(e^x)\'=e^x'},
+ {n:'\\ln x',f:x=>Math.log(x),d:x=>1/x,t:'(\\ln x)\'=\\frac1x',a:0},
+ {n:'\\sin x',f:x=>Math.sin(x),d:x=>Math.cos(x),t:'(\\sin x)\'=\\cos x'},
+ {n:'\\frac1x',f:x=>1/x,d:x=>-1/x/x,t:'\\left(\\frac1x\\right)\'=-\\frac1{x^2}',a:0}];
+const tangent=(f,d,x0)=>x=>f(x0)+d(x0)*(x-x0);
+const FACTS=[
+{id:'Ф1',group:'Производная',title:'Таблица производных',
+ st:R`$(c)'=0$; $(x^n)'=nx^{n-1}$; $(\sqrt x)'=\frac1{2\sqrt x}$; $(x\sqrt x)'=\tfrac32\sqrt x$; $(a^x)'=a^x\ln a$; $(e^x)'=e^x$; $(\log_ax)'=\frac1{x\ln a}$; $(\ln x)'=\frac1x$; $(\sin x)'=\cos x$; $(\cos x)'=-\sin x$; $(\operatorname{tg}x)'=\frac1{\cos^2x}$; $(\operatorname{ctg}x)'=-\frac1{\sin^2x}$.`,
+ params:[['i','функция № (1–6)',1,6,1,1],['x0','точка касания x₀',.2,3,.1,1]],
+ fig(p){const F=FN1[p.i-1],a=F.a??-3;const x0=Math.max(p.x0,a+.05);return{plot:{x:[a===0?0:-3,3.2],y:[-4,6],xl:'x',yl:'y',dom:[a===0?.01:-3,3.2],fns:[{f:F.f,c:'blue',label:'f'},{f:F.d,c:'orange',dash:'7 5',label:"f′"},{f:tangent(F.f,F.d,x0),c:'green',w:1.8,st:1}],marks:[{x:x0,label:`k = f′(x₀) = ${fmtN(F.d(x0),2)}`,c:'green',st:1}]}}},
+ steps:[{t:'Смысл производной',do:R`$f'(x_0)$ — угловой коэффициент касательной к графику в точке $x_0$ (предел отношения $\frac{f(x_0+h)-f(x_0)}h$).`,res:R`Подвигайте $x_0$: значение $k$ совпадает с высотой оранжевого графика $f'$.`},
+  {t:'Пример вывода',do:R`$(x^2)'$: $\frac{(x+h)^2-x^2}h=2x+h\to2x$. $(\sqrt x)'$: $\frac{\sqrt{x+h}-\sqrt x}h=\frac1{\sqrt{x+h}+\sqrt x}\to\frac1{2\sqrt x}$.`,res:'',eq:R`(x\sqrt x)'=(x^{3/2})'=\tfrac32x^{1/2}=\tfrac32\sqrt x`}],
+ use:'Все задачи.'},
+{id:'Ф2',group:'Производная',title:'Правила дифференцирования',
+ st:R`$(u\pm v)'=u'\pm v'$; $(cu)'=cu'$; $(uv)'=u'v+uv'$; $\left(\frac uv\right)'=\frac{u'v-uv'}{v^2}$; $\big(f(g(x))\big)'=f'(g(x))\cdot g'(x)$.`,
+ params:[['x0','точка x₀',.3,3,.1,1.2]],
+ fig(p){const f=x=>x/(1+x*x),d=x=>(1-x*x)/(1+x*x)**2;return{plot:{x:[-3,3],y:[-.8,.8],xl:'x',yl:'y',fns:[{f,c:'blue',label:'x/(1+x²)'},{f:d,c:'orange',dash:'7 5',label:"f′",lx:-2},{f:tangent(f,d,p.x0),c:'green',w:1.8,st:1}],marks:[{x:p.x0,st:1,c:'green',label:`k = ${fmtN(d(p.x0),3)}`}]}}},
+ steps:[{t:'Производная частного',do:R`$f=\frac x{1+x^2}$: $u=x$, $v=1+x^2$, $u'=1$, $v'=2x$.`,res:'',eq:R`f'=\frac{1\cdot(1+x^2)-x\cdot2x}{(1+x^2)^2}=\frac{1-x^2}{(1+x^2)^2}`},
+  {t:'Сложная функция',do:R`$\big(\sqrt{9+(8-d)^2}\big)'$: внешняя $\sqrt u$, внутренняя $u=9+(8-d)^2$, $u'=2(8-d)\cdot(-1)$.`,res:'',eq:R`\big(\sqrt{9+(8-d)^2}\big)'=\frac{-(8-d)}{\sqrt{9+(8-d)^2}}`}],
+ use:'Задачи 004, 005, 008, 01, 02, 05.'},
+{id:'Ф3',group:'Экстремумы',title:'Знак производной и точки экстремума',
+ st:R`Если $f'>0$ на интервале — $f$ возрастает, если $f'<0$ — убывает. Точка, где $f'$ меняет знак с «$+$» на «$-$», — точка максимума, с «$-$» на «$+$» — минимума. Алгоритм: 1) найти $f'$; 2) найти нули и точки, где $f'$ не существует; 3) расставить знаки на интервалах; 4) сделать вывод и, если нужно, найти значение функции.`,
+ params:[['x0','точка x₀',-7,7,.5,-6]],
+ fig(p){const f=x=>x**3-48*x+17,d=x=>3*x*x-48;return{plot:{x:[-8,8],y:[-180,220],xl:'x',yl:'y',ystep:50,fns:[{f,c:'blue',label:'y = x³ − 48x + 17',lx:-6.5},{f:tangent(f,d,p.x0),c:'green',w:1.6,st:1,a:p.x0-2.5,b:p.x0+2.5}],marks:[{x:p.x0,st:1,c:'green',label:`k = ${fmtN(d(p.x0),1)}`},{x:-4,st:2,c:'red',label:'max'},{x:4,st:2,c:'red',label:'min',dy:22}],signs:{st:2,d,zeros:[-4,4]}}}},
+ steps:[{t:'Почему знак решает',do:R`По теореме Лагранжа $f(x_2)-f(x_1)=f'(c)(x_2-x_1)$. Если $f'>0$ на интервале, то при $x_2>x_1$ разность положительна — функция возрастает.`,res:R`Касательная (зелёная) наклонена вверх там, где $f'>0$.`},
+  {t:'Пример из теории',do:R`$y=x^3-48x+17$: $y'=3x^2-48=3(x-4)(x+4)$.`,res:R`Знаки: $+$, $-$, $+$. $x=-4$ — максимум, $x=4$ — минимум.`,eq:R`y'(0)=-48<0`}],
+ use:'Все задачи: проверка, что найденная точка — нужный экстремум.'},
+{id:'Ф4',group:'Экстремумы',title:'Вершина параболы',
+ st:R`Квадратичная функция $y=ax^2+bx+c$ при $a>0$ принимает наименьшее значение, при $a<0$ — наибольшее, в вершине $x_0=-\frac b{2a}$. Производная не нужна: $ax^2+bx+c=a\left(x+\frac b{2a}\right)^2+c-\frac{b^2}{4a}$. Если вершина вне промежутка — экстремум на его конце.`,
+ params:[['a','a',-2,2,.25,1],['b','b',-6,6,.5,-4],['c','c',-5,5,.5,1]],
+ fig(p){const a=p.a||.25,f=x=>a*x*x+p.b*x+p.c,x0=-p.b/(2*a);return{plot:{x:[-8,8],y:[-12,12],xl:'x',yl:'y',fns:[{f,c:'blue'}],ext:{x:x0,kind:a>0?'min':'max',st:1}}}},
+ steps:[{t:'Выделение полного квадрата',do:'',res:'',eq:R`ax^2+bx+c=a\left(x+\tfrac b{2a}\right)^2+\left(c-\tfrac{b^2}{4a}\right)`},
+  {t:'Вывод',do:R`Квадрат неотрицателен и равен нулю только при $x=-\frac b{2a}$.`,res:R`При $a>0$ это минимум, при $a<0$ — максимум.`}],
+ use:'Задачи 003, 007, 03, 06 (после замены).'},
+{id:'Ф5',group:'Приёмы',title:'Монотонные преобразования: где экстремум не меняется',
+ st:R`Точка экстремума не меняется, если функцию: умножить на положительную константу; прибавить константу; извлечь корень или возвести в квадрат (при $f\ge0$): $\max\sqrt{g}\leftrightarrow\max g$; «перевернуть» (при $f>0$): $\max\frac1g\leftrightarrow\min g$. Сложная функция $F(g(x))$ с возрастающей $F$ имеет экстремум там же, где $g$, с убывающей — «наоборот».`,
+ params:[['m','режим: 1 — √g, 2 — 1/g, 3 — c·g',1,3,1,1]],
+ fig(p){const g=x=>(x-2)**2+1;const F=p.m==1?(x=>Math.sqrt(g(x))):p.m==2?(x=>1/g(x)):(x=>.5*g(x));return{plot:{x:[-1,5],y:[0,6],xl:'x',yl:'y',fns:[{f:g,c:'blue',label:'g'},{f:F,c:'orange',label:p.m==1?'√g':p.m==2?'1/g':'½g',lx:4.2}],ext:{x:2,kind:p.m==2?'max':'min',fn:1,st:1}}}},
+ steps:[{t:'Почему',do:R`Если $\varphi$ возрастает, то $g(x_1)<g(x_2)\iff\varphi(g(x_1))<\varphi(g(x_2))$ — порядок значений сохраняется, и точка минимума $g$ остаётся точкой минимума $\varphi(g)$. Убывающая $\varphi$ (например, $\frac1t$ при $t>0$) меняет порядок: минимум превращается в максимум.`,res:R`Поэтому вместо $\sqrt{\ldots}$ исследуют подкоренное выражение, вместо дроби с постоянным числителем — знаменатель.`}],
+ use:'Задачи 002, 003, 006, 007, 008, 009, 02, 03, 04, 05, 06.'},
+{id:'Ф6',group:'Приёмы',title:'Сумма ax + b/x',
+ st:R`При $a,b>0$ функция $y=ax+\frac bx$ на $x>0$ имеет наименьшее значение $2\sqrt{ab}$ в точке $x=\sqrt{\frac ba}$. Деление на переменную превращает дробь $\frac{x}{ax^2+bx+c}$ в $\frac1{ax+b+\frac cx}$ — и задача сводится к этой сумме.`,
+ params:[['a','a',.2,3,.1,1],['b','b',.5,9,.5,4]],
+ fig(p){const f=x=>p.a*x+p.b/x,x0=Math.sqrt(p.b/p.a);return{plot:{x:[0,8],y:[0,14],xl:'x',yl:'y',dom:[0.02,8],fns:[{f,c:'blue',label:'ax + b/x'},{f:x=>p.a*x,c:'gray',w:1.4,dash:'6 5',st:1},{f:x=>p.b/x,c:'gray',w:1.4,dash:'6 5',st:1}],ext:{x:x0,kind:'min',st:2},signs:{st:2,d:x=>p.a-p.b/x/x,zeros:[x0]}}}},
+ steps:[{t:'Слагаемые',do:R`$ax$ растёт, $\frac bx$ убывает; сумма сначала убывает, потом растёт.`,res:''},
+  {t:'Производная',do:'',res:'',eq:R`y'=a-\frac b{x^2}=0\Rightarrow x=\sqrt{\tfrac ba},\quad y_{\min}=2\sqrt{ab}`},
+  {t:'Без производной',do:R`По неравенству о средних (Ф10): $ax+\frac bx\ge2\sqrt{ax\cdot\frac bx}=2\sqrt{ab}$, равенство при $ax=\frac bx$.`,res:'',sc:['Ф10']}],
+ use:'Задачи 004, 009, 04.'},
+{id:'Ф7',group:'Приёмы',title:'Выражение a·cos α + b·sin α',
+ st:R`$a\cos\alpha+b\sin\alpha=\sqrt{a^2+b^2}\cos(\alpha-\varphi)$, где $\operatorname{tg}\varphi=\frac ba$. Наибольшее значение $\sqrt{a^2+b^2}$ достигается при $\alpha=\varphi$, то есть при $\operatorname{tg}\alpha=\frac ba$.`,
+ params:[['b','μ (при a = 1)',.1,2,.05,.58]],
+ fig(p){const f=x=>Math.cos(x*Math.PI/180)+p.b*Math.sin(x*Math.PI/180),ph=Math.atan(p.b)*180/Math.PI;return{plot:{x:[0,90],y:[0,2.4],xl:'α, °',yl:'y',xstep:15,fns:[{f,c:'blue',label:'cos α + μ sin α',lx:70}],hl:[{y:Math.sqrt(1+p.b*p.b),st:1,label:'√(1+μ²)',c:'red'}],ext:{x:ph,kind:'max',st:1,xl:fmtN(ph,1)+'°'}}}},
+ steps:[{t:'Вспомогательный угол',do:R`Вынесем $\sqrt{a^2+b^2}$: $\frac a{\sqrt{a^2+b^2}}=\cos\varphi$, $\frac b{\sqrt{a^2+b^2}}=\sin\varphi$.`,res:'',eq:R`a\cos\alpha+b\sin\alpha=\sqrt{a^2+b^2}(\cos\varphi\cos\alpha+\sin\varphi\sin\alpha)=\sqrt{a^2+b^2}\cos(\alpha-\varphi)`},
+  {t:'Через производную',do:R`$(a\cos\alpha+b\sin\alpha)'=-a\sin\alpha+b\cos\alpha=0\iff\operatorname{tg}\alpha=\frac ba$.`,res:''}],
+ use:'Задача 002.'},
+{id:'Ф8',group:'Приёмы',title:'Функция xᵖ·e^(−kx)',
+ st:R`При $p,k>0$ функция $y=x^pe^{-kx}$ на $x>0$ имеет наибольшее значение в точке $x=\frac pk$. Частные случаи: $\sqrt Ee^{-E/(kT)}$ — максимум при $E=\frac{kT}2$; $v^2e^{-Bv^2}$ — замена $x=v^2$ даёт максимум при $v=\frac1{\sqrt B}$.`,
+ params:[['p','p',.5,3,.5,1],['k','k',.5,3,.25,1]],
+ fig(p){const f=x=>x**p.p*Math.exp(-p.k*x),x0=p.p/p.k,m=f(x0);return{plot:{x:[0,8],y:[0,m*1.35],xl:'x',yl:'y',fns:[{f,c:'blue',label:'xᵖe^(−kx)',lx:x0+1.5}],ext:{x:x0,kind:'max',st:1},signs:{st:1,d:x=>x**(p.p-1)*Math.exp(-p.k*x)*(p.p-p.k*x),zeros:[x0]}}}},
+ steps:[{t:'Производная',do:R`Производная произведения (Ф2), множитель $x^{p-1}e^{-kx}>0$:`,res:'',eq:R`y'=px^{p-1}e^{-kx}-kx^pe^{-kx}=x^{p-1}e^{-kx}(p-kx)`,sc:['Ф2']},
+  {t:'Знаки',do:R`$p-kx>0$ при $x<\frac pk$ и $<0$ при $x>\frac pk$.`,res:R`$x=\frac pk$ — точка максимума.`}],
+ use:'Задачи 02, 05 и их аналоги.'},
+{id:'Ф9',group:'Приёмы',title:'Замена t = 1/x²: дробь сводится к параболе',
+ st:R`Если $f(x)=\frac{x^4}{P(x^2)}$ или $f(x)=\frac{x^2}{P(x^2)}$ с квадратным трёхчленом $P$, то после деления на старшую степень знаменатель становится квадратичной функцией от $t=\frac1{x^2}$ ($t>0$), и минимум знаменателя — в вершине параболы (Ф4).`,
+ params:[['n','n (затухание)',.1,.8,.05,.3]],
+ fig(p){const T=1,h=t=>T**4*t*t+T*T*(p.n*p.n-2)*t+1,t0=(2-p.n*p.n)/(2*T*T);return{plot:{x:[0,1.8],y:[0,1.6],xl:'t = 1/τ²',yl:'h(t)',fns:[{f:h,c:'blue',label:'h(t)'}],ext:{x:t0,kind:'min',st:1}}}},
+ steps:[{t:'Деление на старшую степень',do:R`$g(\tau)=\frac{\tau^4}{(T^2-\tau^2)^2+n^2\tau^2T^2}=\frac1{\frac{T^4}{\tau^4}+\frac{T^2(n^2-2)}{\tau^2}+1}$.`,res:''},
+  {t:'Замена',do:R`$t=\frac1{\tau^2}$: знаменатель $h(t)=T^4t^2+T^2(n^2-2)t+1$ — парабола с ветвями вверх.`,res:'',eq:R`t_0=\frac{2-n^2}{2T^2}\Rightarrow\tau=T\sqrt{\frac2{2-n^2}}`,sc:['Ф4']}],
+ use:'Задачи 03, 06 и их аналоги.'},
+{id:'Ф10',group:'Приёмы',title:'Неравенство о средних (без производной)',
+ st:R`Для $a,b\ge0$: $\frac{a+b}2\ge\sqrt{ab}$; для трёх чисел $\frac{a+b+c}3\ge\sqrt[3]{abc}$; равенство — только при равных числах. Если произведение слагаемых постоянно, сумма минимальна, когда слагаемые равны; если постоянна сумма, произведение максимально при равных множителях.`,
+ params:[['a','a',.5,8,.25,6],['b','b',.5,8,.25,2]],
+ fig(p){const a=p.a,b=p.b,r=(a+b)/2,s=300/(a+b)*1.6,cx=300,base=380,X=v=>cx+(v-r)*s,hgt=Math.sqrt(a*b);let g='';
+  let d='';for(let i=0;i<=120;i++){const t=Math.PI*i/120;d+=(i?'L':'M')+(cx+r*s*Math.cos(t)).toFixed(1)+' '+(base-r*s*Math.sin(t)).toFixed(1)}
+  g+=`<path d="${d}" fill="none" stroke="${COL.blue}" stroke-width="2.4"/>`+ln(X(0),base,X(a+b),base,'currentColor',2.4);
+  g+=ln(X(a),base,X(a),base-hgt*s,'red',3)+ln(cx,base,cx,base-r*s,'green',3,'7 5')+dot(X(a),base,'currentColor',4)+dot(cx,base,'currentColor',4);
+  g+=txt((X(0)+X(a))/2,base+22,'a = '+fmtN(a,2),{b:true})+txt((X(a)+X(a+b))/2,base+22,'b = '+fmtN(b,2),{b:true});
+  g+=txt(X(a)+8,base-hgt*s/2,'√(ab) = '+fmtN(hgt,2),{a:'start',c:COL.red,b:true})+txt(cx-8,base-r*s/2,'(a+b)/2 = '+fmtN(r,2),{a:'end',c:COL.green,b:true});
+  return{svg:svgWrap(g)}},
+ steps:[{t:'Алгебраически',do:'',res:'',eq:R`\frac{a+b}2-\sqrt{ab}=\frac{(\sqrt a-\sqrt b)^2}2\ge0`},
+  {t:'Геометрически',do:R`В полуокружности с диаметром $a+b$ перпендикуляр из точки деления диаметра равен $\sqrt{ab}$ (высота прямоугольного треугольника), а радиус $\frac{a+b}2$. Перпендикуляр не длиннее радиуса.`,res:R`Равенство — когда точка деления в центре, то есть $a=b$.`},
+  {t:'Как применять',do:R`Пример: $2\pi R^2+\frac{108\pi}R=2\pi\left(R^2+\frac{27}R+\frac{27}R\right)\ge2\pi\cdot3\sqrt[3]{R^2\cdot\frac{27}R\cdot\frac{27}R}=54\pi$.`,res:R`Слагаемые подбирают так, чтобы их произведение не зависело от переменной.`}],
+ use:'Другой способ в задачах 001, 004, 007, 008, 009, 01, 04.'}];
+
+// ===== ЗАДАЧИ: ПРИКЛАДНЫЕ ЗАДАЧИ НА ЭКСТРЕМУМ =====
+const PI=Math.PI,dg=x=>x*PI/180,sq=Math.sqrt;
+// ---------- модели ----------
+function mTank(R){const h=54/(R*R),s=26,cx=300,base=400,rw=R*s,hh=Math.min(h*s,360),ry=rw*.22;let g='';
+ g+=`<ellipse cx="${cx}" cy="${base}" rx="${rw}" ry="${ry}" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="6 5"/>`;
+ g+=`<path d="M${cx-rw} ${base} A${rw} ${ry} 0 0 0 ${cx+rw} ${base}" fill="none" stroke="currentColor" stroke-width="2.4"/>`;
+ g+=`<rect x="${cx-rw}" y="${base-hh}" width="${2*rw}" height="${hh}" fill="${COL.blue}" opacity=".12"/>`+ln(cx-rw,base,cx-rw,base-hh,'currentColor',2.4)+ln(cx+rw,base,cx+rw,base-hh,'currentColor',2.4);
+ g+=`<ellipse cx="${cx}" cy="${base-hh}" rx="${rw}" ry="${ry}" fill="${COL.blue}" fill-opacity=".18" stroke="currentColor" stroke-width="2.4"/>`;
+ g+=ln(cx,base,cx+rw,base,'red',2.4)+txt(cx+rw/2,base-6,'R = '+fmtN(R,2),{c:COL.red,b:true});
+ g+=ln(cx+rw+18,base,cx+rw+18,base-hh,'green',2.4)+txt(cx+rw+24,base-hh/2,'h = '+fmtN(h,2)+(h*s>360?' (обрезано)':''),{a:'start',c:COL.green,b:true});
+ const S=2*PI*R*R+108*PI/R;g+=txt(300,34,`S = 2πR² + 2πRh = ${fmtN(S,1)} = ${fmtN(S/PI,2)}π м²`,{size:16,b:true});return svgWrap(g)}
+function mBlock(a){const F=100*sq(3)/3/(Math.cos(dg(a))+sq(3)/3*Math.sin(dg(a)));let g=ln(40,330,560,330,'currentColor',3);for(let x=50;x<560;x+=22)g+=ln(x,330,x-12,346,'gray',1.4);
+ g+=`<rect x="200" y="250" width="140" height="80" rx="6" fill="${COL.blue}" fill-opacity=".18" stroke="currentColor" stroke-width="2.4"/>`+txt(270,296,'m = 10 кг',{b:true});
+ const L=F*2.4,x2=340+L*Math.cos(dg(a)),y2=290-L*Math.sin(dg(a));g+=arrow(340,290,x2,y2,'red',3.4)+txt(x2+6,y2-8,'F = '+fmtN(F,2)+' Н',{a:'start',c:COL.red,b:true,size:15});
+ g+=ln(340,290,420,290,'gray',1.4,'5 4')+`<path d="M380 290 A40 40 0 0 0 ${(340+40*Math.cos(dg(a))).toFixed(1)} ${(290-40*Math.sin(dg(a))).toFixed(1)}" fill="none" stroke="${COL.orange}" stroke-width="2"/>`+txt(392,282,'α = '+fmtN(a,1)+'°',{a:'start',c:COL.orange,b:true});
+ g+=arrow(200,318,140,318,'gray',2.4)+txt(150,310,'F тр',{c:COL.gray});return svgWrap(g)}
+function mShips(t){const s=1.6,ox=430,oy=380,a=250-30*t,b=40*t;let g=ln(40,oy,580,oy,'gray',1.2,'4 4')+ln(ox,40,ox,440,'gray',1.2,'4 4');
+ g+=ln(ox-250*s,oy,ox,oy,'blue',1.4,'2 6')+dot(ox-a*s,oy,'blue',8)+txt(ox-a*s,oy+24,'A',{b:true,c:COL.blue,size:15})+dot(ox,oy-b*s,'green',8)+txt(ox+14,oy-b*s,'B',{a:'start',b:true,c:COL.green,size:15});
+ g+=ln(ox-a*s,oy,ox,oy-b*s,'red',2.6,'8 5')+txt((ox-a*s+ox)/2-10,(oy+oy-b*s)/2-10,'d = '+fmtN(sq(a*a+b*b),1)+' км',{a:'end',c:COL.red,b:true,size:15})+txt(ox+8,oy+18,'O',{a:'start'});
+ g+=txt(300,34,`t = ${fmtN(t,2)} ч:  a = ${fmtN(a,1)} км,  b = ${fmtN(b,1)} км`,{size:15,b:true});return svgWrap(g)}
+function mLens(d){const F=10,f=d*F/(d-F),s=Math.min(5,520/(d+f)),cx=40+d*s,yy=230;let g=ln(20,yy,590,yy,'gray',1.2,'4 4');
+ g+=`<ellipse cx="${cx}" cy="${yy}" rx="9" ry="120" fill="${COL.blue}" fill-opacity=".2" stroke="${COL.blue}" stroke-width="2"/>`+dot(cx-F*s,yy,'orange',4)+dot(cx+F*s,yy,'orange',4)+txt(cx+F*s,yy+18,'F',{c:COL.orange});
+ const ho=50,hi=ho*f/d;g+=arrow(cx-d*s,yy,cx-d*s,yy-ho,'green',3)+arrow(cx+f*s,yy,cx+f*s,Math.min(yy+hi,450),'red',3);
+ g+=ln(cx-d*s,yy-ho,cx,yy-ho,'gray',1.2)+ln(cx,yy-ho,cx+f*s,yy+hi,'gray',1.2)+ln(cx-d*s,yy-ho,cx+f*s,yy+hi,'gray',1.2);
+ g+=txt((cx-d*s+cx)/2,yy+24,'d = '+fmtN(d,1),{b:true,c:COL.green})+txt((cx+cx+f*s)/2,yy-14,'f = '+fmtN(f,1),{b:true,c:COL.red});
+ g+=txt(300,34,`L = d + f = ${fmtN(d+f,2)} см`,{size:16,b:true});return svgWrap(g)}
+function mLake(d){const s=55,C={x:70,y:330},A={x:70,y:330-3*s},B={x:70+8*s,y:330},D={x:B.x-d*s,y:330};let g=`<rect x="20" y="40" width="560" height="290" fill="${COL.blue}" opacity=".08"/>`+ln(20,330,580,330,'currentColor',3);
+ g+=ln(A.x,A.y,D.x,D.y,'blue',3)+ln(D.x,D.y,B.x,B.y,'green',4)+ln(A.x,A.y,C.x,C.y,'gray',1.4,'5 4');
+ [['A',A],['B',B],['C',C],['D',D]].forEach(([n,p])=>g+=dot(p.x,p.y,'currentColor',5)+txt(p.x,p.y+(n==='A'?-12:22),n,{b:true}));
+ const l=sq(9+(8-d)**2),t=l/4+d/5;g+=txt((A.x+D.x)/2+14,(A.y+D.y)/2,'ℓ = '+fmtN(l,2)+' км (4 км/ч)',{a:'start',c:COL.blue,b:true})+txt((D.x+B.x)/2,352,'d = '+fmtN(d,2)+' км (5 км/ч)',{c:COL.green,b:true});
+ g+=txt(300,410,`t = ℓ/4 + d/5 = ${fmtN(t,3)} ч`,{size:16,b:true});return svgWrap(g)}
+function mJet(h){const H=2,s=150,bx=120,by=420,v=sq(20*(H-h)),tt=sq(2*h/10),L=v*tt;let g=ln(20,by,590,by,'currentColor',3);
+ g+=`<rect x="${bx-80}" y="${by-H*s}" width="80" height="${H*s}" fill="${COL.blue}" opacity=".18"/>`+ln(bx,by,bx,by-H*s-20,'currentColor',3)+ln(bx-80,by,bx-80,by-H*s-20,'currentColor',3);
+ let d='';for(let i=0;i<=40;i++){const x=L*i/40,y=h-5*(x/Math.max(v,1e-6))**2;d+=(i?'L':'M')+(bx+x*s).toFixed(1)+' '+(by-y*s).toFixed(1)}if(v>0)g+=`<path d="${d}" fill="none" stroke="${COL.blue}" stroke-width="3"/>`;
+ g+=dot(bx,by-h*s,'red',5)+ln(bx+10,by,bx+10,by-h*s,'red',1.6,'5 4')+txt(bx+16,by-h*s/2,'h = '+fmtN(h,2),{a:'start',c:COL.red,b:true});
+ g+=ln(bx,by+14,bx+L*s,by+14,'green',2.4)+txt(bx+L*s/2,by+32,'L = '+fmtN(L,3)+' м',{c:COL.green,b:true});return svgWrap(g)}
+function mLamp(h){const a=3*sq(2),s=Math.min(24,330/Math.max(h,1)),cx=300,gy=400,r=sq(h*h+a*a),E=100*h/r**3;let g=ln(cx-a*s-60,gy,cx+a*s+60,gy,'currentColor',3);
+ g+=ln(cx-a*s,gy,cx+a*s,gy,'green',6)+ln(cx,gy,cx,gy-h*s,'gray',1.4,'5 4')+`<circle cx="${cx}" cy="${gy-h*s}" r="11" fill="#ffd400" stroke="${COL.orange}" stroke-width="2"/>`;
+ g+=ln(cx,gy-h*s,cx+a*s,gy,'orange',2.4)+txt(cx-8,gy-h*s/2,'h = '+fmtN(h,2),{a:'end',b:true})+txt(cx+a*s/2+10,gy-h*s/2,'r = '+fmtN(r,2),{a:'start',c:COL.orange,b:true})+txt(cx+a*s/2,gy+22,'a = 3√2',{b:true});
+ g+=txt(300,34,`E = I·cos α / r² = ${fmtN(E,3)} лк`,{size:16,b:true});return svgWrap(g)}
+function mRiver(a,H=60,u=2,v=1){const s=3.4*60/H,top=110,bot=top+H*s,Ax=120;const L=H*(u+v*Math.cos(dg(a)))/(v*Math.sin(dg(a)));let g=`<rect x="10" y="${top}" width="580" height="${H*s}" fill="${COL.blue}" opacity=".1"/>`+ln(10,top,590,top,'currentColor',3)+ln(10,bot,590,bot,'currentColor',3);
+ g+=dot(Ax,bot,'currentColor',6)+txt(Ax,bot+22,'A',{b:true})+dot(Ax,top,'currentColor',6)+txt(Ax,top-10,'Б',{b:true});
+ const Bx=Ax+L*s;g+=ln(Ax,bot,Math.min(Bx,600),top,'blue',2.4,'8 5');if(Bx<590)g+=dot(Bx,top,'red',6)+txt(Bx,top-10,'B',{b:true,c:COL.red});
+ g+=arrow(Ax,bot,Ax+60*Math.cos(dg(a)),bot-60*Math.sin(dg(a)),'orange',3)+txt(Ax+64*Math.cos(dg(a))+6,bot-64*Math.sin(dg(a)),'v',{c:COL.orange,b:true,a:'start'})+arrow(40,bot-20,100,bot-20,'teal',2.4)+txt(70,bot-28,'u',{c:COL.teal,b:true});
+ g+=txt(300,40,`α = ${fmtN(a,1)}°,   L = ${fmtN(L,1)} м`,{size:16,b:true});return svgWrap(g)}
+// ---------- задачи ----------
+const TASKS=[
+{id:'e001',topic:'base',num:'001',code:'Школково',level:0,
+ cond:R`Для хранения жидкости изготавливают закрытый цилиндрический бак, объём которого (в кубических метрах) вычисляется по формуле $V=\pi R^2h$, где $R$ — радиус основания бака (в метрах), $h$ — высота бака (в метрах), причём $V=54\pi$ м³. Расход материала на изготовление прямо пропорционален площади полной поверхности бака $S$ (в квадратных метрах), которая вычисляется по формуле $S=2\pi R^2+2\pi Rh$. При каком радиусе основания расход материала на изготовление бака будет наименьшим?`,
+ ans:'3',facts:['Ф1','Ф3','Ф10'],
+ g:{x:[0,7],y:[0,450],xl:'R',yl:'S',dom:[.6,7],fns:[{f:R=>2*PI*R*R+108*PI/R,st:2,label:'S(R)'}],signs:{st:3,d:R=>4*PI-108*PI/R/R/R,zeros:[3]},ext:{x:3,kind:'min',st:4,label:'54π'}},
+ slider:{min:.8,max:6.5,step:.05,v0:1.6},model:R=>mTank(R),
+ steps:[{t:'Выразим h',do:R`Из $V=\pi R^2h=54\pi$:`,res:'',eq:R`h=\frac{54}{R^2}`},
+  {t:'Функция одной переменной',do:R`Подставим $h$ в формулу площади:`,res:'',eq:R`S(R)=2\pi R^2+2\pi R\cdot\frac{54}{R^2}=2\pi R^2+\frac{108\pi}R,\quad R>0`},
+  {t:'Производная',do:R`Производная суммы и степени (Ф1):`,res:'',eq:R`S'(R)=4\pi R-\frac{108\pi}{R^2}=\frac{4\pi(R^3-27)}{R^2}`,sc:['Ф1']},
+  {t:'Нули и знаки',do:R`$S'(R)=0\iff R^3=27\iff R=3$. При $R<3$ $S'<0$, при $R>3$ $S'>0$ (Ф3).`,res:R`$R=3$ — точка минимума, $S_{\min}=18\pi+36\pi=54\pi$.`,eq:R`R=3`,sc:['Ф3']}],
+ alt:{name:'Без производной',g:{x:[0,7],y:[0,450],xl:'R',yl:'S',dom:[.6,7],fns:[{f:R=>2*PI*R*R+108*PI/R,st:1,label:'S(R)'}],hl:[{y:54*PI,st:2,label:'54π',c:'red'}],ext:{x:3,kind:'min',st:2}},
+  steps:[{t:'Разобьём дробь',do:R`$S=2\pi\left(R^2+\frac{54}R\right)=2\pi\left(R^2+\frac{27}R+\frac{27}R\right)$. Произведение трёх слагаемых $R^2\cdot\frac{27}R\cdot\frac{27}R=729$ не зависит от $R$.`,res:''},
+   {t:'Неравенство о средних',do:R`Для трёх слагаемых (Ф10):`,res:R`Равенство при $R^2=\frac{27}R$, то есть $R=3$.`,eq:R`S\ge2\pi\cdot3\sqrt[3]{729}=54\pi`,sc:['Ф10']}]}},
+
+{id:'e002',topic:'base',num:'002',code:'198486',level:0,
+ cond:R`Брусок массой $m=10$ кг равномерно тянут по горизонтальной поверхности силой, направленной под углом $\alpha$ к горизонту, где $0^\circ\le\alpha<90^\circ$. Модуль этой силы (в ньютонах), при которой скорость бруска будет постоянна, вычисляется по формуле $F=\dfrac{\mu mg}{\cos\alpha+\mu\sin\alpha}$, где $\mu=\frac{\sqrt3}3$ — коэффициент трения, $g=10$ Н/кг. При каком угле $\alpha$ сила будет наименьшей? Ответ дайте в градусах.`,
+ ans:'30',facts:['Ф5','Ф7','Ф3'],
+ g:{x:[0,90],y:[0,110],xl:'α, °',yl:'F, Н',xstep:15,fns:[{f:a=>100*sq(3)/3/(Math.cos(dg(a))+sq(3)/3*Math.sin(dg(a))),st:1,label:'F(α)',lx:70},{f:a=>50*(Math.cos(dg(a))+sq(3)/3*Math.sin(dg(a))),c:'orange',dash:'7 5',st:1,label:'50·f(α)',lx:12}],signs:{st:3,d:a=>-Math.sin(dg(a))+sq(3)/3*Math.cos(dg(a)),zeros:[30],name:'f′',zfmt:()=>'30°'},ext:{x:30,kind:'min',st:4,xl:'30°',label:'50 Н'}},
+ slider:{min:0,max:85,step:1,v0:60},model:a=>mBlock(a),
+ steps:[{t:'Что исследуем',do:R`Числитель $\mu mg$ постоянен, поэтому $F$ наименьшая там, где знаменатель $f(\alpha)=\cos\alpha+\mu\sin\alpha$ наибольший (Ф5).`,res:'',sc:['Ф5']},
+  {t:'Производная знаменателя',do:'',res:'',eq:R`f'(\alpha)=-\sin\alpha+\mu\cos\alpha`},
+  {t:'Нуль производной',do:R`$\mu\cos\alpha=\sin\alpha\iff\operatorname{tg}\alpha=\mu=\frac{\sqrt3}3$. При $\alpha<30^\circ$ $f'>0$, при $\alpha>30^\circ$ $f'<0$ (Ф3).`,res:R`$f$ максимальна при $\alpha=30^\circ$.`,eq:R`\alpha=30^\circ`,sc:['Ф3']},
+  {t:'Ответ',do:R`Знаменатель максимален — сила минимальна: $F_{\min}=\frac{\mu mg}{\cos30^\circ+\mu\sin30^\circ}=\frac{100\sqrt3/3}{2/\sqrt3}=50$ Н.`,res:'',eq:R`\alpha=30^\circ`}],
+ alt:{name:'Вспомогательный угол',g:{x:[0,90],y:[0,110],xl:'α, °',yl:'F, Н',xstep:15,fns:[{f:a=>100*sq(3)/3/(Math.cos(dg(a))+sq(3)/3*Math.sin(dg(a))),st:1,label:'F(α)',lx:70}],ext:{x:30,kind:'min',st:2,xl:'30°'}},
+  steps:[{t:'Формула a cos α + b sin α',do:R`$\cos\alpha+\frac{\sqrt3}3\sin\alpha=\frac2{\sqrt3}\left(\frac{\sqrt3}2\cos\alpha+\frac12\sin\alpha\right)$ (Ф7).`,res:'',eq:R`\cos\alpha+\mu\sin\alpha=\frac2{\sqrt3}\cos(\alpha-30^\circ)`,sc:['Ф7']},
+   {t:'Вывод',do:R`Косинус наибольший ($=1$) при $\alpha=30^\circ$; знаменатель максимален — сила минимальна.`,res:'',eq:R`\alpha=30^\circ,\ F_{\min}=50`}]}},
+
+{id:'e003',topic:'base',num:'003',code:'198488',level:0,
+ cond:R`В полдень судно $A$ находится на $250$ км западнее судна $B$. Судно $A$ идёт на восток со скоростью $30$ км/ч, судно $B$ — на север со скоростью $40$ км/ч. Через $t$ часов после полудня, где $0\le t\le\frac{25}3$, судно $A$ находится на расстоянии $a=250-30t$ км от точки, в которой судно $B$ было в полдень, а судно $B$ — на расстоянии $b=40t$ км от этой точки. Расстояние между судами (в километрах) вычисляется по формуле $d=\sqrt{a^2+b^2}$. Через сколько часов после полудня расстояние между судами будет наименьшим?`,
+ ans:'3',facts:['Ф5','Ф4'],
+ g:{x:[0,25/3],y:[0,300],xl:'t, ч',yl:'d, км',dom:[0,25/3],fns:[{f:t=>sq((250-30*t)**2+1600*t*t),st:1,label:'d(t)',lx:7}],ext:{x:3,kind:'min',st:3,label:'200'}},
+ slider:{min:0,max:25/3,step:.05,v0:.5},model:t=>mShips(t),
+ steps:[{t:'Функция расстояния',do:'',res:'',eq:R`d(t)=\sqrt{(250-30t)^2+(40t)^2}`},
+  {t:'Квадрат расстояния',do:R`Корень — возрастающая функция, ищем минимум $f(t)=d^2$ (Ф5).`,res:'',eq:R`f(t)=62500-15000t+900t^2+1600t^2=2500t^2-15000t+62500`,sc:['Ф5']},
+  {t:'Вершина параболы',do:R`Ветви вверх, минимум в вершине (Ф4); $3\in\left[0;\frac{25}3\right]$.`,res:R`$d_{\min}=\sqrt{160^2+120^2}=200$ км.`,eq:R`t_0=-\frac{-15000}{2\cdot2500}=3`,sc:['Ф4']}],
+ alt:{name:'Через производную',g:{x:[0,25/3],y:[0,300],xl:'t, ч',yl:'d, км',dom:[0,25/3],fns:[{f:t=>sq((250-30*t)**2+1600*t*t),st:1,label:'d(t)',lx:7}],signs:{st:2,d:t=>5000*t-15000,zeros:[3]},ext:{x:3,kind:'min',st:2}},
+  steps:[{t:'Производная квадрата',do:R`$f(t)=2500t^2-15000t+62500$.`,res:'',eq:R`f'(t)=5000t-15000`},
+   {t:'Знаки',do:R`$f'=0$ при $t=3$; слева $f'<0$, справа $f'>0$.`,res:R`Минимум при $t=3$.`,eq:R`t=3`,sc:['Ф3']}]}},
+
+{id:'e004',topic:'base',num:'004',code:'198490',level:0,
+ cond:R`Собирающая линза имеет фокусное расстояние $F=10$ см. Предмет помещён на расстояние $d$ см от линзы ($d>10$), а его действительное изображение находится на экране, удалённом от линзы на $f$ см. Эти расстояния связаны формулой тонкой линзы $\frac1d+\frac1f=\frac1F$, а расстояние $L$ от предмета до экрана (в сантиметрах) вычисляется по формуле $L=d+f$. На каком расстоянии от линзы нужно поместить предмет, чтобы расстояние от предмета до экрана было наименьшим?`,
+ ans:'20',facts:['Ф2','Ф3','Ф6'],
+ g:{x:[10,50],y:[0,120],xl:'d, см',yl:'L, см',dom:[10.6,50],fns:[{f:d=>d*d/(d-10),st:2,label:'L(d)',lx:42}],vl:[{x:10,st:2,label:'d = F',c:'gray'}],signs:{st:4,d:d=>d*(d-20),zeros:[20]},ext:{x:20,kind:'min',st:4,label:'40'}},
+ slider:{min:11,max:48,step:.25,v0:13},model:d=>mLens(d),
+ steps:[{t:'Выразим f',do:R`$\frac1f=\frac1F-\frac1d=\frac{d-F}{dF}$.`,res:'',eq:R`f=\frac{dF}{d-F}`},
+  {t:'Функция L(d)',do:'',res:'',eq:R`L(d)=d+\frac{dF}{d-F}=\frac{d^2}{d-F}=\frac{d^2}{d-10}`},
+  {t:'Производная частного',do:R`Ф2:`,res:'',eq:R`L'(d)=\frac{2d(d-F)-d^2}{(d-F)^2}=\frac{d(d-2F)}{(d-F)^2}`,sc:['Ф2']},
+  {t:'Нули и знаки',do:R`При $d>F$: $L'=0\iff d=2F=20$; слева $L'<0$, справа $L'>0$ (Ф3).`,res:R`$d=20$ — минимум, $L_{\min}=\frac{400}{10}=40$ см.`,eq:R`d=20`,sc:['Ф3']}],
+ alt:{name:'Без производной',g:{x:[10,50],y:[0,120],xl:'d, см',yl:'L, см',dom:[10.6,50],fns:[{f:d=>d*d/(d-10),st:1,label:'L(d)',lx:42}],hl:[{y:40,st:2,label:'40',c:'red'}],ext:{x:20,kind:'min',st:2}},
+  steps:[{t:'Выделим целую часть',do:R`Пусть $x=d-10>0$: $d^2=(x+10)^2=x^2+20x+100$.`,res:'',eq:R`L=\frac{x^2+20x+100}x=x+\frac{100}x+20`},
+   {t:'Сумма x + 100/x',do:R`По Ф6/Ф10: $x+\frac{100}x\ge2\sqrt{100}=20$, равенство при $x=10$.`,res:R`$L\ge40$, минимум при $d=x+10=20$.`,eq:R`d=20`,sc:['Ф6']}]}},
+
+{id:'e005',topic:'base',num:'005',code:'198484',level:1,
+ cond:R`Турист находится на лодке в точке $A$ озера на расстоянии $3$ км от прямолинейного берега. Ему нужно попасть в точку $B$ на берегу, удалённую на $8$ км от точки $C$ — ближайшей к $A$ точки берега. Турист плывёт на лодке по прямой со скоростью $4$ км/ч до некоторой точки $D$ отрезка $CB$, а затем идёт пешком вдоль берега от $D$ до $B$ со скоростью $5$ км/ч. Пусть $d$ — длина отрезка $DB$ (в километрах), $0\le d\le8$. Тогда длина водного участка пути (в километрах) равна $\ell=\sqrt{9+(8-d)^2}$, а время всего пути (в часах) равно $t=\frac\ell4+\frac d5$. За какое наименьшее время турист может добраться из точки $A$ в точку $B$? Ответ дайте в часах.`,
+ ans:'2{,}05',facts:['Ф2','Ф3'],
+ g:{x:[0,8],y:[1.9,2.45],xl:'d, км',yl:'t, ч',ystep:.1,dom:[0,8],fns:[{f:d=>sq(9+(8-d)**2)/4+d/5,st:1,label:'t(d)',lx:6.8}],signs:{st:3,d:d=>-(8-d)/(4*sq(9+(8-d)**2))+.2,zeros:[4]},ext:{x:4,kind:'min',st:4,label:'2,05'}},
+ slider:{min:0,max:8,step:.05,v0:1},model:d=>mLake(d),
+ steps:[{t:'Функция времени',do:'',res:'',eq:R`t(d)=\frac{\sqrt{9+(8-d)^2}}4+\frac d5,\quad0\le d\le8`},
+  {t:'Производная',do:R`Сложная функция (Ф2):`,res:'',eq:R`t'(d)=-\frac{8-d}{4\sqrt{9+(8-d)^2}}+\frac15`,sc:['Ф2']},
+  {t:'Нуль производной',do:R`$5(8-d)=4\sqrt{9+(8-d)^2}$ ⇒ $25(8-d)^2=16(9+(8-d)^2)$ ⇒ $9(8-d)^2=144$ ⇒ $8-d=\pm4$.`,res:R`$d=4$ ($d=12$ вне отрезка). Слева $t'<0$, справа $t'>0$ — минимум.`,eq:R`d=4`,sc:['Ф3']},
+  {t:'Наименьшее время',do:'',res:'',eq:R`t_{\min}=\frac{\sqrt{9+16}}4+\frac45=1{,}25+0{,}8=2{,}05`}]},
+
+{id:'e006',topic:'base',num:'006',code:'198492',level:0,
+ cond:R`Вода подаётся на турбину гидроэлектростанции по трубопроводу. Из-за потерь на трение действующий напор $H$ (в метрах) уменьшается с ростом расхода воды и вычисляется по формуле $H=H_0-kQ^2$, где $H\ge0$, $H_0=27$ м — статический напор, $k=0{,}25$ с²/м⁵ — коэффициент потерь, $Q$ — расход воды (в кубических метрах в секунду). Мощность потока воды (в ваттах) вычисляется по формуле $N=\rho gQH$, где $\rho=1000$ кг/м³ — плотность воды, $g=10$ Н/кг. При каком расходе воды мощность потока будет наибольшей?`,
+ ans:'6',facts:['Ф5','Ф3'],
+ g:{x:[0,11],y:[0,1.3],xl:'Q, м³/с',yl:'N, МВт',dom:[0,sq(108)],fns:[{f:Q=>.01*(27*Q-.25*Q**3),st:1,label:'N(Q)',lx:9}],signs:{st:3,d:Q=>27-.75*Q*Q,zeros:[6]},ext:{x:6,kind:'max',st:4,label:'1,08 МВт'}},
+ slider:{min:0,max:10.3,step:.05,v0:2},
+ steps:[{t:'Функция мощности',do:R`Подставим $H$: $N(Q)=\rho gQ(H_0-kQ^2)$. Множитель $\rho g$ не влияет на положение максимума (Ф5).`,res:'',eq:R`f(Q)=H_0Q-kQ^3=27Q-0{,}25Q^3`,sc:['Ф5']},
+  {t:'Производная',do:'',res:'',eq:R`f'(Q)=H_0-3kQ^2`},
+  {t:'Нуль производной',do:R`$Q^2=\frac{H_0}{3k}=\frac{27}{0{,}75}=36$.`,res:R`$Q=6$; слева $f'>0$, справа $f'<0$ — максимум (Ф3).`,eq:R`Q=6`,sc:['Ф3']},
+  {t:'Проверка условия',do:R`$H=27-0{,}25\cdot36=18\ge0$ — допустимо.`,res:'',eq:R`Q=6`}]},
+
+{id:'e007',topic:'base',num:'007',code:'198497',level:0,
+ cond:R`Открытый бак с вертикальными стенками стоит на горизонтальной поверхности и наполнен водой до высоты $H=2$ м. В боковой стенке бака на высоте $h$ м от дна ($0\le h\le2$) сделано малое отверстие. Уровень воды в баке поддерживается постоянным. Скорость вытекающей струи (в метрах в секунду) определяется формулой Торричелли $v=\sqrt{2g(H-h)}$, время падения струи до уровня дна (в секундах) вычисляется по формуле $t=\sqrt{\frac{2h}g}$, а дальность полёта струи (в метрах), то есть расстояние по горизонтали от стенки бака до места падения струи, равна $L=vt$, где $g=10$ м/с². На какой высоте от дна нужно сделать отверстие, чтобы дальность полёта струи была наибольшей?`,
+ ans:'1',facts:['Ф5','Ф4','Ф10'],
+ g:{x:[0,2],y:[0,2.4],xl:'h, м',yl:'L, м',xstep:.25,dom:[0,2],fns:[{f:h=>2*sq(Math.max(0,h*(2-h))),st:1,label:'L(h)',lx:1.6}],ext:{x:1,kind:'max',st:3,label:'2 м'}},
+ slider:{min:0,max:2,step:.02,v0:.3},model:h=>mJet(h),
+ steps:[{t:'Функция дальности',do:'',res:'',eq:R`L(h)=\sqrt{2g(H-h)}\cdot\sqrt{\frac{2h}g}=\sqrt{4h(H-h)}=2\sqrt{h(H-h)}`},
+  {t:'Квадрат',do:R`Ищем максимум $f(h)=L^2=4Hh-4h^2$ (Ф5) — парабола с ветвями вниз.`,res:'',sc:['Ф5']},
+  {t:'Вершина',do:R`Ф4:`,res:R`$h=1$ м лежит в $[0;2]$, $L_{\max}=2$ м.`,eq:R`h_0=\frac{-4H}{2\cdot(-4)}=\frac H2=1`,sc:['Ф4']}],
+ alt:{name:'Без производной',g:{x:[0,2],y:[0,2.4],xl:'h, м',yl:'L, м',xstep:.25,dom:[0,2],fns:[{f:h=>2*sq(Math.max(0,h*(2-h))),st:1,label:'L(h)',lx:1.6}],hl:[{y:2,st:1,label:'L ≤ 2',c:'red'}],ext:{x:1,kind:'max',st:1}},
+  steps:[{t:'Неравенство о средних',do:R`Сумма множителей $h+(H-h)=H$ постоянна, поэтому произведение наибольшее при равных множителях (Ф10).`,res:R`$h=H-h$, $h=1$ м.`,eq:R`\sqrt{h(H-h)}\le\frac{h+(H-h)}2=1`,sc:['Ф10']}]}},
+
+{id:'e008',topic:'base',num:'008',code:'198499',level:1,
+ cond:R`Лампу с силой света $I=100$ кд подвешивают на высоте $h$ м над центром круглой горизонтальной площадки радиуса $a=3\sqrt2$ м. Освещённость $E$ точки на краю площадки (в люксах) вычисляется по формуле $E=\frac{I\cos\alpha}{r^2}$, где $r$ — расстояние от лампы до этой точки (в метрах), $\alpha$ — угол между лучом и вертикалью, причём $r=\sqrt{h^2+a^2}$, $\cos\alpha=\frac hr$. На какой высоте нужно подвесить лампу, чтобы освещённость края площадки была наибольшей?`,
+ ans:'3',facts:['Ф2','Ф3','Ф10'],
+ g:{x:[0,15],y:[0,2.5],xl:'h, м',yl:'E, лк',dom:[0,15],fns:[{f:h=>100*h/(h*h+18)**1.5,st:1,label:'E(h)',lx:11}],signs:{st:3,d:h=>18-2*h*h,zeros:[3]},ext:{x:3,kind:'max',st:4,label:'2,14 лк'}},
+ slider:{min:.3,max:14,step:.05,v0:8},model:h=>mLamp(h),
+ steps:[{t:'Функция освещённости',do:'',res:'',eq:R`E(h)=\frac{I\cdot\frac hr}{r^2}=\frac{Ih}{r^3}=\frac{Ih}{(h^2+a^2)^{3/2}}`},
+  {t:'Производная частного',do:R`Множитель $I$ не важен; $f(h)=\frac h{(h^2+a^2)^{3/2}}$, $\big((h^2+a^2)^{3/2}\big)'=\tfrac32(h^2+a^2)^{1/2}\cdot2h$ (Ф2).`,res:'',eq:R`f'(h)=\frac{(h^2+a^2)^{3/2}-3h^2(h^2+a^2)^{1/2}}{(h^2+a^2)^3}=\frac{a^2-2h^2}{(h^2+a^2)^{5/2}}`,sc:['Ф2']},
+  {t:'Нуль производной',do:R`$a^2-2h^2=0\iff h=\frac a{\sqrt2}$; знак $f'$ совпадает со знаком $a^2-2h^2$: $+$, потом $-$ (Ф3).`,res:'',sc:['Ф3']},
+  {t:'Ответ',do:'',res:R`Максимум освещённости $E=\frac{300}{27^{3/2}}\approx2{,}14$ лк.`,eq:R`h=\frac{3\sqrt2}{\sqrt2}=3`}],
+ alt:{name:'Без производной',g:{x:[0,15],y:[0,2.5],xl:'h, м',yl:'E, лк',dom:[0,15],fns:[{f:h=>100*h/(h*h+18)**1.5,st:1,label:'E(h)',lx:11}],ext:{x:3,kind:'max',st:2}},
+  steps:[{t:'Квадрат',do:R`$E^2=I^2\frac{h^2}{(h^2+a^2)^3}$ (Ф5). Разобьём $h^2+a^2=h^2+\frac{a^2}2+\frac{a^2}2$.`,res:'',sc:['Ф5']},
+   {t:'Неравенство о средних',do:R`Ф10 для трёх слагаемых:`,res:R`Дробь $\le\frac4{27a^4}$, равенство при $h^2=\frac{a^2}2$: $h=3$.`,eq:R`h^2+a^2\ge3\sqrt[3]{h^2\cdot\tfrac{a^4}4}\Rightarrow(h^2+a^2)^3\ge\tfrac{27}4h^2a^4`,sc:['Ф10']}]}},
+
+{id:'e009',topic:'base',num:'009',code:'198501',level:1,
+ cond:R`Потери мощности в трансформаторе (в киловаттах) складываются из постоянных потерь в сердечнике и потерь в обмотках, зависящих от нагрузки, и вычисляются по формуле $P_{пот}=P_0+aP^2$, где $P_0=4$ кВт, $a=0{,}0001$ кВт⁻¹, а $P>0$ — полезная мощность, отдаваемая трансформатором (в киловаттах). Коэффициент полезного действия трансформатора вычисляется по формуле $\eta=\frac P{P+P_{пот}}$. При какой отдаваемой мощности КПД трансформатора будет наибольшим?`,
+ ans:'200',facts:['Ф5','Ф6','Ф3'],
+ g:{x:[0,1000],y:[.7,1],xl:'P, кВт',yl:'η',ystep:.05,dom:[2,1000],fns:[{f:P=>P/(P+4+1e-4*P*P),st:1,label:'η(P)',lx:800}],signs:{st:3,d:P=>-(-4/P/P+1e-4),zeros:[200],name:"η′"},ext:{x:200,kind:'max',st:4,label:'≈ 0,96'}},
+ slider:{min:10,max:990,step:5,v0:600},
+ steps:[{t:'Функция КПД',do:R`Разделим числитель и знаменатель на $P>0$:`,res:'',eq:R`\eta(P)=\frac P{P+P_0+aP^2}=\frac1{1+\frac{P_0}P+aP}`},
+  {t:'Что исследуем',do:R`$\eta$ максимален, когда знаменатель $g(P)=1+\frac{P_0}P+aP$ минимален (Ф5).`,res:'',sc:['Ф5']},
+  {t:'Производная знаменателя',do:'',res:R`$g$ убывает, потом возрастает — минимум $g$, максимум $\eta$ (Ф3).`,eq:R`g'(P)=-\frac{P_0}{P^2}+a=0\Rightarrow P^2=\frac{P_0}a=40000`,sc:['Ф3']},
+  {t:'Ответ',do:'',res:R`$\eta_{\max}=\frac{200}{208}\approx0{,}96$.`,eq:R`P=200`}],
+ alt:{name:'Без производной',g:{x:[0,1000],y:[.7,1],xl:'P, кВт',yl:'η',ystep:.05,dom:[2,1000],fns:[{f:P=>P/(P+4+1e-4*P*P),st:1,label:'η(P)',lx:800}],ext:{x:200,kind:'max',st:1}},
+  steps:[{t:'Сумма P₀/P + aP',do:R`По Ф6: $\frac{P_0}P+aP\ge2\sqrt{aP_0}=2\sqrt{0{,}0004}=0{,}04$, равенство при $\frac{P_0}P=aP$.`,res:R`$P=\sqrt{\frac{P_0}a}=200$.`,eq:R`P=200`,sc:['Ф6']}]}},
+
+{id:'e01',topic:'adv',num:'01',code:'—',level:1,
+ cond:R`На берегах прямого участка реки друг напротив друга находятся пристани $A$ и $Б$. Лодка начинает переправу от пристани $A$. Собственная скорость лодки $v$ меньше скорости течения реки $u$. При переправе лодку сносит течением, и точка прибытия $B$ находится от пристани $Б$ на расстоянии $L=H\cdot\frac{u+v\cos\alpha}{v\sin\alpha}$, где $H$ — ширина реки, $\alpha$ — угол между вектором скорости лодки относительно воды и вектором скорости течения. Найдите наименьшее возможное расстояние от точки $B$ до пристани $Б$, если $H=60$ м, $u=2$ м/с и $v=1$ м/с.`,
+ ans:R`60\sqrt3`,facts:['Ф2','Ф3','Ф10'],
+ g:{x:[0,180],y:[0,400],xl:'α, °',yl:'L, м',xstep:30,dom:[8,175],fns:[{f:a=>60*(2+Math.cos(dg(a)))/Math.sin(dg(a)),st:1,label:'L(α)',lx:160}],signs:{st:3,d:a=>-(1+2*Math.cos(dg(a))),zeros:[120],zfmt:()=>'120°'},ext:{x:120,kind:'min',st:4,xl:'120°',label:'60√3 ≈ 103,9'}},
+ slider:{min:20,max:170,step:1,v0:70},model:a=>mRiver(a),
+ steps:[{t:'Функция',do:R`$\alpha\in(0^\circ;180^\circ)$ (лодка должна двигаться к другому берегу, $\sin\alpha>0$).`,res:'',eq:R`L(\alpha)=60\cdot\frac{2+\cos\alpha}{\sin\alpha}`},
+  {t:'Производная частного',do:R`Ф2, $\sin^2\alpha+\cos^2\alpha=1$:`,res:'',eq:R`L'(\alpha)=60\cdot\frac{-\sin^2\alpha-(2+\cos\alpha)\cos\alpha}{\sin^2\alpha}=-60\cdot\frac{1+2\cos\alpha}{\sin^2\alpha}`,sc:['Ф2']},
+  {t:'Нуль и знаки',do:R`$1+2\cos\alpha=0\iff\cos\alpha=-\frac12\iff\alpha=120^\circ$. При $\alpha<120^\circ$ $L'<0$, при $\alpha>120^\circ$ $L'>0$ (Ф3).`,res:'',sc:['Ф3']},
+  {t:'Наименьшее значение',do:'',res:R`В общем виде $\cos\alpha=-\frac vu$ и $L_{\min}=\frac{H\sqrt{u^2-v^2}}v$.`,eq:R`L_{\min}=60\cdot\frac{2-\frac12}{\frac{\sqrt3}2}=60\sqrt3`}],
+ alt:{name:'Без производной',g:{x:[0,180],y:[0,400],xl:'α, °',yl:'L, м',xstep:30,dom:[8,175],fns:[{f:a=>60*(2+Math.cos(dg(a)))/Math.sin(dg(a)),st:1,label:'L(α)',lx:160}],hl:[{y:60*sq(3),st:2,label:'60√3',c:'red'}],ext:{x:120,kind:'min',st:2,xl:'120°'}},
+  steps:[{t:'Тангенс половинного угла',do:R`$t=\operatorname{tg}\frac\alpha2>0$: $\sin\alpha=\frac{2t}{1+t^2}$, $\cos\alpha=\frac{1-t^2}{1+t^2}$.`,res:'',eq:R`\frac{2+\cos\alpha}{\sin\alpha}=\frac{2+2t^2+1-t^2}{2t}=\frac12\left(t+\frac3t\right)`},
+   {t:'Неравенство о средних',do:R`Ф10: $t+\frac3t\ge2\sqrt3$, равенство при $t=\sqrt3$, то есть $\frac\alpha2=60^\circ$.`,res:'',eq:R`L\ge60\sqrt3`,sc:['Ф10']}]}},
+
+{id:'e02',topic:'adv',num:'02',code:'—',level:1,
+ cond:R`Распределение кинетической энергии молекул гелия при тепловом движении имеет функцию плотности $f(E)=\frac2{\sqrt\pi}\left(\frac1{kT}\right)^{3/2}\sqrt Ee^{-\frac E{kT}}$, где $k=1{,}38\cdot10^{-23}$ Дж/К — постоянная Больцмана, $E$ — кинетическая энергия молекулы в джоулях, $T$ — температура газа в кельвинах. Найдите значение кинетической энергии $E$, при котором функция плотности $f(E)$ принимает наибольшее значение, если $T=300$ К.`,
+ ans:R`2{,}07\cdot10^{-21}`,facts:['Ф5','Ф8'],
+ g:{x:[0,16],y:[0,.5],xl:'E, 10⁻²¹ Дж',yl:'f (отн.)',dom:[0,16],fns:[{f:E=>sq(E/4.14)*Math.exp(-E/4.14),st:1,label:'√E·e^(−E/kT)',lx:11}],signs:{st:3,d:E=>1-2*E/4.14,zeros:[2.07]},ext:{x:2.07,kind:'max',st:4,xl:'2,07'}},
+ slider:{min:0,max:15,step:.05,v0:7},
+ steps:[{t:'Упростим',do:R`Обозначим $n=kT$, $m=\frac2{\sqrt\pi}n^{-3/2}$: $f(E)=m\sqrt Ee^{-E/n}$. Максимум $f$ — там же, где максимум $f^2$, а множитель $m^2$ не важен (Ф5).`,res:'',eq:R`f_1(E)=Ee^{-2E/n}`,sc:['Ф5']},
+  {t:'Производная',do:R`Ф8 / Ф2:`,res:'',eq:R`f_1'(E)=e^{-2E/n}\left(1-\frac{2E}n\right)`,sc:['Ф8']},
+  {t:'Нуль производной',do:R`$e^{-2E/n}>0$, знак определяется скобкой: $+$ при $E<\frac n2$, $-$ при $E>\frac n2$.`,res:'',eq:R`E=\frac{kT}2`},
+  {t:'Ответ',do:'',res:'',eq:R`E=\frac{1{,}38\cdot10^{-23}\cdot300}2=2{,}07\cdot10^{-21}\ Дж`}]},
+
+{id:'e03',topic:'adv',num:'03',code:'—',level:2,
+ cond:R`Если к цепи, состоящей из конденсатора, резистора и катушки индуктивности, подключить источник переменного тока, то амплитуда напряжения на катушке (в вольтах) будет подчиняться закону $U_L(\omega)=\dfrac{UL\omega}{\sqrt{R^2+\left(\omega L-\frac1{\omega C}\right)^2}}$, где $U$ — амплитуда напряжения на источнике тока (в вольтах), $\omega$ — частота переменного тока (в с⁻¹), $L$ — индуктивность катушки (в генри), $C$ — ёмкость конденсатора (в фарадах), $R$ — сопротивление резистора (в омах). При какой частоте $\omega$ амплитуда напряжения на катушке будет наибольшей, если $U=180$ В, $L=0{,}045$ Гн, $C=10^{-4}$ Ф и $R=10$ Ом?`,
+ ans:'500',facts:['Ф5','Ф9','Ф4'],
+ g:{x:[0,1500],y:[0,450],xl:'ω, с⁻¹',yl:'U_L, В',dom:[20,1500],fns:[{f:w=>180*.045*w/sq(100+(w*.045-1e4/w)**2),st:1,label:'U_L(ω)',lx:1250}],ext:{x:500,kind:'max',st:5,label:'≈ 393 В'}},
+ slider:{min:50,max:1480,step:5,v0:1000},
+ steps:[{t:'Что исследуем',do:R`$U$ и $L$ — постоянные множители; функция неотрицательна, поэтому исследуем квадрат (Ф5).`,res:'',eq:R`g(\omega)=\frac{\omega^2}{R^2+\left(\omega L-\frac1{\omega C}\right)^2}`,sc:['Ф5']},
+  {t:'Делим на ω²',do:R`Раскроем скобки и разделим числитель и знаменатель на $\omega^2$:`,res:'',eq:R`g(\omega)=\frac1{\frac{R^2}{\omega^2}+L^2-\frac{2L}{C\omega^2}+\frac1{\omega^4C^2}}`},
+  {t:'Замена t = 1/ω²',do:R`Знаменатель — парабола от $t>0$ с ветвями вверх (Ф9):`,res:'',eq:R`h(t)=\frac1{C^2}t^2+\left(R^2-\frac{2L}C\right)t+L^2`,sc:['Ф9']},
+  {t:'Вершина',do:R`Ф4:`,res:'',eq:R`t_0=\frac{C^2}2\left(\frac{2L}C-R^2\right)=LC-\frac{R^2C^2}2\ \Rightarrow\ \omega=\frac1{\sqrt{LC-\frac{R^2C^2}2}}`,sc:['Ф4']},
+  {t:'Подставим числа',do:R`$LC=4{,}5\cdot10^{-6}$, $\frac{R^2C^2}2=0{,}5\cdot10^{-6}$, разность $4\cdot10^{-6}$.`,res:'',eq:R`\omega=\frac1{2\cdot10^{-3}}=500`}]},
+
+{id:'e04',topic:'adv',num:'04',code:'—',level:1,
+ cond:R`Источник постоянного напряжения имеет электродвижущую силу $\mathcal E=40$ В и внутреннее сопротивление $r=1$ Ом. Сила тока в цепи при подключении к этому источнику нагрузки определяется законом Ома: $I=\frac{\mathcal E}{r+R}$, где $R$ — сопротивление нагрузки (в омах). Тепловая мощность в ваттах, выделяемая на нагрузке, равна $P=I^2R$ (закон Джоуля–Ленца). Найдите наибольшую возможную тепловую мощность $P$, которую может выделять этот источник.`,
+ ans:'400',facts:['Ф5','Ф6'],
+ g:{x:[0,8],y:[0,450],xl:'R, Ом',yl:'P, Вт',dom:[0,8],fns:[{f:R=>1600*R/(1+R)**2,st:1,label:'P(R)',lx:6.5}],signs:{st:3,d:R=>-(1-1/R/R),zeros:[1],name:'P′'},ext:{x:1,kind:'max',st:4,label:'400 Вт'}},
+ slider:{min:0,max:8,step:.02,v0:4},
+ steps:[{t:'Функция мощности',do:R`$P(R)=\frac{\mathcal E^2R}{(r+R)^2}$; множитель $\mathcal E^2$ не важен (Ф5).`,res:'',eq:R`f(R)=\frac R{(r+R)^2}=\frac1{\frac{r^2}R+2r+R}`,sc:['Ф5']},
+  {t:'Минимум знаменателя',do:R`$g(R)=\frac{r^2}R+2r+R$, $g'(R)=-\frac{r^2}{R^2}+1$.`,res:'',eq:R`g'=0\iff R=r`},
+  {t:'Знаки',do:R`При $R<r$ $g'<0$, при $R>r$ $g'>0$: минимум $g$, максимум $P$ — при $R=r$ (согласование нагрузки).`,res:'',sc:['Ф3']},
+  {t:'Ответ',do:'',res:'',eq:R`P_{\max}=\frac{\mathcal E^2r}{(2r)^2}=\frac{\mathcal E^2}{4r}=\frac{1600}4=400`}],
+ alt:{name:'Без производной',g:{x:[0,8],y:[0,450],xl:'R, Ом',yl:'P, Вт',dom:[0,8],fns:[{f:R=>1600*R/(1+R)**2,st:1,label:'P(R)',lx:6.5}],hl:[{y:400,st:1,c:'red',label:'400'}],ext:{x:1,kind:'max',st:1}},
+  steps:[{t:'Сумма r²/R + R',do:R`Ф6: $\frac{r^2}R+R\ge2r$, равенство при $R=r$.`,res:R`Знаменатель $\ge4r$, поэтому $P\le\frac{\mathcal E^2}{4r}=400$.`,eq:R`P_{\max}=400`,sc:['Ф6']}]}},
+
+{id:'e05',topic:'adv',num:'05',code:'—',level:2,
+ cond:R`Распределение скорости молекулы водорода при тепловом движении имеет функцию плотности $f(v)=4\pi v^2\left(\frac M{2\pi RT}\right)^{3/2}e^{-\frac{Mv^2}{2RT}}$ (распределение Максвелла). В этой формуле $v$ — скорость молекулы в м/с, $R$ — универсальная газовая постоянная, $M=0{,}004$ кг/моль — молярная масса водорода, $T$ — температура газа в кельвинах. При каком значении скорости $v$ функция плотности принимает наибольшее значение, если $T=500$ К?`,
+ ans:R`500\sqrt R`,facts:['Ф8','Ф2'],
+ g:{x:[0,5000],y:[0,.42],xl:'v, м/с (R = 8,31)',yl:'f (отн.)',dom:[0,5000],fns:[{f:v=>(v/1441.5)**2*Math.exp(-((v/1441.5)**2)),st:1,label:'v²e^(−Bv²)',lx:3500}],signs:{st:3,d:v=>2-2*(v/1441.5)**2,zeros:[1441.5],zfmt:()=>'500√R'},ext:{x:1441.5,kind:'max',st:4,xl:'≈1441'}},
+ slider:{min:0,max:5000,step:10,v0:3000},
+ steps:[{t:'Обозначения',do:R`$A=4\pi\left(\frac M{2\pi RT}\right)^{3/2}$, $B=\frac M{2RT}$: $f(v)=Av^2e^{-Bv^2}$.`,res:''},
+  {t:'Производная',do:R`Произведение и сложная функция (Ф2):`,res:'',eq:R`f'(v)=A\big(2ve^{-Bv^2}+v^2e^{-Bv^2}(-2Bv)\big)=2Ave^{-Bv^2}(1-Bv^2)`,sc:['Ф2']},
+  {t:'Нуль и знаки',do:R`$v>0$, $e^{-Bv^2}>0$: знак — у $1-Bv^2$, $+$ до $\frac1{\sqrt B}$ и $-$ после (Ф8).`,res:'',eq:R`v=\frac1{\sqrt B}=\sqrt{\frac{2RT}M}`,sc:['Ф8']},
+  {t:'Ответ',do:'',res:'',eq:R`v=\sqrt{\frac{2R\cdot500}{0{,}004}}=\sqrt{250000R}=500\sqrt R`}]},
+
+{id:'e06',topic:'adv',num:'06',code:'—',level:2,
+ cond:R`Круизный лайнер стоит в океане бортом к волне. Под действием волн он испытывает вынужденные поперечные колебания. Зависимость амплитуды этих колебаний (в градусах) от периода волны $\tau$ (в секундах) выражается формулой $A(\tau)=k\theta_0\dfrac{\tau^2}{\sqrt{(T^2-\tau^2)^2+n^2\tau^2T^2}}$. Коэффициент $k$ определяется отношением ширины лайнера к длине волны, $\theta_0$ — угол наибольшего волнового склона, $T$ — период свободных поперечных колебаний лайнера на тихой воде, $n$ — числовой коэффициент ($0<n<0{,}5$). При каком периоде волны $\tau$ амплитуда вынужденных колебаний лайнера будет наибольшей, если $T=14{,}4$ с?`,
+ ans:R`14{,}4\sqrt{\frac2{2-n^2}}`,facts:['Ф5','Ф9','Ф4'],
+ g:{x:[0,40],y:[0,4],xl:'τ, с (n = 0,3)',yl:'A/(kθ₀)',dom:[.5,40],fns:[{f:t=>t*t/sq((207.36-t*t)**2+.09*t*t*207.36),st:1,label:'A(τ)',lx:33}],ext:{x:14.4*sq(2/1.91),kind:'max',st:4,xl:'≈14,7'}},
+ slider:{min:2,max:38,step:.1,v0:25},
+ steps:[{t:'Квадрат без множителей',do:R`$k\theta_0$ не влияет; исследуем $g=f^2$ (Ф5):`,res:'',eq:R`g(\tau)=\frac{\tau^4}{(T^2-\tau^2)^2+n^2\tau^2T^2}=\frac1{\frac{T^4}{\tau^4}+\frac{T^2(n^2-2)}{\tau^2}+1}`,sc:['Ф5']},
+  {t:'Замена x = 1/τ²',do:R`Знаменатель — парабола с ветвями вверх (Ф9):`,res:'',eq:R`h(x)=T^4x^2+T^2(n^2-2)x+1`,sc:['Ф9']},
+  {t:'Вершина',do:R`Ф4:`,res:'',eq:R`x_0=\frac{2-n^2}{2T^2}\ \Rightarrow\ \tau=T\sqrt{\frac2{2-n^2}}`,sc:['Ф4']},
+  {t:'Ответ',do:R`Число $n$ в условии не задано, поэтому ответ — через $n$. На графике $n=0{,}3$: $\tau\approx14{,}7$ с.`,res:'',eq:R`\tau=14{,}4\sqrt{\frac2{2-n^2}}`}]},
+
+// ---------- аналоги ----------
+{id:'a01',topic:'analog',num:'01А',code:'аналог',level:1,
+ cond:R`На противоположных берегах прямого участка реки друг напротив друга на расстоянии $h$ расположены пристани $А$ и $Б$. Путник переправляется на лодке от пристани $А$ на противоположный берег. Зная, что собственная скорость лодки $v$ меньше скорости течения реки $u$, путник направляет лодку под углом $\alpha$ к направлению течения. В итоге лодку сносит течением, и путник прибывает к противоположному берегу реки в точку $В$, находящуюся от пристани $Б$ на расстоянии $l=h\cdot\frac{u+v\cos\alpha}{v\sin\alpha}$. Найдите наименьшее возможное расстояние $l$, если $h=85$ м, $u=1{,}3$ м/с, $v=0{,}5$ м/с.`,
+ ans:'204',facts:['Ф2','Ф3'],
+ g:{x:[0,180],y:[0,700],xl:'α, °',yl:'l, м',xstep:30,dom:[8,175],fns:[{f:a=>85*(1.3+.5*Math.cos(dg(a)))/(.5*Math.sin(dg(a))),st:1,label:'l(α)',lx:160}],signs:{st:2,d:a=>-(.5+1.3*Math.cos(dg(a))),zeros:[Math.acos(-5/13)*180/PI],zfmt:()=>'cos α = −5/13'},ext:{x:Math.acos(-5/13)*180/PI,kind:'min',st:3,label:'204',xl:'≈112,6°'}},
+ slider:{min:20,max:170,step:1,v0:70},model:a=>mRiver(a,85,1.3,.5),
+ steps:[{t:'Производная в общем виде',do:R`Как в задаче 01 (Ф2):`,res:'',eq:R`l'(\alpha)=-\frac hv\cdot\frac{v+u\cos\alpha}{\sin^2\alpha}`,sc:['Ф2']},
+  {t:'Нуль и знаки',do:R`$\cos\alpha=-\frac vu=-\frac{5}{13}$, $\sin\alpha=\frac{12}{13}$; знак меняется с $-$ на $+$ — минимум.`,res:'',sc:['Ф3']},
+  {t:'Ответ',do:'',res:'',eq:R`l_{\min}=\frac{h\sqrt{u^2-v^2}}v=\frac{85\cdot1{,}2}{0{,}5}=204`}]},
+{id:'a02',topic:'analog',num:'02А',code:'аналог',level:1,
+ cond:R`Распределение кинетической энергии молекул гелия при тепловом движении имеет функцию плотности $f(\varepsilon)=2\sqrt{\frac\varepsilon\pi}\cdot\left(\frac1{kT}\right)^{3/2}\cdot e^{-\frac\varepsilon{kT}}$, где $k=1{,}38\cdot10^{-23}$ Дж/К — постоянная Больцмана, $\varepsilon$ — кинетическая энергия молекулы в джоулях, $T$ — температура газа в кельвинах. Найдите значение кинетической энергии $\varepsilon$, при котором функция плотности $f(\varepsilon)$ принимает наибольшее значение, если $T=450$ К.`,
+ ans:R`3{,}105\cdot10^{-21}`,facts:['Ф8'],
+ g:{x:[0,24],y:[0,.5],xl:'ε, 10⁻²¹ Дж',yl:'f (отн.)',dom:[0,24],fns:[{f:E=>sq(E/6.21)*Math.exp(-E/6.21),st:1,label:'√ε·e^(−ε/kT)',lx:17}],ext:{x:3.105,kind:'max',st:2,xl:'3,105'}},
+ slider:{min:0,max:23,step:.05,v0:10},
+ steps:[{t:'Как в задаче 02',do:R`Функция вида $\sqrt\varepsilon e^{-\varepsilon/(kT)}$: по Ф8 ($p=\frac12$, $k'=\frac1{kT}$) максимум при $\varepsilon=\frac{kT}2$.`,res:'',sc:['Ф8']},
+  {t:'Ответ',do:'',res:'',eq:R`\varepsilon=\frac{1{,}38\cdot10^{-23}\cdot450}2=3{,}105\cdot10^{-21}`}]},
+{id:'a03',topic:'analog',num:'03А',code:'аналог',level:2,
+ cond:R`При подключении источника переменного тока к цепи, состоящей из конденсатора, резистора и катушки индуктивности, амплитуда напряжения на катушке (в вольтах) подчиняется закону $U_L(\omega)=\dfrac{UL\omega}{\sqrt{R^2+\left(\omega L-\frac1{\omega C}\right)^2}}$, где $U$ — амплитуда напряжения на источнике тока, $L$ — индуктивность катушки, $\omega$ — частота переменного тока (в с⁻¹), $R$ — сопротивление резистора, $C$ — ёмкость конденсатора. При какой частоте $\omega$ амплитуда напряжения на катушке будет наибольшей, если $U=180$ В, $L=0{,}018$ Гн, $C=4\cdot10^{-5}$ Ф и $R=10$ Ом?`,
+ ans:'1250',facts:['Ф9','Ф4'],
+ g:{x:[0,4000],y:[0,700],xl:'ω, с⁻¹',yl:'U_L, В',dom:[50,4000],fns:[{f:w=>180*.018*w/sq(100+(w*.018-1/(w*4e-5))**2),st:1,label:'U_L(ω)',lx:3300}],ext:{x:1250,kind:'max',st:2}},
+ slider:{min:100,max:3900,step:10,v0:3000},
+ steps:[{t:'Формула из задачи 03',do:R`Замена $t=\frac1{\omega^2}$ и вершина параболы (Ф9, Ф4) дают:`,res:'',eq:R`\omega=\frac1{\sqrt{LC-\frac{R^2C^2}2}}`,sc:['Ф9']},
+  {t:'Подставим числа',do:R`$LC=7{,}2\cdot10^{-7}$, $\frac{R^2C^2}2=\frac{100\cdot16\cdot10^{-10}}2=0{,}8\cdot10^{-7}$, разность $6{,}4\cdot10^{-7}$.`,res:'',eq:R`\omega=\frac1{8\cdot10^{-4}}=1250`}]},
+{id:'a04',topic:'analog',num:'04А',code:'аналог',level:1,
+ cond:R`К блоку солнечных панелей с электродвижущей силой $\varepsilon=60$ В и внутренним сопротивлением $r=0{,}8$ Ом подключена зарядная станция. Сила тока в цепи при этом подключении определяется законом Ома: $I=\frac\varepsilon{r+R}$, где $R$ — сопротивление зарядной станции (в омах). Тепловая мощность в ваттах, выделяемая на зарядной станции, по закону Джоуля — Ленца равна $P=I^2R$. При каком сопротивлении $R$ зарядной станции выделяемая на ней тепловая мощность $P$ будет наибольшей?`,
+ ans:'0{,}8',facts:['Ф6'],
+ g:{x:[0,6],y:[0,1300],xl:'R, Ом',yl:'P, Вт',dom:[0,6],fns:[{f:R=>3600*R/(.8+R)**2,st:1,label:'P(R)',lx:5}],ext:{x:.8,kind:'max',st:2,label:'1125 Вт'}},
+ slider:{min:0,max:6,step:.02,v0:3},
+ steps:[{t:'Как в задаче 04',do:R`$P=\frac{\varepsilon^2}{\frac{r^2}R+2r+R}$; знаменатель минимален при $R=r$ (Ф6).`,res:'',sc:['Ф6']},
+  {t:'Ответ',do:'',res:R`$P_{\max}=\frac{\varepsilon^2}{4r}=1125$ Вт.`,eq:R`R=r=0{,}8`}]},
+{id:'a05',topic:'analog',num:'05А',code:'аналог',level:2,
+ cond:R`Распределение скорости молекулы кислорода при тепловом движении имеет функцию плотности $f(\nu)=4\pi\nu^2\left(\frac M{2\pi RT}\right)^{3/2}\cdot e^{-\frac{M\nu^2}{2RT}}$ (распределение Максвелла). В этой формуле $\nu$ — скорость молекулы в м/с, $R$ — универсальная газовая постоянная, $M=0{,}032$ кг/моль — молярная масса кислорода, $T$ — температура газа в кельвинах. При каком значении скорости $\nu$ функция плотности принимает наибольшее значение, если $T=400$ К?`,
+ ans:R`50\sqrt{10R}`,facts:['Ф8'],
+ g:{x:[0,2000],y:[0,.42],xl:'ν, м/с (R = 8,31)',yl:'f (отн.)',dom:[0,2000],fns:[{f:v=>(v/455.8)**2*Math.exp(-((v/455.8)**2)),st:1,label:'ν²e^(−Bν²)',lx:1400}],ext:{x:455.8,kind:'max',st:2,xl:'≈456'}},
+ slider:{min:0,max:2000,step:5,v0:1200},
+ steps:[{t:'Как в задаче 05',do:R`Максимум при $\nu=\sqrt{\frac{2RT}M}$ (Ф8).`,res:'',sc:['Ф8']},
+  {t:'Ответ',do:'',res:'',eq:R`\nu=\sqrt{\frac{2R\cdot400}{0{,}032}}=\sqrt{25000R}=50\sqrt{10R}`}]},
+{id:'a06',topic:'analog',num:'06А',code:'аналог',level:2,
+ cond:R`Амплитуда вынужденных колебаний корабля при качке на волнении выражается формулой $A=k\theta_0\cdot\dfrac{\tau^2}{\sqrt{(T^2-\tau^2)^2+n\tau^2T^2}}$, где $k=0{,}91$ — коэффициент, зависящий от отношения ширины корабля к длине волны, $\theta_0=9^\circ$ — угол наибольшего волнового склона, $\tau$ — период волны (в секундах), $T=14{,}7$ с — период свободных качаний корабля на тихой воде, $n=0{,}0792$ — коэффициент, зависящий от величины сопротивления воды. При каком периоде волны амплитуда вынужденных колебаний корабля будет наибольшей? Ответ дайте в секундах.`,
+ ans:'15',facts:['Ф9','Ф4'],
+ g:{x:[0,40],y:[0,4.2],xl:'τ, с',yl:'A/(kθ₀)',dom:[.5,40],fns:[{f:t=>t*t/sq((216.09-t*t)**2+.0792*t*t*216.09),st:1,label:'A(τ)',lx:33}],ext:{x:15,kind:'max',st:3,xl:'15'}},
+ slider:{min:2,max:38,step:.1,v0:25},
+ steps:[{t:'Отличие от задачи 06',do:R`Здесь в формуле стоит $n$, а не $n^2$. Та же замена $x=\frac1{\tau^2}$ даёт параболу $T^4x^2+T^2(n-2)x+1$ (Ф9).`,res:'',sc:['Ф9']},
+  {t:'Вершина',do:R`Ф4:`,res:'',eq:R`x_0=\frac{2-n}{2T^2}\ \Rightarrow\ \tau=T\sqrt{\frac2{2-n}}`,sc:['Ф4']},
+  {t:'Ответ',do:'',res:'',eq:R`\tau=14{,}7\sqrt{\frac2{1{,}9208}}=14{,}7\cdot\frac{1}{0{,}98}=15`}]}];
+
+// ===== ПРИЛОЖЕНИЕ «ПРИКЛАДНЫЕ ЗАДАЧИ НА ЭКСТРЕМУМ» =====
+const TOPICS=[
+ {id:'base',name:'Базовые задачи (Школково)',range:'001–009',count:9,ready:true},
+ {id:'adv',name:'Задачи с физикой',range:'01–06',count:6,ready:true},
+ {id:'analog',name:'Аналоги для самостоятельной работы',range:'01А–06А',count:6,ready:true}];
+const ALL_TASKS=TASKS;
+const STATUS='extr_status_v1';
+let view='tasks',status={},topic='base',filter='all',curId=null,curFact=FACTS[0].id,step=1,phase='do',showAll=false,backTo=null,method='main',pane='graph',xv=null;
+const fpar={};FACTS.forEach(f=>{fpar[f.id]={};(f.params||[]).forEach(p=>fpar[f.id][p[0]]=p[5])});
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const STU='extr_students_v1';let students={list:[],cur:null,data:{}};
+const newId=()=>'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function stuData(id){return students.data[id]||(students.data[id]={status:{},ink:{}})}
+function bindStudent(){if(students.cur&&!students.list.some(x=>x.id===students.cur))students.cur=null;if(students.cur){const d=stuData(students.cur);status=d.status;ink=d.ink}else{status={};ink={}}updStuBtn()}
+function loadStatus(){let emb=null;try{const e=$('embedded-data').textContent.trim();if(e)emb=JSON.parse(e)}catch{}
+ let loc=null;try{loc=JSON.parse(localStorage.getItem(STU))}catch{}
+ if(loc&&loc.list)students=loc;else if(emb&&emb.students)students=emb.students;
+ else{let old={},oldInk={};if(emb&&emb.status){old=emb.status;oldInk=emb.ink||{}}else{try{old=JSON.parse(localStorage.getItem(STATUS))||{}}catch{}try{oldInk=JSON.parse(localStorage.getItem('stereo14_ink'))||{}}catch{}}
+  if(Object.keys(old).length||Object.keys(oldInk).length){const id=newId();students={list:[{id,name:'Ученик 1'}],cur:id,data:{[id]:{status:old,ink:oldInk}}}}}
+ if(emb&&emb.students&&loc&&loc.list){for(const x of emb.students.list)if(!students.list.some(y=>y.id===x.id)){students.list.push(x);students.data[x.id]=emb.students.data[x.id]}}
+ students.data=students.data||{};bindStudent()}
+function saveStatus(){try{localStorage.setItem(STU,JSON.stringify(students))}catch{}}
+function updStuBtn(){const b=$('studentBtn');if(!b)return;const s=students.list.find(x=>x.id===students.cur);b.textContent='👤 '+(s?s.name:'Выбрать ученика');b.classList.toggle('primary',!s)}
+function stuProgress(id){const d=stuData(id).status;let done=0,hw=0;for(const t of ALL_TASKS){const x=d[t.id];if(x?.done)done++;if(x?.hw)hw++}return{done,hw}}
+function renderStudents(){const L=students.list;$('stuList').innerHTML=L.length?L.map(x=>{const p=stuProgress(x.id);return `<div class="sturow${x.id===students.cur?' cur':''}"><button class="btn stuPick" data-pick="${x.id}">${x.id===students.cur?'✓ ':''}${esc(x.name)}</button><span class="small">разобрано ${p.done}/${ALL_TASKS.length}${p.hw?` · ДЗ ${p.hw}`:''}</span><button class="btn tool" data-ren="${x.id}" title="Переименовать">✎</button><button class="btn tool" data-del="${x.id}" title="Удалить">🗑</button></div>`}).join(''):'<div class="small">Список пуст — добавьте первого ученика.</div>'}
+function switchStudent(id){students.cur=id;saveStatus();bindStudent();renderList();if(view==='tasks'||view==='facts')renderMain();if(view==='matrix')renderMatrix()}
+function openStudents(){renderStudents();$('stuNew').value='';if(!$('stuModal').open)$('stuModal').showModal()}
+
+const st=id=>status[id]||(status[id]={done:false,hw:false,fav:false});
+function needStu(){if(students.cur)return true;openStudents();return false}
+function typeset(els){if(window.MathJax?.typesetPromise)MathJax.typesetPromise(els).catch(()=>{})}
+const isAlt=o=>view==='tasks'&&method==='alt'&&o&&o.alt;
+function stepsOf(o){return isAlt(o)?o.alt.steps:o.steps}
+function specOf(o){return isAlt(o)?o.alt.g:o.g}
+function sceneInfo(id){const f=FACTS.find(x=>x.id===id);return f?{kind:'fact',title:f.title}:{kind:'?',title:id}}
+function openScene(id){const c=view==='tasks'&&curId?{view:'tasks',id:curId,step,phase,method}:view==='facts'?{view:'facts',id:curFact}:null;if(!FACTS.some(f=>f.id===id))return;backTo=c;curFact=id;step=1;phase='do';showAll=false;setView('facts')}
+function goBack(){const b=backTo;backTo=null;if(!b)return;if(b.view==='tasks'){topic=ALL_TASKS.find(t=>t.id===b.id)?.topic||topic;curId=b.id;step=b.step;phase=b.phase;method=b.method||'main';renderTopics();setView('tasks')}else{curFact=b.id;setView('facts')}}
+function setView(v){view=v;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+ $('mainTasks').hidden=!(v==='tasks'||v==='facts');$('mainMatrix').hidden=v!=='matrix';
+ $('topicSel').hidden=v!=='tasks';$('tabs').hidden=v!=='tasks';
+ $('backBar').hidden=!backTo;if(backTo)$('backBtn').textContent=backTo.view==='tasks'?`← Вернуться к задаче № ${ALL_TASKS.find(t=>t.id===backTo.id)?.num||''}`:'← Вернуться к факту';
+ renderList();if(v==='tasks'||v==='facts'){xv=null;renderMain()}if(v==='matrix')renderMatrix()}
+function renderTopics(){$('topicSel').innerHTML=TOPICS.map(t=>`<option value="${t.id}" ${t.id===topic?'selected':''}>${esc(t.name)} (${t.count})</option>`).join('')}
+function topicTasks(){return ALL_TASKS.filter(t=>t.topic===topic)}
+function visibleTasks(){return topicTasks().filter(t=>filter==='all'||!!st(t.id)[filter])}
+function renderList(){const list=$('taskList');
+ if(view==='facts'){let h='',g=null;for(const f of FACTS){if(f.group!==g){g=f.group;h+=`<div class="lvl">${esc(g)}</div>`}h+=`<div class="task${f.id===curFact?' active':''}"><div class="taskname" data-fact="${f.id}">${f.id}. ${esc(f.title)}</div></div>`}list.innerHTML=h;return}
+ if(view==='matrix'){list.innerHTML=`<div class="small" style="padding:4px 6px">Раздел:</div>`+[{id:'all',name:'Все задачи',range:''},...TOPICS].map(t=>`<div class="task${t.id===mTopic?' active':''}"><div class="taskname" data-mtopic="${t.id}">${esc(t.name)}${t.range?` <span class="small">${esc(t.range)}</span>`:''}</div></div>`).join('');return}
+ const vis=visibleTasks();if(!vis.length){list.innerHTML='<div class="small" style="padding:10px">В этом разделе пока нет задач.</div>';return}
+ let html='',lvl=null;for(const t of [...vis].sort((a,b)=>a.level-b.level)){if(t.level!==lvl){lvl=t.level;html+=`<div class="lvl">Уровень ${lvl} ${'●'.repeat(lvl+1)}${'○'.repeat(3-lvl)}</div>`}const x=st(t.id);
+  html+=`<div class="task${t.id===curId?' active':''}"><div class="taskname" data-open="${t.id}">№ ${esc(t.num)} <span class="small">· ${esc(t.code)}${t.alt?' · 2 способа':''}</span></div><div class="taskmeta"><label><input type="checkbox" data-status="done" data-id="${t.id}" ${x.done?'checked':''}>Разобрано</label><label><input type="checkbox" data-status="hw" data-id="${t.id}" ${x.hw?'checked':''}>ДЗ</label><button class="star" data-status="fav" data-id="${t.id}" title="Избранное">${x.fav?'★':'☆'}</button></div></div>`}
+ list.innerHTML=html}
+function cur(){return view==='facts'?FACTS.find(f=>f.id===curFact):ALL_TASKS.find(x=>x.id===curId)}
+function chips(list){return (list||[]).map(id=>{const s=sceneInfo(id);return `<button class="chip" data-scene="${id}" title="Открыть">◆ ${id} · ${esc(s.title)}</button>`}).join('')}
+function figOf(o){if(view==='facts'){const r=o.fig(fpar[o.id]);return r}return{plot:specOf(o)}}
+function inkKey(){return view==='facts'?'F_'+curFact:curId+(pane==='model'?'_m':'')+(isAlt(cur())?'_a':'')}
+function sliderSpec(o){if(view==='facts'||!o.slider)return null;return o.slider}
+function diagramSVG(o,s,ph,forPrint){const f=figOf(o);let svg;
+ if(f.svg)svg=f.svg;else if(!forPrint&&view==='tasks'&&pane==='model'&&o.model)svg=o.model(xv??o.slider.v0);
+ else svg=plot2d(f.plot,{step:s,phase:ph,cur:forPrint||view!=='tasks'?null:(xv??o.slider?.v0),curText:forPrint||view!=='tasks'||!o.slider?null:readout(o)});
+ if(forPrint)return svg;return svg.replace(/<\/svg>$/,`<g id="ink">${inkSVG(inkKey())}</g></svg>`)}
+function readout(o){const S=o.g,F=S.fns[0],x=xv??o.slider.v0;let y;try{y=F.f(x)}catch{y=NaN}const nm=s=>String(s).split(',')[0].split(' (')[0];return `${nm(S.xl)} = ${fmtN(x,2)} → ${nm(S.yl)} = ${fmtN(y,3)}`}
+function xOnly(o){const n=String(o.g.xl).split(',')[0].split(' (')[0];return n+' = '+fmtN(xv??o.slider.v0,2)}
+function updSlider(){const o=cur(),sp=view==='tasks'&&o?o.slider:null;$('xsWrap').hidden=!sp;$('toOpt').hidden=!sp;$('tabModel').hidden=!(sp&&o.model);document.querySelector('.vtabs').hidden=!(sp&&o.model);
+ if(!sp){return}const x=$('xs');x.min=sp.min;x.max=sp.max;x.step=sp.step;x.value=xv??sp.v0;$('xsVal').textContent=xOnly(o);
+ if(!o.model&&pane==='model')pane='graph';$('tabGraph').classList.toggle('active',pane==='graph');$('tabModel').classList.toggle('active',pane==='model')}
+function renderMain(){const o=cur();if(o&&step>stepsOf(o).length){step=1;phase='do'}if(!o){$('condition').innerHTML='<h2>Выберите задачу</h2>';$('diagram').innerHTML='';$('solution').innerHTML='';return}
+ if(view==='facts'){const f=o;$('condition').innerHTML=`<h2>${f.id}. ${esc(f.title)} <span class="small">· ${esc(f.group)}</span></h2><div class="statement">${f.st}</div>${(f.params||[]).length?`<div class="params">${f.params.map(p=>`<label>${esc(p[1])} <input type="range" min="${p[2]}" max="${p[3]}" step="${p[4]}" value="${fpar[f.id][p[0]]}" data-par="${p[0]}"><b id="pv_${p[0]}">${fmtN(fpar[f.id][p[0]],2)}</b></label>`).join('')}</div>`:''}${f.use?`<div class="facts"><span class="small">Где применяется:</span> ${f.use}</div>`:''}`;$('solHead').textContent='Доказательство по шагам'}
+ else{const t=o;$('condition').innerHTML=`<div class="condmain"><h2>№ ${esc(t.num)} <span class="small">· ${esc(t.code)} · уровень ${t.level}</span></h2><div>${t.cond}</div></div><div class="condside"><div class="small">Факты и сцены:</div><div class="facts">${chips(t.facts)}</div><div class="answer"><button class="btn" id="ansBtn">Показать ответ</button><span id="ans" hidden>Ответ: \\(${t.ans}\\)</span></div></div>`;$('solHead').textContent='Пошаговый разбор'}
+ $('condition').classList.toggle('two',view==='tasks');$('solHead').hidden=view==='tasks';
+ updSlider();drawDiagram();renderSteps();typeset([$('condition'),$('solution')])}
+function drawDiagram(){const o=cur();if(!o)return;$('diagram').innerHTML=`<div class="diagramStage">${diagramSVG(o,showAll?stepsOf(o).length:step,showAll?'done':phase)}</div>`}
+function refresh(){renderSteps();drawDiagram();typeset([$('solution')])}
+function renderSteps(){const o=cur(),SS=stepsOf(o),n=SS.length;const mt=view==='tasks'?`<div class="methods"><button class="btn tool${method==='main'?' active':''}" data-method="main">Через производную</button><button class="btn tool${method==='alt'?' active':''}" data-method="alt"${o.alt?'':' disabled title="Для этой задачи второго способа нет"'}>${o.alt?esc(o.alt.name):'Другой способ'}</button></div>`:'';let nav=`${mt}<div class="stepsnav">`;let lastPart=null;SS.forEach((s,i)=>{const cls=i+1<step||(i+1===step&&phase==='done')?'done':i+1===step?'cur':'';nav+=`<button class="dot ${cls}" data-go="${i+1}" title="${esc(s.t)}">${i+1}</button>`});nav+=`</div>`;
+ let body='';if(showAll){body=SS.map((s,i)=>stepCard(o,i+1,true)).join('')+`<div class="navsteps"><button class="btn" id="backSteps">← Пошаговый режим</button></div>`}
+ else{body=stepCard(o,step,phase==='done');const last=step===n&&phase==='done';body+=`<div class="navsteps"><button class="btn" id="stepPrev" ${step===1&&phase==='do'?'disabled':''}>← Назад</button>${last?`<span class="finish">${view==='facts'?'Доказано ✓':'Разбор завершён ✓'}</span>`:`<button class="btn primary" id="stepNext">${phase==='do'?'Выполнить шаг ▶':'Следующий шаг →'}</button>`}</div>`;
+  if(last&&view==='tasks')body+=`<div class="stepActions"><button class="btn" id="markDone">${st(o.id).done?'✓ Отмечено «Разобрано»':'Отметить «Разобрано»'}</button></div>`}
+ $('solution').innerHTML=`${nav}${body}<div class="stepActions" style="margin-top:4px"><button class="btn" id="toggleAll">${showAll?'Скрыть полное решение':(view==='facts'?'Показать доказательство целиком':'Показать решение целиком')}</button></div>`}
+function stepCard(o,i,done){const SS=stepsOf(o),s=SS[i-1];const sc=(s.sc||[]).map(id=>`<button class="btn sceneLink" data-scene="${id}">◆ ${id} · ${esc(sceneInfo(id).title)} ↗</button>`).join('');
+ return `<div class="step"><div class="small">${isAlt(o)?esc(o.alt.name)+' · ':''}Шаг ${i} из ${SS.length}</div><h4>${esc(s.t)}</h4>${s.do?`<div class="do"><b>Что делаем.</b> ${s.do}</div>`:''}${done?`<div class="res"><b>Результат.</b> ${s.res||''}${s.eq?`<div class="eq">\\(\\displaystyle ${s.eq}\\)</div>`:''}</div>`:`<div class="small hint">Нажмите «Выполнить шаг», чтобы увидеть результат на графике.</div>`}${sc?`<div class="stepActions">${sc}</div>`:''}</div>`}
+function next(){const o=cur();if(phase==='do')phase='done';else if(step<stepsOf(o).length){step++;phase='do'}refresh()}
+function prev(){if(phase==='done')phase='do';else if(step>1){step--;phase='done'}refresh()}
+function openTask(id){curId=id;step=1;phase='do';showAll=false;xv=null;renderList();renderMain()}
+function openFact(id){curFact=id;step=1;phase='do';showAll=false;renderList();renderMain()}
+// ===== СВОДНАЯ ТАБЛИЦА =====
+let mTopic='all',mMode='facts';
+function factUsage(){const m={};for(const t of ALL_TASKS){const ids=new Set();(t.facts||[]).forEach(x=>ids.add(x));[...(t.steps||[]),...(t.alt?.steps||[])].forEach(s=>(s.sc||[]).forEach(x=>ids.add(x)));for(const id of ids)(m[id]=m[id]||[]).push(t)}return m}
+function tchip(t){const x=status[t.id]||{};return `<button class="tchip${x.done?' done':''}${x.hw?' hw':''}" data-mtask="${t.id}" title="${esc(TOPICS.find(q=>q.id===t.topic)?.name||'')} · уровень ${t.level}">${esc(t.num)}${x.fav?'★':''}</button>`}
+function renderMatrix(){const U=factUsage(),inT=t=>mTopic==='all'||t.topic===mTopic;const TT=ALL_TASKS.filter(inT);let done=0;TT.forEach(t=>{if(status[t.id]?.done)done++});
+ let h=`<div class="mhead"><b>Сводная таблица</b><button class="btn tool${mMode==='facts'?' active':''}" data-mmode="facts">Факт → задачи</button><button class="btn tool${mMode==='tasks'?' active':''}" data-mmode="tasks">Задача → факты</button><span class="small">зелёный — разобрано, жёлтая черта — ДЗ, ★ — избранное</span><span class="mstat small">разобрано <b>${done}</b> из ${TT.length}</span></div>`;
+ if(mMode==='facts'){h+=`<table class="mtable"><tr><th style="width:52px">Факт</th><th>Формулировка</th><th style="width:42px">Задач</th><th>Задачи</th></tr>`;let g=null;
+  for(const f of FACTS){const L=(U[f.id]||[]).filter(inT);if(mTopic!=='all'&&!L.length)continue;if(f.group!==g){g=f.group;h+=`<tr class="grp"><td colspan="4">${esc(g)}</td></tr>`}h+=`<tr><td><button class="fchip" data-mfact="${f.id}">${f.id}</button></td><td>${esc(f.title)}</td><td class="cnt">${L.length}</td><td>${L.map(tchip).join('')||'<span class="small">—</span>'}</td></tr>`}h+='</table>'}
+ else{h+=`<table class="mtable"><tr><th style="width:70px">Задача</th><th style="width:60px">Уровень</th><th>Факты</th><th style="width:70px">Способов</th><th style="width:190px">Ответ</th></tr>`;let g=null;
+  for(const t of TT){if(t.topic!==g){g=t.topic;h+=`<tr class="grp"><td colspan="5">${esc(TOPICS.find(q=>q.id===g).name)}</td></tr>`}const F=Object.keys(U).filter(id=>U[id].includes(t)).sort((a,b)=>parseInt(a.slice(1))-parseInt(b.slice(1)));
+   h+=`<tr><td>${tchip(t)}</td><td>${'●'.repeat(t.level+1)}</td><td>${F.map(id=>`<button class="fchip" data-mfact="${id}" title="${esc(FACTS.find(f=>f.id===id)?.title||'')}">${id}</button>`).join('')}</td><td>${t.alt?2:1}</td><td class="small">\\(${t.ans}\\)</td></tr>`}h+='</table>'}
+ $('mainMatrix').innerHTML=h;typeset([$('mainMatrix')])}
+$('mainMatrix').addEventListener('click',e=>{const m=e.target.closest('[data-mmode]');if(m){mMode=m.dataset.mmode;renderMatrix();return}
+ const t=e.target.closest('[data-mtask]');if(t){const T=ALL_TASKS.find(x=>x.id===t.dataset.mtask);topic=T.topic;filter='all';document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.filter==='all'));renderTopics();curId=T.id;step=1;phase='do';showAll=false;method='main';setView('tasks');return}
+ const f=e.target.closest('[data-mfact]');if(f){curFact=f.dataset.mfact;step=1;phase='do';showAll=false;setView('facts')}});
+// ученики
+$('studentBtn').onclick=openStudents;$('stuClose').onclick=()=>{$('stuModal').close()};
+$('stuAddBtn').onclick=()=>{const n=$('stuNew').value.trim();if(!n)return;const id=newId();students.list.push({id,name:n});stuData(id);switchStudent(id);renderStudents();$('stuNew').value=''};
+$('stuNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('stuAddBtn').click()}});
+$('stuList').addEventListener('click',e=>{const p=e.target.closest('[data-pick]');if(p){switchStudent(p.dataset.pick);renderStudents();$('stuModal').close();return}
+ const r=e.target.closest('[data-ren]');if(r){const x=students.list.find(q=>q.id===r.dataset.ren);const n=prompt('Новое имя',x.name);if(n&&n.trim()){x.name=n.trim();saveStatus();updStuBtn();renderStudents()}return}
+ const d=e.target.closest('[data-del]');if(d){const x=students.list.find(q=>q.id===d.dataset.del);if(!confirm(`Удалить ученика «${x.name}» вместе с его отметками?`))return;students.list=students.list.filter(q=>q!==x);delete students.data[x.id];if(students.cur===x.id)students.cur=students.list[0]?.id||null;saveStatus();bindStudent();renderList();if(view==='tasks'||view==='facts')renderMain();if(view==='matrix')renderMatrix();renderStudents()}});
+
+// --- события ---
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{backTo=null;if(b.dataset.view==='facts'||b.dataset.view==='tasks'){step=1;phase='do';showAll=false}setView(b.dataset.view)});
+$('backBtn').onclick=goBack;
+$('topicSel').onchange=e=>{topic=e.target.value;const v=visibleTasks();curId=v[0]?.id||null;step=1;phase='do';xv=null;renderList();renderMain()};
+$('taskList').addEventListener('click',e=>{const o=e.target.closest('[data-open]');if(o)openTask(o.dataset.open);const f=e.target.closest('[data-fact]');if(f)openFact(f.dataset.fact);const mt=e.target.closest('[data-mtopic]');if(mt){mTopic=mt.dataset.mtopic;renderList();renderMatrix()}
+ const b=e.target.closest('button[data-status]');if(b&&!needStu()){renderList();return}if(b){const x=st(b.dataset.id);x[b.dataset.status]=!x[b.dataset.status];saveStatus();renderList()}});
+$('taskList').addEventListener('change',e=>{const c=e.target.closest('[data-status]');if(c&&!needStu()){renderList();return}if(c){st(c.dataset.id)[c.dataset.status]=c.checked;saveStatus();renderList()}});
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-filter]');if(!b)return;filter=b.dataset.filter;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));const v=visibleTasks();if(!v.some(t=>t.id===curId)){curId=v[0]?.id||null;step=1;phase='do'}renderList();renderMain()});
+$('condition').addEventListener('input',e=>{const p=e.target.dataset.par;if(!p||view!=='facts')return;fpar[curFact][p]=+e.target.value;$('pv_'+p).textContent=fmtN(+e.target.value,2);drawDiagram()});
+document.addEventListener('click',e=>{const sc=e.target.closest('[data-scene]');if(sc){openScene(sc.dataset.scene);return}
+ if(e.target.id==='stepNext')next();if(e.target.id==='stepPrev')prev();if(e.target.id==='toggleAll'||e.target.id==='backSteps'){showAll=!showAll;refresh()}
+ if(e.target.id==='ansBtn'){$('ans').hidden=!$('ans').hidden;e.target.textContent=$('ans').hidden?'Показать ответ':'Скрыть ответ'}
+ if(e.target.id==='markDone'&&needStu()){const x=st(curId);x.done=!x.done;saveStatus();renderList();renderSteps()}
+ const mb=e.target.closest('[data-method]');if(mb&&!mb.disabled){method=mb.dataset.method;step=1;phase='do';showAll=false;refresh();return}
+ const go=e.target.closest('[data-go]');if(go){step=Number(go.dataset.go);phase='done';showAll=false;refresh()}});
+document.addEventListener('keydown',e=>{if($('printModal').open||$('stuModal').open||view==='matrix')return;if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA')return;const o=cur();if(!o)return;if(e.key==='ArrowRight'&&!(step===stepsOf(o).length&&phase==='done'))next();if(e.key==='ArrowLeft'&&!(step===1&&phase==='do'))prev()});
+$('xs').addEventListener('input',e=>{xv=+e.target.value;$('xsVal').textContent=xOnly(cur());drawDiagram()});
+$('toOpt').onclick=()=>{const o=cur();if(!o)return;xv=o.g.ext.x;$('xs').value=xv;$('xsVal').textContent=xOnly(o);drawDiagram()};
+$('tabGraph').onclick=()=>{pane='graph';updSlider();drawDiagram()};$('tabModel').onclick=()=>{pane='model';updSlider();drawDiagram()};
+$('theme').onclick=()=>{const d=document.documentElement;d.dataset.theme=d.dataset.theme==='dark'?'':'dark';try{localStorage.setItem('extr_theme',d.dataset.theme)}catch{}};
+// печать
+$('printOpen').onclick=()=>$('printModal').showModal();$('printCancel').onclick=()=>$('printModal').close();
+$('printGo').onclick=()=>{const all=$('pAll').checked,list=view==='facts'?(all?FACTS:[cur()]):(all?topicTasks():ALL_TASKS.filter(t=>t.id===curId));let h='';
+ const pr=L=>L.map((s,i)=>`<div class="pstep"><b>${i+1}. ${esc(s.t)}.</b> ${s.do||''} ${s.res||''}${s.eq?` \\(\\displaystyle ${s.eq}\\)`:''}</div>`).join('');
+ for(const t of list){if(!t)continue;const isF=!!t.st&&!t.cond;h+=`<section class="ptask"><h2>${isF?t.id+'. '+esc(t.title):`№ ${esc(t.num)} · уровень ${t.level}`}</h2>`;if($('pCondition').checked)h+=`<div>${isF?t.st:t.cond}</div>`;
+  if($('pDiagram').checked){const r=isF?t.fig(fpar[t.id]):{plot:t.g};h+=`<div class="pdiag">${r.svg||plot2d(r.plot,{})}</div>`}
+  if($('pSteps').checked){h+=(isF?'':'<h3>Через производную</h3>')+pr(t.steps);if(!isF&&t.alt)h+=`<h3>${esc(t.alt.name)}</h3>`+pr(t.alt.steps)}if(!isF)h+=`<div><b>Ответ:</b> \\(${t.ans}\\)</div>`;h+='</section>'}
+ $('printArea').innerHTML=h;$('printModal').close();const done=()=>setTimeout(()=>window.print(),150);if(window.MathJax?.typesetPromise)MathJax.typesetPromise([$('printArea')]).then(done,done);else done()};
+$('exportApp').onclick=()=>{saveStatus();const payload=JSON.stringify({students}).replace(/</g,'\\u003c');const clone=document.documentElement.cloneNode(true);clone.querySelectorAll('mjx-container,#MathJax_Message').forEach(n=>n.remove());clone.querySelector('#embedded-data').textContent=payload;['taskList','condition','diagram','solution','printArea','mainMatrix','stuList'].forEach(id=>{const n=clone.querySelector('#'+id);if(n)n.innerHTML=''});
+ const blob=new Blob(['<!doctype html>\n'+clone.outerHTML],{type:'text/html;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ekstremumy_saved.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+
+// ===== РИСОВАНИЕ ПОВЕРХ ЧЕРТЕЖА =====
+var ink={};let hist={},drawMode=false,tool='pen',penColor='#e34c4c',curStroke=null,curPath=null,erasing=null,showData=true;
+const saveInk=()=>{if(students.cur){stuData(students.cur).ink=ink;saveStatus()}};
+const strokeD=s=>'M'+s.pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L');
+function inkSVG(id){return (ink[id]||[]).map(s=>`<path d="${strokeD(s)}" fill="none" stroke="${s.c}" stroke-width="${s.w}" stroke-linecap="round" stroke-linejoin="round"${s.c==='#ffd400'?' opacity=".55"':''}/>`).join('')}
+function redrawInk(){const g=document.querySelector('#diagram #ink');if(g)g.innerHTML=inkSVG(inkKey())}
+function svgPt(e){const svg=document.querySelector('#diagram svg');if(!svg)return null;const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(svg.getScreenCTM().inverse());return[q.x,q.y]}
+function setDraw(on){drawMode=on;$('diagram').classList.toggle('drawing',on);$('diagram').classList.toggle('erasing',on&&tool==='eraser');$('drawToggle').classList.toggle('primary',on);$('drawToggle').textContent=on?'✏ Готово (Esc)':'✏ Рисовать';document.querySelectorAll('.drawOnly').forEach(x=>x.style.display=on?'':'none')}
+function setTool(t){tool=t;$('penBtn').classList.toggle('active',t==='pen');$('eraserBtn').classList.toggle('active',t==='eraser');$('diagram').classList.toggle('erasing',drawMode&&t==='eraser')}
+function pushHist(a){const k=inkKey();(hist[k]||(hist[k]=[])).push(a)}
+function eraseAt(p){const list=ink[inkKey()]||[];for(let i=list.length-1;i>=0;i--){const s=list[i];if(s.pts.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<10)){erasing.push({st:s,i});list.splice(i,1)}}redrawInk()}
+function undo(){const k=inkKey(),h=hist[k];if(!h||!h.length)return;const a=h.pop(),list=ink[k]||(ink[k]=[]);
+ if(a.t==='add'){const i=list.lastIndexOf(a.st);if(i>=0)list.splice(i,1)}else if(a.t==='erase'){[...a.items].reverse().forEach(x=>list.splice(Math.min(x.i,list.length),0,x.st))}else if(a.t==='clear'){ink[k]=a.list}saveInk();redrawInk()}
+$('diagram').addEventListener('pointerdown',e=>{if(!drawMode||e.ctrlKey||!cur())return;const p=svgPt(e);if(!p)return;e.preventDefault();$('diagram').setPointerCapture(e.pointerId);
+ if(tool==='pen'){curStroke={c:penColor,w:penColor==='#ffd400'?12:3,pts:[p]};const g=document.querySelector('#diagram #ink');curPath=document.createElementNS('http://www.w3.org/2000/svg','path');curPath.setAttribute('fill','none');curPath.setAttribute('stroke',curStroke.c);curPath.setAttribute('stroke-width',curStroke.w);curPath.setAttribute('stroke-linecap','round');curPath.setAttribute('stroke-linejoin','round');if(curStroke.c==='#ffd400')curPath.setAttribute('opacity','.55');g.appendChild(curPath);curPath.setAttribute('d',strokeD(curStroke))}
+ else{erasing=[];eraseAt(p)}});
+$('diagram').addEventListener('pointermove',e=>{if(!drawMode)return;const p=svgPt(e);if(!p)return;if(curStroke){const l=curStroke.pts[curStroke.pts.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])>1.2){curStroke.pts.push(p);curPath.setAttribute('d',strokeD(curStroke))}}else if(erasing)eraseAt(p)});
+['pointerup','pointercancel'].forEach(ev=>$('diagram').addEventListener(ev,()=>{const k=inkKey();if(curStroke){if(curStroke.pts.length>1){(ink[k]||(ink[k]=[])).push(curStroke);pushHist({t:'add',st:curStroke});saveInk()}curStroke=null;curPath=null;redrawInk()}if(erasing){if(erasing.length){pushHist({t:'erase',items:erasing});saveInk()}erasing=null}}));
+$('drawToggle').onclick=()=>setDraw(!drawMode);$('penBtn').onclick=()=>setTool('pen');$('eraserBtn').onclick=()=>setTool('eraser');$('undoBtn').onclick=undo;
+$('clearInk').onclick=()=>{const k=inkKey();if(!(ink[k]||[]).length)return;pushHist({t:'clear',list:ink[k]});ink[k]=[];saveInk();redrawInk()};
+document.querySelectorAll('.sw').forEach(b=>b.onclick=()=>{penColor=b.dataset.color;document.querySelectorAll('.sw').forEach(x=>x.classList.toggle('active',x===b));setTool('pen')});
+document.addEventListener('keydown',e=>{if($('printModal').open)return;if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+ if((e.ctrlKey||e.metaKey)&&(e.key==='z'||e.key==='Z'||e.key==='я'||e.key==='Я'||e.code==='KeyZ')){e.preventDefault();undo()}
+ if(e.key==='Escape'&&drawMode){setDraw(false)}});
+setDraw(false);setTool('pen');
+
+// старт
+loadStatus();try{const th=localStorage.getItem('extr_theme');if(th)document.documentElement.dataset.theme=th}catch{}
+renderTopics();curId=visibleTasks()[0]?.id||null;setView('tasks');updStuBtn();if(!students.cur&&!window.__noLogin)openStudents();
+
+</script></body></html>

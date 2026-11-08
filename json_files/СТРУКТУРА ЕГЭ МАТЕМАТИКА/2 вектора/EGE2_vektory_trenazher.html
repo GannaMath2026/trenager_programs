@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ЕГЭ №2 · Векторы — тренажёр</title>
+<style>
+:root{--bg:#f4f6fb;--bg2:#eef1f8;--panel:#fff;--panel2:#f7f9fd;--ink:#16213a;--muted:#66748f;--line:#e2e7f1;--blue:#4f6bff;--blue2:#eef1ff;--ok:#16a06a;--okbg:#e6f7ef;--bad:#e2475b;--badbg:#fdecee;--warn:#f0a020;--warnbg:#fff4dc;--c:#4f6bff;--sh:0 1px 2px #16213a0d,0 8px 28px #16213a12;--r:18px;--fs:16px;--hand:"Comic Sans MS","Segoe Print","Bradley Hand","Marker Felt","Chalkboard SE",cursive;--mono:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace}
+body.theme-dark{--bg:#0e1424;--bg2:#121a2e;--panel:#172036;--panel2:#1c2742;--ink:#e7ecf7;--muted:#97a5c2;--line:#2a3654;--blue2:#23305a;--okbg:#123a2c;--badbg:#45202a;--warnbg:#3f3216;--sh:0 1px 2px #0006,0 10px 30px #0007}
+body.font-small{--fs:14px}body.font-medium{--fs:16px}body.font-large{--fs:18px}body.font-xlarge{--fs:21px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:var(--fs)/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:radial-gradient(900px 500px at 0% -10%,#e5eaff 0,transparent 60%),radial-gradient(800px 600px at 110% 0%,#ffe9f3 0,transparent 55%),var(--bg);background-attachment:fixed;min-height:100vh}
+body.theme-dark{background:radial-gradient(900px 500px at 0% -10%,#1d2a55 0,transparent 60%),radial-gradient(800px 600px at 110% 0%,#3a1d3a 0,transparent 55%),var(--bg);background-attachment:fixed}
+button,input,select,textarea{font:inherit;color:inherit}
+.hidden{display:none!important}
+/* header */
+header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:9px 18px;background:color-mix(in srgb,var(--panel) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer;margin-right:auto;user-select:none}
+.logo{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,#4f6bff,#b84fff);color:#fff;font-weight:900;font-size:15px;box-shadow:0 4px 14px #4f6bff55}
+.brand b{display:block;font-size:16px;line-height:1.1}.brand small{color:var(--muted);font-size:12px;font-weight:600}
+.hbtn{border:1px solid var(--line);background:var(--panel);border-radius:11px;padding:7px 12px;font-size:14px;font-weight:650;cursor:pointer;white-space:nowrap;transition:.15s}
+.hbtn:hover{border-color:var(--blue);color:var(--blue)}.hbtn.active{background:var(--ink);color:var(--panel);border-color:var(--ink)}.hbtn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.fonts{display:inline-flex;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--panel)}.fonts button{border:0;background:none;padding:7px 9px;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted)}.fonts button.active{background:var(--blue);color:#fff}
+/* generic */
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:9px 15px;font-weight:650;cursor:pointer;transition:.15s;font-size:calc(var(--fs) - 1px)}
+.btn:hover{border-color:var(--c);color:var(--c)}.btn.primary{background:var(--c);border-color:var(--c);color:#fff}.btn.primary:hover{filter:brightness(1.08);color:#fff}
+.btn.small{padding:5px 10px;font-size:13px;border-radius:9px}.btn:disabled{opacity:.45;cursor:default}
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:750;background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+.chip.c{background:color-mix(in srgb,var(--c) 14%,var(--panel));color:var(--c);border-color:transparent}.chip.ok{background:var(--okbg);color:var(--ok);border-color:transparent}.chip.bad{background:var(--badbg);color:var(--bad);border-color:transparent}.chip.warn{background:var(--warnbg);color:#b07000;border-color:transparent}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.mono{font-family:var(--mono)}
+kbd{font-family:var(--mono);background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:0 5px;font-size:.9em}
+/* home */
+#home{max-width:1240px;margin:0 auto;padding:26px 20px 60px}
+.hero{display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;margin-bottom:22px}
+.hero h1{font-size:clamp(26px,3.4vw,40px);line-height:1.1;margin:0 0 6px;letter-spacing:-.02em}.hero h1 span{background:linear-gradient(90deg,#4f6bff,#c04fff 60%,#ff5f8f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{margin:0;color:var(--muted);max-width:620px}
+.ring{--p:0;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--blue) calc(var(--p)*1%),var(--line) 0);position:relative}.ring::before{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--panel)}.ring b{position:relative;font-size:20px}.ring small{position:relative;display:block;font-size:11px;color:var(--muted);text-align:center;margin-top:-6px}
+.herostat{display:flex;gap:16px;align-items:center;padding:14px 18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.tile{position:relative;padding:16px 16px 14px;cursor:pointer;transition:.18s;overflow:hidden;min-height:150px;display:flex;flex-direction:column}
+.tile::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:var(--c);opacity:.09;transition:.25s}
+.tile:hover{transform:translateY(-3px);box-shadow:0 2px 4px #16213a10,0 16px 36px #16213a1c}.tile:hover::after{opacity:.16;transform:scale(1.15)}
+.tile .num{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:900;font-size:19px;color:#fff;background:var(--c);box-shadow:0 6px 16px color-mix(in srgb,var(--c) 45%,transparent)}
+.tile h3{margin:10px 0 2px;font-size:calc(var(--fs) + 1px);line-height:1.25}.tile p{margin:0 0 10px;color:var(--muted);font-size:13px;flex:1}
+.bar{height:7px;border-radius:9px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--c);border-radius:9px;transition:width .4s}
+.tile .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px;font-weight:650}
+.tile.pc{opacity:.92}.tile.pc .num{background:repeating-linear-gradient(135deg,var(--c),var(--c) 6px,color-mix(in srgb,var(--c) 75%,#fff) 6px,color-mix(in srgb,var(--c) 75%,#fff) 12px)}
+.sect-h{display:flex;align-items:baseline;gap:10px;margin:28px 0 12px}.sect-h h2{margin:0;font-size:20px}.sect-h span{color:var(--muted);font-size:13px}
+/* module layout */
+#mod{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;max-width:1500px;margin:0 auto;padding:16px 18px 50px}
+#mod aside{position:sticky;top:70px;align-self:start;max-height:calc(100vh - 86px);overflow:auto;padding:14px}
+.modhead{display:flex;gap:11px;align-items:center;margin-bottom:10px}.modhead .num{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-weight:900;font-size:20px;color:#fff;background:var(--c);flex:none}
+.modhead b{display:block;line-height:1.2}.modhead small{color:var(--muted);font-size:12px}
+.back{display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;margin-bottom:10px;border:0;background:none;padding:0}.back:hover{color:var(--c)}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:3px;margin:10px 0}.tabs button{border:0;background:none;border-radius:8px;padding:5px 2px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer}.tabs button.active{background:var(--panel);color:var(--c);box-shadow:0 1px 3px #0002}
+.secttl{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin:12px 4px 5px}
+.ti{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:11px;cursor:pointer;border:1px solid transparent;font-size:calc(var(--fs) - 2px);line-height:1.3;margin:2px 0}
+.ti:hover{background:var(--panel2)}.ti.active{background:color-mix(in srgb,var(--c) 11%,var(--panel));border-color:color-mix(in srgb,var(--c) 40%,transparent)}
+.ti .st{width:22px;height:22px;flex:none;border-radius:7px;display:grid;place-items:center;font-size:12px;background:var(--panel2);border:1px solid var(--line);font-weight:800;color:var(--muted)}
+.ti.ok .st{background:var(--ok);color:#fff;border-color:var(--ok)}.ti.bad .st{background:var(--badbg);color:var(--bad);border-color:transparent}.ti.hint .st{background:var(--warnbg);border-color:transparent}
+.ti .tt{flex:1;min-width:0}.ti .tt small{display:block;color:var(--muted);font-size:11px}.ti.an{margin-left:16px}.ti.an::before{content:"↳";color:var(--muted);margin-right:-3px}
+.ti .flags{display:flex;gap:2px}.ti .flags button{border:0;background:none;cursor:pointer;font-size:14px;padding:0 2px;opacity:.35;filter:grayscale(1)}.ti .flags button.on{opacity:1;filter:none}
+main.work{min-width:0}
+/* stickers */
+.stickbar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.board{display:flex;flex-wrap:wrap;gap:20px;padding:18px 8px 8px;margin-bottom:6px}.board.strip{flex-wrap:nowrap;overflow-x:auto;gap:16px;padding:16px 6px 12px;scroll-snap-type:x mandatory}.board.strip .sticker{flex:0 0 255px;font-size:calc(var(--fs) - 2px);padding:16px 13px 11px;scroll-snap-align:start}.board.strip .sticker h4{font-size:calc(var(--fs) + 1px)}
+.sticker{--rot:-1.5deg;--sc:#fff6a8;position:relative;flex:1 1 230px;max-width:360px;background:var(--sc);color:#2b2a26;padding:20px 16px 14px;border-radius:3px 3px 14px 3px;box-shadow:0 1px 1px #0001,0 10px 18px -6px #0003;transform:rotate(var(--rot));transition:.2s;font-size:calc(var(--fs) - 1px);line-height:1.45}
+.sticker:hover{transform:rotate(0) scale(1.02);z-index:2}
+.sticker::before{content:"";position:absolute;top:-10px;left:50%;width:84px;height:22px;transform:translateX(-50%) rotate(-3deg);background:#ffffff8c;border:1px solid #0000000d;box-shadow:0 1px 2px #0001}
+.sticker h4{font-family:var(--hand);font-size:calc(var(--fs) + 3px);margin:0 0 6px;line-height:1.2}
+.sticker p{margin:5px 0}.sticker .big{font-family:var(--mono);font-weight:800;font-size:calc(var(--fs) + 2px);background:#ffffff7a;border-radius:8px;padding:3px 8px;display:inline-block;margin:2px 0}
+.sticker code{font-family:var(--mono);background:#ffffff80;border-radius:5px;padding:0 4px}
+.sticker .scrawl{font-family:var(--hand);color:#b4235a}
+.sticker:nth-child(5n+1){--sc:#fff3a0;--rot:-1.6deg}.sticker:nth-child(5n+2){--sc:#ffd7e4;--rot:1.3deg}.sticker:nth-child(5n+3){--sc:#cdeffd;--rot:-.6deg}.sticker:nth-child(5n+4){--sc:#d4f5d0;--rot:1.8deg}.sticker:nth-child(5n+5){--sc:#ffe1c2;--rot:-1.1deg}
+/* task */
+.taskcard{padding:clamp(16px,2vw,26px)}
+.thead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}.thead h2{margin:0 auto 0 0;font-size:calc(var(--fs) + 6px);letter-spacing:-.01em;line-height:1.2}
+.repair{display:flex;gap:10px;align-items:center;background:var(--warnbg);border-radius:14px;padding:10px 14px;margin-bottom:12px;font-weight:650}
+.cond{background:var(--panel2);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:14px;padding:14px 16px;margin:10px 0 14px;font-size:calc(var(--fs) + 1px)}
+.cond .f{display:block;font-family:var(--mono);font-weight:800;font-size:calc(var(--fs) + 4px);margin:8px 0 2px;color:var(--c)}
+.cond table{border-collapse:collapse;margin:8px 0;background:var(--panel)}.cond td,.cond th{border:1px solid var(--line);padding:5px 10px;text-align:center}.cond th{background:var(--panel2)}
+.tool{border:1px dashed color-mix(in srgb,var(--c) 45%,var(--line));border-radius:16px;padding:12px 14px;margin:12px 0;background:color-mix(in srgb,var(--c) 3%,var(--panel))}
+.tool>.tl{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--c);margin-bottom:8px}
+.ansrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 6px}
+.ansrow input{flex:1;min-width:180px;max-width:360px;padding:11px 14px;border:2px solid var(--line);border-radius:13px;background:var(--panel);font-size:calc(var(--fs) + 3px);font-weight:800;outline:none;transition:.15s}.ansrow input:focus{border-color:var(--c);box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 18%,transparent)}
+.fb{min-height:26px;font-weight:750;margin:6px 0}.fb.ok{color:var(--ok)}.fb.bad{color:var(--bad)}
+.solved .cond{border-left-color:var(--ok)}
+.hintbox{margin-top:10px}.step{display:flex;gap:11px;padding:10px 12px;border-radius:13px;background:var(--warnbg);margin:6px 0;animation:pop .3s}.step b.n{flex:none;width:24px;height:24px;border-radius:50%;background:#f0a020;color:#fff;display:grid;place-items:center;font-size:13px}
+.step .h{font-weight:800;margin-bottom:2px}
+@keyframes pop{from{transform:translateY(6px);opacity:0}}
+.navrow{display:flex;justify-content:space-between;gap:10px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:90}
+/* matrix/report */
+#page{max-width:1300px;margin:0 auto;padding:20px}
+.mtable{width:100%;border-collapse:separate;border-spacing:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:14px}
+.mtable th,.mtable td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left}.mtable th{background:var(--panel2);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);position:sticky;top:57px}
+.mtable td.c{text-align:center;cursor:pointer}.mtable tr.grp td{background:var(--panel2);font-weight:800}.mtable tr.sub td{font-size:13px}
+/* modal */
+.overlay{position:fixed;inset:0;z-index:60;background:#0e1424a8;display:flex;align-items:flex-start;justify-content:center;padding:4vh 14px;overflow:auto;backdrop-filter:blur(3px)}
+.modal{background:var(--panel);border-radius:20px;box-shadow:0 30px 80px #0006;width:min(1000px,100%);padding:20px 22px;position:relative}
+.modal .x{position:absolute;right:14px;top:12px}
+dialog{border:0;border-radius:20px;padding:20px;width:min(560px,94vw);background:var(--panel);color:var(--ink);box-shadow:0 30px 80px #0006}dialog::backdrop{background:#0e1424a8;backdrop-filter:blur(3px)}
+.sturow{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:6px;margin:5px 0}.sturow.cur{border-color:var(--blue);background:var(--blue2)}.sturow .pick{flex:1;text-align:left;font-weight:700;border:0;background:none;cursor:pointer;padding:6px}.sturow small{color:var(--muted);white-space:nowrap}
+.stuadd{display:flex;gap:6px;margin-top:10px}.stuadd input{flex:1;padding:9px 12px;border-radius:11px;border:1px solid var(--line);background:var(--bg)}
+iframe.t16{width:100%;height:calc(100vh - 84px);border:0;border-radius:18px;background:var(--panel);box-shadow:var(--sh)}
+@media(max-width:900px){#mod{grid-template-columns:1fr}#mod aside{position:static;max-height:300px}header{flex-wrap:wrap}.brand small{display:none}}
+@media print{header,#mod aside,.navrow,.noprint{display:none!important}body{background:#fff}.overlay{position:static;background:none;padding:0}.modal{box-shadow:none;width:100%}body.printing>*:not(.overlay){display:none!important}}
+/* module-specific */
+.tiles{display:flex;flex-wrap:wrap;gap:3px;align-items:flex-end;user-select:none}
+.ch{font-family:var(--mono);font-weight:800;font-size:calc(var(--fs) + 6px);min-width:1.05em;text-align:center;padding:4px 0;border-radius:6px}
+.cut{width:12px;align-self:stretch;cursor:pointer;position:relative;border-radius:4px}.cut:hover{background:color-mix(in srgb,var(--c) 18%,transparent)}.cut.on::after{content:"";position:absolute;left:5px;top:-4px;bottom:-4px;width:3px;border-radius:2px;background:var(--c)}
+.seg{display:inline-flex;flex-direction:column;align-items:center;border-radius:10px;padding:2px 3px;transition:.15s}.seg .lt{font-weight:900;font-size:calc(var(--fs) + 2px);height:1.5em}.seg.good{background:var(--okbg)}.seg.good .lt{color:var(--ok)}.seg.badseg{background:var(--badbg)}.seg.badseg .lt{color:var(--bad)}
+.codetab{border-collapse:collapse;background:var(--panel)}.codetab td,.codetab th{border:1px solid var(--line);padding:4px 10px;text-align:center;font-family:var(--mono);font-weight:700}.codetab th{background:var(--panel2);font-family:inherit}
+.cards{display:flex;flex-wrap:wrap;gap:7px}.fcard{border:2px solid var(--line);background:var(--panel);border-radius:12px;padding:6px 11px;cursor:pointer;font-family:var(--mono);font-weight:800;transition:.12s;display:inline-flex;gap:7px;align-items:baseline}.fcard small{font-family:system-ui;color:var(--c);font-weight:900}.fcard:hover{border-color:var(--c);transform:translateY(-2px)}.fcard.used{opacity:.4}
+.assembled{min-height:52px;border:2px dashed var(--line);border-radius:14px;padding:8px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:8px 0;background:var(--panel)}
+.piece{background:color-mix(in srgb,var(--c) 14%,var(--panel));border-radius:9px;padding:4px 8px;font-family:var(--mono);font-weight:800;cursor:pointer;display:inline-flex;gap:5px;align-items:baseline}.piece small{color:var(--c);font-family:system-ui;font-weight:900}.piece:hover{background:var(--badbg)}
+.addrline{font-family:var(--mono);font-size:calc(var(--fs) + 4px);font-weight:800;word-break:break-all}
+.codebox{font-family:var(--mono);background:#0f1730;color:#e5ecff;border-radius:14px;padding:12px 16px;white-space:pre;overflow:auto;font-size:calc(var(--fs));line-height:1.6}
+.codebox .k{color:#8fb0ff;font-weight:700}.codebox .s{color:#9be59b}.codebox .n{color:#ffc76b}
+.pairs{display:flex;flex-wrap:wrap;gap:6px}.pair{border:2px solid var(--line);border-radius:11px;padding:4px 10px;font-family:var(--mono);font-weight:800;cursor:pointer;background:var(--panel);user-select:none}.pair.y{border-color:var(--ok);background:var(--okbg)}.pair.n{border-color:var(--bad);background:var(--badbg);text-decoration:line-through}
+.ttab{border-collapse:collapse;font-size:14px}.ttab td,.ttab th{border:1px solid var(--line);padding:4px 9px;text-align:center}.ttab th{background:var(--panel2)}.T{color:var(--ok);font-weight:900}.F{color:var(--bad);font-weight:900}
+.xchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.xchip{border-radius:8px;padding:2px 8px;font-family:var(--mono);font-weight:800;font-size:13px}.xchip.t{background:var(--okbg);color:var(--ok)}.xchip.f{background:var(--badbg);color:var(--bad)}
+.screen{display:flex;align-items:center;gap:16px;flex-wrap:wrap}.lcd{font-family:var(--mono);font-size:calc(var(--fs) + 22px);font-weight:900;color:var(--c);background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:4px 18px;min-width:120px;text-align:center}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:2px;margin:8px 0}.cv{background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:3px 10px;font-family:var(--mono);font-weight:800}.cv.fin{background:var(--okbg);border-color:var(--ok)}.cv.goal{background:var(--warnbg);border-color:var(--warn)}.arw{display:inline-flex;flex-direction:column;align-items:center;font-size:11px;color:var(--muted);line-height:1.1;margin:0 2px}.arw b{color:var(--c);font-size:11px}
+.cmdbtn{border:2px solid var(--c);background:var(--panel);color:var(--c);border-radius:13px;padding:9px 14px;font-weight:800;cursor:pointer}.cmdbtn:hover{background:color-mix(in srgb,var(--c) 10%,var(--panel))}.cmdbtn .k{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;background:var(--c);color:#fff;margin-right:6px;font-size:13px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:800px){.split{grid-template-columns:1fr}}
+.pane{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px}.pane h5{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.slide{display:flex;align-items:center;gap:10px}.slide input[type=range]{flex:1;accent-color:var(--c)}
+svg text{font-family:system-ui,Arial,sans-serif}
+.gnode{cursor:pointer}.gnode circle{fill:var(--panel);stroke:var(--ink);stroke-width:2.5}.gnode text{fill:var(--ink);font-weight:800;font-size:17px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.gnode.on circle{fill:var(--c);stroke:var(--c)}.gnode.on text{fill:#fff}.gnode.av circle{stroke-dasharray:4 3;opacity:.5}
+.gedge{stroke:var(--muted);stroke-width:2.6}.gedge.on{stroke:var(--c);stroke-width:5}
+.gw rect{fill:var(--panel);stroke:var(--line)}.gw text{font-size:14px;font-weight:800;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.vin{width:44px;padding:3px;border-radius:8px;border:2px solid var(--line);text-align:center;font-weight:800;background:var(--panel)}.vin.ok{border-color:var(--ok);background:var(--okbg)}.vin.badv{border-color:var(--bad);background:var(--badbg)}
+.ladder{font-family:var(--mono);font-size:calc(var(--fs) + 2px)}
+.lad td{padding:2px 10px;font-family:var(--mono);font-weight:700}.lad .q{border-left:2px solid var(--ink);border-bottom:2px solid var(--ink)}.lad .r{color:var(--ok);font-weight:900}
+.bitcell{display:inline-flex;flex-direction:column;align-items:center;border:2px solid var(--line);border-radius:12px;padding:6px 10px;margin:3px;min-width:58px;background:var(--panel)}.bitcell b{font-family:var(--mono);font-size:calc(var(--fs) + 8px);color:var(--c)}.bitcell small{font-family:var(--mono);color:var(--muted)}.bitcell.on{border-color:var(--ok);background:var(--okbg)}
+.euler{position:relative;display:inline-block}.euler canvas{width:340px;height:300px;border-radius:14px;border:1px solid var(--line);background:var(--panel)}.euler input{position:absolute;width:54px;transform:translate(-50%,-50%);text-align:center;border:1.5px solid #0003;border-radius:8px;background:#ffffffd9;font-weight:800;font-size:13px;padding:2px;color:#16213a}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.9em;margin:0 2px;line-height:1.15}.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}.fr>span:last-child{padding:0 3px}
+.drawwrap{position:relative;display:inline-block;max-width:100%;background:#fff;border-radius:12px;border:1px solid var(--line);padding:6px}.drawwrap img{display:block;max-width:min(100%,520px);max-height:380px;user-select:none;-webkit-user-drag:none}.drawwrap canvas{position:absolute;left:6px;top:6px;touch-action:none;cursor:crosshair}
+.cond{font-size:calc(var(--fs) + 2px)}.vc{position:relative;display:inline-block;font-style:italic;font-weight:700;padding-top:.18em}.vc::before{content:"";position:absolute;left:5%;right:-5%;top:.12em;border-top:1.6px solid currentColor}.vc::after{content:"";position:absolute;right:-8%;top:-.04em;border:.2em solid transparent;border-left:.36em solid currentColor;border-right:0}
+svg.vg{width:100%;height:auto;background:#fff;border-radius:12px;border:1px solid var(--line)}.vg .gl{stroke:#e3e8f0;stroke-width:1}.vg .ax{stroke:#16213a;stroke-width:2}.vg .tl{font:italic 700 16px system-ui;fill:#16213a}.vg .tn{font:600 12px system-ui;fill:#64748b}.vg .vl{font:italic 800 19px Georgia,serif}.vg .va{font:700 13px system-ui}.vg .lg{font:800 14px system-ui;fill:#d97706}.vg .dl{stroke:#64748b;stroke-dasharray:4 4}.vg .pl{font:700 13px system-ui;fill:#16213a}
+.scwrap{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(240px,1fr);gap:14px;align-items:start}@media(max-width:900px){.scwrap{grid-template-columns:1fr}}.scsvg svg{max-width:100%!important;touch-action:none}.hd{cursor:grab}.hdc{fill:#4f6bff33;stroke:#4f6bff;stroke-width:2}
+.scinfo{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px 14px}.big2{font-size:calc(var(--fs) + 2px);line-height:1.9}.hint2{color:var(--muted);font-size:14px}.sctip{font-size:12px;color:var(--muted);margin-top:8px}.ok2{color:var(--ok);font-weight:800}.no2{color:var(--bad);font-weight:700}
+.ti.sc .st{background:#fff3c4;border-color:#f0c94d}.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.fgrid label{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:14px}.fgrid .vin{width:100%;font-size:16px;padding:7px}
+</style></head><body class="font-medium">
+<header>
+ <div class="brand" id="brand"><div class="logo">№2</div><div><b>Векторы</b><small>ЕГЭ, профиль · тренажёр</small></div></div>
+ <button class="hbtn" data-go="home">🏠 Задания</button>
+ <button class="hbtn" data-go="stickers">📌 Стикеры</button>
+ <button class="hbtn" data-go="matrix">📊 Сводная</button>
+ <button class="hbtn" id="stuBtn">👤 Ученик</button>
+ <button class="hbtn" id="repBtn" title="Отчёт учителю">📋</button>
+ <div class="fonts" id="fonts"><button data-font="small">A−</button><button data-font="medium">A</button><button data-font="large">A+</button><button data-font="xlarge">A++</button></div>
+ <button class="hbtn" id="saveBtn" title="Сохранить приложение с прогрессом">💾</button>
+ <button class="hbtn" id="themeBtn" title="Тема">☾</button>
+</header>
+<div id="home"></div>
+<div id="mod" class="hidden"><aside class="card" id="side"></aside><main class="work" id="work"></main></div>
+<div id="page" class="hidden"></div>
+<div id="ovl"></div>
+<dialog id="stuModal"><h2 style="margin-top:0">Кто занимается?</h2><div style="font-size:13px;color:var(--muted);margin-bottom:8px">У каждого ученика свои ответы, отметки, ДЗ и избранное. Всё хранится в браузере; 💾 сохраняет файл вместе с прогрессом всех учеников.</div><div id="stuList"></div><div class="stuadd"><input id="stuNew" placeholder="Имя нового ученика" maxlength="40"><button class="btn primary" id="stuAdd">Добавить</button></div><div style="text-align:right;margin-top:12px"><button class="btn" id="stuClose">Готово</button></div></dialog>
+<script>
+// $a — вектор a, $AB — вектор AB; [[a|b]] — дробь; ^2 — степень
+// f — несколько полей ответа: [подпись, значение]; p — рисунок: сетка и векторы
+const PIC={
+ p08:{x:[-1,11],y:[-1,8],v:[['a',[1,2],[9,7]],['b',[1,1],[8,4]]]},
+ p09:{x:[-8,7],y:[-5,5],v:[['a',[-1,-2],[-7,3]],['b',[5,-4],[5,1]],['c',[1,4],[-6,-1]]]},
+ p13:{x:[-1,8],y:[-1,6],v:[['a',[1,2],[6,5]],['b',[3,2],[5,1]]]},
+ p14:{x:[-1,7],y:[-1,5],v:[['a',[1,1],[3,4]],['b',[3,3],[5,2]]]},
+ p21:{x:[-7,7],y:[-6,5],v:[['a',[-5,-4],[-2,2]],['b',[-6,4],[5,2]]]},
+ p22:{x:[-1,9],y:[-1,7],v:[['a',[0,0],[2,6]],['b',[0,0],[8,4]]],dash:true},
+ p23:{x:[-1,9],y:[-1,8],v:[['a',[3,1],[1,7]],['b',[5,1],[8,2]],['c',[4,2],[6,6]]]},
+ p24:{x:[0,7],y:[0,8],noaxis:true,tri:[['A',[1,2]],['B',[6,7]],['C',[4,1]]]},
+};
+const G2=[
+// ---------- 1. Действия с векторами ----------
+{m:1,n:'01',a:'-5',t:'Даны векторы $a(3; 4), $b(8; 8) и $c(13; 15). Найдите сумму координат вектора $a + $b − $c.',
+ s:[['Складываем по координатам','$a + $b − $c = (3 + 8 − 13; 4 + 8 − 15) = (−2; −3).'],['Сумма координат','−2 + (−3) = <b>−5</b>.']]},
+{m:1,n:'01+',t:'На координатной плоскости заданы точки A(2; 1), B(10; 6), C(0; 0), D(7; 3). Известно, что $a = $AB, $b = $CD. Найдите координаты вектора $m = 2$a − 3$b, квадрат его длины и скалярное произведение $a·$m.',
+ f:[['$m: x','-5'],['$m: y','1'],['|$m|^2','26'],['$a · $m','-35']],
+ s:[['Координаты векторов','$a = $AB = (10 − 2; 6 − 1) = (8; 5); $b = $CD = (7; 3).'],['Умножаем на число','2$a = (16; 10), 3$b = (21; 9) ⇒ $m = (16 − 21; 10 − 9) = (−5; 1).'],['Длина и скалярное','|$m|^2 = 25 + 1 = 26; $a·$m = 8·(−5) + 5·1 = −35.']]},
+{m:1,n:'02+',p:'p09',t:'На координатной плоскости изображены векторы $a, $b и $c с целочисленными координатами. Найдите координаты вектора $n = $a − 2$b + $c, квадрат его длины и скалярное произведение ($a + $b)·$c.',
+ f:[['$n: x','-13'],['$n: y','-10'],['|$n|^2','269'],['($a + $b)·$c','-8']],
+ s:[['Координаты с рисунка','$a = (−6; 5), $b = (0; 5), $c = (−7; −5) — считаем клетки от начала до конца стрелки.'],['Вектор $n','$n = (−6 − 0 − 7; 5 − 10 − 5) = (−13; −10); |$n|^2 = 169 + 100 = 269.'],['Скалярное','$a + $b = (−6; 10); (−6)(−7) + 10·(−5) = 42 − 50 = −8.']]},
+// ---------- 2. Скалярное произведение ----------
+{m:2,n:'02',a:'2',t:'Даны векторы $a(5; 3) и $b(4; −6). Найдите скалярное произведение $a·$b.',
+ s:[['Формула','$a·$b = x₁x₂ + y₁y₂.'],['Считаем','5·4 + 3·(−6) = 20 − 18 = <b>2</b>.']]},
+{m:2,n:'03',a:'-4,5',t:'Даны векторы $a(−3; −2) и $b(3; b₀). Найдите b₀, если $a·$b = 0.',
+ s:[['Скалярное произведение','$a·$b = (−3)·3 + (−2)·b₀ = −9 − 2b₀.'],['Уравнение','−9 − 2b₀ = 0 ⇒ b₀ = <b>−4,5</b>.']]},
+{m:2,n:'04',a:'15',t:'Даны векторы $a(2; 1) и $b(2; −4). Найдите скалярное произведение векторов $a + $b и 7$a − $b.',
+ s:[['Первый вектор','$a + $b = (4; −3).'],['Второй вектор','7$a = (14; 7) ⇒ 7$a − $b = (12; 11).'],['Скалярное','4·12 + (−3)·11 = 48 − 33 = <b>15</b>.']]},
+{m:2,n:'05',a:'-21',t:'Даны векторы $a(2; −5) и $b(5; 7). Найдите скалярное произведение векторов 0,6$a и 1,4$b.',
+ s:[['Умножаем на числа','0,6$a = (1,2; −3), 1,4$b = (7; 9,8).'],['Скалярное','1,2·7 + (−3)·9,8 = 8,4 − 29,4 = <b>−21</b>.']]},
+{m:2,n:'06',a:'28',t:'Даны векторы $a(1; 2), $b(3; −6) и $c(4; −3). Найдите скалярное произведение ($a + $b)·$c.',
+ s:[['Сумма','$a + $b = (4; −4).'],['Скалярное','4·4 + (−4)·(−3) = 16 + 12 = <b>28</b>.']]},
+{m:2,n:'07',a:'-1,5',t:'Даны векторы $a(−1; 3), $b(4; 1) и $c(2; c₀). Найдите c₀, если ($a + $b)·$c = 0.',
+ s:[['Сумма','$a + $b = (3; 4).'],['Скалярное','3·2 + 4·c₀ = 6 + 4c₀.'],['Уравнение','6 + 4c₀ = 0 ⇒ c₀ = <b>−1,5</b>.']]},
+{m:2,n:'08',a:'71',p:'p08',t:'На координатной плоскости изображены векторы $a и $b, координатами которых являются целые числа. Найдите скалярное произведение $a·$b.',
+ s:[['Координаты с рисунка','$a = (8; 5), $b = (7; 3).'],['Скалярное','8·7 + 5·3 = 56 + 15 = <b>71</b>.']]},
+{m:2,n:'09',a:'42',p:'p09',t:'На координатной плоскости изображены векторы $a, $b и $c, координаты этих векторов — целые числа. Найдите скалярное произведение $a·($b + $c).',
+ s:[['Координаты с рисунка','$a = (−6; 5), $b = (0; 5), $c = (−7; −5).'],['Сумма','$b + $c = (−7; 0).'],['Скалярное','(−6)·(−7) + 5·0 = <b>42</b>.']]},
+{m:2,n:'24',a:'10',p:'p24',t:'На клетчатой бумаге с размером клетки 1×1 изображён треугольник ABC. Найдите скалярное произведение $AB·$AC.',
+ s:[['Координаты с рисунка','$AB = (5; 5), $AC = (3; −1).'],['Скалярное','5·3 + 5·(−1) = 15 − 5 = <b>10</b>.']]},
+// ---------- 3. Длина вектора ----------
+{m:3,n:'10',a:'10',t:'Даны векторы $a(3; 4) и $b(5; 2). Найдите длину вектора $a + $b.',
+ s:[['Сумма','$a + $b = (8; 6).'],['Длина','|$a + $b| = √(8^2 + 6^2) = √100 = <b>10</b>.']]},
+{m:3,n:'11',a:'25',t:'Даны векторы $a(3; 3), $b(9; 8) и $c(13; 29). Найдите длину вектора $a − $b + $c.',
+ s:[['Координаты','$a − $b + $c = (3 − 9 + 13; 3 − 8 + 29) = (7; 24).'],['Длина','√(49 + 576) = √625 = <b>25</b>.']]},
+{m:3,n:'12',a:'13',t:'Даны векторы $a(17; 0) и $b(1; −1). Найдите длину вектора $a − 12$b.',
+ s:[['Координаты','12$b = (12; −12) ⇒ $a − 12$b = (5; 12).'],['Длина','√(25 + 144) = √169 = <b>13</b>.']]},
+{m:3,n:'13',a:'5',p:'p13',t:'На координатной плоскости изображены векторы $a и $b, координатами которых являются целые числа. Найдите длину вектора $a − $b.',
+ s:[['Координаты с рисунка','$a = (5; 3), $b = (2; −1).'],['Разность','$a − $b = (3; 4).'],['Длина','√(9 + 16) = <b>5</b>.']]},
+{m:3,n:'14',a:'8',p:'p14',t:'На координатной плоскости изображены векторы $a и $b, координатами которых являются целые числа. Найдите длину вектора $a + 3$b.',
+ s:[['Координаты с рисунка','$a = (2; 3), $b = (2; −1).'],['Вектор','3$b = (6; −3) ⇒ $a + 3$b = (8; 0).'],['Длина','√64 = <b>8</b>.']]},
+{m:3,n:'15',a:'-4,5',t:'Даны векторы $a(2; 3) и $b(−3; b₀). Найдите b₀, если |$b| = 1,5·|$a|. Если таких значений несколько, в ответ запишите меньшее из них.',
+ s:[['Длина $a','|$a| = √(4 + 9) = √13.'],['Уравнение','|$b|^2 = 2,25·13 ⇒ 9 + b₀^2 = 29,25 ⇒ b₀^2 = 20,25.'],['Ответ','b₀ = ±4,5, меньшее — <b>−4,5</b>.']]},
+{m:3,n:'16',a:'2',t:'Даны векторы $a(−2; 4) и $b(2; −1). Известно, что векторы $c(x_c; y_c) и $b сонаправленные, а |$c| = |$a|. Найдите x_c + y_c.',
+ s:[['Сонаправлены','$c = k·$b, k > 0 ⇒ $c = (2k; −k).'],['Длины','|$a| = √20 = 2√5, |$c| = k√5 ⇒ k = 2.'],['Ответ','$c = (4; −2), x + y = <b>2</b>.']]},
+{m:3,n:'17',a:'-2',t:'Даны векторы $a(4; −6) и $b(−2; 3). Известно, что |$c| = |$a|, а векторы $c(x_c; y_c) и $b противоположно направленные. Найдите x_c + y_c.',
+ s:[['Противоположно направлены','$c = k·$b, k < 0 ⇒ $c = (−2k; 3k).'],['Длины','|$a| = 2√13, |$c| = |k|√13 ⇒ |k| = 2, k = −2.'],['Ответ','$c = (4; −6), x + y = <b>−2</b>.']]},
+{m:3,n:'22',a:'40',p:'p22',t:'На координатной плоскости изображены векторы $a и $b. Найдите ($a − $b)^2.',
+ s:[['Квадрат вектора','Скалярный квадрат вектора равен квадрату его длины: $m^2 = |$m|^2.'],['Координаты','$a = (2; 6), $b = (8; 4) ⇒ $a − $b = (−6; 2).'],['Ответ','36 + 4 = <b>40</b>.']]},
+// ---------- 4. Угол между векторами ----------
+{m:4,n:'18',a:'7,5',t:'Длины векторов $a и $b равны 3 и 5, а угол между ними равен 60°. Найдите скалярное произведение $a·$b.',
+ s:[['Формула через угол','$a·$b = |$a|·|$b|·cos φ.'],['Считаем','3·5·[[1|2]] = <b>7,5</b>.']]},
+{m:4,n:'19',a:'4,4',t:'Длина вектора $a равна 5√3, угол между векторами $a и $b равен 60°, а скалярное произведение $a·$b равно 11√3. Найдите длину вектора $b.',
+ s:[['Формула через угол','11√3 = 5√3·|$b|·[[1|2]].'],['Решаем','22√3 = 5√3·|$b| ⇒ |$b| = [[22|5]] = <b>4,4</b>.']]},
+{m:4,n:'20',a:'-0,28',t:'Даны векторы $a(7; 1) и $b(−1; −7). Найдите косинус угла между ними.',
+ s:[['Скалярное','$a·$b = 7·(−1) + 1·(−7) = −14.'],['Длины','|$a| = |$b| = √50 = 5√2.'],['Косинус','cos φ = [[−14|50]] = <b>−0,28</b> (угол тупой, раз минус).']]},
+{m:4,n:'21',a:'0,28',p:'p21',t:'На координатной плоскости изображены векторы $a и $b, координаты которых — целые числа. Найдите косинус угла между ними.',
+ s:[['Координаты с рисунка','$a = (3; 6), $b = (11; −2).'],['Скалярное и длины','$a·$b = 33 − 12 = 21; |$a| = 3√5, |$b| = 5√5.'],['Косинус','cos φ = [[21|75]] = <b>0,28</b>.']]},
+{m:4,n:'25',a:'5',t:'В прямоугольном треугольнике ABC (∠C = 90°) катет AC равен √5. Найдите скалярное произведение $AB·$AC.',
+ s:[['Через угол','$AB·$AC = |AB|·|AC|·cos A.'],['Косинус в прямоугольном треугольнике','cos A = [[AC|AB]].'],['Ответ','|AB|·|AC|·[[AC|AB]] = AC^2 = <b>5</b>.']]},
+{m:4,n:'03+',t:'Даны векторы $a(5; 3) и $b(2; −1). Найдите координаты вектора $p = 3$a − $b, его длину и косинус угла между $a и $p. (Длину и косинус можно вводить как √269 или десятичной дробью.)',
+ f:[['$p: x','13'],['$p: y','10'],['|$p|','sqrt(269)'],['cos($a; $p)','95/sqrt(34*269)']],
+ s:[['Вектор $p','3$a = (15; 9) ⇒ $p = (13; 10).'],['Длина','|$p| = √(169 + 100) = √269.'],['Косинус','$a·$p = 65 + 30 = 95, |$a| = √34 ⇒ cos = [[95|√34·√269]] ≈ 0,993.']]},
+// ---------- 5. Середина, деление отрезка, коллинеарность ----------
+{m:5,n:'04+',t:'Даны точки A(1; 2), B(5; 6), C(−2; 1), D(2; 5). Найдите координаты середины M отрезка AB и точки N, делящей отрезок CD в отношении 1 : 2 от точки C. Найдите расстояние MN. Найдите k, для которого $AB = k·$CD (векторы коллинеарны).',
+ f:[['M: x','3'],['M: y','4'],['N: x','-2/3'],['N: y','7/3'],['|MN|','sqrt(146)/3'],['k','1']],
+ s:[['Середина','M = ([[1 + 5|2]]; [[2 + 6|2]]) = (3; 4).'],['Деление 1 : 2','N = C + [[1|3]]·$CD = (−2; 1) + [[1|3]](4; 4) = (−[[2|3]]; [[7|3]]).'],['Расстояние','$MN = (−[[11|3]]; −[[5|3]]) ⇒ |MN| = [[√146|3]] ≈ 4,03.'],['Коллинеарность','$AB = (4; 4), $CD = (4; 4) ⇒ $AB = 1·$CD.']]},
+{m:5,n:'05+',t:'Даны точки A(1; 2), B(4; 6), C(−1; 3), D(3; 0). Найдите координаты середины M отрезка AB и точки N, делящей отрезок CD в отношении 2 : 1 от точки C. Найдите расстояние MN и скалярное произведение $AB·$CD (докажите перпендикулярность).',
+ f:[['M: x','2.5'],['M: y','4'],['N: x','5/3'],['N: y','1'],['|MN|','sqrt(349)/6'],['$AB·$CD','0']],
+ s:[['Середина','M = (2,5; 4).'],['Деление 2 : 1','N = C + [[2|3]]·$CD = (−1; 3) + [[2|3]](4; −3) = ([[5|3]]; 1).'],['Расстояние','$MN = (−[[5|6]]; −3) ⇒ |MN| = [[√349|6]] ≈ 3,11.'],['Перпендикулярность','$AB = (3; 4), $CD = (4; −3): 12 − 12 = 0 ⇒ $AB ⊥ $CD.']]},
+{m:5,n:'23',a:'0,5',p:'p23',t:'На координатной плоскости изображены векторы $a, $b и $c. Вектор $c разложен по двум неколлинеарным векторам $a и $b: $c = k$a + l$b, где k и l — коэффициенты разложения. Найдите k.',
+ s:[['Координаты с рисунка','$a = (−2; 6), $b = (3; 1), $c = (2; 4).'],['Система','−2k + 3l = 2 и 6k + l = 4.'],['Решаем','l = 4 − 6k ⇒ −2k + 12 − 18k = 2 ⇒ k = <b>0,5</b> (и l = 1).']]}
+];
+
+// ================= ЯДРО =================
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MODS=[];const reg=m=>{m.tasks=m.tasks||[];m.tasks.forEach(t=>t.mod=m.n);MODS.push(m);return m};
+const modBy=n=>MODS.find(m=>m.n==n);
+const EMBED = {};
+const KEY='ege2_vect_v1';
+let DB={list:[],cur:null,data:{},font:'medium',theme:'light',stOpen:{},last:null};
+const newSid=()=>'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const blankMod=()=>({done:{},tries:{},hint:{},ans:{},hw:{},fav:{},work:{}});
+let GUEST={m:{},m16:null};
+function stu(){if(!DB.cur||!DB.list.some(x=>x.id===DB.cur))return GUEST;return DB.data[DB.cur]||(DB.data[DB.cur]={m:{},m16:null})}
+function md(n,s=stu()){s.m=s.m||{};const d=s.m[n]||(s.m[n]=blankMod());for(const k in blankMod())d[k]=d[k]||{};return d}
+function load(){let loc=null;try{loc=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+ if(loc&&loc.list)DB={...DB,...loc};else if(EMBED&&EMBED.list)DB={...DB,...JSON.parse(JSON.stringify(EMBED))};
+ if(EMBED&&EMBED.list&&loc&&loc.list)for(const x of EMBED.list)if(!DB.list.some(y=>y.id===x.id)){DB.list.push(x);DB.data[x.id]=EMBED.data[x.id]}
+ DB.stOpen=DB.stOpen||{};DB.data=DB.data||{}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}}
+function stuName(){const s=DB.list.find(x=>x.id===DB.cur);return s?s.name:null}
+function needStu(){if(stuName())return true;openStudents();return false}
+// ---------- статусы ----------
+function stOf(t,d=md(t.mod)){if(d.done[t.id])return 'ok';if(d.tries[t.id])return 'bad';if(d.hint[t.id])return 'hint';return ''}
+const stIcon={ok:'✓',bad:'✗',hint:'💡','':''};
+function modProg(m,s=stu()){if(m.n==16)return prog16(s);const d=md(m.n,s),T=m.tasks;return{done:T.filter(t=>d.done[t.id]).length,total:T.length,pdone:T.filter(t=>t.kind==='p'&&d.done[t.id]).length,ptotal:T.filter(t=>t.kind==='p').length}}
+function prog16(s){const d=s&&s.m16;const total=(typeof T16_COUNT!=='undefined')?T16_COUNT:46;const done=d&&Array.isArray(d.done)?d.done.length:0;return{done,total,pdone:done,ptotal:total}}
+// ---------- проверка ответа ----------
+const normA=s=>String(s??'').trim().toLocaleUpperCase('ru').replace(/Ё/g,'Е').replace(/\s+/g,'').replace(/,/g,'.');
+function defCheck(t,v){const a=normA(v);if(!a)return false;const all=[t.ans,...(t.alts||[])].map(normA);if(all.includes(a))return true;const n=Number(a),m=Number(normA(t.ans));return Number.isFinite(n)&&Number.isFinite(m)&&a!==''&&Math.abs(n-m)<1e-9}
+// ---------- навигация ----------
+let view='home',cur={mod:null,task:null},filter='all';
+function show(id){['home','mod','page'].forEach(x=>$(x).classList.toggle('hidden',x!==id));document.querySelectorAll('[data-go]').forEach(b=>b.classList.toggle('active',b.dataset.go===view))}
+function go(v){view=v;if(v==='home')renderHome();else if(v==='stickers')renderStickerWall();else if(v==='matrix')renderMatrix();window.scrollTo(0,0)}
+function openMod(n,tid){const m=modBy(n);if(!m)return;view='mod';cur.mod=n;document.documentElement.style.setProperty('--c',m.color);
+ if(m.n==16){show('mod');$('mod').style.gridTemplateColumns='1fr';$('side').classList.add('hidden');render16();return}
+ $('mod').style.gridTemplateColumns='';$('side').classList.remove('hidden');
+ const d=md(n);cur.task=tid||(d.work._last)||(m.scenes&&m.scenes.length?'sc:'+m.scenes[0].id:null)||(m.tasks.find(t=>t.kind==='p'&&!d.done[t.id])||m.tasks[0]||{}).id||null;filter='all';
+ DB.last={mod:n};save();show('mod');renderSide();renderWork();window.scrollTo(0,0)}
+function orderOf(m){const P=m.tasks.filter(t=>t.kind==='p'),out=[];for(const p of P){out.push(p);m.tasks.filter(a=>a.parent===p.id).forEach(a=>out.push(a))}m.tasks.filter(t=>t.kind!=='p'&&!t.parent).forEach(t=>out.push(t));return out}
+// ---------- главная ----------
+const PART1=[1,2,3,4,5,6,7,8,9,10,11,12],PART2=[13,14,15,16];
+function tileHtml(m){const p=modProg(m),pc=!m.tasks.length&&m.n!=16,w=p.total?Math.round(100*p.done/p.total):0;
+ return `<div class="card tile${pc?' pc':''}" style="--c:${m.color}" data-mod="${m.n}"><div class="num">${m.n}</div><h3>${esc(m.title)}</h3><p>${esc(m.sub||'')}</p>${pc?`<div class="meta"><span>📌 памятка · практика на ПК</span></div>`:`<div class="bar"><i style="width:${w}%"></i></div><div class="meta"><span>${p.done} из ${p.total}</span><span>${w}%</span></div>`}</div>`}
+function renderHome(){view='home';show('home');document.documentElement.style.setProperty('--c','#4f6bff');
+ let D=0,T=0;for(const m of MODS){const p=modProg(m);D+=p.done;T+=p.total}const pc=T?Math.round(100*D/T):0;const nm=stuName();
+ const last=DB.last&&modBy(DB.last.mod);
+ $('home').innerHTML=`<div class="hero"><div><h1>ЕГЭ №2: <span>векторы</span></h1><p>${nm?`Привет, <b>${esc(nm)}</b>! `:''}Сначала — живые сцены теории (тяни векторы и смотри, что происходит), потом задачи по темам с решением по шагам. Памятки — на стикерах.</p>${last?`<p style="margin-top:12px"><button class="btn primary" style="--c:${last.color}" data-mod="${last.n}">Продолжить: №${last.n} ${esc(last.title)} →</button></p>`:''}</div>
+ <div class="card herostat"><div class="ring" style="--p:${pc}"><div><b>${pc}%</b><small>решено</small></div></div><div><b style="font-size:22px">${D}</b> <span style="color:var(--muted)">из ${T} задач</span><br><span style="font-size:13px;color:var(--muted)">${nm?'Ученик: '+esc(nm):'Выбери ученика, чтобы сохранять прогресс'}</span></div></div></div>
+ <div class="sect-h"><h2>Темы</h2><span>30 задач + 9 сцен теории</span></div><div class="grid">${MODS.map(tileHtml).join('')}</div>`}
+// ---------- боковая панель ----------
+function renderSide(){const m=modBy(cur.mod),d=md(m.n),p=modProg(m);
+ const vis=t=>filter==='all'||(filter==='bad'?(d.tries[t.id]&&!d.done[t.id]):!!d[filter][t.id]);
+ let h=`<button class="back" data-go="home">← Все задания</button><div class="modhead"><div class="num">${m.n}</div><div><b>${esc(m.title)}</b><small>${p.done} из ${p.total} решено</small></div></div><div class="bar"><i style="width:${p.total?100*p.done/p.total:0}%"></i></div>
+ <div class="tabs">${[['all','Все'],['bad','Ошибки'],['hw','ДЗ'],['fav','★']].map(([k,l])=>`<button data-filter="${k}" class="${filter===k?'active':''}">${l}</button>`).join('')}</div>`;
+ if(!m.tasks.length){h+=`<div style="font-size:13px;color:var(--muted);padding:8px">Это задание выполняется на компьютере в специальной программе. Здесь — памятки-стикеры с алгоритмом действий.</div>`;$('side').innerHTML=h;return}
+ if(m.scenes&&m.scenes.length){h+=`<div class="secttl">🎬 Теория — сцены</div>`+m.scenes.map(s=>`<div class="ti sc ${('sc:'+s.id)===cur.task?'active':''}" data-task="sc:${s.id}"><span class="st">🎬</span><span class="tt">${esc(s.title)}</span></div>`).join('')+`<div class="secttl">✏️ Задачи</div>`}
+ const secs=m.sections||[{id:null,title:''}];
+ for(const s of secs){const L=orderOf(m).filter(t=>(s.id==null||t.sec===s.id)&&vis(t));if(!L.length)continue;if(s.title)h+=`<div class="secttl">${esc(s.title)}</div>`;
+  h+=L.map(t=>{const st=stOf(t,d);return `<div class="ti ${t.kind!=='p'?'an':''} ${st} ${t.id===cur.task?'active':''}" data-task="${t.id}"><span class="st">${stIcon[st]||''}</span><span class="tt">${esc(t.title)}</span><span class="flags"><button data-flag="hw" data-id="${t.id}" class="${d.hw[t.id]?'on':''}" title="Домашнее задание">🏠</button><button data-flag="fav" data-id="${t.id}" class="${d.fav[t.id]?'on':''}" title="Избранное">⭐</button></span></div>`}).join('')}
+ $('side').innerHTML=h;const a=$('side').querySelector('.ti.active');if(a&&a.scrollIntoViewIfNeeded)a.scrollIntoViewIfNeeded(false)}
+// ---------- стикеры ----------
+function stickersHtml(m,strip){return `<div class="board${strip?' strip':''}">${(m.stickers||[]).map(s=>`<div class="sticker"><h4>${s[0]}</h4>${s[1]}</div>`).join('')}</div>`}
+function renderStickerWall(){view='stickers';show('page');document.documentElement.style.setProperty('--c','#4f6bff');
+ $('page').innerHTML=`<div class="hero"><div><h1>📌 Стена <span>стикеров</span></h1><p>Короткие неформальные памятки по всем заданиям — открой перед решением или распечатай.</p></div><button class="btn noprint" onclick="window.print()">🖨 Печать</button></div>`+MODS.map(m=>`<div class="sect-h" style="--c:${m.color}"><h2><span class="chip c" style="font-size:15px">Тема ${m.n}</span> ${esc(m.title)}</h2></div>${stickersHtml(m)}`).join('')}
+// ---------- карточка задания ----------
+let advTimer=null;
+function taskById(m,id){return m.tasks.find(t=>t.id===id)}
+function renderWork(){clearTimeout(advTimer);const m=modBy(cur.mod),d=md(m.n),open=DB.stOpen[m.n]!==false;
+ let h=`<div class="stickbar noprint"><button class="btn small" id="stTog">📌 Памятка ${open?'▲ свернуть':'▼ показать'}</button>${m.toolsBtn?m.toolsBtn():''}<span style="flex:1"></span><span class="chip c">Тема ${m.n} · ${esc(m.title)}</span></div>${open?stickersHtml(m,true):''}`;
+ if(String(cur.task).startsWith('sc:')){const sc=m.scenes.find(s=>'sc:'+s.id===cur.task);const i=m.scenes.indexOf(sc);h+=`<div class="card taskcard"><div class="thead"><h2>🎬 ${esc(sc.title)}</h2><span class="chip c">сцена ${i+1} из ${m.scenes.length}</span></div><div class="cond">${mk(sc.text)}</div><div id="scHost"></div><div class="navrow"><button class="btn" id="prevB" ${i?'':'disabled'}>← Предыдущая сцена</button><button class="btn primary" id="nextB">${i<m.scenes.length-1?'Следующая сцена →':'К задачам →'}</button></div></div>`;$('work').innerHTML=h;$('stTog').onclick=()=>{DB.stOpen[m.n]=!open;save();renderWork()};scene($('scHost'),sc.cfg);d.work._last=cur.task;save();$('prevB').onclick=()=>selTask('sc:'+m.scenes[i-1].id);$('nextB').onclick=()=>selTask(i<m.scenes.length-1?'sc:'+m.scenes[i+1].id:(m.tasks.find(x=>!d.done[x.id])||m.tasks[0]).id);return}
+ const t=taskById(m,cur.task);
+ if(!t){h+=m.pcInfo?`<div class="card taskcard">${m.pcInfo}</div>`:'';$('work').innerHTML=h;$('stTog').onclick=()=>{DB.stOpen[m.n]=!open;save();renderWork()};return}
+ d.work._last=t.id;
+ const st=stOf(t,d),par=t.parent&&taskById(m,t.parent),repair=par&&(d.hint[par.id]||d.tries[par.id]);
+ const steps=t.kind==='p'?(m.steps?m.steps(t):t.steps)||[]:[],hl=Math.min(d.hint[t.id]||0,steps.length);
+ h+=`<div class="card taskcard ${d.done[t.id]?'solved':''}">${repair?`<div class="repair">🛠 Работа над ошибками — аналог к «${esc(par.title)}». Реши без подсказок!</div>`:''}
+ <div class="thead"><h2>${esc(t.title)}</h2>${st==='ok'?'<span class="chip ok">✓ Решено</span>':st==='bad'?`<span class="chip bad">ошибок: ${d.tries[t.id]}</span>`:''}</div>
+ <div class="cond">${m.cond(t)}</div>
+ ${m.tool?`<div class="tool"><div class="tl">${m.toolName?m.toolName(t):'🧰 Черновик'}</div><div id="toolHost"></div></div>`:''}
+ ${m.noAnswer&&m.noAnswer(t)?(steps.length?`<div class="ansrow"><button class="btn" id="hintB">💡 Подсказка${hl?` (${hl}/${steps.length})`:''}</button></div>`:''):`<div class="ansrow"><input id="ans" autocomplete="off" placeholder="${esc(m.ansPh?m.ansPh(t):'Ответ')}" value="${esc(d.ans[t.id]||'')}"><button class="btn primary" id="chk">Проверить</button>${steps.length?`<button class="btn" id="hintB">💡 Подсказка${hl?` (${hl}/${steps.length})`:''}</button>`:''}</div>`}
+ <div class="fb" id="fb">${d.done[t.id]?'✓ Верно! Задание выполнено.':''}</div>
+ <div class="hintbox">${steps.slice(0,hl).map((s,i)=>`<div class="step"><b class="n">${i+1}</b><div><div class="h">${s[0]}</div>${s[1]}</div></div>`).join('')}</div>
+ <div class="navrow"><button class="btn" id="prevB">← Назад</button><button class="btn" id="nextB">Дальше →</button></div></div>`;
+ $('work').innerHTML=h;$('work').classList.toggle('solved',!!d.done[t.id]);
+ $('stTog').onclick=()=>{DB.stOpen[m.n]=!open;save();renderWork()};
+ const ctx={t,m,get work(){return d.work[t.id]||(d.work[t.id]={})},save,setAns:v=>{const i=$('ans');if(i)i.value=v;d.ans[t.id]=v;save()},check:v=>doCheck(m,t,v),done:!!d.done[t.id]};
+ if(m.tool)m.tool(t,$('toolHost'),ctx);
+ const inp=$('ans');if(inp){inp.oninput=()=>{d.ans[t.id]=inp.value;save()};inp.onkeydown=e=>{if(e.key==='Enter')doCheck(m,t,inp.value)};$('chk').onclick=()=>doCheck(m,t,inp.value)}
+ if($('hintB'))$('hintB').onclick=()=>{if(hl>=steps.length)return;d.hint[t.id]=hl+1;save();renderWork();renderSide()};
+ const O=orderOf(m),i=O.indexOf(t);$('prevB').disabled=i<=0;$('nextB').disabled=i>=O.length-1;
+ $('prevB').onclick=()=>selTask(O[i-1].id);$('nextB').onclick=()=>selTask(O[i+1].id)}
+function selTask(id){cur.task=id;renderSide();renderWork();window.scrollTo({top:0,behavior:'smooth'})}
+function doCheck(m,t,v){if(!needStu())return;const d=md(m.n);if(v!=null)d.ans[t.id]=v;const ok=m.check?m.check(t,v,d.work[t.id]||{}):defCheck(t,v);const fb=$('fb');
+ if(ok){const first=!d.done[t.id];d.done[t.id]=true;save();fb.className='fb ok';fb.textContent='✓ Верно! '+(m.okText?m.okText(t):'');document.querySelector('.taskcard').classList.add('solved');if(first)confetti();renderSide();
+  if(first){const O=orderOf(m);let nx=null;
+   if(t.kind==='p'&&(d.hint[t.id]||d.tries[t.id]))nx=m.tasks.find(a=>a.parent===t.id&&!d.done[a.id]);
+   if(!nx){const P=O.filter(x=>x.kind==='p');nx=P.slice(P.indexOf(m.tasks.find(x=>x.id===(t.parent||t.id)))+1).find(x=>!d.done[x.id])}
+   if(nx){fb.innerHTML+=` <span style="color:var(--muted);font-weight:600">${nx.parent?'Дальше — аналог для закрепления…':'Переходим к следующему…'}</span>`;advTimer=setTimeout(()=>selTask(nx.id),1700)}}}
+ else{d.tries[t.id]=(d.tries[t.id]||0)+1;save();fb.className='fb bad';fb.textContent=(m.badText?m.badText(t,v):'')||'✗ Пока неверно. Проверь рассуждение и попробуй ещё раз.';renderSide();const c=document.querySelector('.taskcard');c.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:260})}}
+function confetti(){const box=document.createElement('div');box.className='confetti';const C=['#4f6bff','#ec4899','#10b981','#f59e0b','#8b5cf6'];for(let i=0;i<34;i++){const s=document.createElement('i');const x=Math.random()*100,dx=(Math.random()-.5)*160,dur=900+Math.random()*700;s.style.cssText=`position:absolute;left:${x}%;top:-12px;width:8px;height:12px;border-radius:2px;background:${C[i%5]}`;s.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${dx}px,${innerHeight*.7}px) rotate(${Math.random()*720}deg)`,opacity:0}],{duration:dur,easing:'cubic-bezier(.2,.6,.4,1)'});box.appendChild(s)}document.body.appendChild(box);setTimeout(()=>box.remove(),1700)}
+// ---------- сводная ----------
+function cellOf(t,d){const s=stOf(t,d);return {ok:'✅',bad:'❌',hint:'💡','':'·'}[s]+(d.hint[t.id]&&s!=='hint'?'💡':'')+(d.hw[t.id]?' Д':'')}
+function renderMatrix(){view='matrix';show('page');document.documentElement.style.setProperty('--c','#4f6bff');const L=DB.list;
+ let h=`<div class="hero"><div><h1>📊 Сводная <span>таблица</span></h1><p>✅ решено · ❌ есть ошибки · 💡 была подсказка · Д — задано на дом. Нажми на номер задания, чтобы раскрыть задачи; на ячейку — открыть задачу у этого ученика.</p></div></div>`;
+ if(!L.length){$('page').innerHTML=h+'<p>Добавьте учеников (кнопка 👤).</p>';return}
+ h+=`<table class="mtable"><tr><th>№</th><th>Задание</th>${L.map(x=>`<th style="text-align:center">${esc(x.name)}</th>`).join('')}</tr>`;
+ for(const m of MODS){if(!m.tasks.length&&m.n!=16)continue;h+=`<tr class="grp" data-exp="${m.n}" style="cursor:pointer"><td><span class="chip c" style="--c:${m.color}">Тема ${m.n}</span></td><td>${esc(m.title)} ▾</td>${L.map(x=>{const p=modProg(m,DB.data[x.id]||{m:{}});return `<td style="text-align:center">${p.done}/${p.total}</td>`}).join('')}</tr>`;
+  if(matOpen[m.n]&&m.n!=16)for(const t of orderOf(m))h+=`<tr class="sub"><td></td><td>${t.kind!=='p'?'↳ ':''}${esc(t.title)}</td>${L.map(x=>{const d=md(m.n,DB.data[x.id]||(DB.data[x.id]={m:{}}));return `<td class="c" data-cell="${x.id}|${m.n}|${t.id}">${cellOf(t,d)}</td>`}).join('')}</tr>`}
+ $('page').innerHTML=h+'</table>'}
+const matOpen={};
+// ---------- отчёт ----------
+function openReport(){if(!needStu())return;const nm=stuName();let rows='';
+ for(const m of MODS){if(!m.tasks.length&&m.n!=16)continue;const p=modProg(m);rows+=`<h3 style="--c:${m.color};margin:18px 0 6px"><span class="chip c">Тема ${m.n}</span> ${esc(m.title)} — ${p.done}/${p.total}</h3>`;
+  if(m.n==16){rows+=`<p style="font-size:13px;color:var(--muted)">Подробный отчёт по №16 (код и тесты) — кнопка 📋 внутри тренажёра №16.</p>`;continue}
+  const d=md(m.n);rows+=`<table class="mtable"><tr><th>Задача</th><th>Статус</th><th>Ответ ученика</th><th>Верный</th><th>Ошибок</th><th>Подсказка</th></tr>${orderOf(m).map(t=>`<tr><td>${t.kind!=='p'?'↳ ':''}${esc(t.title)}</td><td>${{ok:'✅ решено',bad:'❌ не решено',hint:'💡 подсказка','':'—'}[stOf(t,d)]}</td><td class="mono">${esc(d.ans[t.id]||'')}</td><td class="mono">${esc(t.ans)}</td><td>${d.tries[t.id]||0}</td><td>${d.hint[t.id]?'шагов: '+d.hint[t.id]:''}</td></tr>`).join('')}</table>`}
+ openOverlay(`<h2 style="margin-top:0">📋 Отчёт учителю — ${esc(nm)}</h2><p style="color:var(--muted)">${new Date().toLocaleString('ru-RU')}</p><p class="noprint"><button class="btn primary" id="prRep">🖨 Печать / PDF</button></p>${rows}`);
+ $('prRep').onclick=()=>{document.body.classList.add('printing');window.onafterprint=()=>document.body.classList.remove('printing');window.print()}}
+function openOverlay(html){$('ovl').innerHTML=`<div class="overlay" id="ov"><div class="modal"><button class="btn small x noprint" id="ovX">✕</button>${html}</div></div>`;$('ovX').onclick=closeOverlay;$('ov').onclick=e=>{if(e.target.id==='ov')closeOverlay()}}
+function closeOverlay(){$('ovl').innerHTML=''}
+// ---------- ученики ----------
+function renderStudents(){const L=DB.list;$('stuList').innerHTML=L.length?L.map(x=>{let D=0,T=0;for(const m of MODS){const p=modProg(m,DB.data[x.id]||{m:{}});D+=p.done;T+=p.total}return `<div class="sturow${x.id===DB.cur?' cur':''}"><button class="pick" data-pick="${x.id}">${x.id===DB.cur?'✓ ':''}${esc(x.name)}</button><small>${D}/${T}</small><button class="btn small" data-ren="${x.id}">✎</button><button class="btn small" data-del="${x.id}">🗑</button></div>`}).join(''):'<div style="color:var(--muted);font-size:14px">Список пуст — добавьте первого ученика.</div>'}
+function openStudents(){renderStudents();$('stuNew').value='';if(!$('stuModal').open)$('stuModal').showModal()}
+function updStu(){const n=stuName();$('stuBtn').textContent='👤 '+(n||'Выбрать ученика');$('stuBtn').classList.toggle('primary',!n)}
+function switchStudent(id){DB.cur=id;save();updStu();sync16();rerender()}
+function rerender(){if(view==='home')renderHome();else if(view==='mod'){if(cur.mod==16)return;renderSide();renderWork()}else if(view==='matrix')renderMatrix()}
+// ---------- №16 во фрейме ----------
+const HUB={get db(){return DB},save:()=>save(),ask:()=>openStudents(),switchTo:id=>switchStudent(id),cur:()=>DB.cur,m16:sid=>{const s=DB.data[sid]||(DB.data[sid]={m:{}});return s.m16||(s.m16={})}};window.HUB=HUB;
+let frame16=null;
+function render16(){if(!frame16){frame16=document.createElement('iframe');frame16.className='t16';frame16.title='Задание 16';frame16.srcdoc=OGE16_HTML}
+ $('work').innerHTML=`<div class="stickbar noprint"><button class="back" data-go="home" style="margin:0">← Все задания</button><span style="flex:1"></span><button class="btn small" id="st16">📌 Памятка</button><span class="chip c">№16 · Обработка чисел (Python)</span></div>`;$('work').appendChild(frame16);
+ $('st16').onclick=()=>openOverlay(`<h2 style="margin-top:0">📌 №16 — памятка</h2>${stickersHtml(modBy(16))}`);sync16()}
+function sync16(){try{frame16&&frame16.contentWindow&&frame16.contentWindow.hubSync&&frame16.contentWindow.hubSync()}catch(e){}}
+// ---------- события ----------
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){go(g.dataset.go);return}
+ const mo=e.target.closest('[data-mod]');if(mo){openMod(+mo.dataset.mod);return}
+ const fl=e.target.closest('[data-flag]');if(fl&&$('side').contains(fl)){if(!needStu())return;const d=md(cur.mod);d[fl.dataset.flag][fl.dataset.id]=!d[fl.dataset.flag][fl.dataset.id];save();renderSide();return}
+ const ta=e.target.closest('[data-task]');if(ta){selTask(ta.dataset.task);return}
+ const fi=e.target.closest('[data-filter]');if(fi){filter=fi.dataset.filter;renderSide();return}
+ const ex=e.target.closest('[data-exp]');if(ex){matOpen[ex.dataset.exp]=!matOpen[ex.dataset.exp];renderMatrix();return}
+ const ce=e.target.closest('[data-cell]');if(ce){const[sid,n,tid]=ce.dataset.cell.split('|');if(sid!==DB.cur)switchStudent(sid);openMod(+n,tid);return}});
+$('brand').onclick=()=>go('home');$('stuBtn').onclick=openStudents;$('stuClose').onclick=()=>$('stuModal').close();$('repBtn').onclick=openReport;
+$('stuAdd').onclick=()=>{const n=$('stuNew').value.trim();if(!n)return;const id=newSid();DB.list.push({id,name:n});DB.data[id]={m:{},m16:null};switchStudent(id);renderStudents();$('stuNew').value=''};
+$('stuNew').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('stuAdd').click()}};
+$('stuList').onclick=e=>{const p=e.target.closest('[data-pick]');if(p){switchStudent(p.dataset.pick);$('stuModal').close();return}
+ const r=e.target.closest('[data-ren]');if(r){const x=DB.list.find(q=>q.id===r.dataset.ren);const n=prompt('Новое имя',x.name);if(n&&n.trim()){x.name=n.trim();save();updStu();renderStudents();rerender()}return}
+ const d=e.target.closest('[data-del]');if(d){const x=DB.list.find(q=>q.id===d.dataset.del);if(!confirm(`Удалить ученика «${x.name}» вместе со всем прогрессом?`))return;DB.list=DB.list.filter(q=>q!==x);delete DB.data[x.id];if(DB.cur===x.id)DB.cur=DB.list[0]?.id||null;save();updStu();sync16();renderStudents();rerender()}};
+function applyTheme(){document.body.classList.toggle('theme-dark',DB.theme==='dark');$('themeBtn').textContent=DB.theme==='dark'?'☀':'☾';sync16()}
+function applyFont(){['small','medium','large','xlarge'].forEach(f=>document.body.classList.remove('font-'+f));document.body.classList.add('font-'+(DB.font||'medium'));document.querySelectorAll('[data-font]').forEach(b=>b.classList.toggle('active',b.dataset.font===DB.font));sync16()}
+$('themeBtn').onclick=()=>{DB.theme=DB.theme==='dark'?'light':'dark';save();applyTheme()};
+$('fonts').onclick=e=>{const b=e.target.closest('[data-font]');if(!b)return;DB.font=b.dataset.font;save();applyFont();if(view==='mod'&&cur.mod!=16)renderWork()};
+$('saveBtn').onclick=()=>{const snap=JSON.stringify(DB).replace(/</g,'\\u003c');const cl=document.documentElement.cloneNode(true);cl.querySelectorAll('iframe').forEach(f=>f.remove());const o=cl.querySelector('#ovl');if(o)o.innerHTML='';const dg=cl.querySelector('dialog');if(dg)dg.removeAttribute('open');
+ let html='<!doctype html>\n'+cl.outerHTML;html=html.replace(/const EMBED = \{[\s\S]*?\};\n/,()=>`const EMBED = ${snap};\n`);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));a.download='ЕГЭ2_векторы_тренажёр.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('ovl').innerHTML)closeOverlay()});
+function boot(){MODS.sort((a,b)=>a.n-b.n);load();updStu();applyTheme();applyFont();renderHome();if(!DB.cur&&!window.__noLogin)openStudents()}
+
+// ===== ЕГЭ №2: векторы =====
+const mk=s=>String(s).replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g,'<span class="fr"><span>$1</span><span>$2</span></span>').replace(/\$([A-Z]{2}|[a-z])/g,'<span class="vc">$1</span>').replace(/\^(\d)/g,'<sup>$1</sup>').replace(/_([a-z])/g,'<sub>$1</sub>');
+const VC={a:'#e2475b',b:'#2563eb',c:'#16a06a',d:'#f59e0b',m:'#8b5cf6',s:'#8b5cf6'};
+const nf=v=>{const r=Math.round(v*1000)/1000;return String(r).replace('.',',').replace('-','−')};
+const fr=v=>{for(const d of [1,2,3,4,5,6,8,12]){const n=v*d;if(Math.abs(n-Math.round(n))<1e-9){const N=Math.round(n);return d===1?nf(N):`${N<0?'−':''}<span class="fr"><span>${Math.abs(N)}</span><span>${d}</span></span>`}}return nf(v)};
+const sqr=v=>{const r=Math.round(v);if(Math.abs(v-r)<1e-9){const q=Math.round(Math.sqrt(r));if(q*q===r)return String(q);let k=1,m=r;for(let i=2;i*i<=r;i++)while(m%(i*i)===0){m/=i*i;k*=i}return (k>1?k:'')+'√'+m}return '√'+nf(v)};
+// ---------- рисование на клетчатой плоскости ----------
+function gridSVG(o){const[x0,x1]=o.x,[y0,y1]=o.y,S=o.s||34,W=(x1-x0)*S+40,H=(y1-y0)*S+40,X=x=>20+(x-x0)*S,Y=y=>20+(y1-y)*S;
+ let g=`<svg viewBox="0 0 ${W} ${H}" class="vg" ${o.id?`id="${o.id}"`:''} style="max-width:${Math.min(W*1.15,640)}px"><defs>${Object.entries({...VC,k:'#16213a',g:'#94a3b8'}).map(([k,c])=>`<marker id="ar${k}${o.id||''}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="${c}"/></marker>`).join('')}</defs>`;
+ for(let x=x0;x<=x1;x++)g+=`<line x1="${X(x)}" y1="${Y(y0)}" x2="${X(x)}" y2="${Y(y1)}" class="gl"/>`;
+ for(let y=y0;y<=y1;y++)g+=`<line x1="${X(x0)}" y1="${Y(y)}" x2="${X(x1)}" y2="${Y(y)}" class="gl"/>`;
+ if(!o.noaxis&&x0<=0&&x1>=0&&y0<=0&&y1>=0){g+=`<line x1="${X(x0)}" y1="${Y(0)}" x2="${X(x1)+12}" y2="${Y(0)}" class="ax" marker-end="url(#ark${o.id||''})"/><line x1="${X(0)}" y1="${Y(y0)}" x2="${X(0)}" y2="${Y(y1)-12}" class="ax" marker-end="url(#ark${o.id||''})"/><text x="${X(x1)+4}" y="${Y(0)+18}" class="tl">x</text><text x="${X(0)+8}" y="${Y(y1)-4}" class="tl">y</text><text x="${X(0)-14}" y="${Y(0)+16}" class="tn">0</text><text x="${X(1)-4}" y="${Y(0)+16}" class="tn">1</text><text x="${X(0)-14}" y="${Y(1)+5}" class="tn">1</text>`}
+ return{g,X,Y,S,end:'</svg>',id:o.id||''}}
+function arrow(G,p,q,c,lab,opt={}){const[x1,y1,x2,y2]=[G.X(p[0]),G.Y(p[1]),G.X(q[0]),G.Y(q[1])];if(Math.hypot(x2-x1,y2-y1)<2)return '';const mx=(x1+x2)/2,my=(y1+y2)/2,dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy),nx=-dy/L,ny=dx/L;
+ const key=Object.keys(VC).find(k=>VC[k]===c)||(c==='#94a3b8'?'g':'k');
+ return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${opt.w||3}" ${opt.dash?'stroke-dasharray="7 5"':''} marker-end="url(#ar${key}${G.id})" ${opt.op?`opacity="${opt.op}"`:''}/>`+(lab?`<text x="${mx+nx*22}" y="${my+ny*22+5}" class="vl" fill="${c}" text-anchor="middle">${lab}</text><text x="${mx+nx*22}" y="${my+ny*22-9}" class="va" fill="${c}" text-anchor="middle">→</text>`:'')}
+function legs(G,p,q){const c='#f59e0b',dx=q[0]-p[0],dy=q[1]-p[1];return `<line x1="${G.X(p[0])}" y1="${G.Y(p[1])}" x2="${G.X(q[0])}" y2="${G.Y(p[1])}" stroke="${c}" stroke-width="2.5" stroke-dasharray="5 4"/><line x1="${G.X(q[0])}" y1="${G.Y(p[1])}" x2="${G.X(q[0])}" y2="${G.Y(q[1])}" stroke="${c}" stroke-width="2.5" stroke-dasharray="5 4"/>`+(dx?`<text x="${(G.X(p[0])+G.X(q[0]))/2}" y="${G.Y(p[1])+(dy>0?18:-8)}" class="lg" text-anchor="middle">${dx>0?'+':'−'}${Math.abs(dx)}</text>`:'')+(dy?`<text x="${G.X(q[0])+(dx>=0?8:-8)}" y="${(G.Y(p[1])+G.Y(q[1]))/2+5}" class="lg" text-anchor="${dx>=0?'start':'end'}">${dy>0?'+':'−'}${Math.abs(dy)}</text>`:'')}
+function picHTML(key,showLegs){const P=PIC[key],G=gridSVG({x:P.x,y:P.y,noaxis:P.noaxis,id:'pc'});let s=G.g;
+ if(P.tri){const T=Object.fromEntries(P.tri);s+=`<polygon points="${P.tri.map(([,p])=>G.X(p[0])+','+G.Y(p[1])).join(' ')}" fill="none" stroke="#f97316" stroke-width="3"/>`;P.tri.forEach(([n,p])=>s+=`<circle cx="${G.X(p[0])}" cy="${G.Y(p[1])}" r="4" fill="#16213a"/><text x="${G.X(p[0])+(n==='B'?8:-18)}" y="${G.Y(p[1])+(n==='C'?20:-6)}" class="vl">${n}</text>`);if(showLegs){s+=legs(G,T.A,T.B)+legs(G,T.A,T.C)}}
+ (P.v||[]).forEach(([n,p,q])=>{if(P.dash&&!showLegs){s+=`<line x1="${G.X(q[0])}" y1="${G.Y(q[1])}" x2="${G.X(q[0])}" y2="${G.Y(0)}" class="dl"/><line x1="${G.X(q[0])}" y1="${G.Y(q[1])}" x2="${G.X(0)}" y2="${G.Y(q[1])}" class="dl"/>`}if(showLegs)s+=legs(G,p,q);s+=arrow(G,p,q,VC[n],n)});return s+G.end}
+// ---------- сцены теории ----------
+function scene(el,cfg){let P=JSON.parse(JSON.stringify(cfg.pts)),k=cfg.k?cfg.k.v:0;
+ const draw=()=>{const G=gridSVG({x:cfg.x||[-6,8],y:cfg.y||[-4,7],id:'sc'});const r=cfg.draw(G,P,k);let s=G.g+r.svg;
+  for(const n in P)if(!(cfg.fixed||[]).includes(n))s+=`<g class="hd" data-p="${n}"><circle cx="${G.X(P[n][0])}" cy="${G.Y(P[n][1])}" r="13" class="hdc"/><circle cx="${G.X(P[n][0])}" cy="${G.Y(P[n][1])}" r="5.5" fill="#16213a"/><text x="${G.X(P[n][0])+10}" y="${G.Y(P[n][1])-10}" class="pl">${n}(${nf(P[n][0])}; ${nf(P[n][1])})</text></g>`;
+  $('scSvg').innerHTML=s+G.end;$('scInfo').innerHTML=r.info;const sv=$('scSvg').querySelector('svg');let drag=null;
+  sv.onpointerdown=e=>{const h=e.target.closest('.hd');if(!h)return;drag=h.dataset.p;try{sv.setPointerCapture(e.pointerId)}catch(_){}};
+  sv.onpointermove=e=>{if(!drag)return;const b=sv.getBoundingClientRect(),vb=sv.viewBox.baseVal,x=(e.clientX-b.left)*vb.width/b.width,y=(e.clientY-b.top)*vb.height/b.height;const gx=Math.round((x-20)/G.S+(cfg.x||[-6])[0]),gy=Math.round((cfg.y||[0,7])[1]-(y-20)/G.S);const[x0,x1]=cfg.x||[-6,8],[y0,y1]=cfg.y||[-4,7];const nx=Math.max(x0,Math.min(x1,gx)),ny=Math.max(y0,Math.min(y1,gy));if(nx!==P[drag][0]||ny!==P[drag][1]){P[drag]=[nx,ny];const d=drag;draw();drag=d}};
+  sv.onpointerup=()=>drag=null};
+ el.innerHTML=`<div class="scwrap"><div id="scSvg" class="scsvg"></div><div class="scside"><div class="scinfo" id="scInfo"></div>${cfg.k?`<div class="slide" style="margin-top:10px"><span>${cfg.k.lab}</span><input type="range" min="${cfg.k.min}" max="${cfg.k.max}" step="${cfg.k.step}" value="${k}" id="scK"><b id="scKv">${fr(k)}</b></div>`:''}<div style="display:flex;gap:6px;margin-top:10px"><button class="btn small" id="scR">↺ Сначала</button></div><div class="sctip">✋ Тяни жирные точки — всё пересчитывается само.</div></div></div>`;
+ if(cfg.k)$('scK').oninput=()=>{k=+$('scK').value;$('scKv').innerHTML=fr(k);draw()};$('scR').onclick=()=>{P=JSON.parse(JSON.stringify(cfg.pts));if(cfg.k){k=cfg.k.v;$('scK').value=k;$('scKv').innerHTML=fr(k)}draw()};draw()}
+const V=(p,q)=>[q[0]-p[0],q[1]-p[1]],add=(a,b)=>[a[0]+b[0],a[1]+b[1]],mul=(k,a)=>[k*a[0],k*a[1]],dot=(a,b)=>a[0]*b[0]+a[1]*b[1],len2=a=>dot(a,a);
+const co=a=>`(${fr(a[0])}; ${fr(a[1])})`,vv=n=>`<span class="vc">${n}</span>`;
+const SC={
+ coord:{title:'Координаты вектора',text:'Вектор — это «стрелка-перемещение». Его координаты показывают, на сколько клеток сдвинулись <b>вправо/влево</b> и <b>вверх/вниз</b>. Из координат конца вычитаем координаты начала.',
+  cfg:{pts:{A:[-3,-1],B:[4,3]},draw:(G,P)=>{const v=V(P.A,P.B);return{svg:legs(G,P.A,P.B)+arrow(G,P.A,P.B,VC.a,'',{w:4}),info:`<div class="big2">${vv('AB')} = (${nf(P.B[0])} − ${nf(P.A[0])}; ${nf(P.B[1])} − ${nf(P.A[1])}) = <b>${co(v)}</b></div><p>Оранжевые пунктиры — это и есть координаты: по x ${v[0]>=0?'вправо':'влево'} на ${Math.abs(v[0])}, по y ${v[1]>=0?'вверх':'вниз'} на ${Math.abs(v[1])}.</p><p class="hint2">Вправо и вверх — «+», влево и вниз — «−».</p>`}}}},
+ sum:{title:'Сложение: треугольник и параллелограмм',text:'<b>Правило треугольника:</b> второй вектор приставляем к концу первого; сумма идёт из начала первого в конец второго. <b>Правило параллелограмма:</b> оба вектора из одной точки, сумма — диагональ. В координатах просто складываем x с x и y с y.',
+  cfg:{pts:{O:[-3,-2],A:[2,1],B:[-1,3]},draw:(G,P)=>{const a=V(P.O,P.A),b=V(P.O,P.B),S=add(P.A,b);return{svg:`<polygon points="${[P.O,P.A,S,P.B].map(p=>G.X(p[0])+','+G.Y(p[1])).join(' ')}" fill="#8b5cf611" stroke="#94a3b8" stroke-dasharray="4 4"/>`+arrow(G,P.A,S,VC.b,'',{dash:true,op:.6})+arrow(G,P.O,P.A,VC.a,'a')+arrow(G,P.O,P.B,VC.b,'b')+arrow(G,P.O,S,VC.m,'',{w:4}),info:`<div class="big2">${vv('a')} = ${co(a)}<br>${vv('b')} = ${co(b)}<br><span style="color:${VC.m}">${vv('a')} + ${vv('b')}</span> = (${nf(a[0])} + ${nf(b[0])}; ${nf(a[1])} + ${nf(b[1])}) = <b>${co(add(a,b))}</b></div><p class="hint2">Пунктирный синий — копия ${vv('b')}, приставленная к концу ${vv('a')}.</p>`}}}},
+ dif:{title:'Вычитание векторов',text:'Разность a − b: оба вектора из одной точки, разность идёт <b>из конца вычитаемого в конец уменьшаемого</b> (из конца b в конец a). Или: a − b = a + (−b). В координатах вычитаем x и y.',
+  cfg:{pts:{O:[-3,-2],A:[3,2],B:[-1,3]},draw:(G,P)=>{const a=V(P.O,P.A),b=V(P.O,P.B),d=V(P.B,P.A);return{svg:arrow(G,P.O,P.A,VC.a,'a')+arrow(G,P.O,P.B,VC.b,'b')+arrow(G,P.B,P.A,VC.m,'',{w:4}),info:`<div class="big2">${vv('a')} = ${co(a)}, ${vv('b')} = ${co(b)}<br><span style="color:${VC.m}">${vv('a')} − ${vv('b')}</span> = <b>${co(d)}</b></div><p class="hint2">Проверка: ${vv('b')} + (${vv('a')} − ${vv('b')}) = ${vv('a')} — дойти по b, потом по фиолетовой, и окажешься в конце a.</p>`}}}},
+ mulk:{title:'Умножение на число',text:'Вектор k·a: каждую координату умножаем на k. Если k > 0 — направление то же (сонаправлен), если k < 0 — разворачивается в обратную сторону. Длина меняется в |k| раз.',
+  cfg:{pts:{O:[0,0],A:[2,1]},fixed:[],x:[-7,8],y:[-5,6],k:{lab:'k',min:-3,max:3,step:.5,v:2},draw:(G,P,k)=>{const a=V(P.O,P.A),ka=mul(k,a);return{svg:arrow(G,P.O,add(P.O,ka),VC.m,'',{w:6,op:.75})+arrow(G,P.O,P.A,VC.a,'a'),info:`<div class="big2">${vv('a')} = ${co(a)}<br>${fr(k)}·${vv('a')} = (${fr(k)}·${nf(a[0])}; ${fr(k)}·${nf(a[1])}) = <b>${co(ka)}</b></div><p>${k>0?'k &gt; 0 — <b>сонаправлены</b>':k<0?'k &lt; 0 — <b>противоположно направлены</b>':'k = 0 — нулевой вектор'}; длина в ${nf(Math.abs(k))} раза ${Math.abs(k)>=1?'больше':'меньше'}.</p>`}}}},
+ len:{title:'Длина вектора',text:'Координаты вектора — это катеты прямоугольного треугольника, сам вектор — гипотенуза. Поэтому длина считается по теореме Пифагора.',
+  cfg:{pts:{A:[-2,-1],B:[4,7]},x:[-5,8],y:[-3,8],draw:(G,P)=>{const v=V(P.A,P.B),L2=len2(v);return{svg:legs(G,P.A,P.B)+arrow(G,P.A,P.B,VC.a,'',{w:4}),info:`<div class="big2">${vv('AB')} = ${co(v)}<br>|${vv('AB')}| = √(${nf(v[0])}² + ${nf(v[1])}²) = √${L2} = <b>${sqr(L2)}</b></div><p class="hint2">Попробуй найти «красивые» векторы: (3; 4) → 5, (6; 8) → 10, (5; 12) → 13.</p>`}}}},
+ dot:{title:'Скалярное произведение и угол',text:'Скалярное произведение — это <b>число</b>: x₁x₂ + y₁y₂. Оно же равно |a|·|b|·cos φ. Отсюда угол: знак подсказывает, острый он, прямой или тупой.',
+  cfg:{pts:{O:[0,0],A:[5,2],B:[1,4]},x:[-6,7],y:[-4,6],draw:(G,P)=>{const a=V(P.O,P.A),b=V(P.O,P.B),d=dot(a,b),la=Math.sqrt(len2(a)),lb=Math.sqrt(len2(b));const cs=la&&lb?d/(la*lb):0,ang=Math.acos(Math.max(-1,Math.min(1,cs)))*180/Math.PI;
+   const a1=Math.atan2(a[1],a[0]),a2=Math.atan2(b[1],b[0]);let st=a1,en=a2,dlt=en-st;while(dlt>Math.PI)dlt-=2*Math.PI;while(dlt<-Math.PI)dlt+=2*Math.PI;const R=1.2,pts=[];for(let i=0;i<=24;i++){const t=st+dlt*i/24;pts.push([G.X(P.O[0]+R*Math.cos(t)),G.Y(P.O[1]+R*Math.sin(t))])}
+   const col=Math.abs(d)<1e-9?'#16a06a':d>0?'#2563eb':'#e2475b';
+   return{svg:`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="3"/>`+arrow(G,P.O,P.A,VC.a,'a')+arrow(G,P.O,P.B,VC.b,'b'),info:`<div class="big2">${vv('a')}·${vv('b')} = ${nf(a[0])}·${nf(b[0])} + ${nf(a[1])}·${nf(b[1])} = <b>${nf(d)}</b><br>|${vv('a')}| = ${sqr(len2(a))}, |${vv('b')}| = ${sqr(len2(b))}<br>cos φ = ${nf(d)} / (${sqr(len2(a))}·${sqr(len2(b))}) ≈ <b>${nf(cs)}</b>, φ ≈ ${Math.round(ang)}°</div><p style="color:${col};font-weight:800">${Math.abs(d)<1e-9?'= 0 ⇒ векторы перпендикулярны (90°)':d>0?'&gt; 0 ⇒ угол острый':'&lt; 0 ⇒ угол тупой'}</p>`}}}},
+ mid:{title:'Середина и деление отрезка',text:'Середина — среднее арифметическое координат концов. Точка, делящая AB так, что AM = k·AB: <b>M = A + k·$AB</b>.',
+  cfg:{pts:{A:[-4,-2],B:[5,4]},k:{lab:'k',min:0,max:1,step:1/12,v:1/3},draw:(G,P,k)=>{const v=V(P.A,P.B),M=add(P.A,mul(k,v)),Md=add(P.A,mul(.5,v));return{svg:`<line x1="${G.X(P.A[0])}" y1="${G.Y(P.A[1])}" x2="${G.X(P.B[0])}" y2="${G.Y(P.B[1])}" stroke="#16213a" stroke-width="3"/><circle cx="${G.X(Md[0])}" cy="${G.Y(Md[1])}" r="6" fill="#16a06a"/><circle cx="${G.X(M[0])}" cy="${G.Y(M[1])}" r="7" fill="#8b5cf6"/><text x="${G.X(M[0])+10}" y="${G.Y(M[1])+20}" class="pl" fill="#8b5cf6">M</text>`,info:`<div class="big2"><span style="color:#16a06a">Середина</span>: ([[${nf(P.A[0])} + ${nf(P.B[0])}|2]]; [[${nf(P.A[1])} + ${nf(P.B[1])}|2]]) = <b>${co(Md)}</b></div><div class="big2" style="margin-top:8px"><span style="color:#8b5cf6">M</span> = A + ${fr(k)}·${vv('AB')} = ${co(P.A)} + ${fr(k)}·${co(v)} = <b>${co(M)}</b></div><p class="hint2">«В отношении 1 : 2 от A» ⇒ k = 1/3; «2 : 1 от A» ⇒ k = 2/3.</p>`.replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g,'<span class="fr"><span>$1</span><span>$2</span></span>')}}}},
+ col:{title:'Коллинеарность и перпендикулярность',text:'<b>Коллинеарны</b> (параллельны) — координаты пропорциональны: a = k·b. <b>Перпендикулярны</b> — скалярное произведение равно нулю.',
+  cfg:{pts:{O:[0,0],A:[4,2],B:[-2,-1]},x:[-6,7],y:[-4,6],draw:(G,P)=>{const a=V(P.O,P.A),b=V(P.O,P.B),cr=a[0]*b[1]-a[1]*b[0],d=dot(a,b);const kk=b[0]?a[0]/b[0]:b[1]?a[1]/b[1]:NaN;
+   return{svg:arrow(G,P.O,P.A,VC.a,'a')+arrow(G,P.O,P.B,VC.b,'b'),info:`<div class="big2">${vv('a')} = ${co(a)}, ${vv('b')} = ${co(b)}</div><p>Отношения координат: ${b[0]?fr(a[0]/b[0]):'—'} и ${b[1]?fr(a[1]/b[1]):'—'}</p><p class="${cr===0?'ok2':'no2'}">${cr===0?`✓ Коллинеарны: ${vv('a')} = ${fr(kk)}·${vv('b')} — ${kk>0?'сонаправлены':'противоположно направлены'}`:'✗ Не коллинеарны — отношения разные'}</p><p class="${d===0?'ok2':'no2'}">${vv('a')}·${vv('b')} = ${nf(d)} ${d===0?'⇒ ✓ перпендикулярны':'≠ 0 ⇒ не перпендикулярны'}</p><p class="hint2">Попробуй поставить b в (−1; 2) — получишь перпендикуляр.</p>`}}}},
+ dec:{title:'Разложение вектора по двум векторам',text:'Любой вектор c можно собрать из двух неколлинеарных: c = k·a + l·b. Координаты дают систему из двух уравнений на k и l.',
+  cfg:{pts:{O:[0,0],A:[-2,4],B:[3,1],C:[2,4]},fixed:['O'],x:[-5,8],y:[-3,8],draw:(G,P)=>{const a=V(P.O,P.A),b=V(P.O,P.B),c=V(P.O,P.C),D=a[0]*b[1]-a[1]*b[0];if(!D)return{svg:arrow(G,P.O,P.A,VC.a,'a')+arrow(G,P.O,P.B,VC.b,'b'),info:'<p class="no2">a и b коллинеарны — разложить нельзя. Раздвинь их!</p>'};
+   const k=(c[0]*b[1]-c[1]*b[0])/D,l=(a[0]*c[1]-a[1]*c[0])/D,ka=mul(k,a);
+   return{svg:arrow(G,P.O,ka,VC.a,'',{dash:true,op:.7})+arrow(G,ka,add(ka,mul(l,b)),VC.b,'',{dash:true,op:.7})+arrow(G,P.O,P.A,VC.a,'a')+arrow(G,P.O,P.B,VC.b,'b')+arrow(G,P.O,P.C,VC.c,'c',{w:4}),info:`<div class="big2">${nf(c[0])} = k·(${nf(a[0])}) + l·${nf(b[0])}<br>${nf(c[1])} = k·${nf(a[1])} + l·${nf(b[1])}</div><div class="big2" style="margin-top:6px">k = <b>${fr(k)}</b>, l = <b>${fr(l)}</b></div><p class="hint2">Пунктиры: k·a, а за ним l·b — вместе они приходят в конец c.</p>`}}}}
+};
+// ---------- модули ----------
+const META=[
+ [1,'Действия с векторами','Координаты, сумма, разность, умножение на число','#4f6bff',['coord','sum','dif','mulk'],[
+  ['📍 Координаты вектора','<p><span class="big">AB = (x<sub>B</sub> − x<sub>A</sub>; y<sub>B</sub> − y<sub>A</sub>)</span></p><p class="scrawl">Конец минус начало!</p>'],
+  ['➕ Сумма / разность','<p>Складываем (вычитаем) <b>отдельно</b> x-ы и <b>отдельно</b> y-ки.</p><p>(3; 4) + (8; 8) = (11; 12)</p>'],
+  ['✖️ Умножение на число','<p>2·(8; 5) = (16; 10) — каждую координату.</p><p>Минус разворачивает вектор.</p>'],
+  ['👀 Вектор с рисунка','<p>Считай клетки от <b>начала</b> до <b>стрелки</b>: вправо «+», влево «−», вверх «+», вниз «−».</p>']]],
+ [2,'Скалярное произведение','x₁x₂ + y₁y₂, неизвестная координата','#ec4899',['dot','coord'],[
+  ['✳️ Это число!','<p><span class="big">a·b = x₁x₂ + y₁y₂</span></p><p>Результат — не вектор, а <b>число</b>.</p>'],
+  ['🧮 Порядок','<p>Сначала посчитай координаты векторов в скобках, потом перемножай.</p>'],
+  ['⟂ Равно нулю','<p>a·b = 0 ⇔ векторы перпендикулярны. Неизвестная координата — из уравнения «= 0».</p>']]],
+ [3,'Длина вектора','Пифагор в координатах, сонаправленные векторы','#10b981',['len','mulk'],[
+  ['📏 Длина','<p><span class="big">|a| = √(x² + y²)</span></p><p>Это теорема Пифагора!</p>'],
+  ['⭐ Пифагоровы тройки','<p>3-4-5, 6-8-10, 5-12-13, 7-24-25, 8-15-17</p>'],
+  ['🔁 Квадрат вектора','<p><span class="big">a² = |a|²</span> — число, корень не нужен.</p>'],
+  ['🧭 Сонаправленный','<p>c = k·b: k &gt; 0 — в ту же сторону, k &lt; 0 — в обратную. Длина: |c| = |k|·|b|.</p>']]],
+ [4,'Угол между векторами','Скалярное через длины и косинус','#f97316',['dot','len'],[
+  ['📐 Через угол','<p><span class="big">a·b = |a|·|b|·cos φ</span></p>'],
+  ['🎯 Косинус угла','<p>cos φ = (x₁x₂ + y₁y₂) / (|a|·|b|)</p>'],
+  ['🚦 Знак','<p>&gt; 0 — острый, = 0 — прямой, &lt; 0 — тупой.</p><p>cos 60° = ½, cos 90° = 0, cos 120° = −½.</p>']]],
+ [5,'Середина, деление, разложение','Середина отрезка, M = A + k·AB, c = k·a + l·b','#8b5cf6',['mid','col','dec'],[
+  ['🎯 Середина','<p>Среднее арифметическое: <span class="big">((x₁+x₂)/2; (y₁+y₂)/2)</span></p>'],
+  ['✂️ Деление отрезка','<p>M = A + k·AB. «1 : 2 от A» ⇒ k = 1/3.</p>'],
+  ['∥ Коллинеарность','<p>Координаты пропорциональны: x₁/x₂ = y₁/y₂.</p>'],
+  ['🧩 Разложение','<p>c = k·a + l·b ⇒ система из двух уравнений: по x и по y.</p>']]]];
+function numEval(s){let e=String(s||'').trim().replace(/−/g,'-').replace(/,/g,'.').replace(/√\s*\(/g,'sqrt(').replace(/√\s*([\d.]+)/g,'sqrt($1)').replace(/·|×/g,'*');if(!e||!/^[\d+\-*/().\s]+$/.test(e.replace(/sqrt/g,'')))return NaN;try{const v=Function('sqrt','return ('+e+')')(Math.sqrt);return Number.isFinite(v)?v:NaN}catch(_){return NaN}}
+const near=(v,e)=>Number.isFinite(v)&&Math.abs(v-e)<=(Math.abs(e-Math.round(e))<1e-9?1e-9:0.006);
+for(const[n,title,sub,color,scs,st]of META){
+ const tasks=G2.filter(t=>t.m===n).map(t=>({id:'v'+t.n.replace('+','x'),kind:'p',title:'№ '+t.n.replace('+','')+' · '+(t.f?'большая задача':(()=>{const q=(t.t.replace(/\$/g,'').match(/Найдите ([^.]+)\./)||[])[1]||'';return q.length>30?q.slice(0,28)+'…':q})()),ans:t.a||t.f.map(f=>f[1]).join(' | '),src:t,steps:t.s.map(s=>[s[0],mk(s[1])])}));
+ reg({n,title,sub,color,tasks,stickers:st,scenes:scs.map(k=>({id:k,...SC[k]})),
+  cond:t=>mk(t.src.t),
+  noAnswer:t=>!!t.src.f,
+  ansPh:()=>'Ответ',
+  check:(t,v)=>{if(!t.src.f)return defCheck(t,v);let ok=true;const vals=JSON.parse(v||'[]');t.src.f.forEach((f,i)=>{const e=numEval(f[1]),g=numEval(vals[i]);const good=near(g,e);ok=ok&&good;const el=document.querySelector(`[data-fi="${i}"]`);if(el){el.classList.toggle('ok',good);el.classList.toggle('badv',!good&&String(vals[i]||'')!=='')}});return ok},
+  toolName:t=>t.src.p?'🗺 Рисунок: нажми «показать клетки», чтобы увидеть координаты':t.src.f?'✍️ Ответы':'',
+  tool:function(t,el,ctx){const s=t.src,w=ctx.work;let h='';
+   if(s.p)h+=`<div id="picBox">${picHTML(s.p,w.lg)}</div><div style="margin:6px 0 10px"><button class="btn small" id="lgB">${w.lg?'Скрыть клетки':'📐 Показать клетки (Δx, Δy)'}</button></div>`;
+   if(s.f){w.f=w.f||[];h+=`<div class="fgrid">${s.f.map((f,i)=>`<label>${mk(f[0])}<input class="vin" data-fi="${i}" value="${esc(w.f[i]||'')}" placeholder="?"></label>`).join('')}</div><div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap"><button class="btn primary" id="fChk">Проверить все</button><span style="font-size:12px;color:var(--muted)">Дроби пиши как 7/3, корни — как √146/3 или десятичной дробью.</span></div>`}
+   el.innerHTML=h;if(!h)el.parentElement.style.display='none';
+   if(s.p)$('lgB').onclick=()=>{w.lg=!w.lg;ctx.save();$('picBox').innerHTML=picHTML(s.p,w.lg);$('lgB').textContent=w.lg?'Скрыть клетки':'📐 Показать клетки (Δx, Δy)'};
+   if(s.f){el.querySelectorAll('[data-fi]').forEach(i=>i.oninput=()=>{w.f[+i.dataset.fi]=i.value;ctx.save()});$('fChk').onclick=()=>ctx.check(JSON.stringify(s.f.map((_,i)=>w.f[i]||'')))}}})}
+
+boot();
+</script></body></html>

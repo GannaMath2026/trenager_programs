@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мои приложения: ЕГЭ · ОГЭ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap&subset=cyrillic" rel="stylesheet">
+<style>
+:root{--bg:#f3f1ec;--cd:#fffdf8;--tx:#1f2430;--mu:#6b6f7a;--ac:#2f5bd3;--ac2:#7a3fd1;--ok:#1d9a55;--bad:#d33c3c;--br:#e2ddd2;--chip:#eef2fd;--chip2:#f4eefc;--sh:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.05)}
+@media (prefers-color-scheme:dark){:root{--bg:#14161c;--cd:#1d2029;--tx:#e9ebf1;--mu:#9aa0ad;--ac:#7c9bff;--ac2:#b08cff;--ok:#3ecf80;--bad:#ff6b6b;--br:#2e3341;--chip:#232a40;--chip2:#2b2440;--sh:0 1px 2px rgba(0,0,0,.4)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:10;background:var(--cd);border-bottom:1px solid var(--br)}
+.hin{max-width:1100px;margin:auto;padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+h1{margin:0;font-size:19px;font-weight:800;flex:1;min-width:180px}
+#st{font-size:12.5px;color:var(--mu)}
+main{max-width:1100px;margin:auto;padding:14px}
+button,input,select{font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--br);border-radius:10px;padding:7px 12px}
+button{cursor:pointer}button:hover{border-color:var(--ac)}
+button.pri{background:var(--ac);border-color:var(--ac);color:#fff}
+button.sm{padding:2px 7px;font-size:12.5px;border-radius:7px}
+button.ic{padding:1px 6px;font-size:13px;border-radius:7px;background:transparent}
+button.dang{color:var(--bad)}
+input[type=search]{min-width:200px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.t1 .tab{font-size:17px;font-weight:800;padding:10px 22px;border-radius:14px}
+.t2 .tab{font-weight:600;padding:7px 16px;border-radius:999px}
+.tab.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.t2 .tab.on{background:var(--ac2);border-color:var(--ac2)}
+.tabw{display:inline-flex;align-items:center;gap:2px;max-width:100%;min-width:0}
+a.lk{min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.card{background:var(--cd);border:1px solid var(--br);border-radius:14px;padding:12px 13px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:8px}
+.ch{display:flex;gap:9px;align-items:flex-start}
+.num{flex:0 0 auto;min-width:34px;height:34px;padding:0 7px;border-radius:10px;background:var(--ac);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+.num.e{background:var(--mu)}
+.ttl{font-weight:700;flex:1;padding-top:6px}
+.grp{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.gl{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--mu);width:100%}
+a.lk{display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:var(--tx);background:var(--chip);border:1px solid transparent;border-radius:9px;padding:5px 9px;font-size:13.5px;font-weight:500;max-width:100%}
+a.lk.app{background:var(--chip2)}
+a.lk:hover{border-color:var(--ac)}
+a.lk span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.none{font-size:12.5px;color:var(--mu)}
+.desc{background:var(--cd);border:1px dashed var(--br);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.empty{color:var(--mu);padding:30px;text-align:center}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:50;padding:14px}
+.mod{background:var(--cd);border-radius:16px;padding:16px;width:100%;max-width:460px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.mod h3{margin:0 0 10px}
+.mod label{display:block;font-size:12.5px;color:var(--mu);margin:8px 0 3px}
+.mod input,.mod select{width:100%}
+.bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.sp{flex:1}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#222;color:#fff;padding:9px 15px;border-radius:11px;z-index:99;max-width:90vw}
+.hit{outline:2px solid var(--ac2)}
+</style></head>
+<body>
+<header><div class="hin"><h1>🧭 Мои приложения</h1><span id="st"></span><input type="search" id="q" placeholder="Поиск по заданиям и ссылкам" oninput="Q=this.value;render()"><button id="edb" onclick="toggleEdit()">✎ Редактировать</button></div></header>
+<main id="app"></main>
+<script>
+var $ = function (id) { return document.getElementById(id); };
+var esc = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+function toast(m, ms) { var t = document.createElement('div'); t.className = 'toast'; t.textContent = m; document.body.appendChild(t); setTimeout(function () { t.remove(); }, ms || 2500); }
+function ls(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem('hub.' + k)); localStorage.setItem('hub.' + k, JSON.stringify(v)); } catch (e) { return null; } }
+var uid = function () { return 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); };
+
+// ---------- стартовая структура (показывается, пока в хранилище ничего нет) ----------
+function L(t, u, k) { return { t: t, u: u, k: k || 'app' }; }
+function tasks(list) { return list.map(function (x) { return { id: uid(), n: x[0], t: x[1], links: x[2] || [] }; }); }
+var A = {
+  fin: L('Финансовая задача: разбор по шагам', 'https://claude.ai/artifact/CjdXTRuuh4ChhfeiTyqss9'),
+  trig1: L('Тригонометрические уравнения: разбор по шагам', 'https://claude.ai/artifact/41HY5C1uqUXtRNwzuN5YAM'),
+  trig2: L('Тригонометрические уравнения: тренажёр', 'https://claude.ai/artifact/M9mx9Ya9frw3c7VEhssFxp'),
+  coord: L('Метод координат — стереометрия', 'https://claude.ai/artifact/GnxnsA55mKXsUGT6qtBBUF'),
+  par: L('Параметры — пошаговый решатель', 'https://claude.ai/artifact/KiktFyiS4MsSwAhttDs1Lt'),
+  num: L('Теория чисел: самоучитель', 'https://claude.ai/artifact/FhdF1XYURkMVQQnTg6Lpa5'),
+  area: L('Метод площадей: тренажёр', 'https://claude.ai/artifact/MntYKDzoohA2mcWcgqMPKK'),
+  st6: L('Тренажёр №6: матстатистика', 'https://claude.ai/artifact/2f1ZZK5DBUwtNw1BPe54FL')
+};
+function defaultTree() {
+  return [
+    { id: 'ege', t: 'ЕГЭ', kids: [
+      { id: 'ege-m', t: 'Математика', kids: tasks([
+        ['1', 'Планиметрия'], ['2', 'Векторы'], ['3', 'Стереометрия'], ['4', 'Начала теории вероятностей'], ['5', 'Вероятности сложных событий'],
+        ['6', 'Простейшие уравнения'], ['7', 'Вычисления и преобразования'], ['8', 'Производная и первообразная'], ['9', 'Задачи с прикладным содержанием'],
+        ['10', 'Текстовые задачи'], ['11', 'Графики функций'], ['12', 'Наибольшее и наименьшее значение функции'],
+        ['13', 'Уравнения', [A.trig1, A.trig2]], ['14', 'Стереометрическая задача', [A.coord]], ['15', 'Неравенства'],
+        ['16', 'Финансовая (экономическая) задача', [A.fin]], ['17', 'Планиметрическая задача', [A.area]], ['18', 'Задача с параметром', [A.par]], ['19', 'Числа и их свойства', [A.num]]]) },
+      { id: 'ege-i', t: 'Информатика', kids: tasks([
+        ['1', 'Анализ информационных моделей (графы, таблицы)'], ['2', 'Таблицы истинности'], ['3', 'Поиск в реляционных базах данных'], ['4', 'Кодирование и декодирование, условие Фано'],
+        ['5', 'Анализ алгоритма для исполнителя (автомат)'], ['6', 'Исполнитель Черепаха'], ['7', 'Кодирование графической и звуковой информации'], ['8', 'Комбинаторика: перебор слов'],
+        ['9', 'Обработка данных в электронных таблицах'], ['10', 'Поиск слов в текстовом документе'], ['11', 'Вычисление количества информации'], ['12', 'Исполнитель Редактор'],
+        ['13', 'IP-адреса и маски сети'], ['14', 'Системы счисления'], ['15', 'Логические выражения'], ['16', 'Рекурсивные алгоритмы'], ['17', 'Обработка последовательностей чисел'],
+        ['18', 'Динамическое программирование в электронных таблицах (Робот)'], ['19–21', 'Теория игр'], ['22', 'Параллельные процессы'], ['23', 'Динамическое программирование: число программ'],
+        ['24', 'Обработка символьных строк'], ['25', 'Обработка целых чисел (маски, делители)'], ['26', 'Обработка данных: сортировка'], ['27', 'Анализ данных (кластеризация)']]) }
+    ] },
+    { id: 'oge', t: 'ОГЭ', kids: [
+      { id: 'oge-m', t: 'Математика', kids: tasks([
+        ['1–5', 'Практико-ориентированные задачи (план, тарифы, шины, печь…)'], ['6', 'Числа и вычисления (дроби)'], ['7', 'Координатная прямая, числовые неравенства'],
+        ['8', 'Степени и корни, значение выражений'], ['9', 'Уравнения и системы уравнений'], ['10', 'Статистика и вероятность'], ['11', 'Графики функций'], ['12', 'Расчёты по формулам'],
+        ['13', 'Неравенства и системы неравенств'], ['14', 'Числовые последовательности, прогрессии'], ['15', 'Треугольники'], ['16', 'Окружность, круг'], ['17', 'Четырёхугольники, площади фигур'],
+        ['18', 'Фигуры на квадратной решётке'], ['19', 'Анализ геометрических высказываний'], ['20', 'Алгебраические выражения, уравнения, неравенства и их системы'], ['21', 'Текстовые задачи'],
+        ['22', 'Функции и их свойства, графики'], ['23', 'Геометрическая задача на вычисление'], ['24', 'Геометрическая задача на доказательство'], ['25', 'Геометрическая задача повышенной сложности']]) },
+      { id: 'oge-i', t: 'Информатика', kids: tasks([
+        ['1', 'Количественные параметры информационных объектов'], ['2', 'Кодирование и декодирование информации'], ['3', 'Значение логического выражения'], ['4', 'Графы и таблицы: кратчайший путь'],
+        ['5', 'Простой линейный алгоритм для исполнителя'], ['6', 'Программа с условным оператором'], ['7', 'Адрес файла в сети (URL)'], ['8', 'Запросы к поисковой системе'],
+        ['9', 'Количество путей в графе'], ['10', 'Системы счисления: сравнение чисел'], ['11', 'Поиск информации в файлах'], ['12', 'Анализ файловой системы'],
+        ['13', 'Презентация или форматирование текста'], ['14', 'Обработка данных в электронных таблицах'], ['15', 'Алгоритм для исполнителя Робот'], ['16', 'Программа на языке программирования']]) }
+    ] },
+    { id: 'misc', t: 'Разное', kids: [
+      { id: 'misc-a', t: 'Приложения', kids: tasks([['', 'Пока без раздела', [A.st6]]]) }
+    ] }
+  ];
+}
+var T = defaultTree(), Q = '', EDIT = false;
+var sel = ls('sel') || {};
+function cur1() { return T.filter(function (x) { return x.id === sel.l1; })[0] || T[0]; }
+function cur2() { var a = cur1(); if (!a) return null; var k = a.kids || []; return k.filter(function (x) { return x.id === (sel['l2_' + a.id]); })[0] || k[0]; }
+
+// ---------- хранилище ----------
+var DB = null, REF = null, CAN = true, wBusy = false, wAgain = false, loaded = false;
+function st(m) { $('st').textContent = m; }
+function save() {
+  if (!REF) { st('⚠️ Не сохраняется — откройте по ссылке на claude.ai'); return; }
+  if (wBusy) { wAgain = true; return; }
+  wBusy = true; st('Сохраняю…');
+  REF.set({ tree: JSON.parse(JSON.stringify(T)), at: Date.now() })
+    .then(function () { st('✓ Сохранено'); })
+    .catch(function (e) { st('⚠️ Не сохранилось'); toast('Не удалось сохранить: ' + ((e && (e.message || e.code)) || e), 5000); })
+    .then(function () { wBusy = false; if (wAgain) { wAgain = false; save(); } });
+}
+if (window.claude && claude.use) {
+  st('Загружаю…');
+  claude.use('user').then(function (u) {
+    if (!u || !u.can) return;
+    Promise.resolve(u.can('data.write')).then(function (c) { if (c === false) { CAN = false; EDIT = false; $('edb').style.display = 'none'; render(); } }).catch(function () { });
+  }).catch(function () { });
+  claude.use('db').then(function (d) {
+    if (!d) { st('Только просмотр'); return; }
+    DB = d; REF = d.doc('hub/main');
+    var tm = setTimeout(function () { st('⚠️ Хранилище пока недоступно'); }, 10000);
+    REF.onSnapshot(function (s) {
+      if (!s.metadata.fromCache) clearTimeout(tm);
+      if (s.exists && !s.metadata.hasPendingWrites) { var x = s.data(); if (x && Array.isArray(x.tree)) { T = JSON.parse(JSON.stringify(x.tree)); render(); } }
+      if (!s.metadata.fromCache && !s.metadata.hasPendingWrites) st(s.exists ? '✓ Сохранено' : 'Новое меню');
+      loaded = true;
+    }, function () { clearTimeout(tm); st('⚠️ Хранилище недоступно'); });
+  });
+} else st('Локальная копия — правки не сохраняются');
+
+// ---------- отрисовка ----------
+function edBtns(path, kind) {
+  if (!EDIT) return '';
+  return '<button class="ic" title="Переименовать" onclick="event.stopPropagation();editNode(\'' + path + '\')">✎</button>' +
+    '<button class="ic" title="Левее/выше" onclick="event.stopPropagation();mv(\'' + path + '\',-1)">' + (kind === 'tab' ? '‹' : '↑') + '</button>' +
+    '<button class="ic" title="Правее/ниже" onclick="event.stopPropagation();mv(\'' + path + '\',1)">' + (kind === 'tab' ? '›' : '↓') + '</button>' +
+    '<button class="ic dang" title="Удалить" onclick="event.stopPropagation();delNode(\'' + path + '\')">✕</button>';
+}
+function linkHTML(l, path, i) {
+  var ok = /^https?:\/\//i.test(l.u || '');
+  return '<span class="tabw"><a class="lk' + (l.k === 'sol' ? '' : ' app') + '"' + (ok ? ' href="' + esc(l.u) + '" target="_blank" rel="noopener"' : '') + ' title="' + esc(l.u) + '">' + (l.k === 'sol' ? '📘' : '🧩') + '<span>' + esc(l.t || l.u) + '</span></a>' +
+    (EDIT ? '<button class="ic" onclick="editLink(\'' + path + '\',' + i + ')">✎</button><button class="ic dang" onclick="delLink(\'' + path + '\',' + i + ')">✕</button>' : '') + '</span>';
+}
+function linksBlock(n, path) {
+  var ls_ = n.links || [], h = '';
+  [['sol', 'Решебник'], ['app', 'Приложения']].forEach(function (g) {
+    var items = [];
+    ls_.forEach(function (l, i) { if ((l.k === 'sol') === (g[0] === 'sol')) items.push(linkHTML(l, path, i)); });
+    if (items.length || EDIT) h += '<div class="grp"><div class="gl">' + g[1] + '</div>' + (items.join('') || '<span class="none">нет ссылок</span>') + '</div>';
+  });
+  if (!h) h = '<span class="none">Ссылок пока нет</span>';
+  if (EDIT) h += '<div class="bar"><button class="sm" onclick="addLink(\'' + path + '\',\'sol\')">＋ решебник</button><button class="sm" onclick="addLink(\'' + path + '\',\'app\')">＋ приложение</button></div>';
+  return h;
+}
+function match(n, q) {
+  if (!q) return true;
+  var s = ((n.n || '') + ' ' + n.t + ' ' + (n.links || []).map(function (l) { return l.t + ' ' + l.u; }).join(' ')).toLowerCase();
+  return s.indexOf(q) >= 0;
+}
+function card(n, path) {
+  return '<div class="card"><div class="ch"><div class="num' + (n.n ? '' : ' e') + '">' + esc(n.n || '•') + '</div><div class="ttl">' + esc(n.t) + '</div>' + edBtns(path) + '</div>' + linksBlock(n, path) + '</div>';
+}
+function render() {
+  var h = '', a = cur1(), b = cur2(), q = Q.trim().toLowerCase();
+  h += '<div class="tabs t1">' + T.map(function (x, i) { return '<span class="tabw"><button class="tab' + (x === a ? ' on' : '') + '" onclick="pick1(\'' + x.id + '\')">' + esc(x.t) + '</button>' + edBtns('' + i, 'tab') + '</span>'; }).join('') +
+    (EDIT ? '<button class="sm" onclick="addNode(\'\')">＋ раздел</button>' : '') + '</div>';
+  if (q) {
+    var res = [];
+    T.forEach(function (x, i) { (x.kids || []).forEach(function (y, j) { (y.kids || []).forEach(function (z, k) { if (match(z, q)) res.push('<div><div class="none" style="margin:0 0 4px 4px">' + esc(x.t + ' · ' + y.t) + '</div>' + card(z, i + '.' + j + '.' + k) + '</div>'); }); }); });
+    h += res.length ? '<div class="grid">' + res.join('') + '</div>' : '<div class="empty">Ничего не найдено</div>';
+    $('app').innerHTML = h; return;
+  }
+  if (!a) { $('app').innerHTML = h + '<div class="empty">Меню пустое — нажмите «✎ Редактировать» и добавьте раздел.</div>'; return; }
+  var ia = T.indexOf(a);
+  h += '<div class="tabs t2">' + (a.kids || []).map(function (y, j) { return '<span class="tabw"><button class="tab' + (y === b ? ' on' : '') + '" onclick="pick2(\'' + y.id + '\')">' + esc(y.t) + '</button>' + edBtns(ia + '.' + j, 'tab') + '</span>'; }).join('') +
+    (EDIT ? '<button class="sm" onclick="addNode(\'' + ia + '\')">＋ подраздел</button>' : '') + '</div>';
+  if (!b) { $('app').innerHTML = h + '<div class="empty">' + (EDIT ? 'Добавьте подраздел кнопкой «＋ подраздел».' : 'Здесь пока пусто.') + '</div>'; return; }
+  var ib = a.kids.indexOf(b), p = ia + '.' + ib;
+  h += '<div class="grid">' + (b.kids || []).map(function (z, k) { return card(z, p + '.' + k); }).join('') +
+    (EDIT ? '<div class="card" style="justify-content:center;align-items:center;border-style:dashed"><button onclick="addNode(\'' + p + '\')">＋ задание / раздел</button></div>' : '') + '</div>';
+  if (!(b.kids || []).length && !EDIT) h += '<div class="empty">Здесь пока пусто.</div>';
+  $('app').innerHTML = h;
+}
+function pick1(id) { sel.l1 = id; ls('sel', sel); render(); }
+function pick2(id) { sel['l2_' + cur1().id] = id; ls('sel', sel); render(); }
+function toggleEdit() { if (!CAN) return; EDIT = !EDIT; $('edb').textContent = EDIT ? '✓ Готово' : '✎ Редактировать'; $('edb').className = EDIT ? 'pri' : ''; render(); }
+
+// ---------- правка ----------
+function get(path) { if (path === '') return { kids: T }; var n = { kids: T }; path.split('.').forEach(function (i) { n = n.kids[+i]; }); return n; }
+function parentOf(path) { var p = path.split('.'); var i = +p.pop(); return { list: get(p.join('.')).kids, i: i }; }
+function depth(path) { return path === '' ? 0 : path.split('.').length; }
+function modal(title, fields, onOk) {
+  var o = document.createElement('div'); o.className = 'ov';
+  o.innerHTML = '<div class="mod"><h3>' + esc(title) + '</h3>' + fields.map(function (f) {
+    return '<label>' + esc(f.l) + '</label>' + (f.opts ? '<select id="f_' + f.k + '">' + f.opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === f.v ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select>'
+      : '<input id="f_' + f.k + '" value="' + esc(f.v || '') + '" placeholder="' + esc(f.ph || '') + '">');
+  }).join('') + '<div class="bar" style="margin-top:14px"><span class="sp"></span><button id="mc">Отмена</button><button class="pri" id="mo">Сохранить</button></div></div>';
+  document.body.appendChild(o);
+  var close = function () { o.remove(); };
+  o.onclick = function (e) { if (e.target === o) close(); };
+  $('mc').onclick = close;
+  var ok = function () { var r = {}; fields.forEach(function (f) { r[f.k] = $('f_' + f.k).value.trim(); }); if (onOk(r) !== false) close(); };
+  $('mo').onclick = ok;
+  o.querySelectorAll('input').forEach(function (i) { i.onkeydown = function (e) { if (e.key === 'Enter') ok(); if (e.key === 'Escape') close(); }; });
+  var f0 = o.querySelector('input'); if (f0) f0.focus();
+}
+function nodeFields(n, d) {
+  return d === 3 ? [{ k: 'n', l: 'Номер задания (можно «19–21» или пусто)', v: n.n }, { k: 't', l: 'Название', v: n.t }] : [{ k: 't', l: 'Название', v: n.t }];
+}
+function addNode(pp) {
+  var d = depth(pp) + 1, par = get(pp);
+  modal(d === 1 ? 'Новый раздел' : d === 2 ? 'Новый подраздел' : 'Новое задание', nodeFields({}, d), function (r) {
+    if (!r.t) { toast('Введите название'); return false; }
+    var n = { id: uid(), t: r.t }; if (d === 3) { n.n = r.n || ''; n.links = []; } else n.kids = [];
+    par.kids = par.kids || []; par.kids.push(n);
+    if (d === 1) sel.l1 = n.id; if (d === 2) sel['l2_' + par.id] = n.id;
+    ls('sel', sel); render(); save();
+  });
+}
+function editNode(path) {
+  var n = get(path), d = depth(path);
+  modal('Переименовать', nodeFields(n, d), function (r) { if (!r.t) { toast('Введите название'); return false; } n.t = r.t; if (d === 3) n.n = r.n; render(); save(); });
+}
+function delNode(path) {
+  var n = get(path), cnt = (n.links || []).length + (n.kids || []).length;
+  confirmBox('Удалить «' + n.t + '»' + (cnt ? ' вместе со всем содержимым' : '') + '?', function () { var p = parentOf(path); p.list.splice(p.i, 1); render(); save(); });
+}
+function mv(path, dd) { var p = parentOf(path), j = p.i + dd; if (j < 0 || j >= p.list.length) return; var x = p.list[p.i]; p.list[p.i] = p.list[j]; p.list[j] = x; render(); save(); }
+function linkFields(l) {
+  return [{ k: 't', l: 'Название ссылки', v: l.t, ph: 'Например: Решебник Ларина №13' }, { k: 'u', l: 'Адрес (https://…)', v: l.u, ph: 'https://' }, { k: 'k', l: 'Куда', v: l.k || 'app', opts: [['sol', '📘 Решебник'], ['app', '🧩 Приложение']] }];
+}
+function fixUrl(u) { if (u && !/^https?:\/\//i.test(u)) u = 'https://' + u; return u; }
+function addLink(path, k) {
+  var n = get(path);
+  modal('Новая ссылка', linkFields({ k: k }), function (r) { if (!r.u) { toast('Вставьте адрес'); return false; } n.links = n.links || []; n.links.push({ t: r.t || r.u, u: fixUrl(r.u), k: r.k }); render(); save(); });
+}
+function editLink(path, i) {
+  var l = get(path).links[i];
+  modal('Изменить ссылку', linkFields(l), function (r) { if (!r.u) { toast('Вставьте адрес'); return false; } l.t = r.t || r.u; l.u = fixUrl(r.u); l.k = r.k; render(); save(); });
+}
+function delLink(path, i) { var n = get(path), l = n.links[i]; confirmBox('Удалить ссылку «' + (l.t || l.u) + '»?', function () { n.links.splice(i, 1); render(); save(); }); }
+function confirmBox(msg, yes) {
+  var o = document.createElement('div'); o.className = 'ov';
+  o.innerHTML = '<div class="mod"><p style="font-size:16px;margin-top:0">' + esc(msg) + '</p><div class="bar"><span class="sp"></span><button id="cn">Нет</button><button class="pri" id="cy">Да</button></div></div>';
+  document.body.appendChild(o); $('cn').onclick = function () { o.remove(); }; $('cy').onclick = function () { o.remove(); yes(); };
+}
+render();
+</script>
+</body></html>
