@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ЕГЭ №11 · Тест двух задач</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+:root{--bg:#f6f4ef;--panel:#fff;--panel2:#f8f7f3;--ink:#1d2433;--muted:#6d7385;--line:#e6e2d8;--blue:#4f6bff;--ok:#16a06a;--okbg:#e3f6ec;--bad:#e2475b;--badbg:#fdecee;--warn:#e89a12;--warnbg:#fff3d6;--unk:#8a4dff;--c:#4f6bff;--sh:0 1px 2px #1d24330d,0 8px 26px #1d243314;--r:18px;--fs:16px}
+*{box-sizing:border-box}
+body{margin:0;overflow-x:hidden;color:var(--ink);font:var(--fs)/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:radial-gradient(900px 520px at -5% -10%,#fde9c8 0,transparent 60%),radial-gradient(800px 600px at 110% 0%,#e3e9ff 0,transparent 55%),var(--bg);background-attachment:fixed;min-height:100vh}
+button,input{font:inherit;color:inherit}
+header{display:flex;align-items:center;gap:8px;padding:8px 16px;background:#fff;border-bottom:1px solid var(--line)}
+.logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#ff8a3d,#ff4f8b 55%,#7a5cff);color:#fff;font-weight:900;font-size:15px}
+.brand b{display:block;font-size:16px;line-height:1.1}
+#app{max-width:900px;margin:0 auto;padding:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:20px;margin-bottom:20px}
+.thead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.thead h1{margin:0;font-size:22px}
+.cond{background:#fff;border-radius:12px;padding:15px;margin-bottom:20px;border:1px solid var(--line)}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:9px 15px;font-weight:650;cursor:pointer;transition:.15s}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.small{padding:5px 10px;font-size:13px}
+.msg{padding:12px;border-radius:12px;margin:10px 0;font-weight:500}
+.msg.ok{background:var(--okbg);color:var(--ok)}
+.msg.bad{background:var(--badbg);color:var(--bad)}
+.msg.info{background:var(--panel2);color:var(--muted)}
+.msg.warn{background:var(--warnbg);color:#8a5a00}
+table.zad{width:100%;border-collapse:collapse;margin:15px 0}
+table.zad th,table.zad td{border:1px solid var(--line);padding:8px;text-align:center}
+table.zad th{background:var(--panel2)}
+.cell{padding:4px 8px;border-radius:8px;cursor:pointer;border:2px solid transparent;display:inline-block}
+.cell.auto-ok{border-color:var(--ok);background:var(--okbg)}
+.cell.empty{border:2px dashed var(--blue);background:#4f6bff0d;min-width:60px}
+.cell.var{border:2px solid var(--unk);color:var(--unk);background:#8a4dff1a;font-weight:bold}
+.cell.sel{box-shadow:0 0 0 3px rgba(79, 107, 255, 0.4)}
+.eqchoice button{display:block;width:100%;text-align:left;margin:8px 0;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--panel);cursor:pointer;font-size:16px}
+.eqchoice button:hover{border-color:var(--blue)}
+.pal3{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:15px;margin-top:15px}
+.pal3 .ab{display:block;width:100%;text-align:left;margin:8px 0;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--panel);cursor:pointer;font-size:15px}
+.pal3 .ab:hover{border-color:var(--blue);color:var(--blue)}
+.hist{border-left:3px solid var(--line);padding-left:15px;margin:15px 0}
+.hrow{background:#fff;border:1px solid var(--line);padding:10px;border-radius:10px;margin-bottom:8px;font-size:1.1em;overflow-x:auto}
+.ansrow{display:flex;gap:10px;margin-top:15px;align-items:center}
+.ansrow input{padding:10px;border-radius:10px;border:1px solid var(--line);width:200px;font-size:16px}
+.hintbox{background:#fff3d6;border:1px dashed #e89a12;padding:10px;border-radius:10px;margin-top:10px}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">№11</div>
+ <div class="brand"><b>Тест: Задачи 1 и 2</b></div>
+</header>
+<div id="app"></div>
+
+<script>
+const ZAD=[
+{id:'01',title:'Средняя скорость',noEq:true,
+cond:'Первые 3 часа автомобиль ехал со скоростью 70 км/ч, следующий час — со скоростью 65 км/ч, а затем ещё час — со скоростью 45 км/ч. Найдите среднюю скорость автомобиля на протяжении всего пути.',
+cols:[{k:'v',h:'Скорость, км/ч'},{k:'t',h:'Время, ч'},{k:'s',h:'Расстояние, км'}],
+rows:[{name:'Участок 1',v:'70',t:'3',s:null},{name:'Участок 2',v:'65',t:'1',s:null},{name:'Участок 3',v:'45',t:'1',s:null},{name:'Всего',v:null,t:null,s:null,total:true}],
+target:'v',answer:'64',unit:'км/ч',
+autofill:{'0.v':1,'0.t':1,'1.v':1,'1.t':1,'2.v':1,'2.t':1},
+steps:[]},
+
+{id:'02',title:'Две трубы',noEq:false,
+cond:'Первая труба пропускает на 4 литра воды в минуту меньше, чем вторая. Сколько литров воды в минуту пропускает вторая труба, если резервуар объёмом 672 литра она заполняет на 4 минуты быстрее, чем первая труба?',
+cols:[{k:'v',h:'Производительность, л/мин'},{k:'t',h:'Время, мин'},{k:'a',h:'Работа, л'}],
+rows:[{name:'1 труба',v:null,t:null,a:'672'},{name:'2 труба',v:null,t:null,a:'672'}],
+target:'v',answer:'28',unit:'л/мин',
+autofill:{'0.a':1,'1.a':1},
+eqs:[
+ {t:'\\dfrac{672}{x-4}-\\dfrac{672}{x}=4',ok:true},
+ {t:'\\dfrac{672}{x}-\\dfrac{672}{x-4}=4',ok:false},
+ {t:'\\dfrac{x}{672}-\\dfrac{x-4}{672}=4',ok:false}],
+steps:[{e:'x(x-4)\\cdot\\left(\\dfrac{672}{x-4}-\\dfrac{672}{x}\\right)=4x(x-4)',h:'Умножаем обе части на x(x−4)', acts:['mul','div','add']},
+ {e:'672x-672(x-4)=4x(x-4)',h:'Раскрыли скобки', acts:['open','mul','div']},
+ {e:'672x-672x+2688=4x^2-16x',h:'', acts:['num','open','div']},
+ {e:'4x^2-16x-2688=0\\ \\big|:4',h:'', acts:['div','mul','num']},
+ {e:'x^2-4x-672=0',h:'', acts:['num','div','quad']},
+ {e:'x_1=28,\\ x_2=-24',h:'D = 16 + 2688 = 2704 = 52²', acts:['quad','root','div']},
+ {e:'x=28',h:'Производительность положительна', acts:['root','num','div']}]
+}];
+
+const ACT={
+ mul:{l:'Умножить обе части на выражение'}, div:{l:'Разделить обе части'},
+ add:{l:'Сложить/вычесть'}, open:{l:'Раскрыть скобки'},
+ num:{l:'Посчитать числа'}, quad:{l:'Решить квадратное уравнение'},
+ root:{l:'Выбрать корень'}
+};
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function tex(t,disp){try{return katex.renderToString(t,{throwOnError:false,displayMode:!!disp})}catch(e){return '<code>'+esc(t)+'</code>'}}
+function userNum(t){let s=String(t??'').trim().replace(/\s+/g,'').replace(/,/g,'.');if(!s)return NaN;try{return parseFloat(s)}catch(e){return NaN}}
+const same=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<=1e-6;
+const hasVar=s=>/[a-zA-Z]/.test(String(s||''));
+
+let S=null;
+let curId=ZAD[0].id;
+
+function freshS(id){
+ return {id, ph:'fill', sel:null, msg:null, eq:null, hist:[], finished:false, ansMsg:null, stepMsg:null};
+}
+
+function openTask(id){
+ curId=id; S=freshS(id);
+ render();
+}
+
+function render(){
+ const t=ZAD.find(x=>x.id===curId);
+ let h=`<div class="thead"><h1>Задача ${t.id}: ${t.title}</h1> <button class="btn small" onclick="openTask('${t.id==='01'?'02':'01'}')">Сменить задачу</button></div>`;
+ h+=`<div class="cond">${esc(t.cond)}</div>`;
+ 
+ if(S.ph==='fill'){
+   h+=`<div class="card">`;
+   h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn small" id="btnAuto">Подставить числа</button><button class="btn small" id="btnCalc">Рассчитать 3-ю величину</button></div>`;
+   h+=renderTable(t);
+   if(S.sel){
+      const [ri,c]=S.sel.split('.');
+      const cur=t.rows[ri][c]||'';
+      h+=`<div style="display:flex;gap:10px;margin-top:10px"><input id="inpCell" value="${esc(cur)}" placeholder="число или 672/x"><button class="btn primary small" id="btnSet">Записать</button></div>`;
+   }
+   if(S.msg)h+=`<div class="msg ${S.msg.k}">${S.msg.t}</div>`;
+   h+=`<div style="margin-top:20px"><button class="btn primary" id="btnNextPhase">Перейти к решению →</button></div>`;
+   h+=`</div>`;
+ } 
+ else if(S.ph==='eq'){
+   h+=`<div class="card">`;
+   h+=renderTable(t); // Таблица видна
+   h+=`<h3 style="margin-top:20px">Выбери уравнение</h3>`;
+   h+=`<div class="eqchoice">`;
+   t.eqs.forEach((e,i)=>{
+     h+=`<button class="eq-btn" data-idx="${i}">${tex(e.t,true)}</button>`;
+   });
+   h+=`</div>`;
+   if(S.msg)h+=`<div class="msg ${S.msg.k}">${S.msg.t}</div>`;
+   h+=`</div>`;
+ }
+ else if(S.ph==='steps'){
+   h+=`<div class="card">`;
+   h+=renderTable(t);
+   h+=`<h3 style="margin-top:20px">Решение</h3>`;
+   h+=`<div class="hist">`;
+   S.hist.forEach((r,i)=>{
+      h+=`<div class="hrow">${tex(r.e,true)} <div style="font-size:12px;color:#666;margin-top:4px">${esc(r.h)}</div></div>`;
+   });
+   if(S.hist.length < t.steps.length){
+      const step = t.steps[S.hist.length];
+      h+=`<div class="pal3"><div style="font-weight:bold;margin-bottom:10px">Что сделаем?</div>`;
+      step.acts.forEach(a=>{
+         h+=`<button class="ab act-btn" data-act="${a}">${esc(ACT[a].l)}</button>`;
+      });
+      h+=`</div>`;
+      if(S.stepMsg)h+=`<div class="msg ${S.stepMsg.k}">${S.stepMsg.t}</div>`;
+   } else {
+      h+=`<div class="msg ok">Решение завершено! Найденное значение: <b>${t.answer}</b>.</div>`;
+      h+=`<div class="ansrow"><input id="inpAns" placeholder="введи ответ"><button class="btn primary" id="btnCheckAns">Проверить</button></div>`;
+      if(S.ansMsg)h+=`<div class="msg ${S.ansMsg.k}">${S.ansMsg.t}</div>`;
+   }
+   h+=`</div></div>`;
+ }
+ 
+ $('app').innerHTML = h;
+ bindEvents(t);
+}
+
+function renderTable(t){
+ let h='<table class="zad"><tr><th></th>'+t.cols.map(c=>`<th>${esc(c.h)}</th>`).join('')+'</tr>';
+ t.rows.forEach((row,ri)=>{
+   h+=`<tr><td style="font-weight:bold;background:#f9f9f9">${esc(row.name)}</td>`;
+   t.cols.forEach(col=>{
+      const k=ri+'.'+col.k;
+      const v=row[col.k];
+      const auto=t.autofill&&t.autofill[k];
+      let cls='cell ';
+      if(v==null) cls+='empty';
+      else if(auto) cls+='auto-ok';
+      else if(hasVar(v)) cls+='var';
+      else cls+='auto-ok';
+      if(S.sel===k) cls+=' sel';
+      
+      const shown = v==null ? '?' : tex(String(v));
+      h+=`<td><span class="${cls}" data-cell="${k}">${shown}</span></td>`;
+   });
+   h+=`</tr>`;
+ });
+ h+='</table>';
+ return h;
+}
+
+function bindEvents(t){
+ if($('btnAuto')) $('btnAuto').onclick=()=>{
+   t.rows.forEach((row,ri)=>t.cols.forEach(col=>{
+     const k=ri+'.'+col.k;
+     if(t.autofill&&t.autofill[k]===1 && row[col.k]==null) {
+        row[col.k] = ZAD.find(z=>z.id===t.id).rows[ri][col.k];
+     }
+   }));
+   render();
+ };
+ 
+ if($('btnCalc')) $('btnCalc').onclick=()=>{
+    let msg='';
+    t.rows.forEach((row,ri)=>{
+       if(row.total)return;
+       const empt = t.cols.filter(c=>row[c.k]==null).length;
+       if(empt!==1)return;
+       const missing = t.cols.find(c=>row[c.k]==null).k;
+       let val='';
+       const v=row.v, tt=row.t, s=row.s;
+       if(missing==='v' && tt && s) val = (hasVar(s)||hasVar(tt)) ? `\\frac{${s}}{${tt}}` : (userNum(s)/userNum(tt)).toString();
+       if(missing==='t' && v && s) val = (hasVar(s)||hasVar(v)) ? `\\frac{${s}}{${v}}` : (userNum(s)/userNum(v)).toString();
+       if(missing==='s' && v && tt) val = (hasVar(v)||hasVar(tt)) ? `${v}\\cdot ${tt}` : (userNum(v)*userNum(tt)).toString();
+       if(val){ row[missing]=val; msg+=`${row.name}: вычислено. ` }
+    });
+    S.msg = msg ? {k:'ok', t:msg} : {k:'info', t:'Нет строк ровно с двумя известными.'};
+    render();
+ };
+ 
+ document.querySelectorAll('[data-cell]').forEach(el=>{
+    el.onclick=()=>{ S.sel=el.dataset.cell; render(); };
+ });
+ 
+ if($('btnSet')) $('btnSet').onclick=()=>{
+    const [ri,c]=S.sel.split('.');
+    const val = $('inpCell').value.trim();
+    if(!val){ t.rows[ri][c]=null; S.msg=null; render(); return; }
+    t.rows[ri][c]=hasVar(val)?val:val.replace('.',',');
+    S.msg={k:'ok',t:`Записано`}; render();
+ };
+ 
+ if($('btnNextPhase')) $('btnNextPhase').onclick=()=>{
+    if(t.noEq){
+       S.ph='steps';
+       S.hist = [{e:'v_{ср}=\\dfrac{S_{общ}}{t_{общ}}', h:'Общее расстояние делим на общее время'}];
+    } else {
+       S.ph='eq';
+    }
+    render();
+ };
+ 
+ // Equation choices
+ document.querySelectorAll('.eq-btn').forEach(b=>{
+    b.onclick=()=>{
+       const idx=+b.dataset.idx;
+       if(t.eqs[idx].ok){
+          S.eq=idx; S.hist=[]; S.ph='steps'; render();
+       } else {
+          S.msg={k:'bad',t:'Неверно. Проверь знаки.'}; render();
+       }
+    };
+ });
+ 
+ // Step choices
+ document.querySelectorAll('.act-btn').forEach(b=>{
+    b.onclick=()=>{
+       const act=b.dataset.act;
+       const step=t.steps[S.hist.length];
+       if(step.acts.includes(act)){
+          S.hist.push(step); S.stepMsg=null; render();
+       } else {
+          S.stepMsg={k:'bad',t:'Это действие здесь не поможет или рано.'}; render();
+       }
+    };
+ });
+
+ // Final answer
+ if($('btnCheckAns')) $('btnCheckAns').onclick=()=>{
+    const val = userNum($('inpAns').value);
+    const ans = userNum(t.answer);
+    if(same(val, ans)){
+       S.ansMsg={k:'ok',t:'Верно! Переходим к следующей задаче...'}; render();
+       setTimeout(()=>{
+          const next = t.id==='01'?'02':'01';
+          openTask(next);
+       }, 1500);
+    } else {
+       S.ansMsg={k:'bad',t:'Неверно. Попробуй ещё раз.'}; render();
+    }
+ };
+}
+
+openTask('01');
+</script>
+</body>
+</html>
