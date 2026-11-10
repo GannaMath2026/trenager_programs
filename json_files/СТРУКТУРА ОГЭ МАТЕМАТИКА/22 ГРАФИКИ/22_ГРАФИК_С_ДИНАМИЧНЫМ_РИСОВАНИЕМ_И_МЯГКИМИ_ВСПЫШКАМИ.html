@@ -340,6 +340,12 @@ table.st{width:100%;border-collapse:collapse;font-size:14px}table.st td,table.st
 @keyframes sgRunnerBreath{0%,100%{filter:drop-shadow(0 0 1px rgba(255,122,0,.15))}50%{filter:drop-shadow(0 0 4px rgba(255,145,20,.6))}}
 @keyframes sgRunnerHit{0%{filter:drop-shadow(0 0 0 rgba(255,174,40,0));transform:scale(1)}45%{filter:drop-shadow(0 0 7px rgba(255,174,40,.9));transform:scale(1.32);transform-box:fill-box;transform-origin:center}100%{filter:drop-shadow(0 0 0 rgba(255,174,40,0));transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.hw svg .pen,.hw svg .late,.sg-box .sg-flash-ring,.sg-box .sg-intersection-dot,.sg-box .sg-runner-point,.sg-box .sg-range::-webkit-slider-thumb{animation:none!important}}
+
+.sg-box .sg-pen-nib{filter:drop-shadow(0 1px 2px rgba(25,38,75,.38));}
+.sg-box .sg-fx-layer{pointer-events:none;overflow:visible}
+.sg-box.sg-running .sg-runner-point{animation:sgRunnerBreath .95s ease-in-out infinite}
+.sg-box.sg-special-flash .sg-runner-point{animation:sgRunnerHit .62s ease-out!important}
+@keyframes sgRunnerHit{0%{filter:drop-shadow(0 0 0 rgba(255,174,40,0));transform:scale(1)}38%{filter:drop-shadow(0 0 11px rgba(255,174,40,1));transform:scale(1.52);transform-box:fill-box;transform-origin:center}100%{filter:drop-shadow(0 0 0 rgba(255,174,40,0));transform:scale(1)}}
 </style>
 </head>
 <body><div id="app"></div><div id="printArea"></div>
@@ -1458,7 +1464,7 @@ function intvSVG(I){
 }
 function sampleGraph(t,sh,W,prev,forPrint){
   const test=t.need==='max'?null:NEED[t.need];
-  const svg=graphSVG(t.g,{W:W||620,maxH:520,hand:true,show:sh,prev,animateAll:!forPrint,count:forPrint&&sh.L?{test}:null});
+  const svg=graphSVG(t.g,{W:W||620,maxH:520,hand:true,show:sh,prev,animateAll:!forPrint&&!prev,count:forPrint&&sh.L?{test}:null});
   if(forPrint)return svg;
   const g=t.g,isK=g.family==='k',[x0,x1,y0,y1]=g.view;
   const min=isK?-10:y0,max=isK?10:y1;
@@ -1477,12 +1483,83 @@ function sampleGraph(t,sh,W,prev,forPrint){
     <div class="sg-status">${ready?'Особые положения отмечены на лучах. Зелёные участки — значения, подходящие под условие.':'Сначала построим график по шагам. Бегунок и особые точки появятся после завершения построения.'}</div>
   </div>`;
 }
+/* ===== Реальное рисование графика пером + заметные короткие вспышки ===== */
+function sampleFxLayer(svg){
+  let layer=svg.querySelector(':scope > .sg-fx-layer');
+  if(!layer){layer=document.createElementNS('http://www.w3.org/2000/svg','g');layer.setAttribute('class','sg-fx-layer');svg.appendChild(layer);}
+  return layer;
+}
+function sampleSpark(layer,x,y,scale=1,duration=680){
+  if(!layer)return;
+  const ns='http://www.w3.org/2000/svg';
+  const g=document.createElementNS(ns,'g');g.setAttribute('class','sg-spark-burst');g.setAttribute('pointer-events','none');
+  const ring=document.createElementNS(ns,'circle');ring.setAttribute('cx',x);ring.setAttribute('cy',y);ring.setAttribute('r',5*scale);ring.setAttribute('fill','none');ring.setAttribute('stroke','#ffb12b');ring.setAttribute('stroke-width',2.7*scale);g.appendChild(ring);
+  const core=document.createElementNS(ns,'circle');core.setAttribute('cx',x);core.setAttribute('cy',y);core.setAttribute('r',3*scale);core.setAttribute('fill','#fff3bf');core.setAttribute('stroke','#f59e0b');core.setAttribute('stroke-width',1.3);g.appendChild(core);
+  const rays=[];
+  for(let i=0;i<8;i++){
+    const a=Math.PI*2*i/8+(i%2)*.08,ln=document.createElementNS(ns,'line');
+    ln.setAttribute('x1',x+Math.cos(a)*7*scale);ln.setAttribute('y1',y+Math.sin(a)*7*scale);
+    ln.setAttribute('x2',x+Math.cos(a)*12*scale);ln.setAttribute('y2',y+Math.sin(a)*12*scale);
+    ln.setAttribute('stroke',i%2?'#ffd36a':'#f59e0b');ln.setAttribute('stroke-width',i%2?1.5:2.2);ln.setAttribute('stroke-linecap','round');g.appendChild(ln);rays.push({el:ln,a});
+  }
+  layer.appendChild(g);
+  const start=performance.now();
+  const tick=now=>{
+    const t=Math.min(1,(now-start)/duration),ease=1-Math.pow(1-t,2);
+    ring.setAttribute('r',String((5+17*ease)*scale));ring.setAttribute('opacity',String(1-t));ring.setAttribute('stroke-width',String((2.7-1.3*t)*scale));
+    core.setAttribute('r',String((3+2*(1-t))*scale));core.setAttribute('opacity',String(1-t));
+    rays.forEach(({el,a})=>{
+      const r1=(7+4*ease)*scale,r2=(12+12*ease)*scale;
+      el.setAttribute('x1',x+Math.cos(a)*r1);el.setAttribute('y1',y+Math.sin(a)*r1);
+      el.setAttribute('x2',x+Math.cos(a)*r2);el.setAttribute('y2',y+Math.sin(a)*r2);el.setAttribute('opacity',String(1-t));
+    });
+    if(t<1)requestAnimationFrame(tick);else g.remove();
+  };
+  requestAnimationFrame(tick);
+}
+function animateSampleCurves(box){
+  const svg=box.querySelector('.gsvg');if(!svg)return;
+  const paths=[...svg.querySelectorAll('path.pen')];if(!paths.length)return;
+  const fx=sampleFxLayer(svg);
+  // Hide every newly appearing curve immediately; otherwise the queued paths
+  // would remain fully visible until their turn to be drawn.
+  const pathMetrics=paths.map(path=>{
+    let length=0;try{length=path.getTotalLength();}catch(e){}
+    if(!Number.isFinite(length)||length<2){path.classList.remove('pen');return null;}
+    path.removeAttribute('pathLength');path.style.animation='none';path.style.strokeDasharray=`${length} ${length}`;path.style.strokeDashoffset=String(length);path.style.visibility='visible';
+    return {path,length};
+  }).filter(Boolean);
+  let queue=Promise.resolve();
+  pathMetrics.forEach(({path,length})=>{
+    queue=queue.then(()=>new Promise(resolve=>{
+      // A moving pen nib now follows this path from its first point to its last.
+      const marker=document.createElementNS('http://www.w3.org/2000/svg','g');marker.setAttribute('class','sg-pen-nib');marker.setAttribute('pointer-events','none');
+      marker.innerHTML='<ellipse cx="-5" cy="0" rx="13" ry="5.4" fill="#f8bf4f" opacity=".2"/><path d="M-18,-3.4 L1,-3.4 L8,0 L1,3.4 L-18,3.4 Z" fill="#f5c45d" stroke="#7b5720" stroke-width="1"/><path d="M1,-3.4 L8,0 L1,3.4 Z" fill="#253b72" stroke="#fff" stroke-width=".7"/><path d="M-14,-1.4 L0,-1.4" stroke="#fff3c4" stroke-width=".9" stroke-linecap="round"/><circle cx="8" cy="0" r="1.7" fill="#ffb12b" stroke="#fff" stroke-width=".45"/>';
+      svg.appendChild(marker);
+      const duration=Math.max(900,Math.min(2200,length*2.4)),start=performance.now();
+      const tick=now=>{
+        const t=Math.min(1,(now-start)/duration),progress=t<.9?t/.9:1,drawLen=length*progress;
+        path.style.strokeDashoffset=String(length-drawLen);
+        let pt,pt2;try{pt=path.getPointAtLength(Math.min(length,Math.max(.01,drawLen)));pt2=path.getPointAtLength(Math.min(length,drawLen+2.5));}catch(e){pt=null;}
+        if(pt){const angle=pt2?Math.atan2(pt2.y-pt.y,pt2.x-pt.x)*180/Math.PI:0;marker.setAttribute('transform',`translate(${pt.x} ${pt.y}) rotate(${angle})`);}
+        if(t<1)requestAnimationFrame(tick);
+        else{
+          path.style.strokeDasharray='none';path.style.strokeDashoffset='0';path.classList.remove('pen');
+          if(pt)sampleSpark(fx,pt.x,pt.y,.78,540);
+          marker.remove();setTimeout(resolve,100);
+        }
+      };
+      requestAnimationFrame(tick);
+    }));
+  });
+}
 function bindSampleGraphs(root,t){
   (root||document).querySelectorAll('.sg-box').forEach(box=>{
     if(box.dataset.bound==='1')return;
     box.dataset.bound='1';
     const openBtn=box.querySelector('.sg-open-modal');
     if(openBtn)openBtn.onclick=()=>openGraph(t.n,true);
+    animateSampleCurves(box);
     if(box.dataset.ready!=='1')return;
 
     const g=t.g,isK=g.family==='k',[x0,x1,y0,y1]=g.view;
@@ -1526,6 +1603,7 @@ function bindSampleGraphs(root,t){
       dyn.setAttribute('class','sg-dynamic');
       svg.appendChild(dyn);
     }
+    const fxLayer=sampleFxLayer(svg);
     const hSvg=box.querySelector('.sg-hrail-svg'),vSvg=box.querySelector('.sg-vrail-svg');
 
     const drawRails=()=>{
@@ -1576,21 +1654,15 @@ function bindSampleGraphs(root,t){
       return Math.round(v*100)/100;
     };
     const flashSpecial=()=>{
-      box.classList.remove('sg-special-flash');
-      // restart the short pulse without leaving a persistent glow
-      void box.offsetWidth;
-      box.classList.add('sg-special-flash');
-      window.setTimeout(()=>box.classList.remove('sg-special-flash'),620);
+      box.classList.remove('sg-special-flash');void box.offsetWidth;box.classList.add('sg-special-flash');
+      window.setTimeout(()=>box.classList.remove('sg-special-flash'),760);
       const pts=countInter(g,val);
-      const addRing=(cx,cy,r)=>{
-        const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
-        ring.setAttribute('cx',cx);ring.setAttribute('cy',cy);ring.setAttribute('r',r);
-        ring.setAttribute('class','sg-flash-ring');dyn.appendChild(ring);
-        ring.addEventListener('animationend',()=>ring.remove(),{once:true});
-      };
-      if(pts.length){pts.forEach(P=>addRing(X(P.x),Y(P.y),7));}
-      else if(isK)addRing(X(0),Y(0),7);
-      else addRing(plotRight-2,Y(val),7);
+      if(pts.length){pts.forEach(P=>sampleSpark(fxLayer,X(P.x),Y(P.y),1.22,760));}
+      else if(isK)sampleSpark(fxLayer,X(0),Y(0),1.18,760);
+      else sampleSpark(fxLayer,plotRight-2,Y(val),1.18,760);
+      // Both parameter rails get a compact burst at the exact same stopping value.
+      sampleSpark(sampleFxLayer(hSvg),railX(val),27,.9,680);
+      sampleSpark(sampleFxLayer(vSvg),21,railY(val),.9,680);
     };
     const draw=()=>{
       const pts=countInter(g,val),col='#ff7a00';let o='';
