@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тригонометрия — карточки и интерактивная окружность</title>
+<style>
+:root{--bg:#f2f5fb;--card:#fff;--ink:#1d2942;--muted:#68758e;--line:#dfe5f0;--blue:#4c67e8;--green:#16965d;--orange:#e58a25;--red:#d94d58;--shadow:0 8px 26px rgba(35,50,85,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.48 "Segoe UI",Arial,sans-serif}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:13px 20px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header h1{font-size:20px;margin:0}header p{margin:1px 0 0;color:var(--muted);font-size:12px}
+.wrap{max-width:1600px;margin:auto;padding:16px;display:grid;grid-template-columns:minmax(340px,.88fr) minmax(570px,1.12fr);gap:16px;align-items:start}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);min-width:0}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.eyebrow{font-size:11px;letter-spacing:.07em;color:var(--muted);font-weight:800}
+h2{font-size:18px;margin:4px 0 10px}
+select,button,input{font:inherit}select{border:1px solid var(--line);background:white;color:var(--ink);padding:8px 10px;border-radius:10px;max-width:100%}
+button{border:0;border-radius:10px;padding:9px 13px;background:var(--blue);color:#fff;font-weight:750;cursor:pointer}
+button.secondary{background:#edf1f8;color:#34435f}button.green{background:var(--green)}button:disabled{opacity:.4;cursor:default}
+.section-note{padding:11px 13px;border-radius:12px;background:#f1f5ff;color:#3c4e7d;margin:10px 0 13px;font-size:13px}
+.taskcard{border:2px solid var(--blue);border-radius:15px;padding:14px;background:#fbfcff}
+.task-instruction{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:5px}
+.task-expression{font-family:"Cambria Math","Times New Roman",serif;font-size:22px;line-height:1.7;margin:4px 0 12px;overflow-wrap:anywhere}
+.task-expression .mathterm{display:inline-block;padding:0 3px;border-radius:6px;cursor:pointer}
+.task-expression .mathterm.sel{background:#e8edff;outline:1px solid #9dacf8}
+.task-expression .mathterm[data-i="0"]{color:#d74c57}.task-expression .mathterm[data-i="1"]{color:#2875c9}.task-expression .mathterm[data-i="2"]{color:#15965d}.task-expression .mathterm[data-i="3"]{color:#9b60c9}.task-expression .mathterm[data-i="4"]{color:#c27a17}.task-expression .mathterm[data-i="5"]{color:#168b91}
+.term-list{display:flex;flex-direction:column;gap:7px;margin:10px 0}
+.term-row{display:flex;align-items:center;gap:9px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 10px;cursor:pointer;text-align:left;color:var(--ink)}
+.term-row.active{border-color:var(--blue);background:#f3f5ff}
+.swatch{width:10px;height:28px;border-radius:6px;flex:none}
+.term-main{flex:1;min-width:0}.term-main b{font-family:"Cambria Math","Times New Roman",serif;font-size:16px}.term-main small{display:block;color:var(--muted);font-size:11px}
+.term-value{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.question-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.counter{font-size:12px;color:var(--muted);font-weight:700}
+.comparebox{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px;background:#f9fafc}
+.comparebox strong{color:var(--blue)}
+.nav{display:flex;gap:8px;align-items:center;margin-top:13px}.nav button{flex:1}
+.result{font-size:13px;color:var(--muted);margin-top:8px;min-height:20px}
+.visual{position:sticky;top:86px}
+.visual-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{display:inline-block;background:#edf1ff;color:#3e56ce;padding:5px 9px;border-radius:99px;font-size:11px;font-weight:800}
+.legend{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.legend span{font-size:12px;border-radius:8px;background:#f3f5f9;padding:5px 8px}
+#circle{width:100%;display:block;background:linear-gradient(#fff,#fbfcff);border:1px solid #e8edf5;border-radius:14px;touch-action:none}
+.angle-control{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin:10px 0}
+input[type=range]{width:100%;accent-color:var(--blue)}
+.angle-control b{min-width:68px;text-align:right}
+.mini-controls{display:flex;gap:7px;flex-wrap:wrap}
+.mini-controls button{padding:7px 10px;font-size:12px}
+.value-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:7px;margin-top:10px}
+.value{border:1px solid var(--line);border-radius:10px;padding:8px;background:#fff}
+.value small{display:block;color:var(--muted);font-size:11px}.value b{font-size:16px;font-variant-numeric:tabular-nums}
+.hint{font-size:12px;color:var(--muted);margin:10px 2px 0}
+.lessongoal{background:#f1f8f4;border-left:4px solid var(--green);border-radius:9px;padding:10px 12px;font-size:13px;margin-top:12px}
+.hidden{display:none!important}
+@media(max-width:1050px){.wrap{grid-template-columns:1fr}.visual{position:static;order:-1}}
+@media(max-width:600px){.wrap{padding:8px}.panel{padding:12px}.task-expression{font-size:19px}header{position:static;padding:11px}.nav button{font-size:12px;padding:8px}}
+</style>
+</head>
+<body>
+<header>
+ <div><h1>Тригонометрия: решаем по окружности</h1><p>Карточки с твоего листа · угол, функция, проекция и значение на одном экране</p></div>
+ <span class="badge" id="overall">32 задания</span>
+</header>
+<main class="wrap">
+<section class="panel">
+ <div class="topline"><span class="eyebrow">КАРТОЧКА ЗАДАНИЯ</span><span class="counter" id="taskCount"></span></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">
+  <select id="groupSelect" aria-label="Раздел"></select>
+  <select id="taskSelect" aria-label="Номер задания"></select>
+ </div>
+ <div class="section-note" id="goal"></div>
+ <div class="taskcard">
+  <div class="task-instruction" id="instruction"></div>
+  <div class="task-expression" id="expression"></div>
+  <div class="eyebrow">ФУНКЦИИ ИЗ ЭТОГО ЗАДАНИЯ — НА ОКРУЖНОСТИ</div>
+  <div class="term-list" id="termList"></div>
+  <div id="compare" class="comparebox hidden"></div>
+  <div class="question-tools">
+   <button class="secondary" id="showAll">Показать все следы</button>
+   <button class="secondary" id="clear">Сбросить выделение</button>
+  </div>
+  <div class="result" id="selectedInfo">Нажми на функцию в выражении или в списке: её след выделится на окружности.</div>
+ </div>
+ <div class="nav"><button class="secondary" id="prev">← Предыдущее</button><button id="next">Следующее →</button></div>
+ <div class="lessongoal" id="lessonGoal"></div>
+</section>
+<section class="panel visual">
+ <div class="visual-head"><div><div class="eyebrow">ИНТЕРАКТИВНАЯ МОДЕЛЬ</div><h2 style="margin-bottom:0">Единичная окружность и следы функций</h2></div><span class="badge" id="activeAngle">Выбрано: все углы</span></div>
+ <div class="legend">
+  <span>🔴 sin — вертикальная координата</span><span>🔵 cos — горизонтальная координата</span><span>🟢 tg — вертикальная касательная</span><span>🟣 ctg — горизонтальная касательная</span>
+ </div>
+ <svg id="circle" viewBox="0 0 820 640" role="img" aria-label="Единичная окружность с проекциями тригонометрических функций">
+  <defs>
+   <clipPath id="clip"><rect x="20" y="20" width="780" height="600"/></clipPath>
+   <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="#77839a"/></marker>
+  </defs>
+  <g id="base">
+   <line x1="65" y1="320" x2="755" y2="320" stroke="#75819a" stroke-width="1.7" marker-end="url(#arrow)"/>
+   <line x1="390" y1="590" x2="390" y2="42" stroke="#75819a" stroke-width="1.7" marker-end="url(#arrow)"/>
+   <circle cx="390" cy="320" r="205" fill="#fbfcff" stroke="#34435f" stroke-width="2.2"/>
+   <line x1="595" y1="75" x2="595" y2="565" stroke="#16a06a" stroke-width="1.6" stroke-dasharray="6 5"/>
+   <line x1="185" y1="75" x2="185" y2="565" stroke="#16a06a" stroke-width="1.1" stroke-dasharray="3 6" opacity=".55"/>
+   <line x1="145" y1="115" x2="635" y2="115" stroke="#9360c5" stroke-width="1.6" stroke-dasharray="6 5"/>
+   <line x1="145" y1="525" x2="635" y2="525" stroke="#9360c5" stroke-width="1.1" stroke-dasharray="3 6" opacity=".55"/>
+   <text x="765" y="339" font-size="15" fill="#68758e">x</text><text x="405" y="38" font-size="15" fill="#68758e">y</text>
+   <text x="602" y="91" font-size="13" fill="#158651">tg: x = ±1</text>
+   <text x="642" y="108" font-size="13" fill="#8050ae">ctg: y = ±1</text>
+   <text x="379" y="340" font-size="13" fill="#68758e">0</text>
+   <text x="603" y="340" font-size="12" fill="#68758e">1</text><text x="166" y="340" font-size="12" fill="#68758e">−1</text>
+   <text x="401" y="120" font-size="12" fill="#68758e">1</text><text x="401" y="526" font-size="12" fill="#68758e">−1</text>
+  </g>
+  <g id="degreeTicks"></g>
+  <g id="traces" clip-path="url(#clip)"></g>
+  <g id="activeLayer"></g>
+ </svg>
+ <div class="topline" style="margin-top:10px"><span class="eyebrow">СВОБОДНОЕ ИССЛЕДОВАНИЕ</span><label class="small">Показывать след: <select id="manualMode"><option value="sin">sin α — Oy</option><option value="cos">cos α — Ox</option><option value="tg">tg α — касательная x=±1</option><option value="ctg">ctg α — касательная y=±1</option></select></label></div>
+ <div class="angle-control"><input id="angleSlider" type="range" min="0" max="359.9" step=".1" value="45"><b id="angleText">45°</b></div>
+ <div class="mini-controls">
+  <button class="secondary" id="stepBack">− 1°</button><button class="secondary" id="stepForward">+ 1°</button>
+  <button class="secondary" id="play">▶ Вращать</button><button class="secondary" id="special">Следующий особый угол</button>
+ </div>
+ <div class="value-grid" id="values"></div><div class="result" id="manualReadout">Свободное исследование: точка выделена оранжевым.</div>
+ <div class="hint" id="graphHint">Перетаскивай точку по окружности. В текущем задании все углы и следы показаны разными цветами; выбранный элемент выделяется ярче.</div>
+</section>
+</main>
+<script>
+const C=['#d94d58','#2875c9','#16965d','#9860c5','#c08018','#168b91'];
+const groups=[
+ {name:'1. Сравнить с нулём',goal:'Цель: определить знак произведения. Для каждого множителя смотри на знак sin, cos, tg или ctg в соответствующей четверти. Если хотя бы один множитель равен нулю, всё произведение равно нулю.',instruction:'Сравните с нулём значение выражения:',tasks:[
+  {expr:'sin 110° · cos 140°',terms:[['sin',110],['cos',140]]},
+  {expr:'sin 80° · cos 100° · cos 148°',terms:[['sin',80],['cos',100],['cos',148]]},
+  {expr:'sin 128° · cos 213° · tg 92°',terms:[['sin',128],['cos',213],['tg',92]]},
+  {expr:'sin 70° · cos 90° · tg 104°',terms:[['sin',70],['cos',90],['tg',104]]},
+  {expr:'ctg 100° · sin 114° · ctg 11°',terms:[['ctg',100],['sin',114],['ctg',11]]},
+  {expr:'cos 85° · sin 171° · ctg 87°',terms:[['cos',85],['sin',171],['ctg',87]]}
+ ]},
+ {name:'2. Найти значение выражения',goal:'Цель: читать точные значения с окружности. Сначала определи четверть и опорный угол, затем используй табличные значения 30°, 45°, 60°, 90°, 120°, 135°, 150° и знаки функций.',instruction:'Найдите значение выражения:',tasks:[
+  {expr:'2 sin 120° + 4 cos 150° − 2 tg 135°',terms:[['sin',120],['cos',150],['tg',135]],note:'Учитывай коэффициенты и знаки перед функциями.'},
+  {expr:'cos 120° − 8 sin² 150° + 3 cos 90° · cos 162°',terms:[['cos',120],['sin',150,2],['cos',90],['cos',162]],note:'sin² 150° означает квадрат значения sin 150°.'},
+  {expr:'cos 180° · (sin 135° · tg 60° − cos 135°)²',terms:[['cos',180],['sin',135],['tg',60],['cos',135]]},
+  {expr:'2 sin² 30° + cos² 60° + sin² 45° + tg² 60° − ctg² 30°',terms:[['sin',30,2],['cos',60,2],['sin',45,2],['tg',60,2],['ctg',30,2]]}
+ ]},
+ {name:'3. Вычислить выражение',goal:'Цель: объединить табличные значения и знаки функций. Наблюдай за каждым множителем отдельно, а затем возвращайся к исходному выражению и учитывай порядок действий.',instruction:'Чему равно значение выражения:',tasks:[
+  {expr:'2 sin 150° − 4 cos 120° + 2 tg 135°',terms:[['sin',150],['cos',120],['tg',135]]},
+  {expr:'tg 45° · sin 60° · ctg 30°',terms:[['tg',45],['sin',60],['ctg',30]]},
+  {expr:'sin 90° · (tg 150° · cos 135° − tg 120° · cos 135°)²',terms:[['sin',90],['tg',150],['cos',135],['tg',120],['cos',135,2]]}
+ ]},
+ {name:'4. Формулы приведения и симметрия',goal:'Цель: увидеть на окружности, почему значения при углах 180° ± α связаны. Сравни точки: у дополнительных углов одинаковая высота (sin), но противоположные горизонтальные координаты (cos).',instruction:'Найдите значение выражения, не пользуясь калькулятором:',tasks:[
+  {expr:'sin 181° / sin 162°',terms:[['sin',181],['sin',162]],note:'181° = 180° + 1°; 162° = 180° − 18°.'},
+  {expr:'cos 181° / cos 162°',terms:[['cos',181],['cos',162]]},
+  {expr:'tg 18° / tg 162°',terms:[['tg',18],['tg',162]]},
+  {expr:'ctg 18° / ctg 162°',terms:[['ctg',18],['ctg',162]]}
+ ]},
+ {name:'5. Дополнительные углы',goal:'Цель: распознавать пары α и 180° − α. Для них sin(180° − α) = sin α, cos(180° − α) = −cos α, tg и ctg меняют знак.',instruction:'Найдите значение выражения, не пользуясь калькулятором:',tasks:[
+  {expr:'cos 49° / cos 131°',terms:[['cos',49],['cos',131]]},
+  {expr:'tg 12° / tg 168°',terms:[['tg',12],['tg',168]]},
+  {expr:'sin 53° / sin 127°',terms:[['sin',53],['sin',127]]}
+ ]},
+ {name:'6. Сравнение значений',goal:'Цель: сравнивать без вычисления десятичных приближений. Используй монотонность sin и cos на нужных промежутках, симметрию относительно 90° и знаки по четвертям.',instruction:'Сравните:',tasks:[
+  {expr:'sin 17°  и  sin 35°',terms:[['sin',17],['sin',35]],compare:true},
+  {expr:'cos 1°  и  cos 2°',terms:[['cos',1],['cos',2]],compare:true},
+  {expr:'cos 89°  и  cos 113°',terms:[['cos',89],['cos',113]],compare:true},
+  {expr:'sin 50°  и  sin 140°',terms:[['sin',50],['sin',140]],compare:true},
+  {expr:'1/2  и  sin 40°',terms:[['sin',40]],constants:['1/2'],compare:true},
+  {expr:'−1/2  и  cos 130°',terms:[['cos',130]],constants:['−1/2'],compare:true}
+ ]},
+ {name:'7. Сравнение: продолжение',goal:'Цель: уверенно применять монотонность и приведение. Если углы находятся по разные стороны от 90°, преобразуй один из них к опорному углу и сравни уже на одном промежутке.',instruction:'Сравните:',tasks:[
+  {expr:'sin 118°  и  sin 91°',terms:[['sin',118],['sin',91]],compare:true},
+  {expr:'cos 179°  и  cos 160°',terms:[['cos',179],['cos',160]],compare:true},
+  {expr:'cos 75°  и  cos 175°',terms:[['cos',75],['cos',175]],compare:true},
+  {expr:'sin 70°  и  sin 105°',terms:[['sin',70],['sin',105]],compare:true},
+  {expr:'√3/2  и  cos 20°',terms:[['cos',20]],constants:['√3/2'],compare:true},
+  {expr:'1/2  и  sin 130°',terms:[['sin',130]],constants:['1/2'],compare:true}
+ ]}
+];
+let gi=0,ti=0,selected=0,manualAngle=45,anim=null,allMode=true;
+const $=id=>document.getElementById(id),rad=d=>d*Math.PI/180,fmt=x=>Number.isFinite(x)?(Math.abs(x)<.0000005?0:x).toFixed(3).replace('.',','):'не сущ.';
+function exact(fn,a,p=1){let n=((a%360)+360)%360,base=null;const known={0:[1,0],30:[.5,Math.sqrt(3)/2],45:[Math.SQRT1_2,Math.SQRT1_2],60:[Math.sqrt(3)/2,.5],90:[0,1],120:[-0.5,Math.sqrt(3)/2],135:[-Math.SQRT1_2,Math.SQRT1_2],150:[-Math.sqrt(3)/2,.5],180:[-1,0],210:[-Math.sqrt(3)/2,-.5],225:[-Math.SQRT1_2,-Math.SQRT1_2],240:[-.5,-Math.sqrt(3)/2],270:[0,-1],300:[.5,-Math.sqrt(3)/2],315:[Math.SQRT1_2,-Math.SQRT1_2],330:[Math.sqrt(3)/2,-.5]};
+ let s=Math.sin(rad(a)),c=Math.cos(rad(a)),v=fn==='sin'?s:fn==='cos'?c:fn==='tg'?s/c:c/s;if(p===2)v*=v;
+ if(!Number.isFinite(v))return 'не сущ.';return fmt(v);
+}
+function raw(fn,a,p=1){
+ let s=Math.sin(rad(a)),c=Math.cos(rad(a));
+ let v=fn==='sin'?s:fn==='cos'?c:fn==='tg'?(Math.abs(c)<1e-9?NaN:s/c):(Math.abs(s)<1e-9?NaN:c/s);
+ return p===2?v*v:v;
+}
+function termLabel(t){return t[0]+(t[2]?'²':'')+' '+t[1]+'°'}
+function current(){return groups[gi].tasks[ti]}
+function renderSelectors(){
+ $('groupSelect').innerHTML=groups.map((g,i)=>`<option value="${i}">${g.name}</option>`).join('');
+ $('taskSelect').innerHTML=groups[gi].tasks.map((t,i)=>`<option value="${i}">Задание ${i+1}</option>`).join('');
+ $('groupSelect').value=gi;$('taskSelect').value=ti;
+}
+function renderTask(){
+ const g=groups[gi],t=current();renderSelectors();
+ $('taskCount').textContent=`Раздел ${gi+1} из ${groups.length} · задание ${ti+1} из ${g.tasks.length}`;
+ $('goal').textContent=g.goal;$('instruction').textContent=g.instruction;
+ const parts=t.expr.split(/(sin|cos|tg|ctg)\s*([0-9]+°)(²?)/g);
+ // Keep the source expression faithful, then make function tokens clickable and indexed.
+ let html=t.expr,idx=0;
+ const pattern=/(sin|cos|tg|ctg)(²?)\s*([0-9]+°)/g;
+ html=html.replace(pattern,(m,fn,pow,ang)=>{let n=idx++;return `<span class="mathterm ${n===selected?'sel':''}" data-i="${n}" title="Показать ${m}">${m}</span>`});
+ $('expression').innerHTML=html;
+ $('termList').innerHTML=t.terms.map((term,i)=>`<button class="term-row ${i===selected?'active':''}" data-term="${i}">
+ <i class="swatch" style="background:${C[i%C.length]}"></i><span class="term-main"><b>${termLabel(term)}</b><small>${axisDesc(term[0])}</small></span><span class="term-value">${fmt(raw(term[0],term[1],term[2]||1))}<small style="display:block;font-size:10px;font-weight:500;color:#68758e;text-align:right">${term[2]===2?`след ${term[0]} = ${fmt(raw(term[0],term[1]))}`:'значение функции'}</small></span></button>`).join('');
+ $('compare').classList.toggle('hidden',!t.compare);
+ $('compare').innerHTML=t.compare?`Сравни два выражения. Все углы из карточки показаны одновременно; выбери элемент, чтобы выделить его след. ${t.constants?.length?'<br>Постоянная часть: <strong>'+t.constants.join(', ')+'</strong>':''}`:'';
+ $('lessonGoal').textContent=t.note||goalByGroup[gi]||'Смотри на знак и величину проекции, а затем вернись к выражению и выполни действие.';
+ $('prev').disabled=gi===0&&ti===0;$('next').textContent=gi===groups.length-1&&ti===groups[gi].tasks.length-1?'В начало':'Следующее →';
+ selected=Math.min(selected,t.terms.length-1);if(selected<0)selected=0;
+ draw();
+}
+const goalByGroup=[
+ 'Наблюдение: знак синуса совпадает со знаком y-координаты, знак косинуса — со знаком x-координаты. Для tg и ctg следи за отношением координат.',
+ 'Наблюдение: табличные углы и опорные углы дают точные значения; знак определяется четвертью.',
+ 'Наблюдение: при вычислении выражения сначала считай каждую функцию отдельно, затем учитывай коэффициенты, степени и действия.',
+ 'Наблюдение: при переходе за 180° значения связаны симметрией и периодичностью.',
+ 'Наблюдение: дополнительные углы  α и 180°−α дают одинаковый синус и противоположный косинус.',
+ 'Наблюдение: sin возрастает на [−90°;90°], cos убывает на [0°;180°]. Сначала проверь, в каком промежутке лежит угол.',
+ 'Наблюдение: преобразуй углы к опорному и сравнивай по известным промежуткам монотонности.'
+];
+function axisDesc(fn){return fn==='sin'?'След — на оси y':fn==='cos'?'След — на оси x':fn==='tg'?'Значение — на касательной x = 1':'Значение — на касательной y = 1'}
+function svgPoint(a){let r=rad(a);return [390+205*Math.cos(r),320-205*Math.sin(r)]}
+function drawBaseTicks(){let h='';for(let a=0;a<360;a+=30){let [x,y]=svgPoint(a),r=rad(a),x2=390+217*Math.cos(r),y2=320-217*Math.sin(r),tx=390+239*Math.cos(r),ty=320-239*Math.sin(r);h+=`<line x1="${x}" y1="${y}" x2="${x2}" y2="${y2}" stroke="#9aa4b7"/><text x="${tx}" y="${ty+4}" text-anchor="middle" font-size="12" fill="#66738b">${a}°</text>`}$('degreeTicks').innerHTML=h}
+function draw(){
+ let t=current(),tr='',active='',values=[],term=t.terms[selected]||null;
+ t.terms.forEach((item,i)=>{
+  let [fn,a,p=1]=item,[x,y]=svgPoint(a),col=C[i%C.length],fade=(!allMode&&i!==selected)?.22:1,stroke=i===selected?4:2.4;
+  tr+=`<g opacity="${fade}"><line x1="390" y1="320" x2="${x}" y2="${y}" stroke="${col}" stroke-width="${stroke}" ${i===selected?'':'stroke-dasharray="5 4"'}/><circle cx="${x}" cy="${y}" r="${i===selected?8:5.5}" fill="${col}" stroke="#fff" stroke-width="2"/>`;
+  const val=raw(fn,a,p);
+  if(fn==='sin'){
+   let yy=320-205*Math.sin(rad(a));
+   tr+=`<line x1="${x}" y1="${y}" x2="390" y2="${y}" stroke="${col}" stroke-width="${stroke}" stroke-dasharray="4 4"/><line x1="390" y1="320" x2="390" y2="${yy}" stroke="${col}" stroke-width="${stroke+1}"/><circle cx="390" cy="${yy}" r="4.5" fill="${col}"/><text x="400" y="${yy-7}" font-size="11" fill="${col}" font-weight="800">${fmt(Math.sin(rad(a)))}</text>`;
+  }else if(fn==='cos'){
+   let xx=390+205*Math.cos(rad(a));
+   tr+=`<line x1="${x}" y1="${y}" x2="${xx}" y2="320" stroke="${col}" stroke-width="${stroke}" stroke-dasharray="4 4"/><line x1="390" y1="320" x2="${xx}" y2="320" stroke="${col}" stroke-width="${stroke+1}"/><circle cx="${xx}" cy="320" r="4.5" fill="${col}"/><text x="${xx+3}" y="${330+(i%2)*12}" font-size="11" fill="${col}" font-weight="800">${fmt(Math.cos(rad(a)))}</text>`;
+  }else if(fn==='tg'){
+   let co=Math.cos(rad(a)),ta=Math.tan(rad(a));
+   if(Math.abs(co)>.025){let xx=390+205*Math.sign(co),yy=320-205*ta,clamped=Math.max(38,Math.min(602,yy));tr+=`<line x1="${x}" y1="${y}" x2="${xx}" y2="${clamped}" stroke="${col}" stroke-width="${stroke}" stroke-dasharray="4 4"/><circle cx="${xx}" cy="${clamped}" r="5" fill="${col}"/><text x="${xx+(xx>390?7:-30)}" y="${clamped-7}" font-size="11" fill="${col}" font-weight="800">${fmt(ta)}</text>`;}
+   else tr+=`<text x="605" y="${y>320?590:52}" font-size="14" fill="${col}" font-weight="800">tg не сущ.</text>`;
+  }else{
+   let si=Math.sin(rad(a)),ct= Math.cos(rad(a))/si;
+   if(Math.abs(si)>.025){let xx=390+205*ct,clamped=Math.max(48,Math.min(780,xx)),yy=320-205*Math.sign(si);tr+=`<line x1="${x}" y1="${y}" x2="${clamped}" y2="${yy}" stroke="${col}" stroke-width="${stroke}" stroke-dasharray="4 4"/><circle cx="${clamped}" cy="${yy}" r="5" fill="${col}"/><text x="${clamped+4}" y="${yy-7}" font-size="11" fill="${col}" font-weight="800">${fmt(ct)}</text>`;}
+   else tr+=`<text x="610" y="130" font-size="14" fill="${col}" font-weight="800">ctg не сущ.</text>`;
+  }
+  tr+='</g>';
+  values.push({fn,a,p,val,col,i});
+ });
+ $('traces').innerHTML=tr;
+ if(term){
+  let [fn,a,p=1]=term,[x,y]=svgPoint(a),col=C[selected%C.length];
+  active=`<circle cx="${x}" cy="${y}" r="13" fill="none" stroke="${col}" stroke-width="2.5"/><text x="${x+12}" y="${y-12}" font-size="15" font-weight="800" fill="${col}">${a}°</text>`;
+  manualAngle=a;
+  $('activeAngle').textContent=`Выбран: ${termLabel(term)}`;
+ }else $('activeAngle').textContent='Выбрано: все углы';
+ active+=manualCursorMarkup(manualAngle);
+ $('activeLayer').innerHTML=active;
+ $('values').innerHTML=values.map(v=>`<div class="value" style="border-top:3px solid ${v.col}"><small>${v.fn}${v.p===2?'²':''} ${v.a}°</small><b>${fmt(v.val)}</b><small>${axisDesc(v.fn)}</small></div>`).join('');
+ if(term){$('angleSlider').value=manualAngle;$('angleText').textContent=manualAngle.toFixed(1).replace('.',',')+'°';}
+ $('selectedInfo').textContent=term?`${termLabel(term)} = ${fmt(raw(term[0],term[1],term[2]||1))}. ${axisDesc(term[0])}. Остальные элементы выражения остаются на окружности.`:'Все следы показаны одновременно.';
+ $('manualReadout').textContent=`Свободная точка: α = ${manualAngle.toFixed(1)}°. Оранжевый след — ${$('manualMode').value} α = ${fmt(raw($('manualMode').value,manualAngle))}.`;
+ $('graphHint').textContent='На окружности одновременно показаны все тригонометрические элементы выбранной карточки. sin — вертикальная координата и след на Oy; cos — горизонтальная координата и след на Ox; tg/ctg — пересечение луча с касательными x = 1 и y = 1.';
+}
+function go(delta){let total=groups.reduce((s,g)=>s+g.tasks.length,0),flat=groups.slice(0,gi).reduce((s,g)=>s+g.tasks.length,0)+ti+delta;flat=(flat+total)%total;let n=0;for(let i=0;i<groups.length;i++){if(flat<n+groups[i].tasks.length){gi=i;ti=flat-n;break}n+=groups[i].tasks.length;}selected=0;renderTask()}
+$('groupSelect').onchange=e=>{gi=+e.target.value;ti=0;selected=0;renderTask()};
+$('taskSelect').onchange=e=>{ti=+e.target.value;selected=0;renderTask()};
+$('prev').onclick=()=>go(-1);$('next').onclick=()=>go(1);
+$('termList').onclick=e=>{let b=e.target.closest('[data-term]');if(!b)return;selected=+b.dataset.term;allMode=true;renderTask()};
+$('expression').onclick=e=>{let s=e.target.closest('[data-i]');if(!s)return;selected=+s.dataset.i;allMode=true;renderTask()};
+$('showAll').onclick=()=>{allMode=true;draw()};$('clear').onclick=()=>{selected=-1;allMode=false;draw()};
+$('stepBack').onclick=()=>{stop();manualAngle=(manualAngle+359)%360;$('angleSlider').value=manualAngle;$('angleText').textContent=manualAngle+'°';drawManual()};
+$('stepForward').onclick=()=>{stop();manualAngle=(manualAngle+1)%360;$('angleSlider').value=manualAngle;$('angleText').textContent=manualAngle+'°';drawManual()};
+function manualCursorMarkup(a){
+ let [px,py]=svgPoint(a),fn=$('manualMode').value||'sin',x,y,mark='',col='#dc8a22',sn=Math.sin(rad(a)),cs=Math.cos(rad(a));
+ if(fn==='sin'){y=320-205*sn;mark=`<line x1="${px}" y1="${py}" x2="390" y2="${py}" stroke="${col}" stroke-width="3" stroke-dasharray="5 4"/><line x1="390" y1="320" x2="390" y2="${y}" stroke="${col}" stroke-width="5"/>`;}
+ if(fn==='cos'){x=390+205*cs;mark=`<line x1="${px}" y1="${py}" x2="${x}" y2="320" stroke="${col}" stroke-width="3" stroke-dasharray="5 4"/><line x1="390" y1="320" x2="${x}" y2="320" stroke="${col}" stroke-width="5"/>`;}
+ if(fn==='tg'&&Math.abs(cs)>1e-9){x=390+205*Math.sign(cs);y=Math.max(38,Math.min(602,320-205*Math.tan(rad(a))));mark=`<line x1="${px}" y1="${py}" x2="${x}" y2="${y}" stroke="${col}" stroke-width="3" stroke-dasharray="5 4"/><circle cx="${x}" cy="${y}" r="6" fill="${col}"/>`;}
+ if(fn==='ctg'&&Math.abs(sn)>1e-9){x=Math.max(48,Math.min(780,390+205*cs/sn));y=320-205*Math.sign(sn);mark=`<line x1="${px}" y1="${py}" x2="${x}" y2="${y}" stroke="${col}" stroke-width="3" stroke-dasharray="5 4"/><circle cx="${x}" cy="${y}" r="6" fill="${col}"/>`;}
+ return `${mark}<line x1="390" y1="320" x2="${px}" y2="${py}" stroke="${col}" stroke-width="2.7"/><circle cx="${px}" cy="${py}" r="10" fill="${col}" stroke="#fff" stroke-width="2.5"/><text x="${px+13}" y="${py-13}" fill="${col}" font-size="14" font-weight="800">P ${a.toFixed(1)}°</text>`;
+}
+function drawManual(){
+ let a=manualAngle;
+ $('activeLayer').innerHTML=manualCursorMarkup(a);
+ $('activeAngle').textContent=`Свободный угол: ${a.toFixed(1)}°`;
+ $('manualReadout').textContent=`Свободная точка: α = ${a.toFixed(1)}°. Оранжевый след — ${$('manualMode').value} α = ${fmt(raw($('manualMode').value,a))}. Значения из карточки остаются показаны цветными проекциями.`;
+ $('selectedInfo').textContent=`Свободно исследуем угол ${a.toFixed(1)}°. Оранжевый след показывает ${$('manualMode').value} α. Цветные следы карточки остаются на окружности.`;
+}
+$('angleSlider').oninput=e=>{stop();manualAngle=+e.target.value;$('angleText').textContent=manualAngle.toFixed(1).replace('.',',')+'°';drawManual()};
+$('manualMode').onchange=()=>drawManual();
+let dragging=false;const svg=$('circle');function angleFromEvent(e){let p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;let q=p.matrixTransform(svg.getScreenCTM().inverse());return (Math.atan2(320-q.y,q.x-390)*180/Math.PI+360)%360}
+svg.addEventListener('pointerdown',e=>{if(e.target.closest('text'))return;dragging=true;stop();svg.setPointerCapture(e.pointerId);manualAngle=angleFromEvent(e);$('angleSlider').value=manualAngle;drawManual();});
+svg.addEventListener('pointermove',e=>{if(!dragging)return;manualAngle=angleFromEvent(e);$('angleSlider').value=manualAngle;drawManual()});
+svg.addEventListener('pointerup',()=>dragging=false);svg.addEventListener('pointercancel',()=>dragging=false);
+$('play').onclick=()=>{if(anim){stop();return}anim=setInterval(()=>{manualAngle=(manualAngle+1)%360;$('angleSlider').value=manualAngle;drawManual()},35);$('play').textContent='Ⅱ Пауза'};
+function stop(){if(anim)clearInterval(anim);anim=null;$('play').textContent='▶ Вращать'}
+$('special').onclick=()=>{stop();let arr=[0,30,45,60,90,120,135,150,180,210,225,240,270,300,315,330];let next=arr.find(a=>a>manualAngle+.01);manualAngle=next===undefined?0:next;$('angleSlider').value=manualAngle;drawManual()};
+drawBaseTicks();renderTask();
+</script>
+</body></html>
