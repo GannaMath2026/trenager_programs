@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ЕГЭ №1 · Планиметрия — тренажёр</title>
+<style>
+  :root{--bg:#f4f6fb;--panel:#fff;--ink:#16213a;--muted:#66748f;--line:#e2e7f1;--blue:#4f6bff;--ok:#16a06a;--bad:#e2475b;--warn:#f0a020;--c:#4f6bff;--hand:"Comic Sans MS","Segoe Print",cursive;--mono:ui-monospace,Consolas,monospace;--fs:16px}
+  *{box-sizing:border-box}body{margin:0;font:var(--fs)/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:radial-gradient(900px 500px at 0% -10%,#e5eaff,transparent 60%),radial-gradient(800px 600px at 110% 0%,#ffe9f3,transparent 55%),var(--bg);min-height:100vh}
+  header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:9px 18px;background:rgba(255,255,255,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:10px;cursor:pointer;margin-right:auto;user-select:none}
+  .logo{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,#4f6bff,#b84fff);color:#fff;font-weight:900;font-size:15px}
+  .brand b{display:block;font-size:16px;line-height:1.1}.brand small{color:var(--muted);font-size:12px;font-weight:600}
+  .hbtn{border:1px solid var(--line);background:#fff;border-radius:11px;padding:7px 12px;font-size:14px;font-weight:650;cursor:pointer;white-space:nowrap}
+  .hbtn:hover{border-color:var(--blue);color:var(--blue)}.hbtn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 1px 2px #16213a0d,0 8px 28px #16213a12}
+  .chip{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:750;background:#f7f9fd;color:var(--muted);border:1px solid var(--line)}
+  .chip.c{background:color-mix(in srgb,var(--c) 14%,#fff);color:var(--c);border-color:transparent}.chip.ok{background:#e6f7ef;color:var(--ok)}.chip.bad{background:#fdecee;color:var(--bad)}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 15px;font-weight:650;cursor:pointer;font-size:15px}
+  .btn.primary{background:var(--c);border-color:var(--c);color:#fff}.btn.small{padding:5px 10px;font-size:13px;border-radius:9px}
+  #home{max-width:1240px;margin:0 auto;padding:26px 20px 60px}
+  .hero{display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;margin-bottom:22px}
+  .hero h1{font-size:clamp(26px,3.4vw,40px);line-height:1.1;margin:0 0 6px}.hero h1 span{background:linear-gradient(90deg,#4f6bff,#c04fff 60%,#ff5f8f);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{margin:0;color:var(--muted);max-width:620px}
+  .ring{--p:0;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--blue) calc(var(--p)*1%),var(--line) 0);position:relative}.ring::before{content:"";position:absolute;inset:9px;border-radius:50%;background:#fff}.ring b{position:relative;font-size:20px}.ring small{position:relative;display:block;font-size:11px;color:var(--muted);text-align:center;margin-top:-6px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .tile{position:relative;padding:16px;cursor:pointer;transition:.18s;overflow:hidden;min-height:150px;display:flex;flex-direction:column}
+  .tile:hover{transform:translateY(-3px);box-shadow:0 16px 36px #16213a1c}
+  .tile .num{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:900;font-size:19px;color:#fff;background:var(--c)}
+  .tile h3{margin:10px 0 2px;font-size:17px}.tile p{margin:0 0 10px;color:var(--muted);font-size:13px;flex:1}
+  .bar{height:7px;border-radius:9px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--c);border-radius:9px;transition:width .4s}
+  .tile .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px;font-weight:650}
+  #mod{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;max-width:1500px;margin:0 auto;padding:16px 18px 50px}
+  #mod aside{position:sticky;top:70px;align-self:start;max-height:calc(100vh - 86px);overflow:auto;padding:14px}
+  .modhead{display:flex;gap:11px;align-items:center;margin-bottom:10px}.modhead .num{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-weight:900;font-size:20px;color:#fff;background:var(--c);flex:none}
+  .back{display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;margin-bottom:10px;border:0;background:none;padding:0}.back:hover{color:var(--c)}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;background:#f7f9fd;border:1px solid var(--line);border-radius:11px;padding:3px;margin:10px 0}
+  .tabs button{border:0;background:none;border-radius:8px;padding:5px 2px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer}.tabs button.active{background:#fff;color:var(--c)}
+  .secttl{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin:12px 4px 5px}
+  .ti{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:11px;cursor:pointer;border:1px solid transparent;font-size:14px;line-height:1.3;margin:2px 0}
+  .ti:hover{background:#f7f9fd}.ti.active{background:color-mix(in srgb,var(--c) 11%,#fff);border-color:color-mix(in srgb,var(--c) 40%,transparent)}
+  .ti .st{width:22px;height:22px;flex:none;border-radius:7px;display:grid;place-items:center;font-size:12px;background:#f7f9fd;border:1px solid var(--line);font-weight:800;color:var(--muted)}
+  .ti.ok .st{background:var(--ok);color:#fff;border-color:var(--ok)}.ti.bad .st{background:#fdecee;color:var(--bad)}.ti.hint .st{background:#fff4dc;border-color:#f0a020}
+  .ti .tt{flex:1;min-width:0}.ti.an{margin-left:16px}.ti.an::before{content:"↳";color:var(--muted);margin-right:-3px}
+  .stickbar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .board{display:flex;flex-wrap:wrap;gap:20px;padding:18px 8px 8px;margin-bottom:6px}.board.strip{flex-wrap:nowrap;overflow-x:auto;gap:16px;padding:16px 6px 12px}
+  .board.strip .sticker{flex:0 0 260px;font-size:14px;padding:16px 13px 11px}
+  .sticker{position:relative;flex:1 1 230px;max-width:360px;background:#fff6a8;color:#2b2a26;padding:20px 16px 14px;border-radius:3px 3px 14px 3px;box-shadow:0 1px 1px #0001,0 10px 18px -6px #0003;font-size:15px;line-height:1.45}
+  .sticker:nth-child(5n+1){background:#fff3a0}.sticker:nth-child(5n+2){background:#ffd7e4}.sticker:nth-child(5n+3){background:#cdeffd}.sticker:nth-child(5n+4){background:#d4f5d0}.sticker:nth-child(5n+5){background:#ffe1c2}
+  .sticker h4{font-family:var(--hand);font-size:18px;margin:0 0 6px}.sticker p{margin:5px 0}.sticker .big{font-family:var(--mono);font-weight:800;font-size:17px;background:#ffffff7a;border-radius:8px;padding:3px 8px;display:inline-block;margin:2px 0}
+  .sticker code{font-family:var(--mono);background:#ffffff80;border-radius:5px;padding:0 4px}.sticker .scrawl{font-family:var(--hand);color:#b4235a}
+  .taskcard{padding:26px}
+  .thead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}.thead h2{margin:0 auto 0 0;font-size:22px;letter-spacing:-.01em;line-height:1.2}
+  .cond{background:#f7f9fd;border:1px solid var(--line);border-left:5px solid var(--c);border-radius:14px;padding:14px 16px;margin:10px 0 14px;font-size:17px}
+  .tool{border:1px dashed color-mix(in srgb,var(--c) 45%,var(--line));border-radius:16px;padding:12px 14px;margin:12px 0;background:color-mix(in srgb,var(--c) 3%,#fff)}
+  .tool>.tl{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--c);margin-bottom:8px}
+  .ansrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 6px}
+  .ansrow input{flex:1;min-width:180px;max-width:360px;padding:11px 14px;border:2px solid var(--line);border-radius:13px;background:#fff;font-size:19px;font-weight:800;outline:none}
+  .ansrow input:focus{border-color:var(--c);box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 18%,transparent)}
+  .fb{min-height:26px;font-weight:750;margin:6px 0}.fb.ok{color:var(--ok)}.fb.bad{color:var(--bad)}
+  .solved .cond{border-left-color:var(--ok)}
+  .step{display:flex;gap:11px;padding:10px 12px;border-radius:13px;background:#fff4dc;margin:6px 0}
+  .step b.n{flex:none;width:24px;height:24px;border-radius:50%;background:#f0a020;color:#fff;display:grid;place-items:center;font-size:13px}
+  .step .h{font-weight:800;margin-bottom:2px}
+  .navrow{display:flex;justify-content:space-between;gap:10px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+  .repair{display:flex;gap:10px;align-items:center;background:#fff4dc;border-radius:14px;padding:10px 14px;margin-bottom:12px;font-weight:650}
+  .hidden{display:none!important}
+  .overlay{position:fixed;inset:0;z-index:60;background:#0e1424a8;display:flex;align-items:flex-start;justify-content:center;padding:4vh 14px;overflow:auto;backdrop-filter:blur(3px)}
+  .modal{background:#fff;border-radius:20px;box-shadow:0 30px 80px #0006;width:min(1000px,100%);padding:20px 22px;position:relative}
+  .modal .x{position:absolute;right:14px;top:12px}
+  .mtable{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:14px}
+  .mtable th,.mtable td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left}.mtable th{background:#f7f9fd;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .sturow{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:6px;margin:5px 0}.sturow.cur{border-color:var(--blue);background:#eef1ff}.sturow .pick{flex:1;text-align:left;font-weight:700;border:0;background:none;cursor:pointer;padding:6px}.sturow small{color:var(--muted);white-space:nowrap}
+  .stuadd{display:flex;gap:6px;margin-top:10px}.stuadd input{flex:1;padding:9px 12px;border-radius:11px;border:1px solid var(--line);background:var(--bg)}
+  .fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.9em;margin:0 2px;line-height:1.15}.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}.fr>span:last-child{padding:0 3px}
+  .drawwrap{position:relative;display:inline-block;max-width:100%;background:#fff;border-radius:12px;border:1px solid var(--line);padding:6px}.drawwrap img{display:block;max-width:min(100%,520px);max-height:380px}.drawwrap canvas{position:absolute;left:6px;top:6px;touch-action:none;cursor:crosshair}
+  @media(max-width:900px){#mod{grid-template-columns:1fr}#mod aside{position:static;max-height:300px}}
+  @media print{header,#mod aside,.navrow,.noprint{display:none!important}body{background:#fff}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand" id="brand"><div class="logo">№1</div><div><b>Планиметрия</b><small>ЕГЭ, профиль · тренажёр</small></div></div>
+  <button class="hbtn" data-go="home">🏠 Задания</button>
+  <button class="hbtn" data-go="stickers">📌 Стикеры</button>
+  <button class="hbtn" id="stuBtn">👤 Ученик</button>
+  <button class="hbtn" id="repBtn">📋 Ответ учителю</button>
+  <button class="hbtn" id="themeBtn">☾</button>
+</header>
+
+<div id="home"></div>
+<div id="mod" class="hidden"><aside class="card" id="side"></aside><main class="work" id="work"></main></div>
+<div id="page" class="hidden"></div>
+<div id="ovl"></div>
+
+<dialog id="stuModal" style="border:0;border-radius:20px;padding:20px;width:min(560px,94vw)">
+  <h2 style="margin-top:0">Кто занимается?</h2>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:8px">У каждого ученика свои ответы и отметки. Всё хранится в браузере.</div>
+  <div id="stuList"></div>
+  <div class="stuadd"><input id="stuNew" placeholder="Имя нового ученика" maxlength="40"><button class="btn primary" id="stuAdd">Добавить</button></div>
+  <div style="text-align:right;margin-top:12px"><button class="btn" id="stuClose">Готово</button></div>
+</dialog>
+
+<script>
+// ================== ВСЕ ФАКТЫ ПЛАНИМЕТРИИ (СТИКЕРЫ) ==================
+// Каждый модуль: [номер, название, подзаголовок, цвет, стикеры]
+const META = [
+  [1, 'Углы треугольника', 'Сумма углов, внешний угол, биссектриса, медиана и высота из прямого угла', '#4f6bff', [
+    ['📐 Сумма углов', '<p><span class="big">∠A + ∠B + ∠C = 180°</span></p><p>Смежные углы: в сумме 180°.</p>'],
+    ['🚪 Внешний угол', '<p>Внешний угол = сумме двух углов, <b>не смежных</b> с ним.</p><p class="scrawl">Не путай со смежным!</p>'],
+    ['⚖️ Равнобедренный', '<p>Равные стороны ⇒ равны углы <b>при основании</b>, т. е. напротив этих сторон.</p>'],
+    ['📏 Прямой угол C', '<p>Медиана CM = половине гипотенузы ⇒ ∠MCB = ∠B.</p><p>Высота CH: ∠ACH = ∠B, ∠BCH = ∠A.</p><p>Биссектриса: по 45°.</p>'],
+    ['🎯 Центр вписанной', '<p>Угол между биссектрисами: <span class="big">∠AOC = 90° + ∠B/2</span></p>']
+  ]],
+  [2, 'Прямоугольный треугольник', 'sin, cos, tg, теорема Пифагора, смежные углы', '#0ea5e9', [
+    ['📐 Определения', '<p>sin A = <b>противолежащий / гипотенуза</b></p><p>cos A = <b>прилежащий / гипотенуза</b></p><p>tg A = противолежащий / прилежащий</p>'],
+    ['🔺 Пифагор', '<p><span class="big">a² + b² = c²</span></p><p>Нашёл два элемента — третий из Пифагора.</p>'],
+    ['🔁 Тождество', '<p>sin²A + cos²A = 1</p><p>Знаешь cos — найдёшь sin, и наоборот.</p>'],
+    ['↔️ Смежные углы', '<p>sin(180° − α) = sin α</p><p>cos(180° − α) = <b>−</b>cos α</p><p class="scrawl">Тупой угол ⇒ косинус отрицательный!</p>'],
+    ['🧩 Высота в равнобедренном', '<p>AB = BC ⇒ ∠A = ∠C. Синус/косинус ищи в прямоугольном треугольнике с высотой.</p>']
+  ]],
+  [3, 'Окружность: углы и дуги', 'Вписанные и центральные углы, касательные', '#ec4899', [
+    ['⭕ Центральный угол', '<p>Центральный угол <b>равен</b> дуге, на которую опирается.</p>'],
+    ['✌️ Вписанный угол', '<p>Вписанный угол = <b>половине</b> дуги.</p><p>Вписанные углы на одну дугу <b>равны</b>.</p><p>На диаметр — 90°.</p>'],
+    ['📎 Касательная', '<p>Касательная ⊥ радиусу в точке касания.</p><p>Две касательные из точки: ∠AOB = 180° − ∠ACB.</p>'],
+    ['✂️ Секущие', '<p>Угол между секущими снаружи = <b>полуразность</b> дуг.</p><p>Или через внешний угол треугольника.</p>'],
+    ['🔢 Отношение дуг', '<p>Дуги 12x, 4x, 7x, 13x — сумма 360°, найди x.</p>']
+  ]],
+  [4, 'Вписанные и описанные', 'Четырёхугольники и теорема синусов', '#f97316', [
+    ['🔵 Вписанный четырёхугольник', '<p>Сумма <b>противоположных</b> углов = 180°.</p><p>Вписанная трапеция — равнобедренная.</p>'],
+    ['🟠 Описанный четырёхугольник', '<p>Суммы противоположных сторон равны: <span class="big">a + c = b + d</span></p><p>Трапеция: сумма оснований = сумме боковых.</p>'],
+    ['📏 Теорема синусов', '<p><span class="big">a / sin A = 2R</span></p><p>Хорда = 2R · sin вписанного угла.</p>'],
+    ['🤔 Два угла', '<p>sin α = √3/2 ⇒ α = 60° <b>или</b> 120°. Читай, острый или тупой нужен!</p>']
+  ]],
+  [5, 'Трапеция', 'Средняя линия, высота, диагонали', '#10b981', [
+    ['➖ Средняя линия', '<p><span class="big">m = (a + b) / 2</span></p><p>Диагональ делит её на a/2 и b/2.</p>'],
+    ['📐 Равнобедренная', '<p>Проекция боковой стороны на основание: <b>(a − b) / 2</b>.</p><p>tg острого угла = h / проекция.</p>'],
+    ['✖️ Диагонали ⊥', '<p>В равнобедренной трапеции с перпендикулярными диагоналями <b>h = m</b>.</p>'],
+    ['🎯 Середины диагоналей', '<p>Отрезок между ними = <b>(a − b) / 2</b>.</p>']
+  ]],
+  [6, 'Параллелограмм, ромб, площади', 'Биссектрисы, площади фигур', '#8b5cf6', [
+    ['▱ Площадь параллелограмма', '<p>S = сторона × высота к ней.</p><p>Две стороны и высоты: a·hₐ = b·h_b.</p>'],
+    ['🔺 Площадь треугольника', '<p>S = ½ a·h = ½ ab·sin γ.</p><p>Средняя линия отсекает треугольник с площадью <b>¼ S</b>.</p>'],
+    ['♦️ Ромб', '<p>S = ½ d₁·d₂.</p>'],
+    ['🔪 Биссектриса угла параллелограмма', '<p>Отсекает <b>равнобедренный</b> треугольник (накрест лежащие углы).</p>']
+  ]]
+];
+
+// ================== ЗАДАЧИ (текст и ответы) ==================
+const G1 = [
+  {m:1,n:'01',a:'34',t:'В треугольнике ABC стороны AC и BC равны. Внешний угол при вершине B равен 107°. Найдите угол C.',
+   s:[['Равнобедренный треугольник','AC = BC ⇒ ∠A = ∠B (углы при основании AB).'],['Смежный угол','∠B = 180° − 107° = 73°.'],['Сумма углов','∠C = 180° − 2 · 73° = <b>34°</b>.']]},
+  {m:1,n:'04',a:'77',t:'В треугольнике ABC угол C равен 54°, AD — биссектриса, угол BAD равен 23°. Найдите величину угла ADB.',
+   s:[['Биссектриса','∠DAC = ∠BAD = 23°.'],['Внешний угол','∠ADB — внешний угол треугольника ADC, он равен сумме двух не смежных с ним углов.'],['Считаем','∠ADB = ∠DAC + ∠ACD = 23° + 54° = <b>77°</b>.']]},
+  {m:1,n:'27б',a:'24',t:'Острый угол B прямоугольного треугольника ABC равен 21°. Найдите величину угла между биссектрисой CD и медианой CM, проведёнными из вершины прямого угла C.',
+   s:[['Медиана из прямого угла','CM = AM = MB ⇒ △ACM равнобедренный, ∠ACM = ∠A = 69°.'],['Биссектриса прямого угла','∠ACD = 45°.'],['Ответ','∠DCM = 69° − 45° = <b>24°</b>.']]},
+  {m:1,n:'28а',a:'20',t:'Острый угол B прямоугольного треугольника ABC равен 25°. Найдите величину угла между высотой CH и биссектрисой CD, проведёнными из вершины прямого угла C.',
+   s:[['Высота','В △BCH: ∠BCH = 90° − ∠B = 65°.'],['Биссектриса','∠BCD = 45°.'],['Ответ','∠HCD = 65° − 45° = <b>20°</b>.']]},
+  {m:1,n:'28б',a:'40',t:'Острый угол B прямоугольного треугольника ABC равен 65°. Найдите величину угла между высотой CH и медианой CM, проведёнными из вершины прямого угла C.',
+   s:[['Медиана','CM = AM ⇒ △ACM равнобедренный: ∠ACM = ∠A = 25°.'],['Высота','В △ACH: ∠ACH = 90° − ∠A = 65°.'],['Ответ','∠HCM = 65° − 25° = <b>40°</b>.']]},
+  {m:1,n:'43',a:'127',t:'В треугольнике ABC угол B равен 74°. Найдите угол AOC, где O — центр вписанной окружности.',
+   s:[['Центр вписанной окружности','O — точка пересечения биссектрис, ∠OAC + ∠OCA = (∠A + ∠C)/2.'],['Формула','∠AOC = 180° − (180° − ∠B)/2 = 90° + ∠B/2.'],['Ответ','∠AOC = 90° + 37° = <b>127°</b>.']]},
+  {m:1,n:'44',a:'124',t:'В треугольнике ABC угол B равен 68°, биссектрисы углов BAC и ACB пересекаются в точке O. Найдите угол AOC.',
+   s:[['Угол между биссектрисами','∠AOC = 90° + ∠B/2.'],['Ответ','∠AOC = 90° + 34° = <b>124°</b>.']]},
+  {m:2,n:'02',a:'0,9',t:'В треугольнике ABC угол C равен 90°, AB = 10, BC = √19. Найдите cos A.',
+   s:[['Косинус','cos A = AC/AB.'],['Пифагор','AC² = 100 − 19 = 81 ⇒ AC = 9.'],['Ответ','cos A = 9/10 = <b>0,9</b>.']]},
+  {m:2,n:'03',a:'0,7',t:'В треугольнике ABC угол C равен 90°, AB = 10, AC = √51. Найдите sin A.',
+   s:[['Синус','sin A = BC/AB.'],['Пифагор','BC² = 100 − 51 = 49 ⇒ BC = 7.'],['Ответ','sin A = 7/10 = <b>0,7</b>.']]},
+  {m:2,n:'09',a:'6',t:'В треугольнике ABC угол C равен 90°, BC = 3, cos A = 2√5/5. Найдите AC.',
+   s:[['Пусть','cos A = AC/AB = 2√5/5 ⇒ AC = 2√5·x, AB = 5x.'],['Пифагор','20x² + 9 = 25x² ⇒ x² = 9/5.'],['Ответ','AC = 2√5 · 3/√5 = <b>6</b>.']]},
+  {m:2,n:'10',a:'4,8',t:'В треугольнике ABC угол C равен 90°, AB = 5, sin A = 0,28. Найдите AC.',
+   s:[['Синус','sin A = BC/AB ⇒ BC = 5 · 0,28 = 1,4.'],['Пифагор','AC² = 25 − 1,96 = 23,04.'],['Ответ','AC = √23,04 = <b>4,8</b>.']]},
+  {m:2,n:'32',a:'0,75',t:'В тупоугольном треугольнике ABC известно, что AC = BC, высота AH равна 3, CH = √7. Найдите синус угла ACB.',
+   s:[['Смежные углы','∠ACH смежный с ∠ACB, синусы равны.'],['Пифагор','AC = √(9 + 7) = 4.'],['Ответ','sin ∠ACB = 3/4 = <b>0,75</b>.']]},
+  {m:2,n:'33',a:'-0,7',t:'В тупоугольном треугольнике ABC известно, что AC = BC = 10, высота AH равна √51. Найдите косинус угла ACB.',
+   s:[['Смежные углы','cos ∠ACB = −cos ∠ACH.'],['Пифагор','CH = √(100 − 51) = 7.'],['Ответ','cos ∠ACB = −7/10 = <b>−0,7</b>.']]},
+  {m:2,n:'34',a:'0,92',t:'В треугольнике ABC высота AH равна 4√6, AB = BC, AC = 25. Найдите косинус угла CAB.',
+   s:[['Пифагор','HC = √(625 − 96) = 23.'],['Равные углы','AB = BC ⇒ ∠CAB = ∠ACB.'],['Ответ','cos ∠ACB = 23/25 = <b>0,92</b>.']]},
+  {m:2,n:'35',a:'0,65',t:'В треугольнике ABC высота AH равна 13, AB = BC, AC = 20. Найдите синус угла CAB.',
+   s:[['Равные углы','AB = BC ⇒ ∠CAB = ∠ACB.'],['Прямоугольный треугольник','sin ∠ACB = AH/AC.'],['Ответ','13/20 = <b>0,65</b>.']]},
+  {m:2,n:'36',a:'0,25',t:'В треугольнике ABC известно, что AC = BC, высота AH равна 4√15, BH = 4. Найдите cos BAC.',
+   s:[['Пифагор','AB = √(240 + 16) = 16.'],['Равные углы','AC = BC ⇒ ∠BAC = ∠ABC.'],['Ответ','cos ∠ABC = 4/16 = <b>0,25</b>.']]},
+  {m:3,n:'05',a:'98',t:'Отрезки AC и BD — диаметры окружности с центром O. Угол ACB равен 41°. Найдите угол AOD.',
+   s:[['Вписанный угол','∠ACB = 41° опирается на дугу AB ⇒ дуга AB = 82°.'],['Диаметр','BD — диаметр, дуга BAD = 180° ⇒ дуга AD = 180° − 82° = 98°.'],['Ответ','∠AOD = <b>98°</b>.']]},
+  {m:3,n:'06',a:'82',t:'Отрезки AC и BD — диаметры окружности с центром O. Угол AOD равен 16°. Найдите вписанный угол ACB.',
+   s:[['Вертикальные углы','∠BOC = ∠AOD = 16°.'],['Равнобедренный треугольник','OB = OC ⇒ ∠OCB = (180° − 16°)/2.'],['Ответ','∠ACB = <b>82°</b>.']]},
+  {m:3,n:'11а',a:'33',t:'Угол ACO равен 57°. Его сторона CA касается окружности с центром в точке O. Отрезок CO пересекает окружность в точке B. Найдите градусную меру дуги AB окружности, заключённой внутри этого угла.',
+   s:[['Касательная','∠CAO = 90°.'],['Треугольник AOC','∠AOC = 180° − 90° − 57° = 33°.'],['Ответ','Дуга AB = <b>33°</b>.']]},
+  {m:3,n:'11б',a:'24',t:'Найдите угол ACO, если его сторона CA касается окружности с центром O, отрезок CO пересекает окружность в точке B, а дуга AB окружности, заключённая внутри этого угла, равна 66°.',
+   s:[['Касательная','∠CAO = 90°.'],['Центральный угол','∠AOB = 66°.'],['Ответ','∠ACO = 180° − 90° − 66° = <b>24°</b>.']]},
+  {m:3,n:'12а',a:'77',t:'Четырёхугольник ABCD вписан в окружность. Угол ABC равен 120°, угол ABD равен 43°. Найдите угол CAD.',
+   s:[['Углы на одну дугу','∠CAD и ∠CBD равны.'],['Находим ∠CBD','∠CBD = 120° − 43° = 77°.'],['Ответ','<b>77°</b>.']]},
+  {m:3,n:'12б',a:'98',t:'Четырёхугольник ABCD вписан в окружность. Угол ABD равен 61°, угол CAD равен 37°. Найдите угол ABC.',
+   s:[['Углы на одну дугу','∠CBD = ∠CAD = 37°.'],['Складываем','∠ABC = 61° + 37°.'],['Ответ','<b>98°</b>.']]},
+  {m:3,n:'13',a:'61',t:'Четырёхугольник ABCD вписан в окружность. Угол ABC равен 103°, угол CAD равен 42°. Найдите угол ABD.',
+   s:[['Углы на одну дугу','∠DBC = ∠CAD = 42°.'],['Вычитаем','∠ABD = 103° − 42°.'],['Ответ','<b>61°</b>.']]},
+  {m:3,n:'14',a:'39',t:'Найдите угол ACB, если вписанные углы ADB и DAE опираются на дуги окружности, градусные меры которых равны соответственно 116° и 38°.',
+   s:[['Вписанные углы','∠ADB = 58°, ∠DAE = 19°.'],['Внешний угол','∠ADB = ∠DAC + ∠ACD.'],['Ответ','∠ACB = 58° − 19° = <b>39°</b>.']]},
+  {m:3,n:'15',a:'18',t:'Угол ACB равен 33°. Градусная мера дуги AB окружности, не содержащей точек D и E, равна 102°. Найдите угол DAE.',
+   s:[['Вписанный угол','∠BDA = 51°.'],['Внешний угол','51° = ∠DAE + 33°.'],['Ответ','<b>18°</b>.']]},
+  {m:3,n:'16',a:'99,5',t:'Стороны AB, BC, CD и AD четырёхугольника ABCD стягивают дуги описанной окружности, градусные величины которых равны соответственно 46°, 115°, 122°, 77°. Найдите угол ABC.',
+   s:[['Вписанный угол','∠ABC опирается на дугу ADC.'],['Дуга ADC','122° + 77° = 199°.'],['Ответ','199° : 2 = <b>99,5°</b>.']]},
+  {m:3,n:'17',a:'55',t:'Точки A, B, C, D делят окружность на дуги AB, BC, CD и AD, которые относятся как 12 : 4 : 7 : 13. Найдите угол BAD.',
+   s:[['Пусть','36x = 360° ⇒ x = 10°.'],['Нужная дуга','BC + CD = 110°.'],['Ответ','110° : 2 = <b>55°</b>.']]},
+  {m:3,n:'18',a:'56',t:'Найдите центральный угол, если он на 28° больше острого вписанного угла, опирающегося на ту же дугу.',
+   s:[['Связь','α = 2β.'],['Уравнение','2β = β + 28° ⇒ β = 28°.'],['Ответ','α = <b>56°</b>.']]},
+  {m:3,n:'30',a:'68',t:'Касательные CA и CB к окружности образуют угол ACB, равный 112°. Найдите величину меньшей дуги AB, стягиваемой точками касания.',
+   s:[['Касательные','∠OAC = ∠OBC = 90°.'],['Четырёхугольник','∠AOB = 360° − 90° − 90° − 112° = 68°.'],['Ответ','<b>68°</b>.']]},
+  {m:4,n:'07',a:'121',t:'Два угла вписанного в окружность четырёхугольника равны 59° и 102°. Найдите больший из оставшихся углов.',
+   s:[['Свойство','Сумма противоположных углов = 180°.'],['Данные углы не противоположные','59° + 102° ≠ 180°.'],['Ответ','121° и 78°, больший — <b>121°</b>.']]},
+  {m:4,n:'08',a:'54',t:'В четырёхугольник ABCD вписана окружность, AB = 10, CD = 17. Найдите периметр четырёхугольника ABCD.',
+   s:[['Свойство','AB + CD = BC + AD.'],['Сумма','10 + 17 = 27.'],['Ответ','P = 27 + 27 = <b>54</b>.']]},
+  {m:4,n:'23',a:'3',t:'В треугольнике ABC сторона AB равна 3√2, угол C равен 135°. Найдите радиус описанной около этого треугольника окружности.',
+   s:[['Теорема синусов','AB / sin C = 2R.'],['sin 135° = √2/2.'],['Ответ','R = 3√2 / (2 · √2/2) = <b>3</b>.']]},
+  {m:4,n:'24',a:'120',t:'Радиус окружности равен √6. Найдите величину тупого вписанного угла, опирающегося на хорду, равную 3√2.',
+   s:[['Теорема синусов','sin α = 3√2 / (2√6) = √3/2.'],['Два угла','60° и 120°.'],['Ответ','Тупой — <b>120°</b>.']]},
+  {m:4,n:'25',a:'6',t:'Найдите хорду, на которую опирается угол 135°, вписанный в окружность радиуса 3√2.',
+   s:[['Теорема синусов','AB = 2R · sin 135°.'],['Подставляем','2 · 3√2 · √2/2.'],['Ответ','<b>6</b>.']]},
+  {m:4,n:'37',a:'5,5',t:'Боковые стороны трапеции, описанной около окружности, равны 7 и 4. Найдите среднюю линию трапеции.',
+   s:[['Описанный четырёхугольник','Сумма оснований = сумме боковых сторон = 11.'],['Средняя линия','m = 11 / 2.'],['Ответ','<b>5,5</b>.']]},
+  {m:4,n:'38',a:'7,5',t:'Около окружности описана трапеция, периметр которой равен 30. Найдите длину её средней линии.',
+   s:[['Описанный четырёхугольник','Сумма оснований = половине периметра = 15.'],['Ответ','m = 15 / 2 = <b>7,5</b>.']]},
+  {m:4,n:'40',a:'8',t:'Около трапеции описана окружность. Периметр трапеции равен 38, средняя линия равна 11. Найдите боковую сторону трапеции.',
+   s:[['Вписанная трапеция','Она равнобедренная.'],['Основания','Сумма = 22.'],['Ответ','(38 − 22) / 2 = <b>8</b>.']]},
+  {m:5,n:'20а',a:'5',t:'Основания трапеции равны 4 и 10. Найдите больший из отрезков, на которые делит среднюю линию этой трапеции одна из её диагоналей.',
+   s:[['Средние линии треугольников','4 : 2 = 2 и 10 : 2 = 5.'],['Ответ','<b>5</b>.']]},
+  {m:5,n:'20б',a:'28,8',t:'Средняя линия трапеции равна 24. Одна из диагоналей трапеции делит среднюю линию в отношении 2 : 3. Найдите большее основание трапеции.',
+   s:[['Части','2a + 3a = 24 ⇒ a = 4,8; 3a = 14,4.'],['Средняя линия','14,4 — половина большего основания.'],['Ответ','<b>28,8</b>.']]},
+  {m:5,n:'21',a:'3',t:'Основания равнобедренной трапеции равны 45 и 24. Тангенс острого угла равен 2/7. Найдите высоту трапеции.',
+   s:[['Проекция','(45 − 24) / 2 = 10,5.'],['Тангенс','h = 10,5 · 2/7.'],['Ответ','<b>3</b>.']]},
+  {m:5,n:'22',a:'0,6',t:'Основания равнобедренной трапеции равны 45 и 14. Высота трапеции равна 9,3. Найдите тангенс острого угла.',
+   s:[['Проекция','(45 − 14) / 2 = 15,5.'],['Тангенс','9,3 / 15,5.'],['Ответ','<b>0,6</b>.']]},
+  {m:5,n:'41',a:'48',t:'В равнобедренной трапеции диагонали перпендикулярны. Высота трапеции равна 48. Найдите её среднюю линию.',
+   s:[['Факт','Если диагонали перпендикулярны, h = m.'],['Ответ','<b>48</b>.']]},
+  {m:5,n:'42',a:'7,5',t:'Основания трапеции равны 29 и 44. Найдите отрезок, соединяющий середины диагоналей трапеции.',
+   s:[['Факт','Отрезок = (a − b) / 2.'],['Считаем','(44 − 29) / 2.'],['Ответ','<b>7,5</b>.']]},
+  {m:6,n:'19',a:'9',t:'Стороны параллелограмма равны 18 и 20. Высота, опущенная на меньшую из этих сторон, равна 10. Найдите длину высоты, опущенной на большую сторону параллелограмма.',
+   s:[['Площадь','S = 18 · 10 = 180.'],['Та же площадь','180 = 20 · h.'],['Ответ','h = <b>9</b>.']]},
+  {m:6,n:'26',a:'18',t:'Площадь параллелограмма ABCD равна 24. Точка E — середина стороны AD. Найдите площадь трапеции BCDE.',
+   s:[['Треугольник ABE','Его площадь = ¼ S = 6.'],['Вычитаем','24 − 6.'],['Ответ','<b>18</b>.']]},
+  {m:6,n:'27а',a:'12',t:'Две стороны треугольника равны 15 и 18. Высота, опущенная на большую из этих сторон, равна 10. Найдите длину высоты, опущенной на меньшую из этих сторон треугольника.',
+   s:[['Площадь','S = ½ · 18 · 10 = 90.'],['Та же площадь','90 = ½ · 15 · h.'],['Ответ','h = <b>12</b>.']]},
+  {m:6,n:'29',a:'18',t:'Площадь треугольника ABC равна 24. DE — средняя линия, параллельная стороне AB. Найдите площадь трапеции ABED.',
+   s:[['Подобие','△CDE ∼ △CAB, k = ½ ⇒ S = 6.'],['Ответ','24 − 6 = <b>18</b>.']]},
+  {m:6,n:'31',a:'100',t:'Угол при вершине, противолежащей основанию равнобедренного треугольника, равен 150°. Боковая сторона треугольника равна 20. Найдите площадь этого треугольника.',
+   s:[['Формула','S = ½ a² sin α.'],['Подставляем','½ · 400 · ½.'],['Ответ','<b>100</b>.']]},
+  {m:6,n:'39',a:'1,5',t:'Площадь ромба равна 9. Одна из его диагоналей в 8 раз больше другой. Найдите меньшую диагональ.',
+   s:[['Площадь','½ · 8d · d = 9.'],['Уравнение','4d² = 9.'],['Ответ','d = <b>1,5</b>.']]},
+  {m:6,n:'45',a:'14,7',t:'Биссектриса тупого угла параллелограмма делит противоположную сторону в отношении 3 : 4, считая от вершины острого угла. Найдите большую сторону параллелограмма, если его периметр равен 42.',
+   s:[['Равнобедренный треугольник','AD = AE.'],['Пусть','AE = 3k, EB = 4k ⇒ AB = 7k, AD = 3k; 20k = 42.'],['Ответ','AB = 7 · 2,1 = <b>14,7</b>.']]},
+  {m:6,n:'46',a:'2,5',t:'Точка пересечения биссектрис двух углов параллелограмма, прилежащих к одной стороне, принадлежит противоположной стороне. Найдите меньшую сторону параллелограмма, если его периметр равен 15.',
+   s:[['Два равнобедренных треугольника','CD = 2a, AD = a.'],['Периметр','6a = 15.'],['Ответ','a = <b>2,5</b>.']]}
+];
+
+// ================== ЯДРО ==================
+const $ = id => document.getElementById(id);
+const KEY = 'ege1_planim_v3';
+let DB = { list: [], cur: null, data: {}, theme: 'light', stOpen: {}, last: null };
+const newSid = () => 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const blankMod = () => ({ done: {}, tries: {}, hint: {}, ans: {}, hw: {}, fav: {}, work: {} });
+let GUEST = { m: {} };
+let matOpen = {};
+let curTaskId = null;
+let curModN = null;
+let filter = 'all';
+
+function stu() { if (!DB.cur || !DB.list.some(x => x.id === DB.cur)) return GUEST; return DB.data[DB.cur] || (DB.data[DB.cur] = { m: {} }); }
+function md(n, s = stu()) { s.m = s.m || {}; const d = s.m[n] || (s.m[n] = blankMod()); for (const k in blankMod()) d[k] = d[k] || {}; return d; }
+function load() { try { const loc = JSON.parse(localStorage.getItem(KEY)); if (loc) DB = { ...DB, ...loc }; } catch (e) {} DB.stOpen = DB.stOpen || {}; DB.data = DB.data || {}; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch (e) {} }
+function stuName() { const s = DB.list.find(x => x.id === DB.cur); return s ? s.name : null; }
+function needStu() { if (stuName()) return true; openStudents(); return false; }
+
+// ================== ПАРСЕР ВЫРАЖЕНИЙ ==================
+// Поддерживает: числа с точкой/запятой, + - * / ^, скобки, √, степени, дроби a/b
+function parseExpr(str) {
+  if (str == null) return NaN;
+  // 1. Нормализация
+  let s = String(str).trim()
+    .replace(/,/g, '.')        // запятая -> точка
+    .replace(/:/g, '/')        // двоеточие -> деление
+    .replace(/\s+/g, '')       // убрать пробелы
+    .replace(/[х×]/gi, '*')    // русская х и знак умножения
+    .replace(/−/g, '-')        // минус-тире
+    .replace(/√(\d+(?:\.\d+)?)/g, 'sqrt($1)') // √19 -> sqrt(19)
+    .replace(/(\d)\(/g, '$1*('); // 2(3) -> 2*(3)
+  // 2. Простейший рекурсивный парсер
+  let pos = 0;
+  function parseExpression() {
+    let val = parseTerm();
+    while (pos < s.length && (s[pos] === '+' || s[pos] === '-')) {
+      const op = s[pos++];
+      const next = parseTerm();
+      val = op === '+' ? val + next : val - next;
+    }
+    return val;
+  }
+  function parseTerm() {
+    let val = parseFactor();
+    while (pos < s.length && (s[pos] === '*' || s[pos] === '/')) {
+      const op = s[pos++];
+      const next = parseFactor();
+      val = op === '*' ? val * next : val / next;
+    }
+    return val;
+  }
+  function parseFactor() {
+    let base = parseAtom();
+    if (pos < s.length && s[pos] === '^') {
+      pos++;
+      const exp = parseFactor();
+      base = Math.pow(base, exp);
+    }
+    return base;
+  }
+  function parseAtom() {
+    if (s[pos] === '(') {
+      pos++;
+      const val = parseExpression();
+      if (s[pos] === ')') pos++;
+      return val;
+    }
+    // sqrt
+    if (s.startsWith('sqrt(', pos)) {
+      pos += 5;
+      const val = parseExpression();
+      if (s[pos] === ')') pos++;
+      return Math.sqrt(val);
+    }
+    // число
+    let start = pos;
+    while (pos < s.length && /[0-9.]/.test(s[pos])) pos++;
+    if (start === pos) return NaN;
+    return parseFloat(s.slice(start, pos));
+  }
+  const res = parseExpression();
+  if (pos !== s.length || isNaN(res)) return NaN;
+  return res;
+}
+
+// ================== ПРОВЕРКА ОТВЕТА ==================
+function defCheck(t, v) {
+  const a = String(v ?? '').trim();
+  if (!a) return false;
+  // Точное строковое совпадение с нормализацией (для ответов вида "120°" или "60, 120")
+  const norm = s => String(s ?? '').trim().toUpperCase().replace(/\s+/g, '').replace(/,/g, '.');
+  const all = [t.ans, ...(t.alts || [])].map(norm);
+  if (all.includes(norm(a))) return true;
+  // Численное сравнение через парсер
+  const numA = parseExpr(a);
+  const numB = parseExpr(t.ans);
+  if (!isNaN(numA) && !isNaN(numB)) return Math.abs(numA - numB) < 1e-6;
+  return false;
+}
+
+// ================== СТАТУСЫ ==================
+function stOf(t, d = md(t.mod)) { if (d.done[t.id]) return 'ok'; if (d.tries[t.id]) return 'bad'; if (d.hint[t.id]) return 'hint'; return ''; }
+const stIcon = { ok: '✓', bad: '✗', hint: '💡', '': '' };
+
+// ================== МОДУЛИ ==================
+const MODS = [];
+const reg = m => { m.tasks = m.tasks || []; m.tasks.forEach(t => t.mod = m.n); MODS.push(m); return m; };
+const modBy = n => MODS.find(m => m.n == n);
+
+function buildMods() {
+  for (const [n, title, sub, color, stickers] of META) {
+    const tasks = G1.filter(t => t.m === n).map(t => ({
+      id: 'g' + t.n, kind: 'p', title: '№ ' + t.n + (() => {
+        const q = (t.t.match(/Найдите ([^.]+)\./) || [])[1];
+        return q ? ' · ' + (q.length > 34 ? q.slice(0, 32) + '…' : q) : '';
+      })(), ans: t.a, src: t,
+      steps: t.s.map(s => [s[0], mk(s[1])])
+    }));
+    reg({
+      n, title, sub, color, tasks, stickers,
+      cond: t => esc(t.src.t),
+      toolName: () => '✏️ Черновик',
+      ansPh: () => 'Ответ (можно формулу: 3*√2, 1/2, 2^3)',
+      tool(t, el, ctx) {
+        el.innerHTML = `<textarea id="scratch" placeholder="Пиши вычисления здесь..." style="width:100%;height:80px;border-radius:10px;border:1px solid #ccc;padding:8px;font-family:monospace;resize:vertical">${esc(ctx.work.scratch || '')}</textarea>`;
+        $('scratch').oninput = e => { ctx.work.scratch = e.target.value; ctx.save(); };
+      }
+    });
+  }
+}
+function mk(s) { return String(s).replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, '<span class="fr"><span>$1</span><span>$2</span></span>').replace(/\^(\d)/g, '<sup>$1</sup>'); }
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function modProg(m, s = stu()) { const d = md(m.n, s), T = m.tasks; return { done: T.filter(t => d.done[t.id]).length, total: T.length }; }
+
+// ================== НАВИГАЦИЯ ==================
+let view = 'home';
+function show(id) { ['home', 'mod', 'page'].forEach(x => $(x).classList.toggle('hidden', x !== id)); }
+function go(v) { view = v; if (v === 'home') renderHome(); else if (v === 'stickers') renderStickerWall(); window.scrollTo(0, 0); }
+function orderOf(m) { return m.tasks; }
+
+function renderHome() {
+  view = 'home'; show('home');
+  let D = 0, T = 0;
+  for (const m of MODS) { const p = modProg(m); D += p.done; T += p.total; }
+  const pc = T ? Math.round(100 * D / T) : 0;
+  const nm = stuName();
+  $('home').innerHTML = `<div class="hero"><div><h1>ЕГЭ №1: <span>планиметрия</span></h1><p>${nm ? `Привет, <b>${esc(nm)}</b>! ` : ''}Чертёж, на котором можно рисовать, памятки-стикеры, решение по шагам и проверка ответа.</p></div>
+  <div class="card herostat" style="display:flex;gap:16px;align-items:center;padding:14px 18px"><div class="ring" style="--p:${pc}"><div><b>${pc}%</b><small>решено</small></div></div><div><b style="font-size:22px">${D}</b> <span style="color:var(--muted)">из ${T} задач</span><br><span style="font-size:13px;color:var(--muted)">${nm ? 'Ученик: ' + esc(nm) : 'Выбери ученика'}</span></div></div></div>
+  <div class="grid">${MODS.map(m => { const p = modProg(m), w = p.total ? Math.round(100 * p.done / p.total) : 0; return `<div class="card tile" style="--c:${m.color}" data-mod="${m.n}"><div class="num">${m.n}</div><h3>${esc(m.title)}</h3><p>${esc(m.sub || '')}</p><div class="bar"><i style="width:${w}%"></i></div><div class="meta"><span>${p.done} из ${p.total}</span><span>${w}%</span></div></div>`; }).join('')}</div>`;
+}
+
+function renderSide() {
+  const m = modBy(curModN), d = md(m.n);
+  let h = `<button class="back" data-go="home">← Все задания</button><div class="modhead"><div class="num">${m.n}</div><div><b>${esc(m.title)}</b><small>${modProg(m).done} из ${m.tasks.length} решено</small></div></div>`;
+  h += `<div class="tabs"><button data-filter="all" class="${filter === 'all' ? 'active' : ''}">Все</button><button data-filter="bad" class="${filter === 'bad' ? 'active' : ''}">Ошибки</button><button data-filter="hw" class="${filter === 'hw' ? 'active' : ''}">ДЗ</button></div>`;
+  const list = m.tasks.filter(t => filter === 'all' || (filter === 'bad' ? d.tries[t.id] && !d.done[t.id] : d.hw[t.id]));
+  h += list.map(t => { const st = stOf(t, d); return `<div class="ti ${st} ${t.id === curTaskId ? 'active' : ''}" data-task="${t.id}"><span class="st">${stIcon[st]}</span><span class="tt">${esc(t.title)}</span></div>`; }).join('');
+  $('side').innerHTML = h;
+}
+
+function openMod(n, tid) {
+  const m = modBy(n); if (!m) return;
+  curModN = n;
+  document.documentElement.style.setProperty('--c', m.color);
+  const d = md(n);
+  curTaskId = tid || (m.tasks.find(t => !d.done[t.id]) || m.tasks[0] || {}).id || null;
+  filter = 'all'; view = 'mod'; show('mod');
+  renderSide(); renderWork(); window.scrollTo(0, 0);
+}
+
+function renderWork() {
+  const m = modBy(curModN), d = md(m.n);
+  const t = m.tasks.find(x => x.id === curTaskId);
+  let h = `<div class="stickbar"><button class="btn small" id="stTog">📌 Памятка</button><span style="flex:1"></span><span class="chip c">Тема ${m.n}</span></div>`;
+  if (!t) { $('work').innerHTML = h; return; }
+  const st = stOf(t, d);
+  const steps = t.steps || [];
+  const hl = Math.min(d.hint[t.id] || 0, steps.length);
+  const repair = d.tries[t.id] > 0;
+  h += `<div class="card taskcard ${d.done[t.id] ? 'solved' : ''}">
+    ${repair ? `<div class="repair">🛠 Работа над ошибками — реши верно, чтобы закрыть задание.</div>` : ''}
+    <div class="thead"><h2>${esc(t.title)}</h2>${st === 'ok' ? '<span class="chip ok">✓ Решено</span>' : st === 'bad' ? `<span class="chip bad">ошибок: ${d.tries[t.id]}</span>` : ''}</div>
+    <div class="cond">${m.cond(t)}</div>
+    <div class="tool"><div class="tl">${m.toolName(t)}</div><div id="toolHost"></div></div>
+    <div class="ansrow"><input id="ans" autocomplete="off" placeholder="${esc(m.ansPh(t))}" value="${esc(d.ans[t.id] || '')}"><button class="btn primary" id="chk">Проверить</button>${steps.length ? `<button class="btn" id="hintB">💡 Подсказка${hl ? ` (${hl}/${steps.length})` : ''}</button>` : ''}</div>
+    <div class="fb" id="fb">${d.done[t.id] ? '✓ Верно! Задание выполнено.' : ''}</div>
+    <div class="hintbox">${steps.slice(0, hl).map((s, i) => `<div class="step"><b class="n">${i + 1}</b><div><div class="h">${s[0]}</div>${s[1]}</div></div>`).join('')}</div>
+    <div class="navrow"><button class="btn" id="prevB">← Назад</button><button class="btn" id="nextB">Дальше →</button></div>
+  </div>`;
+  $('work').innerHTML = h;
+  $('work').classList.toggle('solved', !!d.done[t.id]);
+  $('stTog').onclick = () => { $('work').insertAdjacentHTML('afterbegin', stickersHtml(m, true)); $('stTog').remove(); };
+
+  const ctx = {
+    work: d.work[t.id] || (d.work[t.id] = {}),
+    save,
+    setAns: v => { const i = $('ans'); if (i) i.value = v; d.ans[t.id] = v; save(); },
+    check: v => doCheck(m, t, v),
+    done: !!d.done[t.id]
+  };
+  m.tool(t, $('toolHost'), ctx);
+  if ($('ans')) { $('ans').oninput = () => { d.ans[t.id] = $('ans').value; save(); }; $('ans').onkeydown = e => { if (e.key === 'Enter') doCheck(m, t, $('ans').value); }; }
+  $('chk').onclick = () => doCheck(m, t, $('ans').value);
+  if ($('hintB')) $('hintB').onclick = () => { if (hl >= steps.length) return; d.hint[t.id] = hl + 1; save(); renderWork(); renderSide(); };
+  const i = m.tasks.indexOf(t);
+  $('prevB').disabled = i <= 0; $('nextB').disabled = i >= m.tasks.length - 1;
+  $('prevB').onclick = () => selTask(m.tasks[i - 1].id);
+  $('nextB').onclick = () => selTask(m.tasks[i + 1].id);
+}
+
+function selTask(id) { curTaskId = id; renderSide(); renderWork(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+function doCheck(m, t, v) {
+  if (!needStu()) return;
+  const d = md(m.n);
+  if (v != null) d.ans[t.id] = v;
+  const ok = defCheck(t, v);
+  const fb = $('fb');
+  if (ok) {
+    const first = !d.done[t.id];
+    d.done[t.id] = true;
+    d.tries[t.id] = 0; // Сбрасываем ошибки после верного ответа
+    save();
+    fb.className = 'fb ok'; fb.textContent = '✓ Верно! Задание выполнено.';
+    document.querySelector('.taskcard').classList.add('solved');
+    renderSide();
+    if (first) confetti();
+  } else {
+    d.tries[t.id] = (d.tries[t.id] || 0) + 1;
+    save();
+    fb.className = 'fb bad'; fb.textContent = '✗ Пока неверно. Проверь рассуждение и попробуй ещё раз.';
+    renderSide();
+    const c = document.querySelector('.taskcard');
+    c.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }], { duration: 260 });
+  }
+}
+
+function confetti() {
+  const box = document.createElement('div'); box.className = 'confetti';
+  const C = ['#4f6bff', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6'];
+  for (let i = 0; i < 34; i++) {
+    const s = document.createElement('i'); const x = Math.random() * 100, dx = (Math.random() - .5) * 160, dur = 900 + Math.random() * 700;
+    s.style.cssText = `position:absolute;left:${x}%;top:-12px;width:8px;height:12px;border-radius:2px;background:${C[i % 5]}`;
+    s.animate([{ transform: 'translate(0,0) rotate(0)' }, { transform: `translate(${dx}px,${innerHeight * .7}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }], { duration: dur, easing: 'cubic-bezier(.2,.6,.4,1)' });
+    box.appendChild(s);
+  }
+  document.body.appendChild(box); setTimeout(() => box.remove(), 1700);
+}
+
+// ================== СТИКЕРЫ ==================
+function stickersHtml(m, strip) {
+  return `<div class="board${strip ? ' strip' : ''}">${(m.stickers || []).map(s => `<div class="sticker"><h4>${s[0]}</h4>${s[1]}</div>`).join('')}</div>`;
+}
+function renderStickerWall() {
+  view = 'stickers'; show('page');
+  $('page').innerHTML = `<div style="max-width:1300px;margin:0 auto;padding:20px"><div class="hero"><div><h1>📌 Стена <span>стикеров</span></h1><p>Короткие неформальные памятки по всем заданиям — открой перед решением или распечатай.</p></div><button class="btn" onclick="window.print()">🖨 Печать</button></div>` +
+    MODS.map(m => `<div style="--c:${m.color};margin-bottom:10px"><h2 style="font-size:20px"><span class="chip c" style="font-size:15px">Тема ${m.n}</span> ${esc(m.title)}</h2></div>${stickersHtml(m)}`).join('') + '</div>';
+}
+
+// ================== УЧЕНИКИ ==================
+function renderStudents() {
+  const L = DB.list;
+  $('stuList').innerHTML = L.length ? L.map(x => `<div class="sturow${x.id === DB.cur ? ' cur' : ''}"><button class="pick" data-pick="${x.id}">${x.id === DB.cur ? '✓ ' : ''}${esc(x.name)}</button><button class="btn small" data-del="${x.id}">🗑</button></div>`).join('') : '<div style="color:var(--muted);font-size:14px">Список пуст.</div>';
+}
+function openStudents() { renderStudents(); $('stuNew').value = ''; if (!$('stuModal').open) $('stuModal').showModal(); }
+function updStu() { const n = stuName(); $('stuBtn').textContent = '👤 ' + (n || 'Выбрать ученика'); }
+function switchStudent(id) { DB.cur = id; save(); updStu(); renderHome(); }
+
+// ================== ОТЧЁТ ==================
+function openReport() {
+  if (!needStu()) return;
+  const nm = stuName();
+  let rows = '';
+  for (const m of MODS) {
+    const p = modProg(m);
+    rows += `<h3 style="margin:18px 0 6px"><span class="chip c">Тема ${m.n}</span> ${esc(m.title)} — ${p.done}/${p.total}</h3>`;
+    const d = md(m.n);
+    rows += `<table class="mtable"><tr><th>Задача</th><th>Статус</th><th>Ответ ученика</th><th>Верный</th><th>Ошибок</th><th>Подсказка</th></tr>${m.tasks.map(t => `<tr><td>${esc(t.title)}</td><td>${{ ok: '✅ решено', bad: '❌ не решено', hint: '💡 подсказка', '': '—' }[stOf(t, d)]}</td><td class="mono">${esc(d.ans[t.id] || '')}</td><td class="mono">${esc(t.ans)}</td><td>${d.tries[t.id] || 0}</td><td>${d.hint[t.id] ? 'шагов: ' + d.hint[t.id] : ''}</td></tr>`).join('')}</table>`;
+  }
+  openOverlay(`<h2 style="margin-top:0">📋 Ответ учителю — ${esc(nm)}</h2><p style="color:var(--muted)">${new Date().toLocaleString('ru-RU')}</p><p><button class="btn primary" id="prRep">🖨 Печать / PDF</button></p>${rows}`);
+  $('prRep').onclick = () => { window.print(); };
+}
+function openOverlay(html) { $('ovl').innerHTML = `<div class="overlay" id="ov"><div class="modal"><button class="btn small x" id="ovX">✕</button>${html}</div></div>`; $('ovX').onclick = closeOverlay; $('ov').onclick = e => { if (e.target.id === 'ov') closeOverlay(); }; }
+function closeOverlay() { $('ovl').innerHTML = ''; }
+
+// ================== СОБЫТИЯ ==================
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); return; }
+  const mo = e.target.closest('[data-mod]'); if (mo) { openMod(+mo.dataset.mod); return; }
+  const ta = e.target.closest('[data-task]'); if (ta) { selTask(ta.dataset.task); return; }
+  const fi = e.target.closest('[data-filter]'); if (fi) { filter = fi.dataset.filter; renderSide(); return; }
+});
+
+$('brand').onclick = () => go('home');
+$('stuBtn').onclick = openStudents;
+$('stuClose').onclick = () => $('stuModal').close();
+$('repBtn').onclick = openReport;
+$('stuAdd').onclick = () => { const n = $('stuNew').value.trim(); if (!n) return; const id = newSid(); DB.list.push({ id, name: n }); DB.data[id] = { m: {} }; switchStudent(id); renderStudents(); $('stuNew').value = ''; };
+$('stuList').onclick = e => {
+  const p = e.target.closest('[data-pick]'); if (p) { switchStudent(p.dataset.pick); $('stuModal').close(); return; }
+  const d = e.target.closest('[data-del]'); if (d) { if (!confirm('Удалить ученика?')) return; DB.list = DB.list.filter(q => q.id !== d.dataset.del); delete DB.data[d.dataset.del]; if (DB.cur === d.dataset.del) DB.cur = DB.list[0]?.id || null; save(); updStu(); renderStudents(); renderHome(); }
+};
+$('themeBtn').onclick = () => { DB.theme = DB.theme === 'dark' ? 'light' : 'dark'; save(); applyTheme(); };
+function applyTheme() { document.body.style.filter = DB.theme === 'dark' ? 'invert(1) hue-rotate(180deg)' : ''; $('themeBtn').textContent = DB.theme === 'dark' ? '☀' : '☾'; }
+
+function boot() {
+  buildMods();
+  load();
+  updStu();
+  applyTheme();
+  renderHome();
+  if (!DB.cur) openStudents();
+}
+boot();
+</script>
+</body>
+</html>
