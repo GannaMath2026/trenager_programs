@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Практикум по геометрии · трапеции</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--ink:#18324f;--line:#dbe5f1;--glow:#ffb547}
+        body {
+            margin: 0; padding: 0; display: flex; height: 100vh;
+            background:linear-gradient(135deg,#edf4ff,#fbf7ff 55%,#f6fbff); font-family:system-ui,'Segoe UI',sans-serif; overflow: hidden;
+            user-select: none;
+        }
+        
+        /* Левая часть - чертеж */
+        #canvas-container {
+            flex: 1.2; display: flex; justify-content: center; align-items: center;
+            position: relative; background:radial-gradient(ellipse at 50% 45%,#fff 0,#f9fbff 68%,#f1f5fc 100%);
+            border-right:1px solid var(--line);
+            overflow: hidden; /* Чтобы чертеж не вылезал при перетаскивании */
+        }
+        #board { position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none }
+        #board:active{cursor:grabbing}
+        #board .geo-line{stroke-linecap:round;stroke-linejoin:round}
+        #board .geo-label{font-family:system-ui,'Segoe UI',sans-serif;font-weight:750;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
+        #board .glow-halo{fill:none;stroke-width:8;opacity:.58;filter:blur(5px);animation:glowFade 1.15s ease-out forwards;pointer-events:none}
+        #board .soft-flash{animation:softFlash 1s ease-out both;transform-box:fill-box;transform-origin:center}
+        #board .draw-in{stroke-dasharray:1;stroke-dashoffset:1;animation:vectorDraw .8s cubic-bezier(.3,.05,.2,1) forwards}
+        #board .number-arrive{animation:numberIn .8s ease-out both;transform-box:fill-box;transform-origin:center}
+        @keyframes vectorDraw{to{stroke-dashoffset:0}}@keyframes glowFade{to{opacity:0}}
+        @keyframes softFlash{0%{filter:none;transform:scale(.96)}35%{filter:drop-shadow(0 0 10px var(--glow));transform:scale(1.03)}100%{filter:none;transform:scale(1)}}
+        @keyframes numberIn{0%{opacity:0;transform:scale(.72)}38%{opacity:1;transform:scale(1.12);filter:drop-shadow(0 0 9px #ffbd58)}100%{opacity:1;transform:scale(1);filter:none}}
+        #drawCanvas { position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;cursor:crosshair }
+        #drawCanvas.active { pointer-events: auto; }
+        #taskOutline{flex:0 0 244px;box-sizing:border-box;overflow-y:auto;padding:20px 14px;background:rgba(247,250,255,.96);border-right:1px solid var(--line);z-index:5}
+        .outline-title{margin:0 0 14px;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:#647793}
+        .outline-group{margin:0 0 12px;border-radius:14px;background:#fff;border:1px solid #e3eaf4;overflow:hidden;box-shadow:0 4px 14px #294a760a}
+        .outline-group-title{display:block;width:100%;text-align:left;border:0;border-radius:0;box-shadow:none;background:#f3f7fd;color:#234367;padding:11px 12px;font-size:14px;line-height:1.35}
+        .outline-item{display:block;width:calc(100% - 12px);margin:5px 6px;text-align:left;border:0;border-radius:10px;box-shadow:none;background:transparent;color:#536982;font-size:13px;padding:9px 10px;line-height:1.25}
+        .outline-item.active{color:#194fb3;background:#e9f1ff;box-shadow:inset 3px 0 #4779df}
+        
+        /* Правая часть - текст */
+        #text-container {
+            flex: 0.9; padding: 28px 32px; box-sizing: border-box;
+            font-size: 22px; line-height: 1.45; color: var(--ink);
+            overflow-y: auto; border-left: 1px solid #eee; background: #fff;
+            position: relative;
+        }
+        
+        .step { display: none; margin-bottom: 18px; padding:22px 24px; border:1px solid #e0e9f5;border-radius:20px;background:linear-gradient(145deg,#fff,#f8fbff);box-shadow:0 12px 34px rgba(43,75,125,.08); }
+        .step.visible { display: block; }
+        
+        .red { color: #d32f2f; font-weight: bold; }
+        .blue { color: #1976d2; font-weight: bold; }
+        .green { color: #2e7d32; font-weight: bold; }
+        .violet{color:#7956d8;font-weight:750}
+
+        /* Вертикальные дроби */
+        .frac {
+            display: inline-block; vertical-align: middle; text-align: center;
+            margin: 0 5px; font-size: 0.95em; line-height: 1.1;
+        }
+        .frac span { display: block; }
+        .frac .top { border-bottom: 2px solid #1e2d46; padding-bottom: 2px; }
+        .frac .bottom { padding-top: 2px; }
+
+        /* Кнопки управления */
+        #controls {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 15px; z-index: 20;
+        }
+        button {
+            font-family:inherit; font-size: 16px; font-weight:700; padding: 9px 16px;
+            cursor: pointer; background-color: #fff; border: 1px solid #cad7ea;
+            border-radius: 12px; transition: all 0.2s; box-shadow: 0 5px 14px rgba(32,60,100,.1);
+            color: #2c3e50;
+        }
+        button:hover:not(:disabled) { background-color: #2c3e50; color: #fff; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+        
+        /* Инструменты */
+        .toolbar {
+            position: absolute; top: 14px; left: 14px; display: flex; gap: 8px; z-index: 20;
+        }
+        .tool-btn { font-size: 20px; padding: 5px 15px; }
+        .tool-btn.active { background-color: #1976d2; color: #fff; border-color: #1976d2; }
+        
+        /* Вкладки задач */
+        #tabs {
+            display:none;
+        }
+        .tab {
+            font-size: 22px; padding: 5px 15px; border: 2px solid #2c3e50;
+            border-radius: 5px; background: #fff; cursor: pointer; transition: 0.3s;
+        }
+        .tab.active { background: #2c3e50; color: #fff; }
+
+        /* Оценка */
+        #final-grade {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            background: rgba(255, 255, 255, 0.95); padding: 40px 60px; border-radius: 20px;
+            border: 4px solid #2e7d32; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center; z-index: 100; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #final-grade.show { transform: translate(-50%, -50%) scale(1); }
+        #final-grade h1 { margin: 0; font-size: 50px; color: #2e7d32; }
+        #final-grade h2 { margin: 10px 0 0 0; font-size: 40px; color: #d32f2f; }
+        #final-grade .star { font-size: 60px; color: #fbc02d; }
+        body.solution-fullscreen #canvas-container{position:fixed;inset:0;z-index:1000;flex:unset;border:0}
+        body.solution-fullscreen #text-container{display:block;position:fixed;z-index:1001;right:18px;top:74px;bottom:18px;width:min(46vw,690px);overflow:auto;border-radius:22px;box-shadow:0 20px 70px #16284438;background:rgba(255,255,255,.96);padding:20px}
+        body.solution-fullscreen #text-container .step{display:block;margin:0 0 10px;padding:12px 15px;font-size:16px;line-height:1.36}
+        body.solution-fullscreen #text-container .step:first-child{border-color:#f2ce79;background:#fffaf0}
+        body.solution-fullscreen #controls{bottom:20px}
+        body.solution-fullscreen .toolbar,body.solution-fullscreen #tabs{z-index:1002}
+        @media(max-width:850px){body{flex-direction:column}#taskOutline{flex:none;max-height:22vh;width:100%;display:flex;align-items:flex-start;gap:8px;padding:8px;overflow:auto;border-right:0;border-bottom:1px solid var(--line)}.outline-title{position:sticky;left:0;min-width:70px;margin:5px 0}.outline-group{min-width:220px;margin:0}.outline-item{width:calc(100% - 12px)}#canvas-container{min-height:42vh}#text-container{flex:1;padding:14px;font-size:18px}body.solution-fullscreen #text-container{left:10px;right:10px;top:auto;bottom:76px;width:auto;max-height:42vh}.toolbar{top:8px!important;left:8px!important}button{font-size:14px!important;padding:6px 9px!important}}
+
+    </style>
+</head>
+<body>
+
+    <aside id="taskOutline" aria-label="Оглавление задач"><h2 class="outline-title">Задачи</h2><div id="outlineGroups"></div></aside>
+    <div id="tabs"></div>
+
+    <div id="canvas-container">
+        <div class="toolbar">
+            <button id="drawBtn" class="tool-btn">✏️ Рисовать</button>
+            <button id="eraseBtn" class="tool-btn">🧹 Стереть</button>
+            <button id="showAllBtn" class="tool-btn">📄 Решение целиком</button>
+        </div>
+        <svg id="board" viewBox="0 0 1000 900" preserveAspectRatio="xMidYMid meet" aria-label="Векторный чертёж трапеции и окружности"></svg>
+        <canvas id="drawCanvas" width="1000" height="900"></canvas>
+        <div id="controls">
+            <button id="prevBtn" disabled>Назад</button>
+            <button id="nextBtn">Далее (Пробел)</button>
+        </div>
+    </div>
+
+    <div id="text-container"></div>
+
+    <div id="final-grade">
+        <div class="star">⭐</div>
+        <h1>РЕШЕНО ОТЛИЧНО!</h1>
+        <h2>ОЦЕНКА: 5</h2>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('board');
+        const drawCanvas = document.getElementById('drawCanvas');
+        const dctx = drawCanvas.getContext('2d');
+        
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const drawBtn = document.getElementById('drawBtn');
+        const eraseBtn = document.getElementById('eraseBtn');
+        const showAllBtn = document.getElementById('showAllBtn');
+        const textContainer = document.getElementById('text-container');
+        const finalGrade = document.getElementById('final-grade');
+
+        let currentTask = 0;
+        let currentStep = 0;
+        let isAnimating = false;
+        let animQueue = [];
+        let typingTimeout = null;
+
+        // Переменные для перетаскивания (Pan)
+        let isPanning = false;
+        let panStartX, panStartY;
+        let panX = 0, panY = 0;
+
+        // --- КООРДИНАТЫ ЧЕРТЕЖЕЙ ---
+        const tasks = [
+            {
+                // Задача 1 (Правильная ориентация: AD горизонтально)
+                cfg: { scale: 15, offsetX: 550, offsetY: 500 },
+                pts: {
+                    A: {x: -17, y: 0},
+                    D: {x: 17, y: 0},
+                    E: {x: -4.76, y: 16.32},
+                    B: {x: -9.8, y: 9.6},
+                    C: {x: 4.2, y: 9.6},
+                    O: {x: -23.87, y: 12.65},
+                    H: {x: -13.4, y: 4.8},
+                    T: {x: -15.23, y: 24.17}
+                },
+                R: 14.4,
+                texts: [
+                    `Дано:<br>Трапеция <i>ABCD</i>.<br>Основания <i>AD</i> = <span class="red">34</span>, <i>BC</i> = <span class="red">14</span>.<br>Сумма углов при основании <i>AD</i> равна <span class="red">90°</span>.<br>Боковая сторона <i>AB</i> = <span class="red">12</span>.<br>Окружность проходит через <i>A</i> и <i>B</i> и касается <i>CD</i>.`,
+                    `Шаг 1: Достраиваем до треугольника<br>Продлим стороны <i>AB</i> и <i>CD</i> до пересечения в точке <i>E</i>. Так как сумма углов при <i>AD</i> равна 90°, то треугольник <i>AED</i> — <span class="red">прямоугольный</span> (угол <i>E</i> = 90°).`,
+                    `Шаг 2: Доказываем подобие<br><span class="blue">∠EBC = ∠EAD</span> и <span class="violet">∠ECB = ∠EDA</span> — накрест лежащие углы при <i>BC</i> ∥ <i>AD</i>.<br><span class="red">∠BEC = ∠AED = 90°</span> — общий прямой угол.<br>Значит, <i>△EBC ∼ △EAD</i> по двум углам. Коэффициент: <i>k</i> = 14/34 = <b>7/17</b>.`,
+                    `Шаг 3: Вводим неизвестное<br>Пусть <i>EB</i> = <i>x</i>.<br>Тогда <i>EA</i> = <i>x</i> + 12.`,
+                    `Шаг 4: Составляем пропорцию<br><span class="frac"><span class="top"><i>x</i></span><span class="bottom"><i>x</i>+12</span></span> = <span class="frac"><span class="top">7</span><span class="bottom">17</span></span><br>17<i>x</i> = 7<i>x</i> + 84 ⟹ 10<i>x</i> = 84 ⟹ <span class="red"><i>x</i> = 8.4</span>.<br>Значит, <i>EB</i> = 8.4, <i>EA</i> = 20.4.`,
+                    `Шаг 5: Свойства окружности<br>Проведем окружность с центром <i>O</i>, проходящую через <i>A</i> и <i>B</i> и касающуюся <i>CD</i> в точке <i>T</i>.<br>Проведем радиусы <i>OA</i>, <i>OB</i>, <i>OT</i>.<br>Так как радиус, проведенный в точку касания, <span class="red">перпендикулярен касательной</span>, то <i>OT</i> ⊥ <i>CD</i>.`,
+                    `Шаг 6: Проводим высоту<br>Из центра <i>O</i> опустим высоту <i>OH</i> на хорду <i>AB</i>. На чертеже отмечен прямой угол: <span class="blue"><i>OH</i> ⟂ <i>AB</i></span>.`,
+                    `Шаг 7: Находим половину хорды<br>В равнобедренном треугольнике <i>AOB</i> высота к основанию одновременно является медианой. Поэтому отмечаем равные отрезки: <span class="blue"><i>AH</i> = <i>HB</i></span>.<br>Так как <i>AB</i> = 12, получаем <span class="red"><i>AH</i> = <i>HB</i> = 6</span>.`,
+                    `Шаг 8: Прямоугольник<br>В четырехугольнике <i>OHTE</i> три угла по 90° (∠E, ∠H, ∠T). Если в четырехугольнике три угла прямые, то это <span class="red">прямоугольник</span>.<br>Значит, <i>OT</i> = <i>HE</i> (противоположные стороны равны).`,
+                    `Шаг 9: Вычисляем радиус<br><i>HE</i> = <i>EA</i> − <i>AH</i> = 20.4 − 6 = <span class="red">14.4</span>.<br>Так как <i>OHTE</i> — прямоугольник, <i>OT</i> = <i>HE</i>. Следовательно, <span class="red"><i>R</i> = 14.4</span>.<br><br><b>Ответ: 14.4</b>`
+                ]
+            },
+            {
+                // Задача 2: Равнобедренная трапеция с вписанной окружностью
+                cfg: { scale: 25, offsetX: 500, offsetY: 600 },
+                pts: {
+                    A: {x: -10, y: 0}, D: {x: 10, y: 0},
+                    B: {x: -5, y: 14.14}, C: {x: 5, y: 14.14},
+                    O: {x: 0, y: 7.07},
+                    T_bot: {x: 0, y: 0}, T_top: {x: 0, y: 14.14},
+                    T_right: {x: 6.67, y: 9.43}, // Исправленная точка касания
+                    H: {x: -5, y: 0}
+                },
+                R: 7.07,
+                texts: [
+                    `Дано:<br>Равнобедренная трапеция <i>ABCD</i>.<br>Основания <i>AD</i> = <span class="red">20</span>, <i>BC</i> = <span class="red">10</span>.<br>Окружность внутри трапеции касается оснований <i>AD</i>, <i>BC</i> и боковой стороны <i>CD</i>.<br>Найти радиус.`,
+                    `Шаг 1: Свойство описанного четырехугольника<br>Так как окружность вписана в четырехугольник, суммы противоположных сторон равны.<br><i>AD</i> + <i>BC</i> = <i>AB</i> + <i>CD</i>.<br>Трапеция равнобедренная, значит <i>AB</i> = <i>CD</i>.<br>20 + 10 = 2<i>AB</i> ⟹ <i>AB</i> = 15.`,
+                    `Шаг 2: Проводим высоту<br>Опустим высоту <i>BH</i> из вершины <i>B</i> на основание <i>AD</i>.<br>Отрезок <i>AH</i> = (<i>AD</i> - <i>BC</i>) / 2 = (20 - 10) / 2 = 5.`,
+                    `Шаг 3: Теорема Пифагора<br>В прямоугольном треугольнике <i>ABH</i>:<br><i>BH</i>² + <i>AH</i>² = <i>AB</i>².<br><i>BH</i>² + 5² = 15².<br><i>BH</i>² = 225 - 25 = 200.<br><i>BH</i> = √200 = 10√2.`,
+                    `Шаг 4: Радиус<br>Диаметр вписанной окружности равен высоте трапеции, так как она касается обоих оснований.<br>2<i>R</i> = <i>BH</i> ⟹ <i>R</i> = <i>BH</i> / 2 = 5√2.<br><br><b>Ответ: 5√2</b>`
+                ]
+            }
+        ];
+        // Вторая вкладка — та же задача, но второй допустимый центр окружности:
+        // точка касания находится на отрезке CD, а сама трапеция показана крупнее.
+        tasks[1] = {cfg:{scale:17,offsetX:500,offsetY:600},pts:{...tasks[0].pts,O:{x:-2.93,y:-3.05},T:{x:5.71,y:8.47}},R:tasks[0].R,texts:[...tasks[0].texts]};
+        tasks[2] = {
+            cfg:{scale:18,offsetX:500,offsetY:610},
+            pts:{A:{x:0,y:0},B:{x:0,y:10},C:{x:1,y:10},D:{x:25,y:0},M:{x:0,y:5},P:{x:-25,y:10},E:{x:1,y:0}},
+            texts:[
+                `Дано: трапеция <i>ABCD</i>, <i>AB</i> = <span class="red">10</span>, <i>CD</i> = <span class="red">26</span>, <i>BC</i> = <span class="red">1</span>. Биссектриса угла <i>ADC</i> проходит через середину стороны <i>AB</i>. Найти площадь трапеции.`,
+                `Шаг 1 · Отмечаем середину<br>Обозначим середину <i>AB</i> буквой <i>M</i>. Тогда <span class="blue"><i>AM</i> = <i>BM</i></span>. Продлим биссектрису <i>DM</i> до пересечения с прямой <i>BC</i> в точке <i>P</i>.`,
+                `Шаг 2 · Получаем подобные треугольники<br>Так как <i>PC</i> ∥ <i>AD</i>, углы <span class="blue">∠PBM = ∠DAM</span> равны как накрест лежащие. Углы <span class="violet">∠PMB = ∠DMA</span> вертикальные. Значит, <i>△PBM ∼ △DAM</i>.`,
+                `Шаг 3 · Используем биссектрису<br><i>PC</i> ∥ <i>AD</i>, поэтому <span class="blue">∠CPD = ∠PDA</span>. А <i>DM</i> — биссектриса <i>∠CDA</i>, значит <span class="red">∠PDA = ∠CDP</span>. Тогда <i>∠CPD = ∠CDP</i>, треугольник <i>PCD</i> равнобедренный и <span class="red"><i>PC = CD = 26</i></span>.`,
+                `Шаг 4 · Находим основание <i>AD</i><br>Из подобия <i>△PBM</i> и <i>△DAM</i>: <i>PB/DA = BM/AM = 1</i>, поэтому <i>PB = AD</i>. На верхней прямой <i>PC = PB + BC</i>, значит <span class="red"><i>PB = 26 − 1 = 25</i></span> и <i>AD = 25</i>.`,
+                `Шаг 5 · Строим высоту<br>Через <i>C</i> проведём <i>CE</i> ∥ <i>AB</i>, где <i>E</i> лежит на <i>AD</i>. Так как <i>BC</i> ∥ <i>AD</i>, четырёхугольник <i>ABCE</i> — параллелограмм. Поэтому <span class="blue"><i>CE = AB = 10</i></span> и <span class="blue"><i>AE = BC = 1</i></span>.`,
+                `Шаг 6 · Находим сторону прямоугольного треугольника<br><i>ED = AD − AE = 25 − 1 = <span class="red">24</span></i>. В треугольнике <i>CED</i> стороны равны 10, 24 и 26.`,
+                `Шаг 7 · Проверяем прямой угол<br><i>CE</i>² + <i>ED</i>² = 10² + 24² = 100 + 576 = 676 = 26² = <i>CD</i>². По обратной теореме Пифагора <span class="red">∠CED = 90°</span>, следовательно, <i>CE</i> — высота трапеции.`,
+                `Шаг 8 · Вычисляем площадь<br><i>S</i> = ((<i>BC</i> + <i>AD</i>) / 2) · <i>CE</i> = ((1 + 25) / 2) · 10 = <span class="red">130</span>.<br><br><b>Ответ: 130</b>`
+            ]
+        };
+        tasks[3]={
+            cfg:{scale:24,offsetX:500,offsetY:450},
+            pts:{A:{x:0,y:6},B:{x:-9,y:0},C:{x:9,y:-12},D:{x:0,y:-6},E:{x:3,y:0},F:{x:0,y:0}},
+            texts:[
+                `Дано: в треугольнике <i>ABC</i> медиана <i>AD</i> и биссектриса <i>BE</i> перпендикулярны и равны <span class="red">12</span>. Найти стороны треугольника.`,
+                `Шаг 1 · Отмечаем пересечение<br>Обозначим <i>F = AD ∩ BE</i>. Точка <i>D</i> — середина <i>BC</i>, а <i>F</i> — прямой угол. Поэтому <i>BD = DC</i> и <i>BF ⟂ AD</i>.`,
+                `Шаг 2 · Сравниваем прямоугольные треугольники<br>Так как <i>D</i> лежит на <i>BC</i>, отрезок <i>BF</i> делит угол <i>ABD</i> пополам. Треугольники <i>ABF</i> и <i>DBF</i> прямоугольные, имеют общий катет <i>BF</i> и равные углы при <i>B</i>. Они равны, поэтому <span class="blue"><i>AF = FD</i></span> и <span class="red"><i>AB = BD</i></span>.`,
+                `Шаг 3 · Делим медиану пополам<br><i>AD = 12</i>, значит <span class="red"><i>AF = FD = 6</i></span>. Так как <i>D</i> — середина <i>BC</i>, а <i>BD = AB</i>, получаем <span class="blue"><i>BC = 2AB</i></span>.`,
+                `Шаг 4 · Применяем теорему о биссектрисе<br><i>AE/EC = AB/BC = 1/2</i>. Значит, <i>AE:EC = 1:2</i>, поэтому <i>AC:AE = 3:1</i>.`,
+                `Шаг 5 · Теорема Менелая<br>В треугольнике <i>BCE</i> прямая <i>A–F</i> пересекает прямые <i>CE</i>, <i>BE</i> и <i>BC</i>. По теореме Менелая: <i>(CA/AE) · (EF/FB) · (BD/DC) = 1</i>.<br>Так как <i>CA/AE = 3</i> и <i>BD/DC = 1</i>, получаем <span class="red"><i>BF:FE = 3:1</i></span>.`,
+                `Шаг 6 · Находим части биссектрисы<br><i>BE = BF + FE = 12</i>, а отношение частей равно <i>3:1</i>. Поэтому <span class="red"><i>BF = 9</i></span>, <span class="red"><i>FE = 3</i></span>.`,
+                `Шаг 7 · Находим AB и BC<br>В прямоугольном треугольнике <i>ABF</i>: <i>AB</i> = √(6² + 9²) = <span class="red">3√13</span>. Следовательно, <span class="blue"><i>BC = 2AB = 6√13</i></span>.`,
+                `Шаг 8 · Находим AC<br>В прямоугольном треугольнике <i>AFE</i>: <i>AE</i> = √(6² + 3²) = <span class="red">3√5</span>. По теореме о биссектрисе <i>AE:EC = 1:2</i>, значит <i>EC = 6√5</i> и <span class="red"><i>AC = 9√5</i></span>.<br><br><b>Ответ: AB = 3√13, BC = 6√13, AC = 9√5.</b>`
+            ]
+        };
+        const outlineData=[
+            {title:'Задача 1 · Радиус окружности',children:[{index:0,label:'Касание продолжения CD'},{index:1,label:'Касание стороны CD'}]},
+            {title:'Задача 2 · Площадь трапеции № 27826',children:[{index:2,label:'Биссектриса через середину AB'}]},
+            {title:'Задача 3 · Стороны треугольника',children:[{index:3,label:'Медиана ⟂ биссектрисе, обе по 12'}]}
+        ];
+        const outline=document.getElementById('outlineGroups');
+        outlineData.forEach((group,g)=>{
+            const box=document.createElement('section');box.className='outline-group';
+            const title=document.createElement('button');title.className='outline-group-title';title.textContent=group.title;box.appendChild(title);
+            const list=document.createElement('div');box.appendChild(list);
+            title.addEventListener('click',()=>{if(group.children.length===1){switchTask(group.children[0].index);return}list.hidden=!list.hidden});
+            group.children.forEach(item=>{const link=document.createElement('button');link.className='outline-item';link.dataset.task=item.index;link.textContent=item.label;link.addEventListener('click',()=>switchTask(item.index));list.appendChild(link)});
+            outline.appendChild(box);
+        });
+
+        // --- БАЗОВЫЕ ФУНКЦИИ ---
+        function pt(p, cfg) {
+            return { x: cfg.offsetX + p.x * cfg.scale + panX, y: cfg.offsetY - p.y * cfg.scale + panY };
+        }
+
+        const NS='http://www.w3.org/2000/svg';
+        function svgEl(tag,attrs={}){const el=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));canvas.appendChild(el);return el}
+        function addGlow(x,y,color='#ffb547',r=15){const g=svgEl('circle',{cx:x,cy:y,r,class:'glow-halo',stroke:color});setTimeout(()=>g.remove(),1250)}
+        function drawTextDirect(text,p,ox,oy,color,size,cfg,isItalic=false,animate=false){const s=pt(p,cfg),el=svgEl('text',{x:s.x+ox,y:s.y+oy,fill:color,'font-size':size||26,class:`geo-label${animate?' soft-flash':''}`,'font-style':isItalic?'italic':'normal'});el.textContent=text;if(animate)addGlow(s.x+ox,s.y+oy,color,14);return el}
+
+        function drawArc(v, p1, p2, radius, color, cfg) {
+            const vertex = pt(v, cfg), pt1 = pt(p1, cfg), pt2 = pt(p2, cfg);
+            let a1 = Math.atan2(pt1.y - vertex.y, pt1.x - vertex.x);
+            let a2 = Math.atan2(pt2.y - vertex.y, pt2.x - vertex.x);
+            let diff = a2 - a1;
+            if (diff > Math.PI) a2 -= Math.PI * 2;
+            if (diff < -Math.PI) a2 += Math.PI * 2;
+            
+            const rr=radius, x1=vertex.x+rr*Math.cos(a1),y1=vertex.y+rr*Math.sin(a1),x2=vertex.x+rr*Math.cos(a2),y2=vertex.y+rr*Math.sin(a2);
+            svgEl('path',{d:`M ${x1} ${y1} A ${rr} ${rr} 0 0 ${a1>a2?0:1} ${x2} ${y2}`,fill:'none',stroke:color,'stroke-width':3,class:'geo-line soft-flash'});addGlow(vertex.x,vertex.y,color,15);
+        }
+
+        function drawRightAngle(v, p1, p2, size, color, cfg) {
+            const vx = pt(v, cfg), p1x = pt(p1, cfg), p2x = pt(p2, cfg);
+            const dx1 = p1x.x - vx.x, dy1 = p1x.y - vx.y;
+            const len1 = Math.hypot(dx1, dy1);
+            const ux1 = dx1/len1, uy1 = dy1/len1;
+            const dx2 = p2x.x - vx.x, dy2 = p2x.y - vx.y;
+            const len2 = Math.hypot(dx2, dy2);
+            const ux2 = dx2/len2, uy2 = dy2/len2;
+            const pA = { x: vx.x + ux1 * size, y: vx.y + uy1 * size };
+            const pB = { x: pA.x + ux2 * size, y: pA.y + uy2 * size };
+            const pC = { x: vx.x + ux2 * size, y: vx.y + uy2 * size };
+            
+            svgEl('polyline',{points:`${pA.x},${pA.y} ${pB.x},${pB.y} ${pC.x},${pC.y}`,fill:'none',stroke:color,'stroke-width':2,class:'geo-line'});
+        }
+
+        function drawTick(p1, p2, size, color, cfg) {
+            const pt1 = pt(p1, cfg), pt2 = pt(p2, cfg);
+            const midX = (pt1.x + pt2.x) / 2, midY = (pt1.y + pt2.y) / 2;
+            const angle = Math.atan2(pt2.y - pt1.y, pt2.x - pt1.x) + Math.PI/2;
+            svgEl('line',{x1:midX+size*Math.cos(angle),y1:midY+size*Math.sin(angle),x2:midX-size*Math.cos(angle),y2:midY-size*Math.sin(angle),stroke:color,'stroke-width':2,class:'geo-line'});
+        }
+
+        // --- АНИМАЦИЯ ---
+        function drawLineAnim(p1, p2, color, width, isDashed, cfg, callback) {
+            const start = pt(p1, cfg), end = pt(p2, cfg);
+            const el=svgEl('line',{x1:start.x,y1:start.y,x2:end.x,y2:end.y,stroke:color,'stroke-width':width,class:'geo-line draw-in',pathLength:1});if(isDashed)el.setAttribute('stroke-dasharray','7 6');
+            setTimeout(()=>{addGlow((start.x+end.x)/2,(start.y+end.y)/2,color,8);if(callback)callback()},280);
+        }
+
+        function drawCircleAnim(center, radius, color, cfg, callback) {
+            const c=pt(center,cfg),r=radius*cfg.scale,el=svgEl('circle',{cx:c.x,cy:c.y,r,fill:'none',stroke:color,'stroke-width':2.5,class:'geo-line draw-in',pathLength:1});setTimeout(()=>{addGlow(c.x,c.y,color,r);if(callback)callback()},700);
+        }
+
+        // --- ОЧЕРЕДЬ ШАГОВ ---
+        const stepDrawers = [
+            // Задача 1
+            [
+                (cfg, pts) => {
+                    animQueue.push({type:'line', p1:pts.A, p2:pts.B, color:'#1e2d46', w:3});
+                    animQueue.push({type:'line', p1:pts.B, p2:pts.C, color:'#1e2d46', w:3});
+                    animQueue.push({type:'line', p1:pts.C, p2:pts.D, color:'#1e2d46', w:3});
+                    animQueue.push({type:'line', p1:pts.D, p2:pts.A, color:'#1e2d46', w:3});
+                    animQueue.push({type:'text', text:'A', p:pts.A, ox:-20, oy:35, color:'#1e2d46'});
+                    animQueue.push({type:'text', text:'B', p:pts.B, ox:-25, oy:-15, color:'#1e2d46'});
+                    animQueue.push({type:'text', text:'C', p:pts.C, ox:15, oy:-15, color:'#1e2d46'});
+                    animQueue.push({type:'text', text:'D', p:pts.D, ox:15, oy:35, color:'#1e2d46'});
+                    
+                    animQueue.push({type:'text', text:'34', p:{x:0, y:0}, ox:0, oy:35, color:'#d32f2f', size:22});
+                    animQueue.push({type:'text', text:'14', p:{x:-2.8, y:9.6}, ox:0, oy:-15, color:'#d32f2f', size:22});
+                    animQueue.push({type:'text', text:'12', p:{x:-13.4, y:4.8}, ox:0, oy:-15, color:'#d32f2f', size:22});
+                },
+                (cfg, pts) => {
+                    animQueue.push({type:'multiLine', lines:[{p1:pts.A, p2:pts.E}, {p1:pts.D, p2:pts.E}], color:'#d32f2f', w:3});
+                    animQueue.push({type:'text', text:'E', p:pts.E, ox:-15, oy:-15, color:'#d32f2f'});
+                    animQueue.push({type:'func', fn:() => drawRightAngle(pts.E, pts.A, pts.D, 25, '#1976d2', cfg)});
+                },
+                (cfg, pts) => {
+                    animQueue.push({type:'func', fn:() => {
+                        drawArc(pts.A, pts.E, pts.D, 35, '#1976d2', cfg);
+                        drawArc(pts.B, pts.E, pts.C, 35, '#1976d2', cfg);
+                        drawArc(pts.D, pts.E, pts.A, 35, '#8b5cf6', cfg);
+                        drawArc(pts.C, pts.E, pts.B, 35, '#8b5cf6', cfg);
+                    }});
+                },
+                (cfg, pts) => {
+                    const midEB = {x: (pts.E.x + pts.B.x)/2, y: (pts.E.y + pts.B.y)/2};
+                    animQueue.push({type:'text', text:'x', p:midEB, ox:0, oy:0, color:'#d32f2f', size:32, italic:true});
+                },
+                (cfg, pts) => {
+                    const midEB = {x: (pts.E.x + pts.B.x)/2, y: (pts.E.y + pts.B.y)/2};
+                    animQueue.push({type:'delay', ms:1000});
+                    animQueue.push({type:'eraseText', text:'x', p:midEB, ox:0, oy:0, size:32, italic:true});
+                    animQueue.push({type:'text', text:'8.4', p:midEB, ox:0, oy:0, color:'#d32f2f', size:32, animate:true});
+                    animQueue.push({type:'flash',p:midEB,color:'#ffb547',r:17});
+                },
+                (cfg, pts) => {
+                    animQueue.push({type:'circle', center:pts.O, radius:14.4, color:'#1976d2', cfg});
+                    animQueue.push({type:'line',p1:pts.C,p2:pts.T,color:'#7384a2',w:2,dash:true});
+                    animQueue.push({type:'line', p1:pts.O, p2:pts.A, color:'#1976d2', w:2});
+                    animQueue.push({type:'line', p1:pts.O, p2:pts.B, color:'#1976d2', w:2});
+                    animQueue.push({type:'line', p1:pts.O, p2:pts.T, color:'#d32f2f', w:2});
+                    animQueue.push({type:'text', text:'O', p:pts.O, ox:10, oy:15, color:'#1976d2'});
+                    animQueue.push({type:'text', text:'T', p:pts.T, ox:15, oy:-10, color:'#d32f2f'});
+                    animQueue.push({type:'func', fn:() => drawRightAngle(pts.T, pts.O, pts.C, 18, '#1976d2', cfg)});
+                },
+                (cfg, pts) => {
+                    animQueue.push({type:'line', p1:pts.O, p2:pts.H, color:'#d32f2f', w:2});
+                    animQueue.push({type:'text', text:'H', p:pts.H, ox:-20, oy:-15, color:'#d32f2f'});
+                    animQueue.push({type:'func', fn:() => drawRightAngle(pts.H, pts.O, pts.A, 18, '#1976d2', cfg)});
+                },
+                (cfg, pts) => {
+                    animQueue.push({type:'func', fn:() => {
+                        drawTick(pts.A, pts.H, 6, '#1976d2', cfg);
+                        drawTick(pts.H, pts.B, 6, '#1976d2', cfg);
+                    }});
+                    animQueue.push({type:'text', text:'6', p:{x:(pts.A.x+pts.H.x)/2, y:(pts.A.y+pts.H.y)/2}, ox:0, oy:-20, color:'#1976d2', size:22});
+                    animQueue.push({type:'text', text:'6', p:{x:(pts.H.x+pts.B.x)/2, y:(pts.H.y+pts.B.y)/2}, ox:0, oy:-20, color:'#1976d2', size:22});
+                    animQueue.push({type:'flash',p:pts.H,color:'#33a8ff',r:17});
+                },
+                (cfg, pts) => {
+                    animQueue.push({type:'polygon',points:[pts.O,pts.T,pts.E,pts.H],fill:'#67a9ff28',color:'#5476c8',w:2.5});
+                    animQueue.push({type:'multiLine',lines:[{p1:pts.O,p2:pts.T},{p1:pts.T,p2:pts.E},{p1:pts.E,p2:pts.H},{p1:pts.H,p2:pts.O}],color:'#6b80c5',w:2.5});
+                    animQueue.push({type:'flash',p:pts.E,color:'#ffb547',r:25});
+                },
+                (cfg, pts) => {}
+            ],
+            // Задача 2
+            [
+                (cfg, pts) => {
+                    animQueue.push({type:'line', p1:pts.A, p2:pts.B, color:'#1e2d46', w:3});
+                    animQueue.push({type:'line', p1:pts.B, p2:pts.C, color:'#1e2d46', w:3});
+                    animQueue.push({type:'line', p1:pts.C, p2:pts.D, color:'#1e2d46', w:3});
+                    animQueue.push({type:'line', p1:pts.D, p2:pts.A, color:'#1e2d46', w:3});
+                    animQueue.push({type:'text', text:'A', p:pts.A, ox:-20, oy:35, color:'#1e2d46'});
+                    animQueue.push({type:'text', text:'B', p:pts.B, ox:-20, oy:-15, color:'#1e2d46'});
+                    animQueue.push({type:'text', text:'C', p:pts.C, ox:15, oy:-15, color:'#1e2d46'});
+                    animQueue.push({type:'text', text:'D', p:pts.D, ox:15, oy:35, color:'#1e2d46'});
+                    animQueue.push({type:'text', text:'20', p:{x:0, y:0}, ox:0, oy:35, color:'#d32f2f', size:22});
+                    animQueue.push({type:'text', text:'10', p:{x:0, y:14.14}, ox:0, oy:-15, color:'#d32f2f', size:22});
+                },
+                (cfg, pts) => {
+                    animQueue.push({type:'circle', center:pts.O, radius:7.07, color:'#1976d2', cfg});
+                    animQueue.push({type:'line', p1:pts.O, p2:pts.T_bot, color:'#1976d2', w:2});
+                    animQueue.push({type:'line', p1:pts.O, p2:pts.T_top, color:'#1976d2', w:2});
+                    animQueue.push({type:'line', p1:pts.O, p2:pts.T_right, color:'#1976d2', w:2});
+                    animQueue.push({type:'text', text:'O', p:pts.O, ox:10, oy:15, color:'#1976d2'});
+                },
+                (cfg, pts) => {
+                    animQueue.push({type:'line', p1:pts.B, p2:pts.H, color:'#d32f2f', w:3});
+                    animQueue.push({type:'text', text:'H', p:pts.H, ox:-20, oy:35, color:'#d32f2f'});
+                    animQueue.push({type:'func', fn:() => drawRightAngle(pts.H, pts.B, pts.A, 20, '#1976d2', cfg)});
+                },
+                (cfg, pts) => {}
+            ]
+        ];
+        stepDrawers[1]=stepDrawers[0];
+        stepDrawers[2]=[
+            (cfg,p)=>{
+                [[p.A,p.B],[p.B,p.C],[p.C,p.D],[p.D,p.A]].forEach(([p1,p2])=>animQueue.push({type:'line',p1,p2,color:'#243b56',w:3}));
+                [['A',p.A,-18,24],['B',p.B,-23,-14],['C',p.C,12,-14],['D',p.D,14,24]].forEach(([text,point,ox,oy])=>animQueue.push({type:'text',text,p:point,ox,oy,color:'#243b56'}));
+                animQueue.push({type:'text',text:'10',p:{x:0,y:5},ox:-28,oy:0,color:'#d32f2f',size:23});
+                animQueue.push({type:'text',text:'1',p:{x:.5,y:10},ox:0,oy:-36,color:'#d32f2f',size:22});
+                animQueue.push({type:'text',text:'26',p:{x:13,y:5},ox:5,oy:-7,color:'#d32f2f',size:23});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'line',p1:p.P,p2:p.D,color:'#7788a2',w:2});
+                animQueue.push({type:'line',p1:p.P,p2:p.C,color:'#7788a2',w:2});
+                animQueue.push({type:'text',text:'P',p:p.P,ox:-18,oy:-12,color:'#364b68'});
+                animQueue.push({type:'text',text:'M',p:p.M,ox:-24,oy:8,color:'#364b68'});
+                animQueue.push({type:'func',fn:()=>{drawTick(p.A,p.M,6,'#1976d2',cfg);drawTick(p.M,p.B,6,'#1976d2',cfg)}});
+                animQueue.push({type:'flash',p:p.M,color:'#ffb547',r:18});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'func',fn:()=>{drawArc(p.B,p.P,p.M,22,'#1976d2',cfg);drawArc(p.A,p.D,p.M,22,'#1976d2',cfg)}});
+                animQueue.push({type:'flash',p:p.B,color:'#53a6ff',r:15});
+                animQueue.push({type:'flash',p:p.A,color:'#53a6ff',r:15});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'polygon',points:[p.P,p.C,p.D],fill:'#ffb54722',color:'#e3a130',w:2});
+                animQueue.push({type:'func',fn:()=>{drawArc(p.P,p.C,p.D,25,'#8b5cf6',cfg);drawArc(p.D,p.A,p.P,27,'#1976d2',cfg);drawArc(p.D,p.P,p.C,27,'#1976d2',cfg)}});
+                animQueue.push({type:'text',text:'26',p:{x:-12,y:10},ox:0,oy:-12,color:'#d32f2f',size:22});
+                animQueue.push({type:'flash',p:p.D,color:'#ffb547',r:20});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'text',text:'25',p:{x:-12.5,y:10},ox:-4,oy:-14,color:'#d32f2f',size:22,animate:true});
+                animQueue.push({type:'text',text:'25',p:{x:12.5,y:0},ox:-6,oy:-10,color:'#d32f2f',size:22,animate:true});
+                animQueue.push({type:'flash',p:p.D,color:'#6ba8ff',r:21});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'line',p1:p.C,p2:p.E,color:'#1976d2',w:3});
+                animQueue.push({type:'polygon',points:[p.A,p.B,p.C,p.E],fill:'#54b8ff22',color:'#54a4dc',w:2});
+                animQueue.push({type:'text',text:'E',p:p.E,ox:0,oy:25,color:'#243b56'});
+                animQueue.push({type:'text',text:'10',p:{x:1,y:5},ox:9,oy:0,color:'#1976d2',size:21});
+                animQueue.push({type:'text',text:'1',p:{x:.5,y:0},ox:-8,oy:55,color:'#1976d2',size:21});
+                animQueue.push({type:'flash',p:p.E,color:'#53a6ff',r:16});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'polygon',points:[p.C,p.E,p.D],fill:'#ffbd5928',color:'#d9942f',w:2});
+                animQueue.push({type:'text',text:'24',p:{x:13,y:0},ox:0,oy:30,color:'#d32f2f',size:22,animate:true});
+                animQueue.push({type:'flash',p:{x:13,y:5},color:'#ffb547',r:22});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'func',fn:()=>drawRightAngle(p.E,p.C,p.D,20,'#1976d2',cfg)});
+                animQueue.push({type:'text',text:'90°',p:p.E,ox:10,oy:-12,color:'#1976d2',size:20,animate:true});
+                animQueue.push({type:'flash',p:p.E,color:'#ffb547',r:19});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'polygon',points:[p.A,p.B,p.C,p.D],fill:'#68a9ff16',color:'#5884c7',w:2});
+                animQueue.push({type:'text',text:'S = 130',p:{x:12.5,y:-2.2},ox:-22,oy:20,color:'#2e7d32',size:27,animate:true});
+                animQueue.push({type:'flash',p:{x:12,y:4},color:'#64c994',r:28});
+            }
+        ];
+        stepDrawers[3]=[
+            (cfg,p)=>{
+                [[p.A,p.B],[p.B,p.C],[p.C,p.A]].forEach(([p1,p2])=>animQueue.push({type:'line',p1,p2,color:'#243b56',w:3}));
+                [['A',p.A,-15,-12],['B',p.B,-26,-8],['C',p.C,14,16]].forEach(([text,point,ox,oy])=>animQueue.push({type:'text',text,p:point,ox,oy,color:'#243b56'}));
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'multiLine',lines:[{p1:p.A,p2:p.D},{p1:p.B,p2:p.E}],color:'#5879bc',w:2.7});
+                [['D',p.D,-8,28],['E',p.E,9,-10],['F',p.F,9,20]].forEach(([text,point,ox,oy])=>animQueue.push({type:'text',text,p:point,ox,oy,color:'#315d9e'}));
+                animQueue.push({type:'text',text:'12',p:{x:0,y:3},ox:-35,oy:0,color:'#d32f2f',size:22});
+                animQueue.push({type:'text',text:'12',p:{x:-3,y:0},ox:-5,oy:-14,color:'#d32f2f',size:22});
+                animQueue.push({type:'func',fn:()=>{drawTick(p.B,p.D,6,'#1976d2',cfg);drawTick(p.D,p.C,6,'#1976d2',cfg);drawArc(p.B,p.A,p.E,24,'#1976d2',cfg);drawArc(p.B,p.E,p.C,24,'#1976d2',cfg);drawRightAngle(p.F,p.A,p.E,18,'#1976d2',cfg)}});
+                animQueue.push({type:'flash',p:p.F,color:'#ffb547',r:17});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'polygon',points:[p.A,p.B,p.F],fill:'#55a8ff20',color:'#4789d0',w:2});
+                animQueue.push({type:'polygon',points:[p.D,p.B,p.F],fill:'#a47bf21c',color:'#8a69c1',w:2});
+                animQueue.push({type:'func',fn:()=>{drawArc(p.B,p.A,p.F,31,'#1976d2',cfg);drawArc(p.B,p.F,p.D,31,'#1976d2',cfg)}});
+                animQueue.push({type:'flash',p:p.B,color:'#66aaff',r:23});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'func',fn:()=>{drawTick(p.A,p.F,6,'#d32f2f',cfg);drawTick(p.F,p.D,6,'#d32f2f',cfg);drawTick(p.A,p.B,6,'#2e9d72',cfg);drawTick(p.B,p.D,6,'#2e9d72',cfg)}});
+                animQueue.push({type:'text',text:'6',p:{x:0,y:3},ox:12,oy:0,color:'#d32f2f',size:21});
+                animQueue.push({type:'text',text:'6',p:{x:0,y:-3},ox:12,oy:0,color:'#d32f2f',size:21});
+                animQueue.push({type:'flash',p:p.D,color:'#6db9ff',r:20});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'text',text:'AE : EC = 1 : 2',p:{x:5,y:-2},ox:0,oy:0,color:'#7956d8',size:22,animate:true});
+                animQueue.push({type:'flash',p:p.E,color:'#ffb547',r:18});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'polygon',points:[p.B,p.C,p.E],fill:'#64bf9a20',color:'#4eaa83',w:2});
+                animQueue.push({type:'flash',p:p.F,color:'#ffb547',r:19});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'text',text:'9',p:{x:-4.5,y:0},ox:0,oy:-15,color:'#d32f2f',size:23,animate:true});
+                animQueue.push({type:'text',text:'3',p:{x:1.5,y:0},ox:0,oy:-15,color:'#d32f2f',size:23,animate:true});
+                animQueue.push({type:'flash',p:p.F,color:'#ffb547',r:22});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'text',text:'3√13',p:{x:-5,y:3},ox:-8,oy:-12,color:'#d32f2f',size:21,animate:true});
+                animQueue.push({type:'text',text:'6√13',p:{x:4.5,y:-6},ox:5,oy:-10,color:'#d32f2f',size:21,animate:true});
+                animQueue.push({type:'flash',p:p.A,color:'#66aaff',r:20});
+            },
+            (cfg,p)=>{
+                animQueue.push({type:'text',text:'9√5',p:{x:4.5,y:-3},ox:8,oy:-10,color:'#2e7d32',size:23,animate:true});
+                animQueue.push({type:'flash',p:p.E,color:'#69c69a',r:25});
+            }
+        ];
+
+        // --- ФУНКЦИЯ МГНОВЕННОЙ ПЕРЕРИСОВКИ ---
+        function redrawAll() {
+            canvas.replaceChildren();
+            animQueue = [];
+            for (let s = 0; s <= currentStep; s++) {
+                stepDrawers[currentTask][s](tasks[currentTask].cfg, tasks[currentTask].pts);
+            }
+            // Мгновенная отрисовка без анимации
+            while (animQueue.length > 0) {
+                const item = animQueue.shift();
+                const cfg = tasks[currentTask].cfg;
+                if (item.type === 'line') {
+                    const p1=pt(item.p1,cfg),p2=pt(item.p2,cfg);svgEl('line',{x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:item.color,'stroke-width':item.w,class:'geo-line',...(item.dash?{'stroke-dasharray':'7 6'}:{})});
+                } else if (item.type === 'multiLine') {
+                    item.lines.forEach(l => {
+                        const p1=pt(l.p1,cfg),p2=pt(l.p2,cfg);svgEl('line',{x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:item.color,'stroke-width':item.w,class:'geo-line'});
+                    });
+                } else if (item.type === 'circle') {
+                    const c=pt(item.center,cfg);svgEl('circle',{cx:c.x,cy:c.y,r:item.radius*cfg.scale,fill:'none',stroke:item.color,'stroke-width':2.5});
+                } else if (item.type === 'text') {
+                    drawTextDirect(item.text, item.p, item.ox, item.oy, item.color, item.size || 26, cfg, item.italic, item.animate);
+                } else if (item.type === 'eraseText') {
+                    [...canvas.querySelectorAll('text')].filter(n=>n.textContent===item.text).forEach(n=>n.remove());
+                } else if (item.type === 'flash') {
+                    const p=pt(item.p,cfg);addGlow(p.x,p.y,item.color||'#ffb547',item.r||18);
+                } else if (item.type === 'polygon') {
+                    const points=item.points.map(p=>{const q=pt(p,cfg);return `${q.x},${q.y}`}).join(' ');svgEl('polygon',{points,fill:item.fill||'#7c8ff522',stroke:item.color||'#7183a5','stroke-width':item.w||2});
+                } else if (item.type === 'func') {
+                    item.fn();
+                }
+            }
+        }
+
+        // --- ЗАПУСК АНИМАЦИИ ---
+        function processQueue() {
+            if (animQueue.length === 0) {
+                isAnimating = false;
+                prevBtn.disabled = (currentStep === 0);
+                nextBtn.disabled = (currentStep === tasks[currentTask].texts.length - 1);
+                
+                // Печатаем текст ТОЛЬКО после окончания анимации
+                const el = document.getElementById(`step-${currentTask}-${currentStep}`);
+                if (el) typeText(el, tasks[currentTask].texts[currentStep]);
+                return;
+            }
+
+            const item = animQueue.shift();
+            const cfg = tasks[currentTask].cfg;
+
+            if (item.type === 'line') {
+                drawLineAnim(item.p1, item.p2, item.color, item.w, item.dash, cfg, processQueue);
+            } else if (item.type === 'multiLine') {
+                Promise.all(item.lines.map(l => new Promise(res => {
+                    drawLineAnim(l.p1, l.p2, item.color, item.w, false, cfg, res);
+                }))).then(processQueue);
+            } else if (item.type === 'circle') {
+                drawCircleAnim(item.center, item.radius, item.color, cfg, processQueue);
+            } else if (item.type === 'text') {
+                drawTextDirect(item.text, item.p, item.ox, item.oy, item.color, item.size || 26, cfg, item.italic, item.animate);
+                processQueue();
+            } else if (item.type === 'eraseText') {
+                [...canvas.querySelectorAll('text')].filter(n=>n.textContent===item.text).forEach(n=>n.remove());
+                processQueue();
+            } else if(item.type==='flash'){
+                const p=pt(item.p,cfg);addGlow(p.x,p.y,item.color||'#ffb547',item.r||18);processQueue();
+            } else if(item.type==='polygon'){
+                const points=item.points.map(p=>{const q=pt(p,cfg);return `${q.x},${q.y}`}).join(' ');svgEl('polygon',{points,fill:item.fill||'#7c8ff522',stroke:item.color||'#7183a5','stroke-width':item.w||2,class:'soft-flash'});processQueue();
+            } else if (item.type === 'func') {
+                item.fn(); processQueue();
+            } else if (item.type === 'delay') {
+                setTimeout(processQueue, item.ms);
+            }
+        }
+
+        // --- ПЕЧАТЬ ТЕКСТА ---
+        function typeText(element, text, speed = 10) {
+            clearInterval(typingTimeout);
+            element.innerHTML = '';
+            element.classList.add('visible');
+            
+            let i = 0;
+            let chars = [];
+            let isTag = false;
+            let tagBuf = '';
+            for (let c of text) {
+                if (c === '<') isTag = true;
+                if (isTag) tagBuf += c;
+                if (c === '>') { isTag = false; chars.push(tagBuf); tagBuf = ''; }
+                else if (!isTag) chars.push(c);
+            }
+
+            let displayHtml = '';
+            typingTimeout = setInterval(() => {
+                if (i < chars.length) {
+                    displayHtml += chars[i];
+                    element.innerHTML = displayHtml;
+                    i++;
+                } else {
+                    clearInterval(typingTimeout);
+                }
+            }, speed);
+        }
+
+        // --- УПРАВЛЕНИЕ ---
+        function setupTexts() {
+            textContainer.innerHTML = '';
+            tasks[currentTask].texts.forEach((txt, sIdx) => {
+                const div = document.createElement('div');
+                div.className = 'step';
+                div.id = `step-${currentTask}-${sIdx}`;
+                textContainer.appendChild(div);
+            });
+        }
+
+        function updateUI() {
+            document.querySelectorAll('.step').forEach(el => el.classList.remove('visible'));
+            const el = document.getElementById(`step-${currentTask}-${currentStep}`);
+            if (el) el.classList.add('visible'); // Делаем видимым, но пустым (текст напечатается после анимации)
+
+            prevBtn.disabled = (currentStep === 0);
+            nextBtn.disabled = true; // Блокируем пока рисуется
+
+            finalGrade.classList.remove('show');
+        }
+
+        function switchTask(index) {
+            if(isAnimating)return;
+            clearInterval(typingTimeout);
+            canvas.replaceChildren();
+            document.querySelectorAll('.outline-item').forEach(link=>link.classList.toggle('active',Number(link.dataset.task)===index));
+            currentTask = index;
+            currentStep = 0;
+            panX = 0;
+            panY = 0;
+            
+            setupTexts();
+            updateUI();
+            
+            animQueue = [];
+            stepDrawers[currentTask][0](tasks[currentTask].cfg, tasks[currentTask].pts);
+            isAnimating = true;
+            processQueue();
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (isAnimating) return;
+            if (currentStep < tasks[currentTask].texts.length - 1) {
+                currentStep++;
+                updateUI();
+                animQueue = [];
+                stepDrawers[currentTask][currentStep](tasks[currentTask].cfg, tasks[currentTask].pts);
+                isAnimating = true;
+                processQueue();
+            } else {
+                finalGrade.classList.add('show');
+                nextBtn.disabled = true;
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (isAnimating) return;
+            if (currentStep > 0) {
+                clearInterval(typingTimeout);
+                currentStep--;
+                redrawAll();
+                
+                const el = document.getElementById(`step-${currentTask}-${currentStep}`);
+                if (el) { el.classList.add('visible'); el.innerHTML = tasks[currentTask].texts[currentStep]; }
+                
+                prevBtn.disabled = (currentStep === 0);
+                nextBtn.disabled = (currentStep === tasks[currentTask].texts.length - 1);
+                finalGrade.classList.remove('show');
+            }
+        });
+
+        showAllBtn.addEventListener('click', () => {
+            if(document.body.classList.contains('solution-fullscreen')){
+                document.body.classList.remove('solution-fullscreen');showAllBtn.textContent='📄 Решение целиком';setupTexts();updateUI();redrawAll();const e=document.getElementById(`step-${currentTask}-${currentStep}`);if(e){e.innerHTML=tasks[currentTask].texts[currentStep];e.classList.add('visible')}nextBtn.disabled=currentStep===tasks[currentTask].texts.length-1;return;
+            }
+            if (isAnimating) return;
+            clearInterval(typingTimeout);currentStep=tasks[currentTask].texts.length-1;redrawAll();
+            tasks[currentTask].texts.forEach((txt,i)=>{const el=document.getElementById(`step-${currentTask}-${i}`);if(el){el.innerHTML=txt;el.classList.add('visible')}});
+            document.body.classList.add('solution-fullscreen');showAllBtn.textContent='✕ Закрыть решение';nextBtn.disabled=true;prevBtn.disabled=false;finalGrade.classList.remove('show');
+        });
+
+        // --- ПЕРЕТАСКИВАНИЕ ЧЕРТЕЖА (PAN) ---
+        canvas.addEventListener('mousedown', (e) => {
+            if (isDrawMode) return;
+            isPanning = true;
+            panStartX = e.clientX - panX;
+            panStartY = e.clientY - panY;
+            canvas.style.cursor = 'grabbing';
+            
+            // Если перетаскиваем во время анимации, мгновенно её завершаем
+            if (isAnimating) {
+                animQueue = [];
+                isAnimating = false;
+                redrawAll();
+                const el = document.getElementById(`step-${currentTask}-${currentStep}`);
+                if (el) { el.innerHTML = tasks[currentTask].texts[currentStep]; }
+                prevBtn.disabled = (currentStep === 0);
+                nextBtn.disabled = (currentStep === tasks[currentTask].texts.length - 1);
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isPanning) return;
+            panX = e.clientX - panStartX;
+            panY = e.clientY - panStartY;
+            redrawAll();
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isPanning) {
+                isPanning = false;
+                canvas.style.cursor = 'default';
+            }
+        });
+
+        // --- РИСОВАНИЕ ОТ РУКИ ---
+        let drawing = false;
+        let isDrawMode = false;
+
+        drawBtn.addEventListener('click', () => {
+            isDrawMode = !isDrawMode;
+            if (isDrawMode) {
+                drawCanvas.classList.add('active');
+                drawBtn.classList.add('active');
+            } else {
+                drawCanvas.classList.remove('active');
+                drawBtn.classList.remove('active');
+            }
+        });
+
+        eraseBtn.addEventListener('click', () => {
+            dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        });
+
+        drawCanvas.addEventListener('mousedown', (e) => {
+            if (!isDrawMode) return;
+            drawing = true;
+            const rect = drawCanvas.getBoundingClientRect();
+            const scaleX = drawCanvas.width / rect.width;
+            const scaleY = drawCanvas.height / rect.height;
+            dctx.beginPath();
+            dctx.moveTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+        });
+
+        drawCanvas.addEventListener('mousemove', (e) => {
+            if (!drawing) return;
+            const rect = drawCanvas.getBoundingClientRect();
+            const scaleX = drawCanvas.width / rect.width;
+            const scaleY = drawCanvas.height / rect.height;
+            dctx.lineTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+            dctx.strokeStyle = '#d32f2f';
+            dctx.lineWidth = 3;
+            dctx.lineCap = 'round';
+            dctx.stroke();
+        });
+
+        window.addEventListener('mouseup', () => { drawing = false; });
+
+        // Сочетания клавиш
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !isDrawMode) {
+                e.preventDefault();
+                nextBtn.click();
+            }
+            if (e.code === 'Escape' && isDrawMode) {
+                isDrawMode = false;
+                drawCanvas.classList.remove('active');
+                drawBtn.classList.remove('active');
+            }
+            if (e.ctrlKey && e.key === 'z') {
+                dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            }
+        });
+
+        // Инициализация
+        switchTask(0);
+    </script>
+</body>
+</html>

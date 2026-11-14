@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fffdf8">
+<title>ЕГЭ · Оптимальность (производная / парабола)</title>
+<style>
+:root{--bg:#f4f6fb;--cd:#fff;--tx:#1c2333;--mu:#667;--ac:#3b63d9;--ok:#1f9d57;--bad:#d64545;--wa:#d99a1e;--br:#d9deea;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151d;--cd:#1c212d;--tx:#e8ebf3;--mu:#99a;--ac:#7c9bff;--ok:#3ecf80;--bad:#ff6b6b;--wa:#f0b43c;--br:#2e3547}}
+:root[data-theme="dark"]{--bg:#12151d;--cd:#1c212d;--tx:#e8ebf3;--mu:#99a;--ac:#7c9bff;--ok:#3ecf80;--bad:#ff6b6b;--wa:#f0b43c;--br:#2e3547}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;background:var(--cd);border-bottom:1px solid var(--br);position:sticky;top:0;z-index:20}
+header h1{flex:1;min-width:140px;margin:0;font-size:15px;font-weight:700}
+button,select,input,textarea{font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--br);border-radius:10px;padding:7px 11px}button{cursor:pointer}
+button.on,button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}button.dng{color:var(--bad);border-color:var(--bad)}button.ghost{background:transparent}
+main{max-width:960px;margin:auto;padding:12px}
+.card{background:var(--cd);border:1px solid var(--br);border-radius:14px;padding:14px;margin-bottom:12px}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}.meta{font-size:13px;color:var(--mu)}
+.tag{font-size:12px;border:1px solid var(--br);border-radius:8px;padding:2px 8px;color:var(--mu)}
+.eq{font-size:1.25em;overflow-x:auto;padding:6px 0}.q{font-weight:600;margin:0 0 10px}
+.op{display:block;width:100%;text-align:left;margin-bottom:8px;padding:11px 12px;overflow-x:auto}
+.op.g{background:var(--ok);color:#fff;border-color:var(--ok)}.op.r{background:var(--bad);color:#fff;border-color:var(--bad)}
+#fb{color:var(--mu)}#fb.bad{color:var(--bad)}#fb.good{color:var(--ok)}
+.row{padding:10px 12px;border:1px solid var(--br);border-radius:12px;margin-bottom:8px;cursor:pointer;background:var(--cd)}
+.row:hover{border-color:var(--ac)}.row.done{border-left:6px solid var(--ok)}.row.hw{border-right:4px solid var(--wa)}
+.stk{display:inline-block;background:var(--ok);color:#fff;font-weight:800;font-size:12px;padding:3px 10px;border-radius:8px}
+.d-basic{color:var(--ok)}.d-medium{color:var(--wa)}.d-hard{color:var(--bad)}
+.nl{position:relative;width:100%;max-width:640px;aspect-ratio:640/140;margin:8px auto}.nl svg{position:absolute;inset:0;width:100%;height:100%}
+.nlb{position:absolute;transform:translateX(-50%);font-size:clamp(12px,2.5vw,16px);white-space:nowrap}
+.theory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.sticker{border-radius:14px;padding:14px;border:1px solid var(--br)}.st-blue{background:color-mix(in srgb,var(--ac) 8%,var(--cd))}.st-green{background:color-mix(in srgb,var(--ok) 8%,var(--cd))}.st-orange{background:color-mix(in srgb,var(--wa) 10%,var(--cd))}
+.sticker h3{margin:0 0 8px;font-size:16px}.sticker .ex{background:var(--bg);border-radius:8px;padding:8px;margin:6px 0;overflow-x:auto}
+.login-box{max-width:380px;margin:40px auto;text-align:center}.login-box input{width:100%;margin:8px 0;padding:12px;font-size:18px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:10px;z-index:99;opacity:0;transition:.3s}
+.toast.show{opacity:1}
+.fs{display:flex;gap:10px;margin-top:10px;padding:8px;border:1px solid var(--br);border-radius:12px}.fs.last{background:color-mix(in srgb,var(--ok) 12%,var(--cd));border-color:var(--ok)}
+.fn{flex:none;width:28px;height:28px;border-radius:50%;background:var(--ac);color:#fff;text-align:center;line-height:28px;font-weight:700}.fs.last .fn{background:var(--ok)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow:auto}
+.modal-box{background:var(--cd);border-radius:16px;padding:16px;max-width:720px;width:100%;margin-top:4vh}
+.modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+textarea.inp{width:100%;min-height:280px;font-family:ui-monospace,monospace;font-size:13px}
+.filter-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+</style>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'},startup:{typeset:false}};</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+</head>
+<body>
+<header>
+  <h1 id="brand">📐 ЕГЭ · Оптимальность</h1>
+  <span id="hb" class="meta"></span>
+  <button class="ghost" id="btnTheory">📚 Теория</button>
+  <button class="ghost" id="btnTheme">◐</button>
+  <button class="ghost" id="btnUser" style="display:none">Выйти</button>
+</header>
+<main id="app"></main>
+<div id="toast" class="toast"></div>
+<div id="modalRoot"></div>
+
+<script>
+/* ===================== DATA ===================== */
+const SEED = {
+  version: 1,
+  sections: [
+    {id:'s1', name:'Упрощение + производная'},
+    {id:'s2', name:'Квадрат + парабола'},
+    {id:'s3', name:'Физика / Максвелл / RLC'}
+  ],
+  tasks: [
+    {
+      id: 'opt-01', title: '01', section: 's1', difficulty: 'basic',
+      text: 'На берегах прямого участка реки друг напротив друга находятся пристани A и B. Лодка начинает переправу от пристани A. Собственная скорость лодки \(v\) меньше скорости течения реки \(u\). При переправе лодку сносит течением, и точка прибытия находится от пристани B на расстоянии\n\\[ L = H \\cdot \\frac{u + v \\cos\\alpha}{v \\sin\\alpha}, \\]\nгде \(H\) — ширина реки, \(\\alpha\) — угол между вектором скорости лодки относительно воды и вектором скорости течения.\nНайдите наименьшее возможное расстояние, если \(H = 60\) м, \(u = 2\) м/с, \(v = 1\) м/с.',
+      answer: '\\(60\\sqrt{3}\\) м',
+      steps: [
+        {e: 'L(\\alpha)=60\\cdot\\frac{2+\\cos\\alpha}{\\sin\\alpha}', q: 'Что делаем в первую очередь с функцией?', o: [
+          {t: 'Отбрасываем постоянный множитель 60 (он не влияет на точку экстремума) и исследуем \\(f(\\alpha)=\\frac{2+\\cos\\alpha}{\\sin\\alpha}\\)', ok: true},
+          {t: 'Сразу подставляем \\(\\alpha=45^\\circ\\)', ok: false, w: 'Нужно найти критическую точку, а не угадывать.'},
+          {t: 'Берём производную от всей L без упрощения', ok: false, w: 'Лучше сначала упростить — константа не влияет на argmax/argmin.'}
+        ]},
+        {e: 'f(\\alpha)=\\frac{2+\\cos\\alpha}{\\sin\\alpha}', q: 'Как найти производную частного?', o: [
+          {t: '\\(f\'=\\frac{(-\\sin\\alpha)\\sin\\alpha-(2+\\cos\\alpha)\\cos\\alpha}{\\sin^2\\alpha}=\\frac{-\\sin^2\\alpha-2\\cos\\alpha-\\cos^2\\alpha}{\\sin^2\\alpha}\\)', ok: true},
+          {t: '\\(f\'=\\frac{(2+\\cos\\alpha)\'}{\\sin\\alpha}\)', ok: false, w: 'Это не правило частного.'},
+          {t: '\\(f\'=\\frac{2+\\cos\\alpha}{\\cos\\alpha}\)', ok: false, w: 'Производная знаменателя не учтена.'}
+        ]},
+        {e: 'f\'(\\alpha)=-\\frac{1+2\\cos\\alpha}{\\sin^2\\alpha}', q: 'Приравняем производную к нулю. Что получится?', o: [
+          {t: '\\(1+2\\cos\\alpha=0\\Rightarrow\\cos\\alpha=-\\frac12\\Rightarrow\\alpha=120^\\circ\\) (в разумном диапазоне углов)', ok: true},
+          {t: '\\(\\sin\\alpha=0\\)', ok: false, w: 'Знаменатель не может быть нулём; нули числителя.'},
+          {t: '\\(\\cos\\alpha=\\frac12\\)', ok: false, w: 'Знак: \\(1+2\\cos=0\\Rightarrow\\cos=-1/2\\).'}
+        ]},
+        {e: '\\alpha=120^\\circ,\\quad \\cos=-\\tfrac12,\\ \\sin=\\tfrac{\\sqrt3}{2}', q: 'Подставим в исходную L. Чему равно минимальное расстояние?', o: [
+          {t: '\\(L=60\\cdot\\frac{2-1/2}{\\sqrt3/2}=60\\cdot\\frac{3/2}{\\sqrt3/2}=60\\sqrt3\\) м', ok: true},
+          {t: '\\(60\\cdot\\frac{2+1/2}{\\sqrt3/2}=60\\cdot\\frac52\\cdot\\frac2{\\sqrt3}=60\\cdot\\frac5{\\sqrt3}\\)', ok: false, w: 'Cos отрицательный: 2 + (−1/2) = 3/2.'},
+          {t: '60 м', ok: false, w: 'Не подставили значение угла.'}
+        ]},
+        {e: 'L_{\\min}=60\\sqrt{3}', q: 'END'}
+      ]
+    },
+    {
+      id: 'opt-02', title: '02', section: 's3', difficulty: 'basic',
+      text: 'Распределение кинетической энергии молекул гелия при тепловом движении имеет функцию плотности\n\\[ f(\\mathcal{E})=\\frac{2}{\\sqrt{\\pi}}\\left(\\frac{1}{kT}\\right)^{3/2}\\sqrt{\\mathcal{E}}\\,e^{-\\mathcal{E}/(kT)}, \\]\nгде \\(k=1{,}38\\cdot10^{-23}\\) Дж/К, \\(\\mathcal{E}\\) — кинетическая энергия, \\(T\\) — температура.\nНайдите значение \\(\\mathcal{E}\\), при котором \\(f\\) принимает наибольшее значение, если \\(T=300\\) К.',
+      answer: '\\(2{,}07\\cdot10^{-21}\\) Дж',
+      steps: [
+        {e: 'f(\\mathcal{E})=m\\sqrt{\\mathcal{E}}\\,e^{-\\mathcal{E}/n},\\quad m=\\mathrm{const},\\ n=kT', q: 'Как упростить поиск максимума?', o: [
+          {t: 'Максимум f совпадает с максимумом \\(f^2\\) (и с максимумом \\(\\mathcal{E}\\,e^{-2\\mathcal{E}/n}\\)), постоянные множители отбрасываем', ok: true},
+          {t: 'Сразу берём ln f', ok: false, w: 'Можно, но проще через квадрат или напрямую производную упрощённой функции.'},
+          {t: 'Подставить T=300 в исходную формулу и угадать', ok: false, w: 'Нужно найти критическую точку analytically.'}
+        ]},
+        {e: 'f_1(\\mathcal{E})=\\mathcal{E}\\,e^{-2\\mathcal{E}/n}', q: 'Найдите производную \\(f_1\\)', o: [
+          {t: '\\(f_1\'=e^{-2\\mathcal{E}/n}\\left(1-\\frac{2\\mathcal{E}}{n}\\right)\\)', ok: true},
+          {t: '\\(f_1\'=e^{-2\\mathcal{E}/n}\\)', ok: false, w: 'Нужно правило произведения.'},
+          {t: '\\(f_1\'=-\\frac{2}{n}\\mathcal{E}e^{-2\\mathcal{E}/n}\\)', ok: false, w: 'Пропущен член от производной первого множителя.'}
+        ]},
+        {e: '1-\\frac{2\\mathcal{E}}{n}=0', q: 'Чему равно \\(\\mathcal{E}\\) в точке максимума?', o: [
+          {t: '\\(\\mathcal{E}=\\frac{n}{2}=\\frac{kT}{2}\\)', ok: true},
+          {t: '\\(\\mathcal{E}=n=kT\\)', ok: false, w: 'Из 1 − 2E/n = 0 следует E = n/2.'},
+          {t: '\\(\\mathcal{E}=\\frac{3}{2}kT\\)', ok: false, w: 'Это средняя энергия, не мода распределения.'}
+        ]},
+        {e: '\\mathcal{E}=\\frac{kT}{2},\\ T=300', q: 'Подставьте числа', o: [
+          {t: '\\(\\mathcal{E}=\\frac{1{,}38\\cdot10^{-23}\\cdot300}{2}=2{,}07\\cdot10^{-21}\\) Дж', ok: true},
+          {t: '\\(1{,}38\\cdot10^{-23}\\cdot300=4{,}14\\cdot10^{-21}\\)', ok: false, w: 'Забыли разделить на 2.'},
+          {t: '\\(2{,}07\\cdot10^{-23}\\)', ok: false, w: 'Ошибка порядка.'}
+        ]},
+        {e: '\\mathcal{E}_{\\max}=2{,}07\\cdot10^{-21}', q: 'END'}
+      ]
+    },
+    {
+      id: 'opt-03', title: '03', section: 's2', difficulty: 'medium',
+      text: 'Амплитуда напряжения на катушке в RLC-цепи:\n\\[ U_L(\\omega)=\\frac{U L\\omega}{\\sqrt{R^2+\\left(\\omega L-\\frac1{\\omega C}\\right)^2}}. \\]\nПри какой частоте \\(\\omega\\) амплитуда будет наибольшей, если \\(U=180\\) В, \\(L=0{,}045\\) Гн, \\(C=10^{-4}\\) Ф, \\(R=10\\) Ом?',
+      answer: '500',
+      steps: [
+        {e: 'U_L(\\omega)=\\frac{UL\\omega}{\\sqrt{R^2+(\\omega L-1/(\\omega C))^2}}', q: 'Что отбрасываем сразу?', o: [
+          {t: 'Постоянные U и L не влияют на точку максимума → исследуем \\(f(\\omega)=\\frac{\\omega}{\\sqrt{\\ldots}}\\)', ok: true},
+          {t: 'Положим \\(\\omega=1\\)', ok: false, w: 'Нужно найти критическую точку.'},
+          {t: 'Взять производную исходной функции целиком', ok: false, w: 'Сначала упрощаем.'}
+        ]},
+        {e: 'g(\\omega)=(f(\\omega))^2=\\frac{\\omega^2}{R^2+(\\omega L-1/(\\omega C))^2}', q: 'Как дальше упростить знаменатель?', o: [
+          {t: 'Разделить числитель и знаменатель на \\(\\omega^2\\), затем замена \\(t=1/\\omega^2\\)', ok: true},
+          {t: 'Раскрыть скобки и приравнять производную к нулю сразу', ok: false, w: 'Замена приводит к параболе — проще.'},
+          {t: 'Положить \\(\\omega L=1/(\\omega C)\\)', ok: false, w: 'Это резонанс тока, не максимум U_L.'}
+        ]},
+        {e: 'h(t)=\\frac1{C^2}t^2+(R^2-2L/C)t+L^2', q: 'h(t) — парабола. Где минимум?', o: [
+          {t: 'В вершине: \\(t=LC-\\frac{R^2 C^2}{2}\\)', ok: true},
+          {t: 'При t=0', ok: false, w: 'Вершина по формуле −b/(2a).'},
+          {t: 'При t=L/C', ok: false, w: 'Неверный расчёт.'}
+        ]},
+        {e: '\\omega=\\frac1{\\sqrt{LC-R^2 C^2/2}}', q: 'Подставьте числа L=0,045, C=10^{-4}, R=10', o: [
+          {t: 'LC=4,5·10^{-6}, R²C²/2=0,5·10^{-6} → \\(\\omega=1/\\sqrt{4\\cdot10^{-6}}=500\\)', ok: true},
+          {t: '\\(\\omega=1/\\sqrt{4,5\\cdot10^{-6}}\\approx471\\)', ok: false, w: 'Нужно вычесть R²C²/2.'},
+          {t: '1000', ok: false, w: 'Ошибка в вычислении корня.'}
+        ]},
+        {e: '\\omega=500', q: 'END'}
+      ]
+    },
+    {
+      id: 'opt-04', title: '04', section: 's2', difficulty: 'basic',
+      text: 'Источник постоянного напряжения: \\(\\mathcal{E}=40\\) В, внутреннее сопротивление \\(r=1\\) Ом. Сила тока \\(I=\\frac{\\mathcal{E}}{r+R}\\), тепловая мощность на нагрузке \\(P=I^2 R\\).\nНайдите наибольшую возможную тепловую мощность, которую может выделять этот источник.',
+      answer: '\\(P_{\\max}=400\\) Вт',
+      steps: [
+        {e: 'P(R)=\\frac{\\mathcal{E}^2 R}{(r+R)^2}', q: 'Как упростить поиск максимума?', o: [
+          {t: 'Отбросить \\(\\mathcal{E}^2\\), исследовать \\(f(R)=\\frac{R}{(r+R)^2}\\). Максимум f = минимум знаменателя после деления на R', ok: true},
+          {t: 'Взять P\'=0 напрямую без упрощения', ok: false, w: 'Можно, но метод «переворота» быстрее.'},
+          {t: 'Положить R=0', ok: false, w: 'Тогда P=0.'}
+        ]},
+        {e: 'g(R)=\\frac{r^2}{R}+2r+R', q: 'Минимум g(R) (после деления)?', o: [
+          {t: '\\(g\'=-\\frac{r^2}{R^2}+1=0\\Rightarrow R=r\\)', ok: true},
+          {t: 'R=2r', ok: false, w: 'Из −r²/R² + 1 = 0 → R = r.'},
+          {t: 'R=r/2', ok: false, w: 'Неверно.'}
+        ]},
+        {e: 'R=r=1,\\ \\mathcal{E}=40', q: 'Чему равна максимальная мощность?', o: [
+          {t: '\\(P_{\\max}=\\frac{\\mathcal{E}^2}{4r}=\\frac{1600}{4}=400\\) Вт', ok: true},
+          {t: '800 Вт', ok: false, w: 'Формула \\(\\mathcal{E}^2/(4r)\\).'},
+          {t: '40 Вт', ok: false, w: 'Не подставили.'}
+        ]},
+        {e: 'P_{\\max}=400', q: 'END'}
+      ]
+    },
+    {
+      id: 'opt-05', title: '05', section: 's3', difficulty: 'basic',
+      text: 'Распределение Максвелла скорости молекул водорода:\n\\[ f(v)=4\\pi v^2\\left(\\frac{M}{2\\pi RT}\\right)^{3/2}e^{-Mv^2/(2RT)}. \\]\nПри каком значении скорости \\(v\\) функция плотности принимает наибольшее значение, если \\(M=0{,}004\\) кг/моль, \\(T=500\\) К? (Ответ через \\(R\\).)',
+      answer: '\\(v=500\\sqrt{R}\\) м/с',
+      steps: [
+        {e: 'f(v)=A v^2 e^{-B v^2},\\ A,B>0', q: 'Как найти максимум?', o: [
+          {t: 'Взять производную, вынести общий множитель: \\(f\'=A v e^{-Bv^2}(2-2Bv^2)\\)', ok: true},
+          {t: 'Положить v=0', ok: false, w: 'Это минимум (f=0).'},
+          {t: 'Максимум при v→∞', ok: false, w: 'Экспонента убывает быстрее.'}
+        ]},
+        {e: '2-2Bv^2=0', q: 'Критическая точка', o: [
+          {t: '\\(v=\\sqrt{1/B}=\\sqrt{2RT/M}\\)', ok: true},
+          {t: '\\(v=\\sqrt{RT/M}\\)', ok: false, w: 'B=M/(2RT) → 1/B = 2RT/M.'},
+          {t: '\\(v=\\sqrt{3RT/M}\\)', ok: false, w: 'Это среднеквадратичная скорость.'}
+        ]},
+        {e: 'v=\\sqrt{\\frac{2RT}{M}},\\ M=0{,}004,\\ T=500', q: 'Подставьте числа', o: [
+          {t: '\\(v=\\sqrt{\\frac{2R\\cdot500}{0{,}004}}=\\sqrt{250000 R}=500\\sqrt{R}\\)', ok: true},
+          {t: '\\(100\\sqrt{R}\\)', ok: false, w: 'Ошибка в арифметике.'},
+          {t: '\\(\\sqrt{1000R/0{,}004}\\)', ok: false, w: 'Уже упрощено: 250000R.'}
+        ]},
+        {e: 'v=500\\sqrt{R}', q: 'END'}
+      ]
+    },
+    {
+      id: 'opt-06', title: '06', section: 's2', difficulty: 'medium',
+      text: 'Амплитуда вынужденных поперечных колебаний лайнера:\n\\[ A(\\tau)=k\\theta_0\\frac{\\tau^2}{\\sqrt{(T^2-\\tau^2)^2+n^2\\tau^2 T^2}}. \\]\nПри каком периоде волны \\(\\tau\\) амплитуда наибольшая, если \\(T=14{,}4\\) с? (Ответ через n.)',
+      answer: '\\(14{,}4\\sqrt{\\dfrac{2}{2-n^2}}\\)',
+      steps: [
+        {e: 'f(\\tau)=\\frac{\\tau^2}{\\sqrt{(T^2-\\tau^2)^2+n^2\\tau^2 T^2}}', q: 'Первый шаг упрощения', o: [
+          {t: 'Исследуем квадрат \\(g=f^2\\), затем делим числитель и знаменатель на \\(\\tau^4\\), замена \\(x=1/\\tau^2\\)', ok: true},
+          {t: 'Сразу \\(\\tau=T\\)', ok: false, w: 'Это не всегда точка максимума при наличии сопротивления.'},
+          {t: 'Отбросить n', ok: false, w: 'n важен.'}
+        ]},
+        {e: 'h(x)=T^4 x^2 + T^2(n^2-2)x + 1', q: 'Где минимум параболы h?', o: [
+          {t: '\\(x_0=\\frac{2-n^2}{2T^2}\\)', ok: true},
+          {t: '\\(x_0=\\frac{2-n}{2T^2}\\)', ok: false, w: 'В формуле n².'},
+          {t: '\\(x_0=T^2\\)', ok: false, w: 'Неверно.'}
+        ]},
+        {e: '\\tau=T\\sqrt{\\frac{2}{2-n^2}}', q: 'Подставьте T=14,4', o: [
+          {t: '\\(\\tau=14{,}4\\sqrt{\\frac{2}{2-n^2}}\\)', ok: true},
+          {t: '\\(14{,}4\\sqrt{\\frac{2}{2-n}}\\)', ok: false, w: 'В знаменателе 2−n².'},
+          {t: '14,4', ok: false, w: 'Только при n=0.'}
+        ]},
+        {e: '\\tau=14{,}4\\sqrt{\\frac{2}{2-n^2}}', q: 'END'}
+      ]
+    }
+  ]
+};
+
+/* ===================== STATE ===================== */
+const PFX = 'ege-opt.v1.';
+let U = localStorage.getItem(PFX+'user') || '';
+let S = JSON.parse(localStorage.getItem(PFX+'prog') || '{}');
+let LIB = {sections: SEED.sections.slice(), tasks: SEED.tasks.map(t => JSON.parse(JSON.stringify(t))), del: []};
+let cur = null, si = 0, err = 0, hist = [], ord = [], lock = 0, MODE = localStorage.getItem(PFX+'mode') || 'pick';
+let filter = {sec: '', done: '', q: ''};
+
+function H(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function nl2(s){return H(s).replace(/\n/g,'<br>')}
+function $(id){return document.getElementById(id)}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function tx(el){if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([el]).catch(()=>{})}
+function sv(){localStorage.setItem(PFX+'prog',JSON.stringify(S))}
+function g(id){if(!S[id])S[id]={done:false,fav:false,hw:false,err:0};return S[id]}
+function secName(id){const s=LIB.sections.find(x=>x.id===id);return s?s.name:id}
+
+/* ===================== AXIS (знаки производной) ===================== */
+function axisHTML(a){
+  a = a || {var:'x', points:[{label:'x_0',type:'closed'}], signs:['+','-'], solve:'-'};
+  const n = (a.points||[]).length, Y=90;
+  let xs = a.points.map((_,i)=>40+(i+1)*560/(n+1));
+  let ed = [20].concat(xs,[620]);
+  let sg = a.signs || [];
+  let v = `<line x1="10" y1="${Y}" x2="630" y2="${Y}" stroke="var(--tx)" stroke-width="2.5"/><path d="M622 ${Y-7} L636 ${Y} L622 ${Y+7}" fill="none" stroke="var(--tx)" stroke-width="2.5"/>`;
+  sg.forEach((s,j)=>{
+    const mid = (ed[j]+ed[j+1])/2;
+    const col = s==='+'?'var(--bad)':'var(--ac)';
+    v += `<text x="${mid}" y="${Y-28}" text-anchor="middle" font-size="26" font-weight="700" fill="${col}">${s==='+'?'+':'−'}</text>`;
+    if(a.shade && a.shade[j]) v += `<line x1="${ed[j]+4}" y1="${Y}" x2="${ed[j+1]-4}" y2="${Y}" stroke="var(--ac)" stroke-width="6" stroke-linecap="round"/>`;
+  });
+  (a.points||[]).forEach((p,i)=>{
+    const x = xs[i];
+    v += `<circle cx="${x}" cy="${Y}" r="7" fill="${p.type==='closed'?'var(--tx)':'var(--cd)'}" stroke="var(--tx)" stroke-width="2.5"/>`;
+  });
+  let lb = (a.points||[]).map((p,i)=>`<span class="nlb" style="left:${xs[i]/640*100}%;top:72%">${p.label?`\\(${H(p.label)}\\)`:''}</span>`).join('');
+  lb += `<span class="nlb" style="left:97%;top:28%">\\(${H(a.var||'x')}\\)</span>`;
+  return `<div class="nl"><svg viewBox="0 0 640 140">${v}</svg>${lb}</div>`;
+}
+
+/* ===================== VIEWS ===================== */
+function login(){
+  cur=null; $('hb').textContent=''; $('btnUser').style.display='none';
+  $('app').innerHTML = `<div class="login-box card">
+    <h2 style="margin-top:0">Вход</h2>
+    <p class="meta">Введите имя — прогресс сохранится на этом устройстве</p>
+    <input id="nameIn" placeholder="Имя ученика" autocomplete="name" value="${H(U)}">
+    <button class="pri" id="goLogin" style="width:100%;margin-top:8px;padding:12px">Войти</button>
+  </div>`;
+  $('goLogin').onclick = ()=>{const n=$('nameIn').value.trim(); if(!n){toast('Введите имя');return;} U=n; localStorage.setItem(PFX+'user',U); menu();};
+  $('nameIn').onkeydown = e=>{if(e.key==='Enter')$('goLogin').click()};
+}
+
+function menu(){
+  cur=null; $('hb').textContent = U; $('btnUser').style.display='';
+  let list = LIB.tasks.filter(t=>{
+    if(filter.sec && t.section!==filter.sec) return false;
+    if(filter.done==='yes' && !(g(t.id).done)) return false;
+    if(filter.done==='no' && g(t.id).done) return false;
+    if(filter.q && !(t.title+t.text).toLowerCase().includes(filter.q.toLowerCase())) return false;
+    return true;
+  });
+  let rows = list.map(t=>{
+    const x=g(t.id);
+    return `<div class="row ${x.done?'done':''} ${x.hw?'hw':''}" data-id="${t.id}">
+      <b>№ ${H(t.title)}</b> <span class="tag">${H(secName(t.section))}</span>
+      <span class="d-${t.difficulty}">${t.difficulty==='basic'?'базовый':t.difficulty==='medium'?'средний':'сложный'}</span>
+      ${x.done?' <span class="stk">✓</span>':''} ${x.fav?' ★':''}
+      <div class="meta" style="margin-top:4px">${H((t.text||'').replace(/\\n/g,' ').slice(0,90))}…</div>
+    </div>`;
+  }).join('') || '<div class="meta" style="padding:20px;text-align:center">Нет задач по фильтру</div>';
+
+  $('app').innerHTML = `
+    <div class="filter-bar">
+      <select id="fSec"><option value="">Все разделы</option>${LIB.sections.map(s=>`<option value="${s.id}" ${filter.sec===s.id?'selected':''}>${H(s.name)}</option>`).join('')}</select>
+      <select id="fDone"><option value="">Все</option><option value="yes" ${filter.done==='yes'?'selected':''}>Разобранные</option><option value="no" ${filter.done==='no'?'selected':''}>Неразобранные</option></select>
+      <input id="fQ" placeholder="Поиск…" value="${H(filter.q)}" style="min-width:120px">
+      <button id="btnAdd" class="ghost">＋ Задача</button>
+    </div>
+    <div class="meta" style="margin-bottom:8px">Задач: ${list.length} · Разобрано: ${LIB.tasks.filter(t=>g(t.id).done).length}/${LIB.tasks.length}</div>
+    ${rows}`;
+  document.querySelectorAll('.row[data-id]').forEach(r=>r.onclick=()=>openT(r.dataset.id));
+  $('fSec').onchange=e=>{filter.sec=e.target.value;menu()};
+  $('fDone').onchange=e=>{filter.done=e.target.value;menu()};
+  $('fQ').oninput=e=>{filter.q=e.target.value;menu()};
+  $('btnAdd').onclick=addTask;
+}
+
+function openT(id){
+  cur = LIB.tasks.find(t=>String(t.id)===String(id));
+  if(!cur) return;
+  si=0; err=0; hist=[]; shuffle(); view();
+}
+function shuffle(){const s=cur.steps[si]; ord=s&&s.o?s.o.map((_,i)=>i).sort(()=>Math.random()-.5):[]}
+function view(){
+  const t=cur, x=g(t.id);
+  $('app').innerHTML = `<div class="card">
+    <div class="bar">
+      <button onclick="menu()">← Список</button>
+      <button onclick="tg('${t.id}','fav')">${x.fav?'★':'☆'}</button>
+      <button onclick="tg('${t.id}','hw')">${x.hw?'✓ ДЗ':'+ ДЗ'}</button>
+      <button onclick="tg('${t.id}','done')">${x.done?'✓ Разобрано':'Отметить'}</button>
+      <button onclick="fullShow()">📖 Весь разбор</button>
+      <button onclick="editTask('${t.id}')">✏️</button>
+    </div>
+    <div class="bar"><span class="meta">Режим:</span>
+      <button class="${MODE==='pick'?'on':''}" onclick="setMode('pick')">С выбором</button>
+      <button class="${MODE==='show'?'on':''}" onclick="setMode('show')">Без выбора</button>
+    </div>
+    <b>№ ${H(t.title)}</b> <span class="tag">${H(secName(t.section))}</span>
+    <div class="tx" style="margin-top:8px">${nl2(t.text)}</div>
+  </div><div id="ch"></div>`;
+  chain(); tx($('app'));
+}
+function setMode(m){MODE=m; localStorage.setItem(PFX+'mode',m); if(cur){shuffle(); view()}}
+function tg(id,k){const x=g(id); x[k]=!x[k]; sv(); if(cur&&String(cur.id)===String(id)) view(); else menu()}
+
+function chain(){
+  const el=$('ch'), s=cur.steps[si], fin=s.q==='END';
+  const ok = fin?null:s.o.find(o=>o.ok);
+  let top = `<div class="card"><div class="meta">Шаг ${si+1} из ${cur.steps.length}${err?' · ошибок: '+err:''}</div>
+    <div class="eq">$$${H(s.e)}$$</div>${s.axis?axisHTML(s.axis):''}</div>`;
+  let body;
+  if(fin) body = `<div id="fin"></div>`;
+  else if(MODE==='show') body = `<div class="card" id="qc"><p class="q">${nl2(s.q)}</p>
+    <div class="op g" style="cursor:default">✓ ${H(ok.t)}</div>
+    ${ok.axis?axisHTML(ok.axis):''}
+    <div class="bar"><button class="pri" onclick="nextShow()">Дальше →</button></div></div>`;
+  else body = `<div class="card" id="qc"><p class="q">${nl2(s.q)}</p>
+    ${ord.map(j=>`<button class="op" onclick="pick(${j},this)">${H(s.o[j].t)}</button>`).join('')}
+    <div id="fb"></div></div>`;
+  el.innerHTML = top + body;
+  tx(el);
+  if(fin) finish();
+}
+function pick(j,b){
+  if(lock||b.classList.contains('r')) return;
+  const s=cur.steps[si], o=s.o[j], fb=$('fb');
+  if(o.ok){
+    lock=1; b.classList.add('g'); fb.className='good'; fb.innerHTML='✓ Верно'+(o.axis?axisHTML(o.axis):'');
+    tx(fb); hist.push({e:s.e,a:o.t});
+    setTimeout(()=>{lock=0; si++; shuffle(); chain()}, o.axis?1600:650);
+  } else {
+    err++; g(cur.id).err=(g(cur.id).err||0)+1; sv();
+    b.classList.add('r'); fb.className='bad'; fb.innerHTML=H(o.w||'Неверно'); tx(fb);
+  }
+}
+function nextShow(){const s=cur.steps[si],o=s.o.find(o=>o.ok); hist.push({e:s.e,a:o.t}); si++; shuffle(); chain()}
+function finish(){
+  g(cur.id).done=true; sv();
+  $('fin').innerHTML = `<div class="card" style="border-color:var(--ok)">
+    <span class="stk">✓ РАЗОБРАНО</span>
+    <div class="meta" style="margin:8px 0">Ошибок: ${err}</div>
+    <div class="eq">$$${H(cur.steps[cur.steps.length-1].e)}$$</div>
+    ${cur.answer?`<div style="margin-top:10px"><b>Ответ:</b> ${H(cur.answer)}</div>`:''}
+    <div class="bar" style="margin-top:12px">
+      <button onclick="redo()">Заново</button>
+      <button class="pri" onclick="nxt()">Следующая →</button>
+      <button onclick="menu()">К списку</button>
+    </div>
+  </div>` + fullHTML();
+  tx($('fin'));
+}
+function fullHTML(){
+  let h='';
+  cur.steps.forEach((s,i)=>{
+    const ok=s.o&&s.o.find(o=>o.ok), last=i===cur.steps.length-1;
+    h+=`<div class="fs${last?' last':''}"><div class="fn">${last?'✓':i+1}</div><div class="fbd">
+      <div class="eq">$$${H(s.e)}$$</div>
+      ${ok?`<div class="meta">${nl2(s.q)}</div><div>✓ ${H(ok.t)}</div>`:''}
+    </div></div>`;
+  });
+  return `<div class="card"><b>Весь разбор</b>${h}${cur.answer?`<div style="margin-top:10px"><b>Ответ:</b> ${H(cur.answer)}</div>`:''}</div>`;
+}
+function fullShow(){$('ch').innerHTML=fullHTML()+'<div class="bar"><button onclick="chain()">← К шагам</button></div>'; tx($('ch'))}
+function redo(){si=0;err=0;hist=[];shuffle();view()}
+function nxt(){const i=LIB.tasks.findIndex(t=>t.id===cur.id); const n=LIB.tasks[i+1]; if(n) openT(n.id); else menu()}
+
+/* ===================== THEORY ===================== */
+function theory(){
+  cur=null;
+  $('app').innerHTML = `
+    <div class="bar"><button class="ghost" onclick="menu()">← К списку</button></div>
+    <h2 style="margin:0 0 14px">📚 Теория: экстремумы через производную и параболу</h2>
+    <div class="theory-grid">
+      <div class="sticker st-blue">
+        <h3>1. Алгоритм</h3>
+        <ol style="margin:0;padding-left:18px">
+          <li>Упростить функцию (отбросить положительные константы).</li>
+          <li>Если есть корень / модуль — рассмотреть квадрат (монотонность).</li>
+          <li>Взять производную или свести к параболе заменой.</li>
+          <li>Приравнять к нулю / найти вершину.</li>
+          <li>Проверить, что это max/min (знаки или вторая производная / вид параболы).</li>
+          <li>Подставить численные данные.</li>
+        </ol>
+      </div>
+      <div class="sticker st-green">
+        <h3>2. Лайфхаки упрощения</h3>
+        <div class="ex">\\(f=c\\cdot g\\) (c>0) → экстремум там же, где у g</div>
+        <div class="ex">\\(f=\\dfrac{1}{g}\\) → max f = min g</div>
+        <div class="ex">\\(f=\\sqrt{g}\\) (g≥0) → max f = max g</div>
+        <div class="ex">Квадрат: max f² там же, где max |f| (для f≥0 — просто max f)</div>
+      </div>
+      <div class="sticker st-orange">
+        <h3>3. Парабола</h3>
+        <p>\\(y=ax^2+bx+c\\), a≠0</p>
+        <div class="ex">Вершина: \\(x=-\\dfrac{b}{2a}\\)</div>
+        <p>a>0 — минимум, a<0 — максимум.</p>
+        <p>Часто после замены \\(t=1/\\omega^2\\) или \\(t=x+1/x\\) получается парабола.</p>
+      </div>
+      <div class="sticker st-blue">
+        <h3>4. Знаки производной</h3>
+        <p>После нахождения критических точек рисуем ось и знаки y':</p>
+        <div id="demoAx"></div>
+        <p class="meta">+ → возрастает, − → убывает. Переход +→− — max, −→+ — min.</p>
+      </div>
+      <div class="sticker st-green">
+        <h3>5. Типичные производные</h3>
+        <div class="ex">(xⁿ)' = n xⁿ⁻¹</div>
+        <div class="ex">(eˣ)' = eˣ, (aˣ)' = aˣ ln a</div>
+        <div class="ex">(ln x)' = 1/x</div>
+        <div class="ex">(sin x)' = cos x, (cos x)' = −sin x</div>
+        <div class="ex">Частное: (u/v)' = (u'v − uv')/v²</div>
+        <div class="ex">Сложная: f(g)' = f'(g)·g'</div>
+      </div>
+      <div class="sticker st-orange">
+        <h3>6. Физические сюжеты ЕГЭ</h3>
+        <p>Мощность источника, дальность струи, освещённость, RLC, распределение Максвелла, качка судна — всё сводится к одной из схем выше.</p>
+      </div>
+    </div>`;
+  $('demoAx').innerHTML = axisHTML({var:'x', points:[{label:'x_1',type:'closed'},{label:'x_2',type:'closed'}], signs:['+','-','+'], shade:[0,1,0]});
+  tx($('app'));
+}
+
+/* ===================== EDIT / ADD / DEL ===================== */
+function editTask(id){
+  const t = LIB.tasks.find(x=>String(x.id)===String(id));
+  if(!t) return;
+  modalEdit(JSON.parse(JSON.stringify(t)), false, id);
+}
+function addTask(){
+  modalEdit({
+    id: 'opt-'+Date.now(), title: String(LIB.tasks.length+1).padStart(2,'0'), section: 's1', difficulty: 'basic',
+    text: 'Решите задачу на экстремум…', answer: '',
+    steps: [
+      {e: 'f(x)=\\ldots', q: 'Что упрощаем?', o:[{t:'Отбрасываем константу',ok:true},{t:'Угадываем',ok:false,w:'Нет'}]},
+      {e: 'f\'(x)=0', q: 'END'}
+    ]
+  }, true, null);
+}
+function modalEdit(obj, isNew, originalId){
+  const root = $('modalRoot');
+  root.innerHTML = `<div class="modal"><div class="modal-box">
+    <h3>${isNew?'＋ Новая задача':'✏️ Редактирование № '+H(obj.title)}</h3>
+    <textarea id="editJson" class="inp"></textarea>
+    <div class="meta" style="margin-top:6px">Поля: id, title, section, difficulty, text, answer, steps[{e,q,o:[{t,ok,w}],axis?}]. Последний шаг — q:"END".</div>
+    <div class="modal-foot">
+      <button class="ghost" id="cancelEdit">Отмена</button>
+      ${!isNew?`<button class="dng" id="delEdit">Удалить</button>`:''}
+      <button class="pri" id="saveEdit">Сохранить</button>
+    </div>
+  </div></div>`;
+  $('editJson').value = JSON.stringify(obj, null, 2);
+  $('cancelEdit').onclick = ()=>{root.innerHTML=''};
+  $('saveEdit').onclick = ()=>{
+    try {
+      const p = JSON.parse($('editJson').value);
+      if(!p.id||!p.steps) throw new Error('Нужны id и steps');
+      if(isNew) LIB.tasks.push(p);
+      else { const i=LIB.tasks.findIndex(x=>String(x.id)===String(originalId)); if(i>=0) LIB.tasks[i]=p; }
+      root.innerHTML=''; toast('Сохранено'); menu();
+    } catch(e){ toast('Ошибка JSON: '+e.message) }
+  };
+  if(!isNew) $('delEdit').onclick = async ()=>{
+    if(!confirm('Удалить задачу?')) return;
+    LIB.tasks = LIB.tasks.filter(x=>String(x.id)!==String(originalId));
+    delete S[originalId]; sv(); root.innerHTML=''; toast('Удалено'); menu();
+  };
+}
+
+/* ===================== INIT ===================== */
+function th(){
+  const r=document.documentElement;
+  r.dataset.theme = r.dataset.theme==='dark'?'light':'dark';
+  document.querySelector('meta[name=theme-color]').content = r.dataset.theme==='dark'?'#12151d':'#fffdf8';
+}
+function init(){
+  $('btnTheory').onclick = theory;
+  $('btnTheme').onclick = th;
+  $('btnUser').onclick = ()=>{U=''; localStorage.removeItem(PFX+'user'); login()};
+  $('brand').onclick = ()=> U?menu():login();
+  if(U) menu(); else login();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+</script>
+</body>
+</html>

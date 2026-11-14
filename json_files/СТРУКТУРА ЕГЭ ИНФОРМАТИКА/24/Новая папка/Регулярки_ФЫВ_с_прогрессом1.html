@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Регулярки — тренажёр Python</title>
+<style>
+:root{--bg:#101a2b;--side:#15243a;--panel:#1c2d46;--ink:#17243a;--paper:#fbf7ec;--accent:#35a6b8;--line:#354a67;--font:16px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f4f7fb;font:var(--font)/1.42 system-ui,Segoe UI,sans-serif}
+body.fs-small{--font:13px}body.fs-medium{--font:16px}body.fs-large{--font:19px}body.fs-giant{--font:22px}
+button,input,select,textarea{font:inherit}button{border:1px solid #61748f;border-radius:9px;background:#263b58;color:#fff;padding:7px 11px;cursor:pointer}button:hover{filter:brightness(1.12)}button.primary{background:#126c80;border-color:#45b6c6}
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 14px;min-height:58px;background:#142238;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.brand{font-weight:800;display:flex;align-items:center;gap:9px}.logo{padding:5px 9px;border-radius:8px;background:linear-gradient(135deg,#7583ed,#21b9b2)}.grow{flex:1}
+.top select{background:#20334e;color:#fff;border:1px solid #526783;border-radius:8px;padding:7px}
+.layout{display:grid;grid-template-columns:minmax(255px,29%) minmax(0,1fr);min-height:calc(100vh - 58px)}
+.sidebar{padding:12px;background:var(--side);border-right:1px solid var(--line);position:sticky;top:58px;height:calc(100vh - 58px);overflow:auto}
+.search{width:100%;padding:9px;border:1px solid #526783;background:#0e1929;color:#fff;border-radius:9px;margin-bottom:8px}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:6px}.filters select{width:100%;min-width:0;padding:7px;border:1px solid #526783;border-radius:8px;background:#20334e;color:#fff}
+.stats{margin:9px 0;padding:9px;background:#20334e;border-radius:9px}.bar{height:7px;background:#3b4e68;border-radius:10px;margin-top:6px;overflow:hidden}.bar i{display:block;height:100%;background:#43c28c;width:0}
+.group{border:1px solid #334967;border-radius:10px;overflow:hidden;margin:7px 0}
+.group summary{list-style:none;cursor:pointer;color:#fff;font-weight:750;padding:10px;background:var(--group-color,#355a78)}.group summary::-webkit-details-marker{display:none}
+.tasklist{padding:4px;background:#101c2e}.taskrow{width:100%;display:flex;gap:7px;align-items:center;text-align:left;border:0;background:transparent;color:#eaf0f8;padding:7px;border-radius:7px}.taskrow.active{background:#36506e}.taskrow.done{background:#15543e}.taskrow .num{font-weight:800;white-space:nowrap}.taskrow .lvl{margin-left:auto;color:#c3d2e5;font-size:.76em}
+.main{min-width:0;padding:15px;max-width:1450px;width:100%;margin:auto}.welcome{color:#d2deed}.taskcard{background:var(--paper);color:var(--ink);border-radius:15px;padding:clamp(13px,1.6vw,22px);box-shadow:0 10px 30px #0003}
+.head{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:8px}.head h1{font-size:1.25em;margin:0 4px 0 0;white-space:nowrap}.badge{font-size:.75em;padding:3px 8px;border-radius:15px;background:#e6eaf0;color:#34445b}.expand{margin-left:auto;white-space:nowrap}
+.condition{background:#fffdf8;border-left:4px solid #e5b84d;border-radius:7px;padding:9px 12px;margin:7px 0 10px;line-height:1.45}.condition p{margin:0}.condition strong{font-weight:850;color:#132b4b}
+details.theory{background:#dff3f6;border:1px solid #b2dce4;border-radius:10px;padding:8px 11px;margin:8px 0;color:#164654}details.theory summary{font-weight:750;cursor:pointer}.theory-body{padding-top:5px}.theory-body p{margin:4px 0}
+.codebar{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:7px 10px;background:#1c2b41;color:#eaf2fb;border-radius:9px 9px 0 0}.editor{display:block;width:100%;min-height:120px;resize:none;overflow:hidden;border:0;border-radius:0 0 9px 9px;background:#0d1725;color:#d9f4e7;padding:11px;font: .9em/1.48 ui-monospace,Consolas,monospace;tab-size:4;white-space:pre}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.actions button{padding:6px 10px}.output{background:#111d2d;color:#e4edf8;border-radius:8px;padding:9px;min-height:34px;max-height:280px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:.86em/1.45 ui-monospace,Consolas,monospace}
+
+.regex-debugger{border:1px solid #8ba9c8;background:var(--panel,#edf3fa);color:#24364d;border-radius:10px;padding:10px;margin:9px 0}
+.debug-head,.debug-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:space-between}
+.debug-caption{margin:5px 0 8px;font-size:.9em}
+.debug-text{width:100%;min-height:75px;resize:vertical;border:1px solid #aabbd0;border-radius:7px;padding:8px;background:#fff;color:#17283d;font: .9em/1.5 ui-monospace,Consolas,monospace}
+.debug-controls{justify-content:flex-start;margin-top:7px}
+.debug-pattern{flex:1;min-width:180px;padding:8px;border:1px solid #9aabc0;border-radius:7px;font: .95em ui-monospace,Consolas,monospace}
+.debug-highlight{white-space:pre-wrap;overflow-wrap:anywhere;background:#fff;border:1px solid #d1dbe7;border-radius:7px;padding:8px;color:#23354b;margin:6px 0}.debug-result{margin-top:8px;line-height:1.5;overflow-wrap:anywhere}
+.debug-result mark{background:#ffe36e;color:#202020;border-radius:3px;padding:1px 0}
+.feedback{margin-top:7px}.note{padding:8px 11px;border-radius:9px;margin:6px 0;background:#fff0b9;color:#59491e}.note.error{background:#ffe2e2;color:#733b3b}.note.ok{background:#dff5e9;color:#16563b}
+.solution{background:#101827;color:#d8f3e8;border-radius:9px;padding:10px;white-space:pre;overflow:auto;font:.85em/1.45 ui-monospace,Consolas,monospace;max-height:65vh}
+#focus{position:fixed;inset:0;z-index:30;background:var(--bg);display:none;overflow:auto;padding:5vh 5vw}#focus .taskcard{width:100%;min-height:90vh;max-width:1600px;margin:0 auto;padding:clamp(18px,2vw,30px)}#focus .editor{overflow:hidden}
+.modalback{position:fixed;inset:0;z-index:60;background:#000a;display:flex;align-items:center;justify-content:center;padding:16px}.modal{width:min(500px,100%);background:#fbf7ec;color:#18243a;padding:22px;border-radius:15px}.modal input{width:100%;padding:10px;border:1px solid #aab6c5;border-radius:8px;margin:10px 0}.modal .actions{justify-content:flex-end}
+.hidden{display:none!important}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.sidebar{position:relative;top:0;height:auto;max-height:45vh;border-right:0;border-bottom:1px solid var(--line)}.main{padding:9px}.expand{margin-left:0}}
+
+.icon-actions{gap:8px;align-items:stretch}.icon-actions button{min-width:72px;height:auto;min-height:52px;padding:6px 8px;font-size:13px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.15;text-align:center}.icon-actions button .act-ico{font-size:18px;line-height:1}.icon-actions button .act-lbl{font-size:11px;opacity:.92;font-weight:600;max-width:78px;white-space:normal}
+.editor-wrap{position:relative;width:100%;border-radius:0 0 9px 9px;background:#0d1725;overflow:hidden}
+.editor-wrap .editor,.editor-wrap .editor-highlight{margin:0;width:100%;min-height:120px;padding:11px;font: .9em/1.48 ui-monospace,Consolas,monospace;tab-size:4;white-space:pre;overflow:hidden;letter-spacing:normal}
+.editor-wrap .editor{position:relative;z-index:2;background:transparent;color:transparent;-webkit-text-fill-color:transparent;caret-color:#fff;resize:none}
+.editor-wrap .editor::selection{background:#3d6a9e;color:#e8f0ff;-webkit-text-fill-color:#e8f0ff}.editor-wrap .editor::-moz-selection{background:#3d6a9e;color:#e8f0ff}
+.editor-wrap .editor-highlight{position:absolute;z-index:1;inset:0;color:#d9f4e7;pointer-events:none;overflow:auto}
+.py-comment{color:#72d69a!important;font-style:italic}
+.debug-modal-backdrop{position:fixed;inset:0;z-index:100;background:#07111ddd;display:flex;align-items:center;justify-content:center;padding:3vh 3vw}
+.debug-modal{width:min(1000px,96vw);max-height:92vh;overflow:auto;background:var(--panel);color:var(--ui-ink);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 20px 70px #0008}
+.debug-modal-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:1.1em}
+.debug-task-condition{background:var(--paper,#fbf7ec);color:var(--ink,#17243a);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 12px;line-height:1.45}
+.debug-task-meta{font-size:.9em;opacity:.85;margin-bottom:6px}
+.debug-task-text{font-size:.95em}
+.debug-task-text strong{font-weight:850}
+body[data-theme="dark"] .debug-task-condition{background:#1a2a40;color:#e8eef6}
+:root{--ui-ink:#f4f7fb}
+body[data-theme="light"]{--bg:#eef2f7;--side:#e1e8f0;--panel:#fff;--ink:#17243a;--line:#c1ccda;--ui-ink:#17243a;background:var(--bg);color:#17243a}
+body[data-theme="light"] .top{background:#fff;color:#17243a;border-color:#c4cedb}
+body[data-theme="light"] .top #studentLabel{color:#40536c!important}
+body[data-theme="light"] .sidebar{background:#e4ebf3}
+body[data-theme="light"] .search,body[data-theme="light"] .filters select,body[data-theme="light"] .top select{background:#fff;color:#17243a;border-color:#aab8c9}
+body[data-theme="light"] .stats{background:#fff;color:#263b54}
+body[data-theme="light"] .group{border-color:#bdc9d8}
+body[data-theme="light"] .group summary{color:#fff}
+body[data-theme="light"] .tasklist{background:#edf2f7}
+body[data-theme="light"] .taskrow{color:#263b54}
+body[data-theme="light"] .taskrow.active{background:#d2e3f4;color:#142d49}
+body[data-theme="light"] .taskrow.done{background:#ccebdc;color:#15543e}
+body[data-theme="light"] .welcome{color:#344a63}
+body[data-theme="light"] .debug-modal{color:#17243a}
+body[data-theme="light"] .debugger,body[data-theme="light"] .regex-debugger{color:#17243a}
+
+.regex-debugger{color:var(--ui-ink)!important;background:var(--panel)!important}
+.regex-debugger .debug-caption,.regex-debugger .debug-count{color:var(--ui-ink)!important;opacity:.92}
+.regex-debugger .debug-head b{color:var(--ui-ink)!important}
+body[data-theme="dark"] .regex-debugger{--ui-ink:#f2f6fc}
+body[data-theme="light"] .regex-debugger{--ui-ink:#17243a}
+body[data-theme="light"] button{background:#e5ebf3;color:#172b45;border-color:#9eafc3}
+body[data-theme="light"] button.primary{background:#087e91;color:#fff;border-color:#087e91}
+body[data-theme="light"] .editor-wrap{background:#0d1725}
+.editor-wrap .editor-highlight{height:100%;box-sizing:border-box}
+
+.solution-details{margin-top:8px;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--panel);color:var(--ui-ink)}
+.solution-details summary{cursor:pointer;font-weight:750}
+body[data-theme="light"] .feedback{color:#17243a}
+body[data-theme="light"] .solution{background:#172438;color:#f1f6fc}
+body[data-theme="light"] .debug-modal-backdrop{background:#142033bb}
+
+.group summary{background:transparent!important;color:var(--ui-ink,#eaf0f8)!important;border-bottom:1px solid var(--line);padding:11px 10px}
+.group{background:transparent;border-color:var(--line)}
+.section-count{float:right;color:var(--ui-ink);opacity:.72;font-weight:500}
+.taskrow{color:var(--ui-ink,#eaf0f8)}
+.taskrow-title{flex:1;min-width:0}
+.taskmarks{white-space:nowrap;color:#e5b94f}
+.task-flags{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0}
+.task-flags button.flag-on{background:#247b67!important;color:#fff!important;border-color:#3ab18f!important}
+.task-comment-label{display:block;font-weight:700;margin:10px 0 5px;color:var(--ui-ink)}
+.task-comment{width:100%;min-height:58px;resize:vertical;padding:9px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ui-ink);font:inherit}
+.task-edit-modal{max-height:82vh;overflow:auto}
+.task-edit-title{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.task-edit-title h2{margin:0 0 12px}
+.task-edit-field{display:block;font-weight:700;margin:10px 0 4px;color:var(--ui-ink,#17243a)}
+.task-edit-field input,.task-edit-field textarea{display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ui-ink);font:inherit}
+.task-edit-field textarea{min-height:74px;resize:vertical}
+.task-edit-field textarea[name="condition"]{min-height:105px}
+.task-edit-field textarea[name="solutionCode"],.task-edit-field textarea[name="solutionCodeComments"]{min-height:125px;font-family:ui-monospace,Consolas,monospace}
+button.danger{background:#9b3030!important;color:#fff!important;border-color:#bd5555!important}
+body[data-theme="light"] .group summary{color:#24364d!important;background:transparent!important}
+body[data-theme="light"] .taskrow{color:#263b54}
+body[data-theme="light"] .section-count{color:#52647a}
+
+/* Section titles: soft blue accent, readable in both themes */
+.group summary{
+  color:#a9c9df!important;
+  background:transparent!important;
+}
+.group summary .section-count{
+  color:#829fb5!important;
+}
+body[data-theme="light"] .group summary{
+  color:#527b99!important;
+  background:transparent!important;
+}
+body[data-theme="light"] .group summary .section-count{
+  color:#7892a8!important;
+}
+
+</style></head><body class="fs-medium" data-theme="dark">
+<header class="top"><div class="brand"><span class="logo">re</span>Регулярки · Python</div><span id="studentLabel" style="color:#b8c7da">Ученик: ФЫВ</span><div class="grow"></div>
+<button id="themeToggle" type="button" title="Переключить на светлую тему" aria-label="Переключить тему">☀️ Светлая тема</button><label>Шрифт <select id="fontSize"><option value="small">Мелкий</option><option value="medium" selected="">Средний</option><option value="large">Крупный</option><option value="giant">Гигантский</option></select></label>
+<button id="saveApp" class="primary">Сохранить приложение</button><button id="exitBtn">Выход</button></header>
+<div class="layout"><aside class="sidebar"><input id="search" class="search" placeholder="Поиск по условию, номеру, теории…">
+<div class="filters"><button type="button" onclick="openTaskEditor()">＋ Добавить задачу</button></div><div class="filters"><select id="levelFilter"><option value="">Все уровни</option><option>Базовый</option><option>Средний</option><option>Сложный</option><option>Гроб</option><option>Не указан</option></select><select id="sectionFilter"><option value="">Все разделы</option><option>Запрещённые символы и последовательности</option><option>Классы символов и диапазоны</option><option>Максимальные и минимальные фрагменты</option><option>Повторяющиеся блоки и группы</option><option>Подсчёт и частотный анализ</option></select><select id="taskFlagFilter"><option value="">Все задачи</option><option value="done">Решённые</option><option value="homework">ДЗ</option><option value="favorite">Избранное</option><option value="unsolved">Не решённые</option></select></div>
+<div class="stats"><b id="progressText">0 / 28 решено</b><span id="percent" style="float:right">0%</span><div class="bar"><i id="progressBar" style="width: 0%;"></i></div><small id="foundCount">Найдено 28 из 28</small></div><div id="groups"><details class="group" data-section="Запрещённые символы и последовательности" open=""><summary>Запрещённые символы и последовательности <span class="section-count">0/5</span></summary><div class="tasklist"><button class="taskrow active"><span class="num">№ JSON-04</span><span class="taskrow-title">Самая длинная цепочка без DFFD</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 864</span><span class="taskrow-title">Задание № 864</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 952</span><span class="taskrow-title">Задание № 952</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 7016</span><span class="taskrow-title">Задание № 7016</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 8567</span><span class="taskrow-title">Задание № 8567</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button></div></details><details class="group" data-section="Классы символов и диапазоны"><summary>Классы символов и диапазоны <span class="section-count">0/2</span></summary><div class="tasklist"><button class="taskrow"><span class="num">№ 1042</span><span class="taskrow-title">100 базовых задач Е. Джобс</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 19887</span><span class="taskrow-title">19887</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button></div></details><details class="group" data-section="Максимальные и минимальные фрагменты"><summary>Максимальные и минимальные фрагменты <span class="section-count">0/10</span></summary><div class="tasklist"><button class="taskrow"><span class="num">№ 21</span><span class="taskrow-title">Демоверсия 2021</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 105</span><span class="taskrow-title">Джобс 07.09.2020</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 1039</span><span class="taskrow-title">100 базовых задач Е. Джобс</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 1040</span><span class="taskrow-title">100 базовых задач Е. Джобс</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 1205</span><span class="taskrow-title">Апробация 27.04</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 1230</span><span class="taskrow-title">Апробация 27.04</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 1273</span><span class="taskrow-title">Задание № 1273</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 1866</span><span class="taskrow-title">Основная волна 2021</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 2419</span><span class="taskrow-title">Задание № 2419</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 3792</span><span class="taskrow-title">Задание № 3792</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button></div></details><details class="group" data-section="Повторяющиеся блоки и группы"><summary>Повторяющиеся блоки и группы <span class="section-count">0/10</span></summary><div class="tasklist"><button class="taskrow"><span class="num">№ 66</span><span class="taskrow-title">Джобс 31.08.2020</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 314</span><span class="taskrow-title">Джобс 28.09.2020</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 414</span><span class="taskrow-title">Задание № 414</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 861</span><span class="taskrow-title">Задание № 861</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 862</span><span class="taskrow-title">Задание № 862</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 1874</span><span class="taskrow-title">Задание № 1874</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 2424</span><span class="taskrow-title">Задание № 2424</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 2531</span><span class="taskrow-title">Новогодний вариант 2021/2022</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 2942</span><span class="taskrow-title">Апробация 19.02.2022</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button><button class="taskrow"><span class="num">№ 4710</span><span class="taskrow-title">Демоверсия 2023</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button></div></details><details class="group" data-section="Подсчёт и частотный анализ"><summary>Подсчёт и частотный анализ <span class="section-count">0/1</span></summary><div class="tasklist"><button class="taskrow"><span class="num">№ 2500</span><span class="taskrow-title">2500</span><span class="taskmarks"></span><span class="lvl">Базовый</span></button></div></details></div></aside>
+<main class="main"><div id="welcome" class="welcome hidden"><h2>Начнём тренировку! 👋</h2><p>Выбери раздел и задачу слева. Разделы остаются открытыми, пока ты сама их не закроешь.</p></div><div id="taskHost"><section class="taskcard"><div class="head"><h1>Задание № JSON-04</h1><span class="badge">Запрещённые символы и последовательности</span><span class="badge">Базовый</span><span class="badge">В работе</span><button type="button" onclick="openTaskEditor(current)">✏️ Редактировать</button><button class="expand" onclick="toggleFocus()">Развернуть задачу</button></div>
+<div class="task-flags">
+<button type="button" class="" onclick="toggleTaskFlag('done')">✓ Решено</button>
+<button type="button" class="" onclick="toggleTaskFlag('homework')">📚 ДЗ</button>
+<button type="button" class="" onclick="toggleTaskFlag('favorite')">★ Избранное</button>
+</div>
+<label class="task-comment-label">Мой комментарий к задаче</label><textarea class="task-comment" placeholder="Запиши свои заметки…" oninput="saveTaskComment(this)"></textarea>
+<div class="condition">В файле найдите максимальную длину непрерывного фрагмента, в котором не встречается запрещённая последовательность <strong>DFFD</strong>.</div><details class="theory"><summary>📚 Теория к задаче · нажми, чтобы открыть или закрыть</summary><div class="theory-body"><p><b>re.findall()</b> — все совпадения.</p><p><b>\d</b> — цифра; <b>[A-Z]</b> — заглавная латинская буква.</p><p><b>+</b> — один или более повторов; <b>*</b> — ноль или более.</p><p><b>[^ABC]</b> — любой символ, кроме A, B и C.</p><p><b>(?=...)</b> — просмотр вперёд, в том числе для перекрывающихся совпадений.</p></div></details>
+<div class="codebar"><b>🐍 Код на Python</b><span>Файл: 24.txt</span></div><div class="editor-wrap"><pre class="editor-highlight" aria-hidden="true" style="height: 302px;">import re
+
+f = open('24.txt', 'r')
+s = f.readline().strip()
+<span class="py-comment"># s = "WNAJFCAZJBVEEUYDFFDKDN23423423PVLXJDVNXCRUMTDWDFFDRDFFDFFWFGPXYHRVEM"</span>
+
+<span class="py-comment"># Регулярное выражение (заполни сам)</span>
+pattern = r'(?:(?!DFFD).)+'
+
+matches = re.findall(pattern, s)
+answer = len(matches)  <span class="py-comment"># или max(len(m) for m in matches)</span>
+print(answer)
+</pre><textarea class="editor" spellcheck="false" oninput="onCodeInput(this)" onscroll="syncEditorScroll(this)" style="height: 304px; overflow-y: hidden;">import re
+
+f = open('24.txt', 'r')
+s = f.readline().strip()
+# s = "WNAJFCAZJBVEEUYKDNPVLXJDVNXCRUMTDWRFFWFGPXYHRVEM"
+
+# Регулярное выражение (заполни сам)
+pattern = r''
+
+matches = re.findall(pattern, s)
+answer = len(matches)  # или max(len(m) for m in matches)
+print(answer)</textarea></div>
+<div class="actions icon-actions"><button title="Заполнить полный код решения" aria-label="Заполнить полный код" onclick="fillFields(this)"><span class="act-ico">✨</span><span class="act-lbl">Полный код</span></button><button class="primary" title="Запустить и проверить ответ" aria-label="Запустить и проверить" onclick="runCode(this)"><span class="act-ico">▶</span><span class="act-lbl">Запуск</span></button><button title="Вернуть исходную заготовку" aria-label="Вернуть заготовку" onclick="resetCode(this)"><span class="act-ico">↶</span><span class="act-lbl">Сброс</span></button><button title="Очистить окно вывода" aria-label="Очистить вывод" onclick="clearOutput(this)"><span class="act-ico">⌫</span><span class="act-lbl">Очистить</span></button><button title="Скопировать код в буфер" aria-label="Копировать код" onclick="copyCode(this)"><span class="act-ico">📋</span><span class="act-lbl">Копировать</span></button><button title="Подсказка по шаблону" aria-label="Подсказка" onclick="showHint(this)"><span class="act-ico">💡</span><span class="act-lbl">Подсказка</span></button><button title="Показать эталонный ответ" aria-label="Показать ответ" onclick="showExpectedAnswer(this)"><span class="act-ico">🔑</span><span class="act-lbl">Ответ</span></button><button title="Отладить регулярное выражение" aria-label="Отладить регулярное выражение" onclick="openRegexDebugger(this)"><span class="act-ico">🔎</span><span class="act-lbl">Отладка</span></button><button title="Показать подробный разбор решения" aria-label="Показать разбор" onclick="showSolution(this)"><span class="act-ico">📖</span><span class="act-lbl">Разбор</span></button></div>
+<div class="output">Подставлена только регулярка pattern = r'(?:(?!DFFD).)+'. Комментарии и строка s сохранены.</div><div class="regex-debugger" data-sample="WNAJFCAZJBVEEUYDFFDKDN23423423PVLXJDVNXCRUMTDWDFFDRDFFDFFWFGPXYHRVEM" data-suggested="[A-Z]+" hidden=""><div class="debug-head" style=""><b>🔎 Отладка регулярного выражения</b><button type="button" onclick="closeRegexDebugger(this)">Закрыть</button></div><p class="debug-caption">Меняй выражение — совпадения в тексте ниже будут подсвечиваться сразу.</p><div class="debug-controls"><input class="debug-pattern" type="text" spellcheck="false" placeholder="Регулярное выражение, например \d+" oninput="liveRegex(this)"><button type="button" onclick="useSuggestedRegex(this)">Подставить подсказку</button></div><div class="debug-result"><pre class="debug-highlight"><mark>WNAJFCAZJBVEEUY</mark>D<mark>FFDKDN23423423PVLXJDVNXCRUMTDW</mark>D<mark>FFDR</mark>D<mark>FFDFFWFGPXYHRVEM</mark></pre><div class="debug-count">Найдено совпадений: 4</div></div></div><div class="feedback"></div></section></div></main></div>
+<div id="focus"><div id="focusHost"></div></div><div id="modalRoot" class="modalback hidden"><div class="modal" id="modal"><h2>Кто сегодня занимается?</h2><p>Прогресс и флаги хранятся <b>отдельно для каждого ученика</b> и попадают в сохранённый файл приложения.</p><div style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0"><button type="button" class="stu-chip" data-name="ФЫВ" style="margin:2px">ФЫВ</button></div><input id="studentInput" placeholder="Имя ученика" value="ФЫВ"><div class="actions"><button class="primary" id="startBtn">Начать</button></div></div></div>
+<script id="embeddedTasks" type="application/json">[{"id":"task_json_DFFD","number":"JSON-04","title":"Самая длинная цепочка без DFFD","section":"Запрещённые символы и последовательности","level":"Базовый","condition":"В файле найдите максимальную длину непрерывного фрагмента, в котором не встречается запрещённая последовательность DFFD.","filename":"24.txt","sampleText":"WNAJFCAZJBVEEUYKDNPVLXJDVNXCRUMTDWRFFWFGPXYHRVEM\n","expectedAnswer":48,"pattern":"(?:(?!DFFD).)+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"WNAJFCAZJBVEEUYKDNPVLXJDVNXCRUMTDWRFFWFGPXYHRVEM\"\n\n# Регулярное выражение\npattern = r'(?:(?!DFFD).)+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_21_1","number":"21","title":"Демоверсия 2021","section":"Максимальные и минимальные фрагменты","level":"Базовый","condition":"Текстовый файл состоит не более чем из 106 символов X, Y и Z. Определите максимальное количество идущих подряд символов, среди которых каждые два соседних различны.","filename":"24.txt","sampleText":"XXYZXYXZXXXYXZZYXYYXZZZZYZZYXYYYZZYXXXYYYYYYZ\n","expectedAnswer":7,"pattern":"(?:(.)(?!\\1))+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"XXYZXYXZXXXYXZZYXYYXZZZZYZZYXYYYZZYXXXYYYYYYZ\"\n\n# Регулярное выражение\npattern = r'(?:(.)(?!\\1))+'\n\nmatches = [m.group(0) for m in re.finditer(pattern, s)]\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_66_2","number":"66","title":"Джобс 31.08.2020","section":"Повторяющиеся блоки и группы","level":"Базовый","condition":"Текстовый файл состоит не более чем из 106 латинских символов К, О, Т. Определите максимальное количество подряд идущих комбинаций КОТ.","filename":"24.txt","sampleText":"XXKOTKOTKOTYY\n","expectedAnswer":3,"pattern":"(?:KOT)+","mode":"max_count3","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"XXKOTKOTKOTYY\"\n\n# Регулярное выражение\npattern = r'(?:KOT)+'\n\nmatches = [m.group(0) for m in re.finditer(pattern, s)]\nanswer = max((len(m)//3 for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_105_3","number":"105","title":"Джобс 07.09.2020","section":"Максимальные и минимальные фрагменты","level":"Базовый","condition":"Текстовый файл состоит не более чем из 106 символов F, A, I, L. Определите максимальное количество подряд идущих одинаковых букв.","filename":"24.txt","sampleText":"FLAIALAFFAAAFLAIAILIAFLFIIIILIFAFLFLLIFAFFIII\n","expectedAnswer":4,"pattern":"(.)\\1+","mode":"max_iter","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"FLAIALAFFAAAFLAIAILIAFLFIIIILIFAFLFLLIFAFFIII\"\n\n# Регулярное выражение\npattern = r'(.)\\1+'\n\nmatches = [m.group(0) for m in re.finditer(pattern, s)]\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_314_4","number":"314","title":"Джобс 28.09.2020","section":"Повторяющиеся блоки и группы","level":"Базовый","condition":"Текстовый файл состоит не более чем из 106 символов S, T, O, C, K. Сколько раз встречается комбинация «OCK», не являющаяся при этом частью комбинации «STOCK».","filename":"24.txt","sampleText":"TCOKOKSKTOCKKOKCKOKOSTKCCCSCTTOCKSTTTTKKTCSTKOCKT\n","expectedAnswer":3,"pattern":"(?\u003c!ST)OCK","mode":"count","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"TCOKOKSKTOCKKOKCKOKOSTKCCCSCTTOCKSTTTTKKTCSTKOCKT\"\n\n# Регулярное выражение\npattern = r'(?\u003c!ST)OCK'\n\nmatches = re.findall(pattern, s)\nanswer = len(matches)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_414_5","number":"414","title":"Задание № 414","section":"Повторяющиеся блоки и группы","level":"Базовый","condition":"Текстовый файл состоит не более чем из 106 символов R, U, S, T, E, M. Сколько раз встречается комбинация «RUS», не являющаяся при этом частью комбинации «RUSTEM».","filename":"24.txt","sampleText":"RUUUSSURUSRMSSEMTRUSSMMEEEUUEEMMMUERURERRRUERUS\n","expectedAnswer":3,"pattern":"RUS(?!TEM)","mode":"count","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"RUUUSSURUSRMSSEMTRUSSMMEEEUUEEMMMUERURERRRUERUS\"\n\n# Регулярное выражение\npattern = r'RUS(?!TEM)'\n\nmatches = re.findall(pattern, s)\nanswer = len(matches)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_861_11","number":"861","title":"Задание № 861","section":"Повторяющиеся блоки и группы","level":"Базовый","condition":"Текстовый файл состоит не более чем из 106 символов S, T, O, C, K. Сколько раз встречается в файле комбинация «SOCKCOS»?","filename":"24.txt","sampleText":"CTTKSKCCTSSSSOCKCOSOSSCKTTCKSSOCKCOSCKOOOTSOCSOCKCOSKOTTC\n","expectedAnswer":3,"pattern":"SOCKCOS","mode":"count","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"CTTKSKCCTSSSSOCKCOSOSSCKTTCKSSOCKCOSCKOOOTSOCSOCKCOSKOTTC\"\n\n# Регулярное выражение\npattern = r'SOCKCOS'\n\nmatches = re.findall(pattern, s)\nanswer = len(matches)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_862_12","number":"862","title":"Задание № 862","section":"Повторяющиеся блоки и группы","level":"Базовый","condition":"Текстовый файл состоит не более чем из 106 символов S, T, O, C, K. Сколько раз встречается в файле комбинация «OKTOS»?","filename":"24.txt","sampleText":"OKTOSCTCCKTSSKCOSOKTOSSKOTCKKOOOKTKOKTOSSOKC\n","expectedAnswer":3,"pattern":"OKTOS","mode":"count","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"OKTOSCTCCKTSSKCOSOKTOSSKOTCKKOOOKTKOKTOSSOKC\"\n\n# Регулярное выражение\npattern = r'OKTOS'\n\nmatches = re.findall(pattern, s)\nanswer = len(matches)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_864_13","number":"864","title":"Задание № 864","section":"Запрещённые символы и последовательности","level":"Базовый","condition":"В текстовом файле находится цепочка из символов латинского алфавита A, B, C, D, E, F. Найдите длину самой длинной подцепочки, не содержащей гласных букв.","filename":"24.txt","sampleText":"DAEFACCFBFFCADCBEBEEDDFCCBDAEFBFACEDCECCACABDCBBBBECDECDEEDFCFDFA\n","expectedAnswer":7,"pattern":"[^AEIOUY]+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"DAEFACCFBFFCADCBEBEEDDFCCBDAEFBFACEDCECCACABDCBBBBECDECDEEDFCFDFA\"\n\n# Регулярное выражение\npattern = r'[^AEIOUY]+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_952_14","number":"952","title":"Задание № 952","section":"Запрещённые символы и последовательности","level":"Базовый","condition":"В текстовом файле находится цепочка из символов латинского алфавита A, B, C, D, E, F и десятичных цифр. Найдите длину самой длинной подцепочки, не содержащей гласных букв. Примечание: Гласными буквами являются буквы A, E.","filename":"24.txt","sampleText":"ECCEBBCDBCABABFBAEFFDBFFAADEEFFEFCDFAEADBEBDCBCFDEBDF\n","expectedAnswer":7,"pattern":"[^AE]+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"ECCEBBCDBCABABFBAEFFDBFFAADEEFFEFCDFAEADBEBDCBCFDEBDF\"\n\n# Регулярное выражение\npattern = r'[^AE]+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_1039_15","number":"1039","title":"100 базовых задач Е. Джобс","section":"Максимальные и минимальные фрагменты","level":"Базовый","condition":"В файле записана последовательность символов. Укажите длину самой длинной последовательности, состоящей из одинаковых символов.","filename":"24.txt","sampleText":"DZDAWNNMTYBHZMDWRGRMYVBSDHWPPPVLFCXVHGPAEFNNJKWHYHTS\n","expectedAnswer":3,"pattern":"(.)\\1+","mode":"max_iter","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"DZDAWNNMTYBHZMDWRGRMYVBSDHWPPPVLFCXVHGPAEFNNJKWHYHTS\"\n\n# Регулярное выражение\npattern = r'(.)\\1+'\n\nmatches = [m.group(0) for m in re.finditer(pattern, s)]\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_1040_16","number":"1040","title":"100 базовых задач Е. Джобс","section":"Максимальные и минимальные фрагменты","level":"Базовый","condition":"В файле записана последовательность символов, состоящая из строчных латинских букв и цифр. Укажите длину самой длинной последовательности, состоящей из цифр.","filename":"24.txt","sampleText":"642064230172368816909990970376009680784\n","expectedAnswer":39,"pattern":"\\d+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"642064230172368816909990970376009680784\"\n\n# Регулярное выражение\npattern = r'\\d+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_1042_17","number":"1042","title":"100 базовых задач Е. Джобс","section":"Классы символов и диапазоны","level":"Базовый","condition":"В файле записана последовательность символов. Сколько подстрок «abc» содержится в файле?","filename":"24.txt","sampleText":"abcabcabcabcXXX\n","expectedAnswer":4,"pattern":"abc","mode":"count","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"abcabcabcabcXXX\"\n\n# Регулярное выражение\npattern = r'abc'\n\nmatches = re.findall(pattern, s)\nanswer = len(matches)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_1205_18","number":"1205","title":"Апробация 27.04","section":"Максимальные и минимальные фрагменты","level":"Базовый","condition":"Текстовый файл состоит не более чем из 1200000 символов, которые являются прописными буквами латинского алфавита. Определите максимальное количество идущих подряд символов, среди которых нет символов G, W, P.","filename":"24.txt","sampleText":"ABCABCABCABCABCABCABCABCABCABCABCABCABCABCABC\n","expectedAnswer":45,"pattern":"[^GWP]+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"ABCABCABCABCABCABCABCABCABCABCABCABCABCABCABC\"\n\n# Регулярное выражение\npattern = r'[^GWP]+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_1230_19","number":"1230","title":"Апробация 27.04","section":"Максимальные и минимальные фрагменты","level":"Базовый","condition":"Текстовый файл состоит не более чем из 1200000 символов, которые являются прописными буквами латинского алфавита. Определите максимальное количество идущих подряд символов, среди которых нет символов W, R, Q.","filename":"24.txt","sampleText":"ABCABCABCABCABCABCABCABCABCABCABCABCABCABCABC\n","expectedAnswer":45,"pattern":"[^WRQ]+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"ABCABCABCABCABCABCABCABCABCABCABCABCABCABCABC\"\n\n# Регулярное выражение\npattern = r'[^WRQ]+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_1273_20","number":"1273","title":"Задание № 1273","section":"Максимальные и минимальные фрагменты","level":"Базовый","condition":"Текстовый файл состоит не более чем из 1200000 символов, которые являются прописными буквами латинского алфавита. Определите максимальное количество идущих подряд символов, среди которых нет подстроки XYZ.","filename":"24.txt","sampleText":"XYZXYZXYZXYZXXX\n","expectedAnswer":5,"pattern":"(?:(?!XYZ).)+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"XYZXYZXYZXYZXXX\"\n\n# Регулярное выражение\npattern = r'(?:(?!XYZ).)+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_1866_22","number":"1866","title":"Основная волна 2021","section":"Максимальные и минимальные фрагменты","level":"Базовый","condition":"Найдите максимальную длину подстроки, в которой символы a и d не стоят рядом.","filename":"24.txt","sampleText":"GZQYFKWZPUBRNXLESHJDCJTVXSDMVPPLMZGLSGDUEHYZXBEMWDKCPBXY\n","expectedAnswer":56,"pattern":"(?:(?!ad|da).)+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"GZQYFKWZPUBRNXLESHJDCJTVXSDMVPPLMZGLSGDUEHYZXBEMWDKCPBXY\"\n\n# Регулярное выражение\npattern = r'(?:(?!ad|da).)+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_1874_23","number":"1874","title":"Задание № 1874","section":"Повторяющиеся блоки и группы","level":"Базовый","condition":"Текстовый файл состоит не более чем из 106 символов и содержит только заглавные буквы латинского алфавита (A..Z). Определите максимальное количество идущих подряд символов, среди которых нет сочетания символов QW.","filename":"24.txt","sampleText":"AZZZAZAAZZAZAZZAZZZZZZZZZZZAZAAZAAZAAAAZAZAAAZZAZZAZA\n","expectedAnswer":53,"pattern":"(?:(?!QW).)+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"AZZZAZAAZZAZAZZAZZZZZZZZZZZAZAAZAAZAAAAZAZAAAZZAZZAZA\"\n\n# Регулярное выражение\npattern = r'(?:(?!QW).)+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_2419_28","number":"2419","title":"Задание № 2419","section":"Максимальные и минимальные фрагменты","level":"Базовый","condition":"В текстовом файле находится цепочка из символов латинского алфавита A, B, C длиной не более 106 символов. Найдите длину самой длинной подцепочки, состоящей из символов C","filename":"24.txt","sampleText":"CACBABCAAABCBBBBBCAACBBCBBCBCBABABABCABBCCBBBBBAACACABAACBCCAC\n","expectedAnswer":2,"pattern":"C+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"CACBABCAAABCBBBBBCAACBBCBBCBCBABABABCABBCCBBBBBAACACABAACBCCAC\"\n\n# Регулярное выражение\npattern = r'C+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_2424_31","number":"2424","title":"Задание № 2424","section":"Повторяющиеся блоки и группы","level":"Базовый","condition":"Текстовый файл состоит не более чем из 106 символов и содержит только заглавные буквы латинского алфавита (ABC…Z). Определите максимальную длину цепочки символов, состоящей из повторяющихся фрагментов XYZ.","filename":"24.txt","sampleText":"ABCXYZXYZXYZDEF\n","expectedAnswer":9,"pattern":"(?:XYZ)+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"ABCXYZXYZXYZDEF\"\n\n# Регулярное выражение\npattern = r'(?:XYZ)+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_2500_33","number":"2500","title":"2500","section":"Подсчёт и частотный анализ","level":"Базовый","condition":"Текстовый файл состоит не более чем из 106 заглавных латинских букв (A..Z). Определите количество подстрок G*ME, где звёздочка обозначает любой символ.","filename":"24.txt","sampleText":"GAMEGXMEG1ME\n","expectedAnswer":3,"pattern":"G.ME","mode":"count","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"GAMEGXMEG1ME\"\n\n# Регулярное выражение\npattern = r'G.ME'\n\nmatches = re.findall(pattern, s)\nanswer = len(matches)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_2531_35","number":"2531","title":"Новогодний вариант 2021/2022","section":"Повторяющиеся блоки и группы","level":"Базовый","condition":"Определите, сколько раз встречается комбинация «NEWYEAR» в файле.","filename":"24.txt","sampleText":"NEWYEARNAEWNNWYNEWYEARYRARNEEWREEWYYRENAAEEANEWYEAR\n","expectedAnswer":3,"pattern":"NEWYEAR","mode":"count","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"NEWYEARNAEWNNWYNEWYEARYRARNEEWREEWYYRENAAEEANEWYEAR\"\n\n# Регулярное выражение\npattern = r'NEWYEAR'\n\nmatches = re.findall(pattern, s)\nanswer = len(matches)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_2942_38","number":"2942","title":"Апробация 19.02.2022","section":"Повторяющиеся блоки и группы","level":"Базовый","condition":"Текстовый файл состоит из символов А, В и С. Определите максимальное количество идущих подряд пар символов АВ или АС в прилагаемом файле.","filename":"24.txt","sampleText":"ABACABACXX\n","expectedAnswer":4,"pattern":"(?:AB|AC)+","mode":"max_pairs","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"ABACABACXX\"\n\n# Регулярное выражение\npattern = r'(?:AB|AC)+'\n\nmatches = [m.group(0) for m in re.finditer(pattern, s)]\nanswer = max((len(m)//2 for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_3792_44","number":"3792","title":"Задание № 3792","section":"Максимальные и минимальные фрагменты","level":"Базовый","condition":"В текстовом файле находится цепочка из символов латинского алфавита A, B, C, D, E. Найдите длину самой длинной подцепочки, состоящей из символов A, B или C (в произвольном порядке).","filename":"24.txt","sampleText":"DECACEDDCBDDCCACDCCADABEAADDCBDEDCAACCABBD\n","expectedAnswer":8,"pattern":"[ABC]+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"DECACEDDCBDDCCACDCCADABEAADDCBDEDCAACCABBD\"\n\n# Регулярное выражение\npattern = r'[ABC]+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_4710_53","number":"4710","title":"Демоверсия 2023","section":"Повторяющиеся блоки и группы","level":"Базовый","condition":"Текстовый файл состоит из символов A, C, D, F и O. Определите максимальное количество идущих подряд пар символов вида согласная + гласная в прилагаемом файле.","filename":"24.txt","sampleText":"CFFDCDOAADOOFFFFDCCCFFCFAOAOCDFFCFDCCODFCCCCODFFAFO\n","expectedAnswer":2,"pattern":"(?:[CDF][AO])+","mode":"max_pairs","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"CFFDCDOAADOOFFFFDCCCFFCFAOAOCDFFCFDCCODFCCCCODFFAFO\"\n\n# Регулярное выражение\npattern = r'(?:[CDF][AO])+'\n\nmatches = [m.group(0) for m in re.finditer(pattern, s)]\nanswer = max((len(m)//2 for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_7016_59","number":"7016","title":"Задание № 7016","section":"Запрещённые символы и последовательности","level":"Базовый","condition":"(Д. Статный) Текстовый файл состоит из букв латинского алфавита и десятичных цифр. Определите максимальную длину подстроки, которая ограничена с одной стороны буквой A, а с другой - D и не содержит других букв A и D внутри.","filename":"24.txt","sampleText":"XXA123B45CYYDZZA9K8MDQA12D\n","expectedAnswer":11,"pattern":"A[^AD]*D|D[^AD]*A","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"XXA123B45CYYDZZA9K8MDQA12D\"\n\n# Регулярное выражение\npattern = r'A[^AD]*D|D[^AD]*A'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_8567_64","number":"8567","title":"Задание № 8567","section":"Запрещённые символы и последовательности","level":"Базовый","condition":"(В. Рыбальченко) Определите максимальное количество идущих подряд символов, среди которых не содержится три символа из набора букв A, B, C, D стоящих рядом.","filename":"24.txt","sampleText":"ABXCDYABZABCDXEFABCDABCDABCD\n","expectedAnswer":9,"pattern":"(?:(?![ABCD]{3}).)+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"ABXCDYABZABCDXEFABCDABCDABCD\"\n\n# Регулярное выражение\npattern = r'(?:(?![ABCD]{3}).)+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"},{"id":"task_19887_80","number":"19887","title":"19887","section":"Классы символов и диапазоны","level":"Базовый","condition":"(М. Попков) Требуется найти самую длинную последовательность, в которой чётные и нечётные цифры чередуются.","filename":"24.txt","sampleText":"729716090744490908068758144160418406209586933\n","expectedAnswer":8,"pattern":"(?:[02468][13579]|[13579][02468])+","mode":"max","solutionCode":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"729716090744490908068758144160418406209586933\"\n\n# Регулярное выражение\npattern = r'(?:[02468][13579]|[13579][02468])+'\n\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)\n","source":"Каталог","theory":[],"approach":"","answerStatus":"verified"}]</script>
+<script id="embeddedState" type="application/json">{"student":"ФЫВ","progress":{"task_JSON-04":{"done":true,"attempts":1},"task_864":{"done":true,"attempts":1},"task_952":{"done":true,"attempts":1}},"codeByTask":{"task_JSON-04":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n\npattern = r'(?:(?!DFFD).)+'\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)","task_864":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n\npattern = r'[^AEIOUY]+'\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)","task_952":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n\npattern = r'[^AE]+'\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)","task_json_DFFD":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"WNAJFCAZJBVEEUYDFFDKDN23423423PVLXJDVNXCRUMTDWDFFDRDFFDFFWFGPXYHRVEM\"\n\n# Регулярное выражение (заполни сам)\npattern = r'(?:(?!DFFD).)+'\n\nmatches = re.findall(pattern, s)\nanswer = len(matches)  # или max(len(m) for m in matches)\nprint(answer)"},"students":{"ФЫВ":{"progress":{"task_JSON-04":{"done":true,"attempts":1},"task_864":{"done":true,"attempts":1},"task_952":{"done":true,"attempts":1}},"codeByTask":{"task_JSON-04":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n\npattern = r'(?:(?!DFFD).)+'\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)","task_864":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n\npattern = r'[^AEIOUY]+'\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)","task_952":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n\npattern = r'[^AE]+'\nmatches = re.findall(pattern, s)\nanswer = max((len(m) for m in matches), default=0)\nprint(answer)","task_json_DFFD":"import re\n\nf = open('24.txt', 'r')\ns = f.readline().strip()\n# s = \"WNAJFCAZJBVEEUYDFFDKDN23423423PVLXJDVNXCRUMTDWDFFDRDFFDFFWFGPXYHRVEM\"\n\n# Регулярное выражение (заполни сам)\npattern = r'(?:(?!DFFD).)+'\n\nmatches = re.findall(pattern, s)\nanswer = len(matches)  # или max(len(m) for m in matches)\nprint(answer)"},"updated":1794580677959}},"font":"medium","version":3}</script>
+<script>
+const TASKS=JSON.parse(document.getElementById('embeddedTasks').textContent);
+(function(){const order={'Базовый':1,'Средний':2,'Сложный':3,'Гроб':4,'Не указан':5};TASKS.sort((x,y)=>(order[x.level]||5)-(order[y.level]||5)||(parseInt(String(x.number).replace(/\D/g,''),10)||0)-(parseInt(String(y.number).replace(/\D/g,''),10)||0));})();
+try{const localTasks=JSON.parse(localStorage.getItem('regexTrainer.taskLibrary')||'null');if(Array.isArray(localTasks)&&localTasks.length){TASKS.splice(0,TASKS.length,...localTasks)}}catch(e){}
+
+const initialState=JSON.parse(document.getElementById('embeddedState').textContent||'{}');
+const $=s=>document.querySelector(s);let student='',progress={},codeByTask={},current=null,focus=false,dirty=false,pyodide=null;
+let studentsDB = (initialState.students && typeof initialState.students==='object') ? initialState.students : {};
+if(initialState.student && initialState.progress && !studentsDB[initialState.student]){
+  studentsDB[initialState.student]={progress:initialState.progress,codeByTask:initialState.codeByTask||{}};
+}
+
+const levels={'Базовый':1,'Средний':2,'Сложный':3,'Гроб':4,'Не указан':5};
+const colors=['#386b83','#496b88','#6a638e','#477b76','#806b4c','#536f9a','#8a5d70','#527c68'];
+function esc(x){return String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function studentKey(n){return 'regexTrainer.v2.'+n.trim().toLocaleLowerCase('ru')}
+function loadProgress(){
+ try{
+  if(studentsDB[student]){
+   progress = studentsDB[student].progress || {};
+   codeByTask = studentsDB[student].codeByTask || {};
+  } else if(student===initialState.student && initialState.progress){
+   progress = initialState.progress;
+   codeByTask = initialState.codeByTask || {};
+  } else {
+   progress = JSON.parse(localStorage.getItem(studentKey(student))||'{}');
+   codeByTask = JSON.parse(localStorage.getItem(studentKey(student)+'.code')||'{}');
+  }
+  localStorage.setItem(studentKey(student), JSON.stringify(progress));
+  localStorage.setItem(studentKey(student)+'.code', JSON.stringify(codeByTask));
+ }catch(e){progress={};codeByTask={}}
+}
+function saveProgress(){
+ if(!student) return;
+ studentsDB[student] = {progress, codeByTask, updated: Date.now()};
+ try{
+  localStorage.setItem(studentKey(student), JSON.stringify(progress));
+  localStorage.setItem(studentKey(student)+'.code', JSON.stringify(codeByTask));
+  localStorage.setItem('regexTrainer.studentsDB', JSON.stringify(studentsDB));
+ }catch(e){}
+ updateStats();
+ dirty=true;
+}
+function done(t){return progress[t.id]?.done===true}
+function toggleTaskFlag(flag){
+ if(!current)return;progress[current.id]={...(progress[current.id]||{}),[flag]:!progress[current.id]?.[flag]};
+ saveProgress();const ed=activeCard()?.querySelector('.editor'),code=ed?.value;
+ const host=focus?$('#focusHost'):$('#taskHost');host.innerHTML=cardHTML(current);
+ const next=host.querySelector('.editor');if(next&&code!==undefined){next.value=code;codeByTask[current.id]=code;resizeEditors(host);updateCodeHighlight(next)}
+ renderSidebar()
+}
+function saveTaskComment(el){if(!current)return;progress[current.id]={...(progress[current.id]||{}),comment:el.value};saveProgress();dirty=true}
+
+function sorted(a){return [...a].sort((x,y)=>{
+ const lx=levels[x.level]??5, ly=levels[y.level]??5;
+ if(lx!==ly) return lx-ly;
+ const nx=parseInt(String(x.number).replace(/\D/g,''),10), ny=parseInt(String(y.number).replace(/\D/g,''),10);
+ if(!isNaN(nx)&&!isNaN(ny)&&nx!==ny) return nx-ny;
+ return String(x.number).localeCompare(String(y.number),'ru');
+})}
+function filtered(){let q=$('#search').value.trim().toLocaleLowerCase('ru'),l=$('#levelFilter').value,s=$('#sectionFilter').value;let f=$('#taskFlagFilter')?.value||'';return TASKS.filter(t=>(!l||t.level===l)&&(!s||t.section===s)&&(!f||(f==='unsolved'?!done(t):!!progress[t.id]?.[f]))&&(!q||[t.number,t.title,t.condition,t.source,t.approach,t.filename,t.sampleText,t.solutionCode,t.solutionCodeComments,(progress[t.id]?.comment||'')].join(' ').toLocaleLowerCase('ru').includes(q)))}
+function updateStats(){let n=TASKS.filter(done).length,p=TASKS.length?Math.round(n/TASKS.length*100):0;$('#progressText').textContent=n+' / '+TASKS.length+' решено';$('#percent').textContent=p+'%';$('#progressBar').style.width=p+'%'}
+function renderSidebar(){
+ let arr=filtered(),groups={};arr.forEach(t=>(groups[t.section]??=[]).push(t));
+ let root=$('#groups'),opened=new Set([...root.querySelectorAll('details[open]')].map(x=>x.dataset.section));root.innerHTML='';
+ Object.keys(groups).sort((a,b)=>a.localeCompare(b,'ru')).forEach(sec=>{
+  let d=document.createElement('details');d.className='group';d.dataset.section=sec;d.open=opened.has(sec);
+  let list=sorted(groups[sec]),n=list.filter(done).length;
+  d.innerHTML='<summary>'+esc(sec)+' <span class="section-count">'+n+'/'+list.length+'</span></summary><div class="tasklist"></div>';
+  let target=d.querySelector('.tasklist');
+  list.forEach(t=>{let b=document.createElement('button'),p=progress[t.id]||{};
+   b.className='taskrow'+(done(t)?' done':'')+(current?.id===t.id?' active':'');
+   b.innerHTML='<span class="num">№ '+esc(t.number)+'</span><span class="taskrow-title">'+esc(t.title||'Задание')+'</span><span class="taskmarks">'+(p.homework?'📚 ':'')+(p.favorite?'★ ':'')+(done(t)?'✓':'')+'</span><span class="lvl">'+esc(t.level)+'</span>';
+   b.onclick=()=>openTask(t.id);target.append(b)
+  });root.append(d)
+ });
+ $('#foundCount').textContent='Найдено '+arr.length+' из '+TASKS.length;updateStats()
+}
+function pyStringLiteral(s){return JSON.stringify(String(s??''))}
+function pyReprLines(text){return '['+String(text).split(/(?<=\n)/).filter(x=>x.length).map(x=>JSON.stringify(x)).join(', ')+']'}
+
+function starter(t){
+ const sample=String(t.sampleText||'ABC123XYZ456').replace(/[\r\n]+/g,'');
+ const fn=String(t.filename||'24.txt').replace(/['\\]/g,'');
+ // Заготовка: регулярка ПУСТАЯ — ученик пишет только pattern
+ return `import re
+
+f = open('${fn}', 'r')
+s = f.readline().strip()
+# s = ${pyStringLiteral(sample)}
+
+# Регулярное выражение (заполни сам)
+pattern = r''
+
+matches = re.findall(pattern, s)
+answer = len(matches)  # или max(len(m) for m in matches)
+print(answer)`;
+}
+function fullSolutionCode(t){
+ // Prefer precomputed solution stored on the task
+ if(t.solutionCode && String(t.solutionCode).trim()){
+  return String(t.solutionCode).trim();
+ }
+ const c=t.condition||'', sample=pyStringLiteral(t.sampleText||'ABC123XYZ456');
+ let pat=null;
+ // A...D / D...A without other A or D inside
+ if(/ограничена с одной стороны буквой A[\s\S]*другой[\s\S]*D[\s\S]*не содержит других букв A и D/i.test(c)
+    || (/буквой A/.test(c) && /другой.*\bD\b/.test(c) && /не содержит других букв A и D/i.test(c))){
+  pat='A[^AD]*D|D[^AD]*A';
+ }
+ const m=c.match(/не содержащ(?:ую|ей|ая|их|ий|ие)?\s+(?:символ(?:ов|ы)?|букв(?:ы)?)\s+([A-Z](?:\s*,\s*[A-Z])*(?:\s+и\s+[A-Z])?)/i);
+ if(m && /сам(?:ой|ую) длин|максимальн.*длин|максимальное количество/i.test(c)){
+   const banned=[...m[1].matchAll(/[A-Z]/g)].map(x=>x[0]);pat='[^'+banned.join('')+']+';
+ }
+ if(!pat && /не содержащ.*гласн/i.test(c))pat='[^AEIOUY]+';
+ if(!pat && /не содержащ.*символ(?:а|ов)? D/i.test(c))pat='[^D]+';
+ if(!pat && /не содержащ.*символ(?:ов)? C и F/i.test(c))pat='[^CF]+';
+ if(!pat && /максимальн.*подряд идущ.*цифр/i.test(c))pat=String.raw`\d+`;
+ if(!pat && /максимальн.*подряд идущ.*одинаков/i.test(c))pat=String.raw`(?=((.)\2*))`;
+ if(!pat && /символов A, B, E, F/i.test(c) && /самой длинной/i.test(c))pat='[ABEF]+';
+ if(!pat && /не содержит точек|нет точек/i.test(c))pat='[^.]+';
+ if(!pat && /комбинаци[юяи]?\s*[«"]?([A-Z]{2,})[»"]?/i.test(c) && /сколько раз|количество.*комбинац/i.test(c)){
+   const q=c.match(/комбинаци[юяи]?\s*[«"]?([A-Z]{2,})[»"]?/i)[1];pat=q;
+ }
+ if(!pat && /комбинаци[юяи]?\s*[«"]?([A-Z])\s*\*\s*([A-Z])[»"]?/i.test(c)){
+   const q=c.match(/комбинаци[юяи]?\s*[«"]?([A-Z])\s*\*\s*([A-Z])[»"]?/i);pat=q[1]+'.'+q[2];
+ }
+ if(!pat && /повторяющ.*фрагмент.*XYZ/i.test(c))pat=String.raw`(?:XYZ)+`;
+ if(!pat && /палиндром/i.test(c) && /длин/i.test(c))pat=String.raw`(?=(.{2,}))`;
+ if(!pat && /не содерж.*подстрок.*XY.*XZ/i.test(c))pat='(?:[^X]|X(?![YZ]))+';
+ if(!pat && /подстрок.*G\*ME/i.test(c))pat='G.ME';
+ if(!pat && /максимальн.*длин.*цепочк/i.test(c)){
+   const chars=[...new Set((c.match(/\b[A-Z]\b/g)||[]))];
+   if(chars.length>=2&&chars.length<=8)pat='['+chars.join('')+']+';
+ }
+ if(!pat)return null;
+ const countTask=/сколько раз|определите количество|количество подстрок|число подстрок|максимальное количество подряд идущих комбинаций/i.test(c);
+ const tupleMatches=pat.startsWith('(?=') && (pat.includes('(.)') || pat.includes('(.'));
+ const answerLine=countTask?'answer = len(matches)':(tupleMatches?'answer = max([len(m[0]) for m in matches])':'answer = max([len(m) for m in matches])');
+ return `import re
+
+f = open('${t.filename||'24.txt'}', 'r')
+s = f.readline()
+# s = ${sample}
+
+# Регулярное выражение
+pattern = r'${pat}'
+
+matches = re.findall(pattern, s)
+${answerLine}
+print(answer)
+`;
+}
+function emphasisCondition(s){return esc(s).replace(/[A-Za-z]+|\\d+(?:[.,]\\d+)?/g,m=>'<strong>'+m+'</strong>')}
+function conditionHTML(s){return emphasisCondition(s).replace(/\\s+/g,' ').replace(/(?<=[.!?])\\s+(?=[А-ЯЁA-Z])/g,'<br>')}
+function theoryHTML(){return `<details class="theory"><summary>📚 Теория к задаче · нажми, чтобы открыть или закрыть</summary><div class="theory-body"><p><b>re.findall()</b> — все совпадения.</p><p><b>\\d</b> — цифра; <b>[A-Z]</b> — заглавная латинская буква.</p><p><b>+</b> — один или более повторов; <b>*</b> — ноль или более.</p><p><b>[^ABC]</b> — любой символ, кроме A, B и C.</p><p><b>(?=...)</b> — просмотр вперёд, в том числе для перекрывающихся совпадений.</p></div></details>`}
+function cardHTML(t){let code=codeByTask[t.id]??starter(t);return `<section class="taskcard"><div class="head"><h1>Задание № ${esc(t.number)}</h1><span class="badge">${esc(t.section)}</span><span class="badge">${esc(t.level)}</span><span class="badge">${done(t)?'✓ Решено':'В работе'}</span><button type="button" onclick="openTaskEditor(current)">✏️ Редактировать</button><button class="expand" onclick="toggleFocus()">${focus?'Свернуть задачу':'Развернуть задачу'}</button></div>
+<div class="task-flags">
+<button type="button" class="${done(t)?'flag-on':''}" onclick="toggleTaskFlag('done')">✓ Решено</button>
+<button type="button" class="${progress[t.id]?.homework?'flag-on':''}" onclick="toggleTaskFlag('homework')">📚 ДЗ</button>
+<button type="button" class="${progress[t.id]?.favorite?'flag-on':''}" onclick="toggleTaskFlag('favorite')">★ Избранное</button>
+</div>
+<label class="task-comment-label">Мой комментарий к задаче</label><textarea class="task-comment" placeholder="Запиши свои заметки…" oninput="saveTaskComment(this)">${esc(progress[t.id]?.comment||'')}</textarea>
+<div class="condition">${conditionHTML(t.condition)}</div>${theoryHTML()}
+<div class="codebar"><b>🐍 Код на Python</b><span>Файл: 24.txt</span></div><div class="editor-wrap"><pre class="editor-highlight" aria-hidden="true"></pre><textarea class="editor" spellcheck="false" oninput="onCodeInput(this)" onscroll="syncEditorScroll(this)">${esc(code)}</textarea></div>
+<div class="actions icon-actions"><button title="Заполнить полный код решения" aria-label="Заполнить полный код" onclick="fillFields(this)"><span class="act-ico">✨</span><span class="act-lbl">Полный код</span></button><button class="primary" title="Запустить и проверить ответ" aria-label="Запустить и проверить" onclick="runCode(this)"><span class="act-ico">▶</span><span class="act-lbl">Запуск</span></button><button title="Вернуть исходную заготовку" aria-label="Вернуть заготовку" onclick="resetCode(this)"><span class="act-ico">↶</span><span class="act-lbl">Сброс</span></button><button title="Очистить окно вывода" aria-label="Очистить вывод" onclick="clearOutput(this)"><span class="act-ico">⌫</span><span class="act-lbl">Очистить</span></button><button title="Скопировать код в буфер" aria-label="Копировать код" onclick="copyCode(this)"><span class="act-ico">📋</span><span class="act-lbl">Копировать</span></button><button title="Подсказка по шаблону" aria-label="Подсказка" onclick="showHint(this)"><span class="act-ico">💡</span><span class="act-lbl">Подсказка</span></button><button title="Показать эталонный ответ" aria-label="Показать ответ" onclick="showExpectedAnswer(this)"><span class="act-ico">🔑</span><span class="act-lbl">Ответ</span></button><button title="Отладить регулярное выражение" aria-label="Отладить регулярное выражение" onclick="openRegexDebugger(this)"><span class="act-ico">🔎</span><span class="act-lbl">Отладка</span></button><button title="Показать подробный разбор решения" aria-label="Показать разбор" onclick="showSolution(this)"><span class="act-ico">📖</span><span class="act-lbl">Разбор</span></button></div>
+<div class="output">Здесь появится результат выполнения.</div><div class="regex-debugger" hidden><div class="debug-head"><b>🔎 Отладка регулярного выражения</b><button type="button" onclick="closeRegexDebugger(this)">Закрыть</button></div><p class="debug-caption">Меняй выражение — совпадения в тексте ниже будут подсвечиваться сразу.</p><div class="debug-controls"><input class="debug-pattern" type="text" spellcheck="false" placeholder="Регулярное выражение, например \\d+" oninput="liveRegex(this)"><button type="button" onclick="useSuggestedRegex(this)">Подставить подсказку</button></div><div class="debug-result"><pre class="debug-highlight"></pre><div class="debug-count"></div></div></div><div class="feedback"></div></section>`}
+function activeCard(){return focus?$('#focusHost .taskcard'):$('#taskHost .taskcard')}
+function openTask(id){current=TASKS.find(t=>t.id===id);if(!current)return;$('#welcome').classList.add('hidden');if(focus){$('#focusHost').innerHTML=cardHTML(current);$('#taskHost').innerHTML=''}else{$('#taskHost').innerHTML=cardHTML(current)}resizeEditors(document);document.querySelectorAll('.editor').forEach(updateCodeHighlight);renderSidebar();dirty=true}
+function toggleFocus(){
+ if(!current)return;
+ const active=activeCard(),editor=active?.querySelector('.editor');
+ if(editor)codeByTask[current.id]=editor.value;
+ focus=!focus;
+ $('#focus').style.display=focus?'block':'none';
+ document.body.style.overflow=focus?'hidden':'';
+ $('#taskHost').innerHTML=focus?'':cardHTML(current);
+ $('#focusHost').innerHTML=focus?cardHTML(current):'';
+ resizeEditors(document);
+ document.querySelectorAll('.editor').forEach(updateCodeHighlight);
+}
+function onCodeInput(el){
+ if(!current)return;
+ const ss=el.selectionStart, se=el.selectionEnd, st=el.scrollTop, sl=el.scrollLeft;
+ codeByTask[current.id]=el.value;
+ updateCodeHighlight(el);
+ const needed=Math.max(120, el.scrollHeight+2);
+ if(parseInt(el.style.height||'0',10)<needed) el.style.height=needed+'px';
+ el.style.overflowY='hidden';
+ requestAnimationFrame(()=>{
+  try{el.setSelectionRange(ss,se)}catch(e){}
+  el.scrollTop=st; el.scrollLeft=sl;
+  syncEditorScroll(el);
+ });
+ dirty=true;
+ if(typeof studentsDB!=='undefined' && student){studentsDB[student]={progress,codeByTask,updated:Date.now()}}
+}
+function syncEditorScroll(el){const pre=el.parentNode&&el.parentNode.querySelector('.editor-highlight');if(pre){pre.scrollTop=el.scrollTop;pre.scrollLeft=el.scrollLeft}}
+function updateCodeHighlight(el){
+ const pre=el.parentNode&&el.parentNode.querySelector('.editor-highlight');
+ if(!pre)return;
+ pre.innerHTML=el.value.split('\n').map(line=>{
+  const i=line.indexOf('#');
+  return i<0?esc(line):esc(line.slice(0,i))+'<span class="py-comment">'+esc(line.slice(i))+'</span>';
+ }).join('\n')+'\n';
+ pre.style.height=el.style.height||(el.offsetHeight+'px');
+ syncEditorScroll(el);
+}
+function autoHeight(el){
+ const needed=Math.max(120, el.scrollHeight+2);
+ el.style.height=needed+'px';
+ el.style.overflowY='hidden';
+ const pre=el.parentNode&&el.parentNode.querySelector('.editor-highlight');
+ if(pre) pre.style.height=needed+'px';
+}
+function resizeEditors(root=document){root.querySelectorAll('.editor').forEach(autoHeight)}
+function cardButton(btn){return btn.closest('.taskcard')}
+function output(btn){return cardButton(btn).querySelector('.output')}
+function saveEditor(btn){if(current){let e=cardButton(btn).querySelector('.editor');codeByTask[current.id]=e.value;dirty=true}}
+function fillFields(btn){
+ let e=cardButton(btn).querySelector('.editor'),t=current;if(!t)return;
+ const sol=fullSolutionCode(t);
+ if(!sol){output(btn).textContent='Для этой задачи нет эталонного кода.';return}
+ // Extract only the pattern from solution
+ let pm=sol.match(/pattern\s*=\s*r(['"])((?:\\.|(?!\1).)*)\1/);
+ if(!pm){pm=sol.match(/pattern\s*=\s*(['"])((?:\\.|(?!\1).)*)\1/)}
+ const newPat=pm?pm[2]:'';
+ let code=e.value;
+ // Replace ONLY the pattern = r'...' line, keep everything else (comments, s=...)
+ if(/pattern\s*=/.test(code)){
+  code=code.replace(/pattern\s*=\s*r?(['"])(?:\\.|(?!\1).)*\1/, "pattern = r'"+newPat.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+"'");
+ } else {
+  // no pattern line - insert after s=
+  code=code.replace(/(s\s*=\s*.*\n)/, "$1\npattern = r'"+newPat.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+"'\n");
+ }
+ // Also update answer computation if solution has different ending - only if still placeholder
+ e.value=code;
+ onCodeInput(e);
+ output(btn).textContent='Подставлена только регулярка pattern = r\''+newPat+'\'. Комментарии и строка s сохранены.';
+}
+function resetCode(btn){let e=cardButton(btn).querySelector('.editor');e.value=starter(current);onCodeInput(e);output(btn).textContent='Исходная заготовка восстановлена.'}
+function clearOutput(btn){output(btn).textContent='';cardButton(btn).querySelector('.feedback').innerHTML=''}
+function copyCode(btn){let e=cardButton(btn).querySelector('.editor');navigator.clipboard?.writeText(e.value);output(btn).textContent='Код скопирован.'}
+function showHint(btn){
+ const t=current,box=cardButton(btn).querySelector('.feedback');
+ if(!t)return;
+ // Prefer pattern from solutionCode or task.pattern
+ let pat='';
+ if(t.pattern) pat=t.pattern;
+ if(t.solutionCode){
+  const pm=t.solutionCode.match(/pattern\s*=\s*r?(['"])((?:\\.|(?!\1).)*)\1/);
+  if(pm) pat=pm[2];
+ }
+ const explain=explainPattern(pat);
+ let htmlHint='<div class="note"><b>💡 Подсказка к этой задаче</b><br>';
+ if(pat){
+  htmlHint+='Эталонная регулярка: <code style="background:#1a2a40;padding:2px 6px;border-radius:4px">'+esc(pat)+'</code><br><br>';
+  htmlHint+=esc(explain)+'<br><br>';
+  htmlHint+='Вставь её в строку <code>pattern = r\'...\'</code> и запусти код.';
+ } else {
+  htmlHint+='Разбери условие и подбери шаблон. Используй отладчик 🔎, чтобы проверить на строке из кода.';
+ }
+ htmlHint+='</div>';
+ box.innerHTML=htmlHint;
+}
+
+
+
+
+function extractPatternFromCode(code){
+ if(!code) return '';
+ let m = code.match(/pattern\s*=\s*r(['"])((?:\\.|(?!\1).)*)\1/);
+ if(m){
+  return m[2].replace(/\\([\\'"nrt])/g, function(_,c){
+   return ({n:'\n',r:'\r',t:'\t','\\':'\\',"'":"'",'"':'"'}[c]) || ('\\'+c);
+  });
+ }
+ m = code.match(/pattern\s*=\s*(['"])((?:\\.|(?!\1).)*)\1/);
+ if(m) return m[2];
+ return '';
+}
+function extractSampleFromCode(code, fallback){
+ if(!code) return fallback||'';
+ const lines = code.split(/\r?\n/);
+ for(const line of lines){
+  const t=line.trim();
+  if(t.startsWith('#')) continue;
+  let m = t.match(/^s\s*=\s*(['"])((?:\\.|(?!\1).)*)\1/);
+  if(m){
+   try { return JSON.parse('"'+m[2].replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"'); } catch(e){ return m[2]; }
+  }
+ }
+ for(const line of lines){
+  let m = line.match(/#\s*s\s*=\s*(['"])((?:\\.|(?!\1).)*)\1/);
+  if(m){
+   try { return JSON.parse('"'+m[2].replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"'); } catch(e){ return m[2]; }
+  }
+ }
+ return fallback||'';
+}
+function openRegexDebugger(btn){
+ const panel=cardButton(btn).querySelector('.regex-debugger'),t=current;if(!t)return;
+ if(!panel.dataset.placeholder){const mark=document.createComment('regex-debugger-placeholder');panel.parentNode.insertBefore(mark,panel);panel._returnMarker=mark;}
+ const overlay=document.createElement('div');overlay.className='debug-modal-backdrop';overlay.id='regexDebugModal';
+ const dialog=document.createElement('div');dialog.className='debug-modal';
+ const head=document.createElement('div');head.className='debug-modal-title';head.innerHTML='<b>🔎 Отладка регулярного выражения</b><button type="button" onclick="closeRegexDebugger(this)">✕</button>';
+ const cond=document.createElement('div');cond.className='debug-task-condition';
+ cond.innerHTML='<div class="debug-task-meta"><b>Задание № '+esc(t.number)+'</b> · '+esc(t.level||'')+' · '+esc(t.section||'')+'</div><div class="debug-task-text">'+conditionHTML(t.condition||'')+'</div>';
+ dialog.appendChild(head);dialog.appendChild(cond);dialog.appendChild(panel);overlay.appendChild(dialog);document.body.appendChild(overlay);
+ const innerHead=panel.querySelector('.debug-head');if(innerHead)innerHead.style.display='none';
+ panel.hidden=false;
+ const ed = cardButton(btn).querySelector('.editor');
+ const code = ed ? ed.value : (codeByTask[t.id]||'');
+ const fromCodeSample = extractSampleFromCode(code, '');
+ const sample = (fromCodeSample || String(t.sampleText||'ABC123\nAAB456\nXYZ789\n')).replace(/\r/g,'');
+ panel.dataset.sample = sample;
+ const fromCodePat = extractPatternFromCode(code);
+ const suggested = hintPattern(t);
+ panel.querySelector('.debug-pattern').value = fromCodePat || '';
+ panel.dataset.suggested = suggested;
+ panel.querySelector('.debug-highlight').textContent = sample;
+ if(fromCodePat){
+  liveRegex(panel.querySelector('.debug-pattern'));
+ } else {
+  panel.querySelector('.debug-count').textContent = 'Введи выражение выше — совпадения появятся сразу. Можно нажать «Подставить выражение».';
+ }
+}
+function closeRegexDebugger(btn){
+ const panel=btn.closest('.regex-debugger')||document.querySelector('#regexDebugModal .regex-debugger'),overlay=document.getElementById('regexDebugModal');
+ if(panel){const innerHead=panel.querySelector('.debug-head');if(innerHead)innerHead.style.display='';}
+ if(panel&&panel._returnMarker&&panel._returnMarker.parentNode){panel.hidden=true;panel._returnMarker.parentNode.insertBefore(panel,panel._returnMarker);panel._returnMarker.remove();panel._returnMarker=null;}
+ if(overlay)overlay.remove();
+}
+function hintPattern(t){
+ const m=(t.condition+' '+t.title).toLowerCase();
+ if(/ограничена с одной стороны буквой a[\s\S]*другой[\s\S]*d[\s\S]*не содержит других букв a и d/i.test(m)
+    || (/буквой a/.test(m) && /другой.*\bd\b/.test(m) && /не содержит других букв a и d/.test(m))){
+  return 'A[^AD]*D|D[^AD]*A';
+ }
+ if(/перекрыва|с перекрыти/.test(m)) return '(?=...)';
+ if(/не содержащ.*гласн/.test(m)) return '[^AEIOUY]+';
+ if(/не содержащ.*символ(?:а|ов)? d\b/.test(m) && !/буквой a/.test(m)) return '[^D]+';
+ if(/не содержащ.*c и f/.test(m)) return '[^CF]+';
+ if(/не содержит|не содержится|без сочетания|без подстрок/.test(m)) return '[^ABC]+';
+ if(/цифр/.test(m)) return '\\d+';
+ if(/одинаков/.test(m)) return '(.)\\1+';
+ if(/латинск/.test(m)) return '[A-Z]+';
+ return '[A-Z]+';
+}
+function useSuggestedRegex(btn){
+ const panel=btn.closest('.regex-debugger'),input=panel.querySelector('.debug-pattern');
+ let sug = panel.dataset.suggested || '';
+ sug = sug.replace(/\\\\([dDwWsSbBnrt])/g, '\\$1');
+ input.value = sug;
+ liveRegex(input); input.focus();
+}
+function liveRegex(input){
+ const panel=input.closest('.regex-debugger'),pattern=input.value,source=panel.dataset.sample||'',pre=panel.querySelector('.debug-highlight'),count=panel.querySelector('.debug-count');
+ if(!pattern){pre.textContent=source;count.textContent='Введи регулярное выражение.';return}
+ try{
+  const re=new RegExp(pattern,'g'),matches=[...source.matchAll(re)];let html='',last=0;
+  for(const match of matches){const start=match.index,end=start+match[0].length;if(end<=start)continue;html+=esc(source.slice(last,start))+'<mark>'+esc(source.slice(start,end))+'</mark>';last=end;}
+  html+=esc(source.slice(last));pre.innerHTML=html||esc(source);count.textContent='Найдено совпадений: '+matches.length;
+ }catch(e){pre.textContent=source;count.textContent='Ошибка в регулярном выражении: '+e.message}
+}
+function showExpectedAnswer(btn){let t=current,box=cardButton(btn).querySelector('.feedback');if(t.expectedAnswer===undefined){box.innerHTML='<div class="note">Для этой задачи эталонный ответ ещё не рассчитан. Он не подставляется автоматически, чтобы не показывать неподтверждённое значение.</div>';return}box.innerHTML='<div class="note">Эталонный ответ для текущего тестового файла: <b>'+esc(String(t.expectedAnswer))+'</b></div>'}
+function explainPattern(pat){
+ if(!pat)return 'Шаблон подбирается под условие задачи.';
+ const p=String(pat);
+ const parts=[];
+ if(p.startsWith('(?=')) parts.push('Внешняя конструкция (?=...) — просмотр вперёд: позиция в строке не сдвигается, поэтому можно находить перекрывающиеся совпадения.');
+ if(/\[\^[^\]]+\]/.test(p)) parts.push('Класс вида [^...] означает «любой символ, кроме перечисленных внутри скобок». Так мы отбрасываем запрещённые буквы/цифры.');
+ if(/\[(?!\^)[^\]]+\]/.test(p)) parts.push('Класс [...] перечисляет допустимые символы (или диапазон вроде A-Z / 0-9).');
+ if(p.includes('\\d')) parts.push('\\d — любая цифра от 0 до 9 (эквивалент [0-9]).');
+ if(p.includes('.')) parts.push('Точка . — ровно один любой символ (кроме перевода строки).');
+ if(p.includes('+')) parts.push('Квантификатор + означает «один или более подряд».');
+ if(p.includes('*') && !p.startsWith('(?=')) parts.push('Квантификатор * означает «ноль или более подряд».');
+ if(p.includes('\\1')) parts.push('Обратная ссылка \\1 повторяет то, что захватила первая группа (...). Так ищут серии одинаковых символов.');
+ if(p.includes('(?:')) parts.push('(?:...) — незахватывающая группа: нужна для группировки, но не попадает в результат findall отдельным элементом.');
+ if(!parts.length) parts.push('Шаблон читается слева направо: каждый фрагмент описывает очередной кусок искомой подстроки.');
+ return parts.join(' ');
+}
+function commentedSolution(code){
+ const lines=String(code||'').split('\n');
+ const patLine=lines.find(l=>/pattern\s*=/.test(l));
+ const patMatch=patLine&&patLine.match(/pattern\s*=\s*r?(['"])([\s\S]*?)\1/);
+ const pat=patMatch?patMatch[2]:'';
+ const patternExplain=explainPattern(pat);
+ return lines.map((line)=>{
+  if(!line.trim())return '';
+  if(line.trim().startsWith('#'))return line;
+  const t=line.trim();
+  if(t.startsWith('import re')) return line+'  # подключаем модуль регулярных выражений Python';
+  if(t.startsWith('f = open(')) return line+'  # открываем файл с текстом задания (обычно 24.txt)';
+  if(t.startsWith('s = f.readline()')) return line+'  # читаем одну строку файла в переменную s';
+  if(t.startsWith('s = ')) return line+'  # (альтернатива) можно подставить образец строки прямо в код';
+  if(t.startsWith('pattern =')) return line+'  # '+patternExplain;
+  if(t.startsWith('matches = re.findall(')) return line+'  # findall возвращает список всех неперекрывающихся совпадений (или список групп)';
+  if(t.startsWith('answer = len(matches)')) return line+'  # в этой задаче нужен подсчёт количества совпадений';
+  if(t.startsWith('answer = max(')) return line+'  # среди всех совпадений выбираем максимальную длину — это ответ';
+  if(t.startsWith('print(answer)')) return line+'  # выводим число-ответ; его сверит тренажёр с эталоном';
+  return line+'  # следующий шаг решения';
+ }).join('\n');
+}
+function highlightPython(code){
+ return code.split('\n').map(line=>{const i=line.indexOf('#');return i<0?esc(line):esc(line.slice(0,i))+'<span class="py-comment">'+esc(line.slice(i))+'</span>'}).join('\n');
+}
+function showSolution(btn){
+ const box=cardButton(btn).querySelector('.feedback'),t=current,code=fullSolutionCode(t);
+ if(!code){box.innerHTML='<div class="note">Для этой задачи полный код пока не выведен автоматически. Эталонный ответ: <b>'+esc(String(t.expectedAnswer??'—'))+'</b>. Воспользуйся подсказкой 💡 и отладчиком 🔎.</div>';return}
+ const old=box.querySelector('details.solution-details');
+ if(old){old.remove();return}
+ const patMatch=code.match(/pattern\s*=\s*r?(['"])([\s\S]*?)\1/);
+ const pat=patMatch?patMatch[2]:'';
+ const explain=explainPattern(pat);
+ const intro='<div class="note" style="margin-bottom:8px"><b>Как читать шаблон <code>'+esc(pat)+'</code></b><br>'+esc(explain)+'</div>';
+ box.insertAdjacentHTML('beforeend','<details class="solution-details" open><summary>📖 Полный разбор — нажми, чтобы скрыть или открыть</summary>'+intro+'<pre class="solution">'+highlightPython(commentedSolution(code))+'</pre></details>');
+}
+
+function expected(t){return t.expectedAnswer??null}
+async function runCode(btn){let t=current,card=cardButton(btn),ed=card.querySelector('.editor'),out=card.querySelector('.output'),fb=card.querySelector('.feedback');onCodeInput(ed);out.textContent='Запускаю Python…';fb.innerHTML='';
+try{if(!window.loadPyodide){await new Promise((res,rej)=>{let sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js';sc.onload=res;sc.onerror=rej;document.head.append(sc)})}if(!pyodide)pyodide=await loadPyodide();
+let filename=t.filename||'24.txt';
+// Строка из редактора (s = "...") имеет приоритет над sample задачи
+let sample=extractSampleFromCode(ed.value, '');
+if(!sample) sample=String(t.sampleText||'ABC123DEF456').replace(/[\r\n]+$/g,'');
+pyodide.FS.writeFile(filename,sample);
+let captured='',errors='';pyodide.setStdout({batched:x=>captured+=x});pyodide.setStderr({batched:x=>errors+=x});
+let timer;await Promise.race([pyodide.runPythonAsync(ed.value),new Promise((_,rej)=>timer=setTimeout(()=>rej(new Error('TIME_LIMIT')),5000))]);clearTimeout(timer);
+out.textContent=captured+(errors?'\n'+errors:'')||'Код выполнен, но print ничего не вывел.';
+let key=expected(t);if(key!==null){let got=captured.trim().split(/\\r?\n/).pop();if(normalize(got)===normalize(key)){progress[t.id]={...(progress[t.id]||{}),done:true,attempts:(progress[t.id]?.attempts||0)+1};saveProgress();fb.innerHTML='<div class="note ok">Верно! Переходим к следующему заданию…</div>';renderSidebar();setTimeout(()=>nextTask(),1300)}else{progress[t.id]={...(progress[t.id]||{}),attempts:(progress[t.id]?.attempts||0)+1};saveProgress();fb.innerHTML='<div class="note error">Ответ не совпадает с эталоном. Проверь регулярное выражение и итоговое вычисление.</div>'}}
+else{progress[t.id]={...(progress[t.id]||{}),attempts:(progress[t.id]?.attempts||0)+1};saveProgress();fb.innerHTML='<div class="note">Код выполнен. Автоматическая сверка для этой задачи пока недоступна: в исходной базе нет подтверждённого ключа ответа.</div>'}
+}catch(e){clearTimeout(timer);out.textContent=e.message==='TIME_LIMIT'?'Код выполняется дольше 5 секунд. Попробуй выполнить его в отдельной среде Python.':'Ошибка Python: '+e.message}}
+function normalize(x){return String(x??'').replace(/\\s+/g,'').replace(',', '.').toLowerCase()}
+function nextTask(){let arr=sorted(filtered()),i=arr.findIndex(t=>t.id===current?.id),n=arr.slice(i+1).find(t=>!done(t))||arr[i+1];if(n)openTask(n.id)}
+function populateFilters(){let secs=[...new Set(TASKS.map(t=>t.section))].sort((a,b)=>a.localeCompare(b,'ru'));$('#sectionFilter').innerHTML='<option value="">Все разделы</option>'+secs.map(x=>'<option>'+esc(x)+'</option>').join('')}
+function modal(html){$('#modal').innerHTML=html;$('#modalRoot').classList.remove('hidden')}
+function closeModal(){$('#modalRoot').classList.add('hidden')}
+function askStudent(){
+ let remembered=localStorage.getItem('regexTrainer.lastStudent')||initialState.student||'';
+ try{
+  const cached=JSON.parse(localStorage.getItem('regexTrainer.studentsDB')||'null');
+  if(cached && typeof cached==='object'){
+   Object.keys(cached).forEach(k=>{
+    if(!studentsDB[k] || (cached[k].updated||0)>(studentsDB[k].updated||0)) studentsDB[k]=cached[k];
+   });
+  }
+ }catch(e){}
+ const known=Object.keys(studentsDB).sort((a,b)=>a.localeCompare(b,'ru'));
+ const chips=known.map(n=>'<button type="button" class="stu-chip" data-name="'+esc(n)+'" style="margin:2px">'+esc(n)+'</button>').join(' ');
+ modal('<h2>Кто сегодня занимается?</h2><p>Прогресс и флаги хранятся <b>отдельно для каждого ученика</b> и попадают в сохранённый файл приложения.</p>'
+  +(chips?'<div style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0">'+chips+'</div>':'')
+  +'<input id="studentInput" placeholder="Имя ученика" value="'+esc(remembered)+'"><div class="actions"><button class="primary" id="startBtn">Начать</button></div>');
+ const start=()=>{let n=$('#studentInput').value.trim();if(!n)return;student=n;localStorage.setItem('regexTrainer.lastStudent',n);$('#studentLabel').textContent='Ученик: '+n;loadProgress();closeModal();renderSidebar();dirty=true};
+ $('#startBtn').onclick=start;
+ document.querySelectorAll('.stu-chip').forEach(b=>b.onclick=()=>{$('#studentInput').value=b.dataset.name;start()});
+}
+
+function persistTaskLibrary(){try{localStorage.setItem('regexTrainer.taskLibrary',JSON.stringify(TASKS));dirty=true}catch(e){alert('Не удалось сохранить библиотеку задач: '+e.message)}}
+function openTaskEditor(task=null){
+ const t=task?JSON.parse(JSON.stringify(task)):{id:'task_custom_'+Date.now(),number:'',title:'Новая задача',section:'Новый раздел',level:'Базовый',condition:'',source:'Добавлена преподавателем',approach:'',theory:[],filename:'24.txt',sampleText:'',expectedAnswer:'',solutionCode:'',solutionCodeComments:'',answerStatus:'manual'};
+ const fields=[
+  ['number','Номер'],['title','Название'],['section','Раздел'],['level','Сложность'],['condition','Условие'],['source','Источник'],['approach','Подход / навык'],['filename','Имя файла'],['sampleText','Содержимое файла (одна строка)'],['expectedAnswer','Эталонный ответ'],['theory','Индексы теории (через запятую)'],['solutionCode','Полный код решения'],['solutionCodeComments','Код решения с комментариями'],['answerStatus','Статус эталона']
+ ];
+ const body=fields.map(([key,label])=>{let val=t[key]??'';if(key==='theory'&&Array.isArray(val))val=val.join(', ');let area=['condition','sampleText','solutionCode','solutionCodeComments'].includes(key);return `<label class="task-edit-field">${esc(label)}${area?`<textarea name="${key}">${esc(val)}</textarea>`:`<input name="${key}" value="${esc(val)}">`}</label>`}).join('');
+ modal(`<div class="task-edit-modal"><div class="task-edit-title"><h2>${task?'Редактировать задачу':'Добавить задачу'}</h2><button type="button" id="taskEditClose">✕</button></div><form id="taskEditForm">${body}<div class="actions"><button type="submit" class="primary">Сохранить задачу</button>${task?'<button type="button" id="deleteTask" class="danger">Удалить задачу</button>':''}</div></form></div>`);
+ $('#taskEditClose').onclick=closeModal;
+ $('#taskEditForm').onsubmit=e=>{
+  e.preventDefault();const form=e.currentTarget,updated={...t};
+  fields.forEach(([key])=>{let v=form.elements[key].value;updated[key]=key==='theory'?v.split(',').map(x=>x.trim()).filter(Boolean):v});
+  updated.id=t.id;
+  if(!updated.number.trim()||!updated.condition.trim()){alert('Заполни номер и условие задачи.');return}
+  if(task){let i=TASKS.findIndex(x=>x.id===task.id);if(i>=0)TASKS[i]=updated}else TASKS.push(updated);
+  persistTaskLibrary();current=updated;closeModal();renderSectionFilter();renderSidebar();openTask(updated.id)
+ };
+ const del=$('#deleteTask');if(del)del.onclick=()=>{
+  if(!confirm('Удалить задачу № '+t.number+'? Это действие нельзя отменить.'))return;
+  const i=TASKS.findIndex(x=>x.id===t.id);if(i>=0)TASKS.splice(i,1);
+  delete progress[t.id];delete codeByTask[t.id];persistTaskLibrary();saveProgress();current=null;closeModal();$('#taskHost').innerHTML='';$('#focusHost').innerHTML='';focus=false;$('#focus').style.display='none';renderSectionFilter();renderSidebar()
+ };
+}
+function renderSectionFilter(){const sel=$('#sectionFilter'),value=sel.value;sel.innerHTML='<option value="">Все разделы</option>'+[...new Set(TASKS.map(t=>t.section))].sort((a,b)=>a.localeCompare(b,'ru')).map(x=>'<option>'+esc(x)+'</option>').join('');if([...sel.options].some(o=>o.value===value))sel.value=value}
+function snapshot(){
+ if(student) studentsDB[student]={progress, codeByTask, updated:Date.now()};
+ return {student, progress, codeByTask, students: studentsDB, font: $('#fontSize').value, version: 3};
+}
+function saveApplication(){try{saveProgress();let state=snapshot(),copy=document.documentElement.cloneNode(true);copy.querySelector('#embeddedState').textContent=JSON.stringify(state).replace(/</g,'\\u003c');copy.querySelector('#embeddedTasks').textContent=JSON.stringify(TASKS).replace(/</g,'\\u003c');let blob=new Blob(['<!DOCTYPE html>\n'+copy.outerHTML],{type:'text/html;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Регулярки_'+(student||'ученик')+'_с_прогрессом.html';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);dirty=false;return true}catch(e){alert('Не удалось сохранить приложение: '+e.message);return false}}
+function exitAsk(){modal('<h2>Завершить работу?</h2><p>Сначала сохранить приложение с прогрессом и кодом?</p><div class="actions"><button id="stay">Остаться</button><button id="saveExit" class="primary">Сохранить и выйти</button><button id="exitNow">Выйти без сохранения</button></div>');$('#stay').onclick=closeModal;$('#saveExit').onclick=()=>{if(saveApplication())leaveApp();};$('#exitNow').onclick=()=>leaveApp(true)}
+function leaveApp(withoutSaving=false){closeModal();current=null;focus=false;$('#focus').style.display='none';$('#taskHost').innerHTML='';$('#focusHost').innerHTML='';$('#welcome').classList.remove('hidden');document.body.style.overflow='';if(withoutSaving){localStorage.removeItem('regexTrainer.lastStudent');student='';initialState.student='';initialState.progress=null;progress={};codeByTask={};$('#studentLabel').textContent='Ученик: не выбран';dirty=false;askStudent();}}
+const themeBtn=document.getElementById('themeToggle');function setTheme(mode){document.body.dataset.theme=mode;themeBtn.textContent=mode==='light'?'🌙 Тёмная тема':'☀️ Светлая тема';themeBtn.title=mode==='light'?'Переключить на тёмную тему':'Переключить на светлую тему';try{localStorage.setItem('regex.theme',mode)}catch(e){}}setTheme(localStorage.getItem('regex.theme')||'dark');themeBtn.addEventListener('click',()=>setTheme(document.body.dataset.theme==='dark'?'light':'dark'));
+$('#saveApp').onclick=saveApplication;$('#exitBtn').onclick=exitAsk;$('#search').oninput=renderSidebar;$('#levelFilter').onchange=renderSidebar;$('#sectionFilter').onchange=renderSidebar;$('#taskFlagFilter').onchange=renderSidebar;
+$('#fontSize').onchange=e=>{document.body.className='fs-'+e.target.value;dirty=true};
+
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('regexDebugModal')){const b=document.querySelector('#regexDebugModal .debug-head button');if(b)closeRegexDebugger(b)}});
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
+(function init(){populateFilters();renderSectionFilter();if(initialState.font){$('#fontSize').value=initialState.font;document.body.className='fs-'+initialState.font}if(initialState.student){student=initialState.student;$('#studentLabel').textContent='Ученик: '+student;progress=initialState.progress||{};codeByTask=initialState.codeByTask||{}}askStudent();renderSidebar()})();
+</script></body></html>
