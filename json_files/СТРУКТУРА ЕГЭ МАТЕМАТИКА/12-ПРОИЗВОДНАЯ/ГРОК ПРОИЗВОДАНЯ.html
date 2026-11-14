@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Производная — формулы и приёмы · тренажёр</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{--bg:#f4f6fb;--panel:#fff;--ink:#16213a;--muted:#66748f;--line:#e2e7f1;--blue:#4f6bff;--ok:#16a06a;--bad:#e2475b;--warn:#f0a020;--c:#4f6bff;--hand:"Comic Sans MS","Segoe Print",cursive;--mono:ui-monospace,Consolas,monospace;--fs:16px}
+  *{box-sizing:border-box}body{margin:0;font:var(--fs)/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:radial-gradient(900px 500px at 0% -10%,#e5eaff,transparent 60%),radial-gradient(800px 600px at 110% 0%,#ffe9f3,transparent 55%),var(--bg);min-height:100vh}
+  header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:9px 18px;background:rgba(255,255,255,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:10px;cursor:pointer;margin-right:auto;user-select:none}
+  .logo{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,#4f6bff,#b84fff);color:#fff;font-weight:900;font-size:14px}
+  .brand b{display:block;font-size:16px;line-height:1.1}.brand small{color:var(--muted);font-size:12px;font-weight:600}
+  .hbtn{border:1px solid var(--line);background:#fff;border-radius:11px;padding:7px 12px;font-size:14px;font-weight:650;cursor:pointer;white-space:nowrap}
+  .hbtn:hover{border-color:var(--blue);color:var(--blue)}.hbtn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 1px 2px #16213a0d,0 8px 28px #16213a12}
+  .chip{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:750;background:#f7f9fd;color:var(--muted);border:1px solid var(--line)}
+  .chip.c{background:color-mix(in srgb,var(--c) 14%,#fff);color:var(--c);border-color:transparent}.chip.ok{background:#e6f7ef;color:var(--ok)}.chip.bad{background:#fdecee;color:var(--bad)}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 15px;font-weight:650;cursor:pointer;font-size:15px}
+  .btn.primary{background:var(--c);border-color:var(--c);color:#fff}.btn.small{padding:5px 10px;font-size:13px;border-radius:9px}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  #home{max-width:1240px;margin:0 auto;padding:26px 20px 60px}
+  .hero{display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;margin-bottom:22px}
+  .hero h1{font-size:clamp(24px,3.2vw,38px);line-height:1.1;margin:0 0 6px}.hero h1 span{background:linear-gradient(90deg,#4f6bff,#c04fff 60%,#ff5f8f);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{margin:0;color:var(--muted);max-width:620px}
+  .ring{--p:0;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--blue) calc(var(--p)*1%),var(--line) 0);position:relative}.ring::before{content:"";position:absolute;inset:9px;border-radius:50%;background:#fff}.ring b{position:relative;font-size:20px}.ring small{position:relative;display:block;font-size:11px;color:var(--muted);text-align:center;margin-top:-6px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .tile{position:relative;padding:16px;cursor:pointer;transition:.18s;overflow:hidden;min-height:150px;display:flex;flex-direction:column}
+  .tile:hover{transform:translateY(-3px);box-shadow:0 16px 36px #16213a1c}
+  .tile .num{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:900;font-size:19px;color:#fff;background:var(--c)}
+  .tile h3{margin:10px 0 2px;font-size:17px}.tile p{margin:0 0 10px;color:var(--muted);font-size:13px;flex:1}
+  .bar{height:7px;border-radius:9px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--c);border-radius:9px;transition:width .4s}
+  .tile .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px;font-weight:650}
+  #mod{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;max-width:1500px;margin:0 auto;padding:16px 18px 50px}
+  #mod aside{position:sticky;top:70px;align-self:start;max-height:calc(100vh - 86px);overflow:auto;padding:14px}
+  .modhead{display:flex;gap:11px;align-items:center;margin-bottom:10px}.modhead .num{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-weight:900;font-size:20px;color:#fff;background:var(--c);flex:none}
+  .back{display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;margin-bottom:10px;border:0;background:none;padding:0}.back:hover{color:var(--c)}
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;background:#f7f9fd;border:1px solid var(--line);border-radius:11px;padding:3px;margin:10px 0}
+  .tabs button{border:0;background:none;border-radius:8px;padding:5px 2px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer}.tabs button.active{background:#fff;color:var(--c)}
+  .ti{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:11px;cursor:pointer;border:1px solid transparent;font-size:14px;line-height:1.3;margin:2px 0}
+  .ti:hover{background:#f7f9fd}.ti.active{background:color-mix(in srgb,var(--c) 11%,#fff);border-color:color-mix(in srgb,var(--c) 40%,transparent)}
+  .ti .st{width:22px;height:22px;flex:none;border-radius:7px;display:grid;place-items:center;font-size:12px;background:#f7f9fd;border:1px solid var(--line);font-weight:800;color:var(--muted)}
+  .ti.ok .st{background:var(--ok);color:#fff;border-color:var(--ok)}.ti.bad .st{background:#fdecee;color:var(--bad)}.ti.hint .st{background:#fff4dc;border-color:#f0a020}
+  .ti .tt{flex:1;min-width:0}
+  .stickbar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .board{display:flex;flex-wrap:wrap;gap:20px;padding:18px 8px 8px;margin-bottom:6px}.board.strip{flex-wrap:nowrap;overflow-x:auto;gap:16px;padding:16px 6px 12px}
+  .board.strip .sticker{flex:0 0 260px;font-size:14px;padding:16px 13px 11px}
+  .sticker{position:relative;flex:1 1 230px;max-width:360px;background:#fff6a8;color:#2b2a26;padding:20px 16px 14px;border-radius:3px 3px 14px 3px;box-shadow:0 1px 1px #0001,0 10px 18px -6px #0003;font-size:15px;line-height:1.45}
+  .sticker:nth-child(5n+1){background:#fff3a0}.sticker:nth-child(5n+2){background:#ffd7e4}.sticker:nth-child(5n+3){background:#cdeffd}.sticker:nth-child(5n+4){background:#d4f5d0}.sticker:nth-child(5n+5){background:#ffe1c2}
+  .sticker h4{font-family:var(--hand);font-size:18px;margin:0 0 6px}.sticker p{margin:5px 0}.sticker .big{font-family:var(--mono);font-weight:800;font-size:16px;background:#ffffff7a;border-radius:8px;padding:3px 8px;display:inline-block;margin:2px 0}
+  .sticker code{font-family:var(--mono);background:#ffffff80;border-radius:5px;padding:0 4px}.sticker .scrawl{font-family:var(--hand);color:#b4235a}
+  .taskcard{padding:26px}
+  .thead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}.thead h2{margin:0 auto 0 0;font-size:22px;letter-spacing:-.01em;line-height:1.2}
+  .cond{background:#f7f9fd;border:1px solid var(--line);border-left:5px solid var(--c);border-radius:14px;padding:14px 16px;margin:10px 0 14px;font-size:17px}
+  .tool{border:1px dashed color-mix(in srgb,var(--c) 45%,var(--line));border-radius:16px;padding:12px 14px;margin:12px 0;background:color-mix(in srgb,var(--c) 3%,#fff)}
+  .tool>.tl{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--c);margin-bottom:8px}
+  .ansrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 6px}
+  .ansrow input{flex:1;min-width:180px;max-width:420px;padding:11px 14px;border:2px solid var(--line);border-radius:13px;background:#fff;font-size:18px;font-weight:700;outline:none;font-family:var(--mono)}
+  .ansrow input:focus{border-color:var(--c);box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 18%,transparent)}
+  .opts{display:grid;gap:8px;margin:12px 0}
+  .opt{display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid var(--line);border-radius:14px;cursor:pointer;background:#fff;font-size:16px;transition:.15s}
+  .opt:hover{border-color:var(--c)}.opt.sel{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,#fff)}
+  .opt input{display:none}
+  .fb{min-height:26px;font-weight:750;margin:6px 0}.fb.ok{color:var(--ok)}.fb.bad{color:var(--bad)}
+  .solved .cond{border-left-color:var(--ok)}
+  .step{display:flex;gap:11px;padding:10px 12px;border-radius:13px;background:#fff4dc;margin:6px 0}
+  .step b.n{flex:none;width:24px;height:24px;border-radius:50%;background:#f0a020;color:#fff;display:grid;place-items:center;font-size:13px}
+  .step .h{font-weight:800;margin-bottom:2px}
+  .navrow{display:flex;justify-content:space-between;gap:10px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+  .repair{display:flex;gap:10px;align-items:center;background:#fff4dc;border-radius:14px;padding:10px 14px;margin-bottom:12px;font-weight:650}
+  .hidden{display:none!important}
+  .overlay{position:fixed;inset:0;z-index:60;background:#0e1424a8;display:flex;align-items:flex-start;justify-content:center;padding:4vh 14px;overflow:auto;backdrop-filter:blur(3px)}
+  .modal{background:#fff;border-radius:20px;box-shadow:0 30px 80px #0006;width:min(1000px,100%);padding:20px 22px;position:relative}
+  .modal .x{position:absolute;right:14px;top:12px}
+  .mtable{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:14px}
+  .mtable th,.mtable td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left}.mtable th{background:#f7f9fd;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .sturow{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:6px;margin:5px 0}.sturow.cur{border-color:var(--blue);background:#eef1ff}.sturow .pick{flex:1;text-align:left;font-weight:700;border:0;background:none;cursor:pointer;padding:6px}.sturow small{color:var(--muted);white-space:nowrap}
+  .stuadd{display:flex;gap:6px;margin-top:10px}.stuadd input{flex:1;padding:9px 12px;border-radius:11px;border:1px solid var(--line);background:var(--bg)}
+  .numline{display:flex;align-items:center;gap:0;margin:16px 0;padding:12px;background:#f7f9fd;border-radius:12px;overflow-x:auto}
+  .numline .pt{flex:1;text-align:center;position:relative;min-width:48px}
+  .numline .pt .dot{width:14px;height:14px;border-radius:50%;background:var(--c);margin:0 auto 6px;border:3px solid #fff;box-shadow:0 0 0 2px var(--c)}
+  .numline .pt .sign{font-weight:900;font-size:18px;color:var(--muted)}
+  .numline .pt .lbl{font-size:12px;color:var(--muted);margin-top:4px}
+  .numline .arrow{height:2px;background:var(--line);flex:1;min-width:20px}
+  .settings-grid{display:grid;gap:12px;margin:16px 0}
+  .settings-grid label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:4px}
+  .settings-grid input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:11px;font-size:15px}
+  .report-actions{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+  .report-actions .btn{flex:1;min-width:140px;text-align:center}
+  .math{font-family:var(--mono);font-weight:700}
+  .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.9em;margin:0 2px;line-height:1.15}.frac>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}.frac>span:last-child{padding:0 3px}
+  @media(max-width:900px){#mod{grid-template-columns:1fr}#mod aside{position:static;max-height:280px}}
+  @media print{header,#mod aside,.navrow,.noprint,.hbtn{display:none!important}body{background:#fff}.modal{box-shadow:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand" id="brand"><div class="logo">f′</div><div><b>Производная</b><small>формулы и приёмы · тренажёр</small></div></div>
+  <button class="hbtn" data-go="home">🏠 Блоки</button>
+  <button class="hbtn" data-go="stickers">📌 Стикеры</button>
+  <button class="hbtn" id="stuBtn">👤 Ученик</button>
+  <button class="hbtn" id="repBtn">📋 Отчёт</button>
+  <button class="hbtn" id="setBtn">⚙</button>
+  <button class="hbtn" id="themeBtn">☾</button>
+</header>
+
+<div id="home"></div>
+<div id="mod" class="hidden"><aside class="card" id="side"></aside><main class="work" id="work"></main></div>
+<div id="page" class="hidden"></div>
+<div id="ovl"></div>
+
+<dialog id="stuModal" style="border:0;border-radius:20px;padding:20px;width:min(560px,94vw)">
+  <h2 style="margin-top:0">Кто занимается?</h2>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:8px">У каждого ученика свои ответы и отметки. Всё хранится в браузере.</div>
+  <div id="stuList"></div>
+  <div class="stuadd"><input id="stuNew" placeholder="Имя нового ученика" maxlength="40"><button class="btn primary" id="stuAdd">Добавить</button></div>
+  <div style="text-align:right;margin-top:12px"><button class="btn" id="stuClose">Готово</button></div>
+</dialog>
+
+<dialog id="setModal" style="border:0;border-radius:20px;padding:20px;width:min(520px,94vw)">
+  <h2 style="margin-top:0">Настройки учителя</h2>
+  <div class="settings-grid">
+    <div><label>Имя учителя</label><input id="setName" placeholder="Иван Иванович"></div>
+    <div><label>E-mail учителя</label><input id="setEmail" type="email" placeholder="teacher@school.ru"></div>
+    <div><label>Telegram (ник без @)</label><input id="setTg" placeholder="teacher_math"></div>
+  </div>
+  <p style="font-size:13px;color:var(--muted)">Контакты сохраняются локально и используются при формировании отчётов учеников.</p>
+  <div style="text-align:right;margin-top:12px"><button class="btn primary" id="setSave">Сохранить</button></div>
+</dialog>
+
+<script>
+// ================== ДАННЫЕ ==================
+const META = [
+  [1, 'Формулы производных', 'Основные формулы, степень, корень, экспонента, логарифм, тригонометрия, сложная функция', '#4f6bff', [
+    ['📐 Степень и корень', '<p><span class="big">(xⁿ)′ = n xⁿ⁻¹</span></p><p>(√x)′ = 1/(2√x)</p><p>(x√x)′ = 3/2 √x</p>'],
+    ['⚡ Экспонента', '<p><span class="big">(eˣ)′ = eˣ</span></p><p>(e^{kx+b})′ = k e^{kx+b}</p><p class="scrawl">Коэффициент перед x → множитель!</p>'],
+    ['📝 Логарифм', '<p>(ln x)′ = 1/x</p><p>(ln(kx))′ = 1/x (k>0)</p><p>(ln f)′ = f′/f</p>'],
+    ['🌀 Тригонометрия', '<p>(sin x)′ = cos x</p><p>(cos x)′ = −sin x</p><p>(tg x)′ = 1/cos²x</p>'],
+    ['🔗 Сложная функция', '<p><span class="big">(f(g(x)))′ = f′(g)·g′</span></p>']
+  ]],
+  [2, 'Правила дифференцирования', 'Сумма, разность, произведение, частное, сложная функция', '#0ea5e9', [
+    ['➕ Сумма / разность', '<p>(u±v)′ = u′ ± v′</p>'],
+    ['✖️ Произведение', '<p><span class="big">(uv)′ = u′v + uv′</span></p>'],
+    ['➗ Частное', '<p>(u/v)′ = (u′v − uv′)/v²</p>'],
+    ['🎯 Структура', '<p class="scrawl">Сначала распознай: сумма? произведение? частное? сложная?</p>']
+  ]],
+  [3, 'Преобразования перед дифференцированием', 'Вынесение коэффициента, почленное деление, раскрытие скобок, свойства логарифма', '#ec4899', [
+    ['📌 Вынесение коэффициента', '<p>x³/3 = (1/3)x³ → производная x²</p><p class="scrawl">Это не частное!</p>'],
+    ['✂️ Почленное деление', '<p>(a+b+c)/x = a/x + b/x + c/x</p><p>Только если знаменатель — одночлен.</p>'],
+    ['📦 Раскрытие скобок', '<p>(x+4)(x+3) = x²+7x+12</p><p>Удобно для многочленов.</p>'],
+    ['📖 Логарифм', '<p>ln(ab) = ln a + ln b</p><p>ln(xⁿ) = n ln x</p>']
+  ]],
+  [4, 'Выбор способа дифференцирования', 'Распознавание приёма по виду выражения', '#f97316', [
+    ['❓ Многочлен / одночлен', '<p>→ почленное деление</p>'],
+    ['❓ Произведение многочленов', '<p>→ раскрытие скобок</p>'],
+    ['❓ Дробь функций', '<p>→ формула частного</p>'],
+    ['❓ Многочлен × eˣ / sin', '<p>→ формула произведения</p>'],
+    ['❓ e^{kx+b}', '<p>→ сложная экспонента</p>']
+  ]],
+  [5, 'Экстремумы без вычисления производной', 'Влияние преобразований на max/min', '#10b981', [
+    ['🔄 y = k·f(x)', '<p>k>0 → тот же вид экстремума</p><p>k<0 → max ↔ min</p>'],
+    ['📈 y = e^{f}, √f, log₂ f', '<p>Экстремум того же вида (на ОДЗ)</p>'],
+    ['📉 y = log_{1/2} f', '<p>Экстремум противоположного вида</p>'],
+    ['⚠️ y = 1/f, y = f²', '<p class="scrawl">Характер может меняться! Учитывай знак и ОДЗ.</p>']
+  ]],
+  [6, 'Знаки производной и числовая прямая', 'Возрастание, убывание, max/min по знакам f′', '#8b5cf6', [
+    ['− → +', '<p><span class="big">Минимум</span></p>'],
+    ['+ → −', '<p><span class="big">Максимум</span></p>'],
+    ['− → − или + → +', '<p>Экстремума нет</p>'],
+    ['📊 На отрезке', '<p>Сравни значения в критических точках и на концах.</p>']
+  ]]
+];
+
+// Задачи: type: 'input' | 'choice' | 'signs'
+// a — правильный ответ (строка или индекс), alts — допустимые варианты
+const G1 = [
+  // ===== БЛОК 1 =====
+  {m:1,n:'01',type:'choice',a:1,opts:['0','nx^{n-1}','x^{n-1}','n x^n'],t:'Производная функции xⁿ равна:',
+   s:[['Формула','(xⁿ)′ = n x^{n−1}.']]},
+  {m:1,n:'02',type:'input',a:'1/(2*sqrt(x))',alts:['1/(2√x)','0.5/√x','1/2 * x^{-1/2}'],t:'Найдите производную √x. Запишите в виде 1/(2√x) или 1/(2*sqrt(x)).',
+   s:[['Формула','(√x)′ = 1/(2√x).']]},
+  {m:1,n:'03',type:'input',a:'3/2 * sqrt(x)',alts:['(3/2)√x','1.5√x','3√x/2'],t:'Найдите производную x√x.',
+   s:[['Перепишем','x√x = x^{3/2}.'],['Формула','(3/2) x^{1/2} = (3/2)√x.']]},
+  {m:1,n:'04',type:'input',a:'-1/x^2',alts:['−1/x²','-x^{-2}'],t:'Найдите производную 1/x.',
+   s:[['Перепишем','1/x = x^{−1}.'],['Формула','−1 · x^{−2} = −1/x².']]},
+  {m:1,n:'05',type:'choice',a:0,opts:['e^x','x e^{x−1}','e^{x−1}','1'],t:'Производная eˣ равна:',
+   s:[['Формула','(eˣ)′ = eˣ.']]},
+  {m:1,n:'06',type:'input',a:'3*e^(3*x+2)',alts:['3e^{3x+2}','3*exp(3x+2)'],t:'Найдите производную e^{3x+2}.',
+   s:[['Сложная экспонента','Коэффициент перед x становится множителем.'],['Ответ','3 e^{3x+2}.']]},
+  {m:1,n:'07',type:'input',a:'-2*e^(-2*x+7)',alts:['−2e^{−2x+7}','-2*exp(-2x+7)'],t:'Найдите производную e^{−2x+7}.',
+   s:[['Коэффициент','k = −2 → множитель −2.']]},
+  {m:1,n:'08',type:'input',a:'1/x',alts:['x^{-1}'],t:'Найдите производную ln(5x) (x>0).',
+   s:[['Свойство','ln(5x) = ln 5 + ln x.'],['Производная','0 + 1/x = 1/x.']]},
+  {m:1,n:'09',type:'choice',a:2,opts:['sin x','−cos x','cos x','1/cos x'],t:'Производная sin x равна:',
+   s:[['Формула','(sin x)′ = cos x.']]},
+  {m:1,n:'10',type:'input',a:'1/cos^2(x)',alts:['1/cos²x','sec^2(x)','1/cos(x)^2'],t:'Найдите производную tg x.',
+   s:[['Формула','(tg x)′ = 1/cos²x.']]},
+  {m:1,n:'11',type:'choice',a:1,opts:['f′(g(x))','f′(g(x))·g′(x)','f(g′(x))','g′(f(x))'],t:'Производная сложной функции (f(g(x)))′ равна:',
+   s:[['Правило','f′(g) · g′.']]},
+  {m:1,n:'12',type:'input',a:'e^(x^2)*2*x',alts:['2x e^{x²}','2x*exp(x^2)'],t:'Найдите производную e^{x²}.',
+   s:[['Сложная','e^{f} · f′, f = x², f′ = 2x.']]},
+
+  // ===== БЛОК 2 =====
+  {m:2,n:'01',type:'choice',a:0,opts:['u′+v′','u′v + uv′','(u′v−uv′)/v²','u′v′'],t:'(u+v)′ равно:',
+   s:[['Правило суммы','Производная суммы = сумма производных.']]},
+  {m:2,n:'02',type:'choice',a:1,opts:['u′+v′','u′v + uv′','u′/v′','(u′v−uv′)/v²'],t:'(uv)′ равно:',
+   s:[['Правило произведения','u′v + uv′.']]},
+  {m:2,n:'03',type:'choice',a:2,opts:['u′/v′','(u′−v′)/v²','(u′v−uv′)/v²','u′v − uv′'],t:'(u/v)′ равно:',
+   s:[['Правило частного','(u′v − uv′)/v².']]},
+  {m:2,n:'04',type:'choice',a:1,opts:['сумма','произведение','частное','сложная'],t:'Какое правило применить к (x²+3)·eˣ?',
+   s:[['Структура','Многочлен × экспонента → произведение.']]},
+  {m:2,n:'05',type:'choice',a:2,opts:['сумма','произведение','частное','степенная'],t:'Какое правило применить к (x²+1)/(x−3)?',
+   s:[['Структура','Дробь функций → частное.']]},
+  {m:2,n:'06',type:'input',a:'2*x+3',alts:['2x+3'],t:'Найдите производную x² + 3x − 5.',
+   s:[['Почленно','2x + 3 − 0.']]},
+  {m:2,n:'07',type:'input',a:'e^x*(x+1)',alts:['(x+1)e^x','e^x*x + e^x'],t:'Найдите производную x·eˣ.',
+   s:[['Произведение','1·eˣ + x·eˣ = (x+1)eˣ.']]},
+  {m:2,n:'08',type:'input',a:'1/(x+1)^2',alts:['1/(x+1)²'],t:'Найдите производную x/(x+1).',
+   s:[['Частное','(1·(x+1) − x·1)/(x+1)² = 1/(x+1)².']]},
+  {m:2,n:'09',type:'choice',a:0,opts:['сложная','произведение','частное','сумма'],t:'Какое правило нужно для e^{sin x}?',
+   s:[['Структура','e^{f(x)} → сложная функция.']]},
+  {m:2,n:'10',type:'input',a:'cos(x)*e^(sin(x))',alts:['e^{sin x} cos x','cos x · e^{sin x}'],t:'Найдите производную e^{sin x}.',
+   s:[['Сложная','e^{sin x} · cos x.']]},
+
+  // ===== БЛОК 3 =====
+  {m:3,n:'01',type:'choice',a:0,opts:['да, вынести 1/3','нет, это частное','только почленно','нужна формула произведения'],t:'Можно ли упростить x³/3 перед дифференцированием?',
+   s:[['Приём','x³/3 = (1/3)x³ → производная x².']]},
+  {m:3,n:'02',type:'input',a:'x^2',alts:['x²'],t:'Найдите производную x³/3.',
+   s:[['Упростим','(1/3)x³ → (1/3)·3x² = x².']]},
+  {m:3,n:'03',type:'choice',a:0,opts:['да','нет'],t:'Можно ли почленно делить (25x² + 169)/x ?',
+   s:[['Правило','Знаменатель — одночлен → да.']]},
+  {m:3,n:'04',type:'choice',a:1,opts:['да','нет'],t:'Можно ли почленно делить (x² + 5x + 3)/(x+1) ?',
+   s:[['Правило','Знаменатель — сумма → нет, только формула частного.']]},
+  {m:3,n:'05',type:'input',a:'25 - 169/x^2',alts:['25−169/x²','25 - 169*x^{-2}'],t:'Найдите производную (25x² + 169)/x.',
+   s:[['Почленно','25x + 169/x.'],['Производная','25 − 169/x².']]},
+  {m:3,n:'06',type:'choice',a:0,opts:['раскрыть скобки','формула произведения','формула частного','почленно'],t:'Лучший способ для (x+4)(x+3) − 6?',
+   s:[['Приём','Раскрыть скобки → многочлен.']]},
+  {m:3,n:'07',type:'input',a:'2*x+7',alts:['2x+7'],t:'Найдите производную (x+4)(x+3)−6.',
+   s:[['Раскроем','x² + 7x + 12 − 6 = x² + 7x + 6.'],['Производная','2x + 7.']]},
+  {m:3,n:'08',type:'choice',a:1,opts:['раскрыть скобки','формула произведения'],t:'Лучший способ для x·eˣ?',
+   s:[['Структура','Многочлен × экспонента → произведение (раскрытие не поможет).']]},
+  {m:3,n:'09',type:'input',a:'4/x',alts:['4*x^{-1}'],t:'Найдите производную ln(x⁴).',
+   s:[['Свойство','ln(x⁴) = 4 ln x.'],['Производная','4/x.']]},
+  {m:3,n:'10',type:'input',a:'1/x',alts:['x^{-1}'],t:'Найдите производную ln(3x) (x>0).',
+   s:[['Разложение','ln 3 + ln x → 1/x.']]},
+  {m:3,n:'11',type:'choice',a:0,opts:['да, ln k + ln x','нет, только (ln(kx))′ = k/x','нужна сложная'],t:'Можно ли разложить ln(kx) перед дифференцированием?',
+   s:[['Свойство','ln(kx) = ln k + ln x, (ln k)′ = 0.']]},
+
+  // ===== БЛОК 4 =====
+  {m:4,n:'01',type:'choice',a:0,opts:['почленное деление','формула частного','произведение','сложная'],t:'(x² + 5x)/x — какой способ?',
+   s:[['Вид','Многочлен / одночлен → почленное.']]},
+  {m:4,n:'02',type:'choice',a:1,opts:['почленное деление','формула частного','раскрытие','сумма'],t:'(x² + 1)/(x + 3) — какой способ?',
+   s:[['Вид','Дробь функций → частное.']]},
+  {m:4,n:'03',type:'choice',a:0,opts:['раскрытие скобок','формула произведения','частное','сложная'],t:'(x+2)(x−5) — лучший способ?',
+   s:[['Вид','Произведение многочленов → раскрытие.']]},
+  {m:4,n:'04',type:'choice',a:1,opts:['раскрытие скобок','формула произведения'],t:'(x²+1)·sin x — какой способ?',
+   s:[['Вид','Многочлен × тригонометрия → произведение.']]},
+  {m:4,n:'05',type:'choice',a:0,opts:['сложная экспонента','обычная (eˣ)′','произведение','частное'],t:'e^{4x−1} — какой способ?',
+   s:[['Вид','e^{kx+b} → коэффициент k выносится.']]},
+  {m:4,n:'06',type:'choice',a:1,opts:['обычная (ln x)′ = 1/x','разложение или сложная','частное','произведение'],t:'ln(x²+1) — какой способ?',
+   s:[['Вид','ln f(x) → (f′)/f.']]},
+  {m:4,n:'07',type:'choice',a:0,opts:['вынести степень: 5 ln x','сложная: 1/(x⁵)·5x⁴','частное','сумма'],t:'Лучший способ для ln(x⁵)?',
+   s:[['Свойство','ln(x⁵) = 5 ln x → 5/x.']]},
+  {m:4,n:'08',type:'choice',a:1,opts:['почленное деление','формула частного'],t:'(sin x)/x — какой способ?',
+   s:[['Вид','Функция / функция → частное (не одночлен в знаменателе в смысле «можно почленно» только для многочленов).']]},
+  {m:4,n:'09',type:'choice',a:0,opts:['разложение ln k + ln x','сложная с k','произведение'],t:'ln(7x) — лучший способ?',
+   s:[['Свойство','ln 7 + ln x.']]},
+  {m:4,n:'10',type:'choice',a:1,opts:['раскрытие','формула произведения'],t:'eˣ · cos x — способ?',
+   s:[['Вид','Произведение двух функций → uv′ + u′v.']]},
+
+  // ===== БЛОК 5 =====
+  {m:5,n:'01',type:'choice',a:0,opts:['тот же вид','max ↔ min','экстремумов нет','зависит от ОДЗ'],t:'y = 2f(x). Как меняются экстремумы f?',
+   s:[['k>0','Масштаб не меняет характер экстремума.']]},
+  {m:5,n:'02',type:'choice',a:1,opts:['тот же вид','max ↔ min','без изменений','только min сохраняется'],t:'y = −3f(x). Как меняются экстремумы?',
+   s:[['k<0','Знак меняется → max и min меняются местами.']]},
+  {m:5,n:'03',type:'choice',a:0,opts:['тот же вид','противоположный','экстремумов нет'],t:'y = e^{f(x)}. Характер экстремумов f?',
+   s:[['e^u возрастает','Сохраняет характер.']]},
+  {m:5,n:'04',type:'choice',a:0,opts:['тот же вид (на ОДЗ)','противоположный','всегда max'],t:'y = √f(x) (f≥0). Характер экстремумов?',
+   s:[['√ возрастает на [0;+∞)','Тот же вид на ОДЗ.']]},
+  {m:5,n:'05',type:'choice',a:1,opts:['тот же вид','противоположный вид'],t:'y = log_{1/2} f(x). Характер экстремумов?',
+   s:[['Основание <1','Логарифм убывает → противоположный характер.']]},
+  {m:5,n:'06',type:'choice',a:0,opts:['тот же вид (m>1)','противоположный','зависит от a'],t:'y = log₂ (ax²+bx+c). При m=2>1 характер?',
+   s:[['m>1','Логарифм возрастает → тот же вид (с учётом ОДЗ).']]},
+  {m:5,n:'07',type:'choice',a:1,opts:['всегда сохраняются','характер может меняться','всегда меняются'],t:'y = (f(x))². Экстремумы f?',
+   s:[['Квадрат','Зависит от знака f. Не всегда сохраняются.']]},
+  {m:5,n:'08',type:'choice',a:1,opts:['сохраняется','меняется (где f≠0)','пропадает'],t:'y = 1/f(x). Характер экстремума f (где f≠0)?',
+   s:[['Обратная','На участках f≠0 характер меняется.']]},
+  {m:5,n:'09',type:'choice',a:0,opts:['тот же вид','противоположный'],t:'y = ln f(x) (f>0). Характер?',
+   s:[['ln возрастает','Тот же вид на ОДЗ.']]},
+  {m:5,n:'10',type:'choice',a:1,opts:['да, всегда','нет, нужно учитывать ОДЗ и монотонность'],t:'Верно ли, что у y = log_{0.5}(x²+1) экстремумы того же вида, что у x²+1?',
+   s:[['Основание <1','Противоположный характер + ОДЗ.']]},
+
+  // ===== БЛОК 6 =====
+  {m:6,n:'01',type:'choice',a:0,opts:['минимум','максимум','экстремума нет','точка перегиба'],t:'f′ меняет знак с − на +. В точке:',
+   s:[['Правило','− → + ⇒ минимум.']]},
+  {m:6,n:'02',type:'choice',a:1,opts:['минимум','максимум','экстремума нет'],t:'f′ меняет знак с + на −. В точке:',
+   s:[['Правило','+ → − ⇒ максимум.']]},
+  {m:6,n:'03',type:'choice',a:2,opts:['минимум','максимум','экстремума нет'],t:'f′ < 0 слева и справа от точки. В точке:',
+   s:[['Нет смены знака','Экстремума нет.']]},
+  {m:6,n:'04',type:'choice',a:0,opts:['возрастает','убывает','постоянна'],t:'Если f′(x) > 0 на промежутке, то f:',
+   s:[['Связь','f′>0 ⇒ возрастает.']]},
+  {m:6,n:'05',type:'choice',a:1,opts:['возрастает','убывает','имеет экстремум'],t:'Если f′(x) < 0 на промежутке, то f:',
+   s:[['Связь','f′<0 ⇒ убывает.']]},
+  {m:6,n:'06',type:'choice',a:1,opts:['да, всегда','нет, нужна смена знака'],t:'Если f′(x₀)=0, обязательно ли экстремум в x₀?',
+   s:[['Контрпример','f(x)=x³, f′(0)=0, но экстремума нет.']]},
+  {m:6,n:'07',type:'choice',a:0,opts:['действительных корней нет','один корень','два корня'],t:'f′(x)=0 — квадратное уравнение, D<0. Тогда:',
+   s:[['Дискриминант','D<0 ⇒ нет действительных критических точек.']]},
+  {m:6,n:'08',type:'choice',a:1,opts:['есть решения','корней нет'],t:'Уравнение sin x = 2. Количество корней?',
+   s:[['|k|>1','sin x = 2 невозможно.']]},
+  {m:6,n:'09',type:'choice',a:0,opts:['на конце отрезка или в критической точке','только внутри','только где f′=0'],t:'Наибольшее значение непрерывной f на [a;b] достигается:',
+   s:[['Теорема','В критической точке или на конце.']]},
+  {m:6,n:'10',type:'choice',a:1,opts:['функция имеет экстремум','функция монотонна'],t:'Если f′ сохраняет знак на промежутке, то:',
+   s:[['Монотонность','Знак f′ постоянен ⇒ монотонна.']]}
+];
+
+
+// ================== ЯДРО ==================
+const $ = id => document.getElementById(id);
+const KEY = 'ege_proizv_v1';
+let DB = { list: [], cur: null, data: {}, theme: 'light', teacher: { name:'', email:'', tg:'' }, stOpen: {} };
+const newSid = () => 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const blankMod = () => ({ done: {}, tries: {}, hint: {}, ans: {}, work: {}, firstOk: {} });
+let GUEST = { m: {} };
+let curTaskId = null;
+let curModN = null;
+let filter = 'all';
+let sessionStart = Date.now();
+
+function stu() { if (!DB.cur || !DB.list.some(x => x.id === DB.cur)) return GUEST; return DB.data[DB.cur] || (DB.data[DB.cur] = { m: {} }); }
+function md(n, s = stu()) { s.m = s.m || {}; const d = s.m[n] || (s.m[n] = blankMod()); for (const k in blankMod()) d[k] = d[k] || {}; return d; }
+function load() { try { const loc = JSON.parse(localStorage.getItem(KEY)); if (loc) DB = { ...DB, ...loc }; } catch(e){} DB.teacher = DB.teacher || {name:'',email:'',tg:''}; DB.data = DB.data || {}; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e){} }
+function stuName() { const s = DB.list.find(x => x.id === DB.cur); return s ? s.name : null; }
+function needStu() { if (stuName()) return true; openStudents(); return false; }
+
+// ================== ПРОВЕРКА ОТВЕТА ==================
+function normMath(s) {
+  return String(s ?? '').trim()
+    .toLowerCase()
+    .replace(/,/g, '.')
+    .replace(/\s+/g, '')
+    .replace(/·/g, '*')
+    .replace(/×/g, '*')
+    .replace(/−/g, '-')
+    .replace(/–/g, '-')
+    .replace(/√/g, 'sqrt')
+    .replace(/²/g, '^2')
+    .replace(/³/g, '^3')
+    .replace(/¹/g, '')
+    .replace(/₀/g, '0').replace(/₁/g, '1').replace(/₂/g, '2').replace(/₃/g, '3').replace(/₄/g, '4').replace(/₅/g, '5')
+    .replace(/\^\{([^}]+)\}/g, '^($1)')
+    .replace(/exp\(/g, 'e^(')
+    .replace(/(\d)x/g, '$1*x')
+    .replace(/x(\d)/g, 'x*$1')
+    .replace(/\)\(/g, ')*(')
+    .replace(/sin/g,'sin').replace(/cos/g,'cos').replace(/tg/g,'tan').replace(/tan/g,'tan');
+}
+
+function parseSimple(s) {
+  s = normMath(s);
+  // очень грубая числовая оценка для простых выражений
+  try {
+    let t = s
+      .replace(/sqrt\(([^)]+)\)/g, 'Math.sqrt($1)')
+      .replace(/sin\(([^)]+)\)/g, 'Math.sin($1)')
+      .replace(/cos\(([^)]+)\)/g, 'Math.cos($1)')
+      .replace(/e\^\(([^)]+)\)/g, 'Math.exp($1)')
+      .replace(/e\^([a-z0-9.]+)/g, 'Math.exp($1)')
+      .replace(/\^/g, '**');
+    // заменим x на 2.3 для численной проверки
+    const withX = t.replace(/x/g, '(2.3)');
+    const fn = new Function('return (' + withX + ')');
+    const v = fn();
+    return typeof v === 'number' && isFinite(v) ? v : NaN;
+  } catch(e) { return NaN; }
+}
+
+function defCheck(t, v) {
+  if (t.type === 'choice') {
+    return Number(v) === Number(t.a);
+  }
+  const a = String(v ?? '').trim();
+  if (!a) return false;
+  const nA = normMath(a);
+  const variants = [t.a, ...(t.alts || [])].map(normMath);
+  if (variants.includes(nA)) return true;
+  // численная эквивалентность
+  const numA = parseSimple(a);
+  const numB = parseSimple(t.a);
+  if (!isNaN(numA) && !isNaN(numB) && Math.abs(numA - numB) < 1e-6) return true;
+  return false;
+}
+
+// ================== СТАТУСЫ ==================
+function stOf(t, d = md(t.mod)) { if (d.done[t.id]) return 'ok'; if (d.tries[t.id]) return 'bad'; if (d.hint[t.id]) return 'hint'; return ''; }
+const stIcon = { ok: '✓', bad: '✗', hint: '💡', '': '' };
+
+// ================== МОДУЛИ ==================
+const MODS = [];
+const reg = m => { m.tasks = m.tasks || []; m.tasks.forEach(t => t.mod = m.n); MODS.push(m); return m; };
+const modBy = n => MODS.find(m => m.n == n);
+
+function buildMods() {
+  for (const [n, title, sub, color, stickers] of META) {
+    const tasks = G1.filter(t => t.m === n).map(t => ({
+      id: 'g' + t.n, kind: t.type || 'input', title: '№ ' + t.n,
+      ans: t.a, alts: t.alts, opts: t.opts, src: t, type: t.type || 'input',
+      steps: (t.s || []).map(s => [s[0], s[1]])
+    }));
+    reg({
+      n, title, sub, color, tasks, stickers,
+      cond: t => esc(t.src.t),
+      toolName: () => '✏️ Черновик',
+      ansPh: () => 'Ответ (например: 3*e^(2*x), 1/x, 2*x+1)',
+      tool(t, el, ctx) {
+        el.innerHTML = `<textarea id="scratch" placeholder="Вычисления, упрощения..." style="width:100%;height:70px;border-radius:10px;border:1px solid #ccc;padding:8px;font-family:monospace;resize:vertical">${esc(ctx.work.scratch || '')}</textarea>`;
+        const sc = $('scratch');
+        if (sc) sc.oninput = e => { ctx.work.scratch = e.target.value; ctx.save(); };
+      }
+    });
+  }
+}
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+function modProg(m, s = stu()) { const d = md(m.n, s), T = m.tasks; return { done: T.filter(t => d.done[t.id]).length, total: T.length }; }
+
+// ================== НАВИГАЦИЯ ==================
+let view = 'home';
+function show(id) { ['home','mod','page'].forEach(x => $(x).classList.toggle('hidden', x !== id)); }
+function go(v) { view = v; if (v === 'home') renderHome(); else if (v === 'stickers') renderStickerWall(); window.scrollTo(0,0); }
+
+function renderHome() {
+  view = 'home'; show('home');
+  let D = 0, T = 0;
+  for (const m of MODS) { const p = modProg(m); D += p.done; T += p.total; }
+  const pc = T ? Math.round(100 * D / T) : 0;
+  const nm = stuName();
+  $('home').innerHTML = `<div class="hero"><div><h1>Производная: <span>формулы и приёмы</span></h1><p>${nm ? `Привет, <b>${esc(nm)}</b>! ` : ''}Быстрое узнавание формул, выбор приёма и уверенное применение. Без длинных исследований функций.</p></div>
+  <div class="card" style="display:flex;gap:16px;align-items:center;padding:14px 18px"><div class="ring" style="--p:${pc}"><div><b>${pc}%</b><small>решено</small></div></div><div><b style="font-size:22px">${D}</b> <span style="color:var(--muted)">из ${T}</span><br><span style="font-size:13px;color:var(--muted)">${nm ? 'Ученик: ' + esc(nm) : 'Выбери ученика'}</span></div></div></div>
+  <div class="grid">${MODS.map(m => { const p = modProg(m), w = p.total ? Math.round(100 * p.done / p.total) : 0; return `<div class="card tile" style="--c:${m.color}" data-mod="${m.n}"><div class="num">${m.n}</div><h3>${esc(m.title)}</h3><p>${esc(m.sub||'')}</p><div class="bar"><i style="width:${w}%"></i></div><div class="meta"><span>${p.done} из ${p.total}</span><span>${w}%</span></div></div>`; }).join('')}</div>
+  <div style="margin-top:28px;text-align:center"><button class="btn primary" id="mixedBtn" style="padding:12px 28px;font-size:16px">🎯 Смешанная проверка</button></div>`;
+  const mb = $('mixedBtn');
+  if (mb) mb.onclick = () => startMixed();
+}
+
+function startMixed() {
+  // простой смешанный режим — берём по 2 нерешённых из каждого блока
+  const pool = [];
+  for (const m of MODS) {
+    const d = md(m.n);
+    const undone = m.tasks.filter(t => !d.done[t.id]);
+    pool.push(...undone.slice(0, 2));
+  }
+  if (!pool.length) { alert('Все основные задания решены! Можно повторить ошибки.'); return; }
+  openMod(pool[0].mod, pool[0].id);
+}
+
+function renderSide() {
+  const m = modBy(curModN), d = md(m.n);
+  let h = `<button class="back" data-go="home">← Все блоки</button><div class="modhead"><div class="num">${m.n}</div><div><b>${esc(m.title)}</b><br><small>${modProg(m).done} из ${m.tasks.length}</small></div></div>`;
+  h += `<div class="tabs"><button data-filter="all" class="${filter==='all'?'active':''}">Все</button><button data-filter="bad" class="${filter==='bad'?'active':''}">Ошибки</button><button data-filter="hint" class="${filter==='hint'?'active':''}">Подсказки</button></div>`;
+  const list = m.tasks.filter(t => {
+    if (filter === 'all') return true;
+    if (filter === 'bad') return d.tries[t.id] && !d.done[t.id];
+    if (filter === 'hint') return d.hint[t.id];
+    return true;
+  });
+  h += list.map(t => { const st = stOf(t, d); return `<div class="ti ${st} ${t.id===curTaskId?'active':''}" data-task="${t.id}"><span class="st">${stIcon[st]}</span><span class="tt">${esc(t.title)}</span></div>`; }).join('') || '<div style="color:var(--muted);padding:8px;font-size:13px">Нет заданий в этом фильтре</div>';
+  $('side').innerHTML = h;
+}
+
+function openMod(n, tid) {
+  const m = modBy(n); if (!m) return;
+  curModN = n;
+  document.documentElement.style.setProperty('--c', m.color);
+  const d = md(n);
+  curTaskId = tid || (m.tasks.find(t => !d.done[t.id]) || m.tasks[0] || {}).id || null;
+  filter = 'all'; view = 'mod'; show('mod');
+  renderSide(); renderWork(); window.scrollTo(0,0);
+}
+
+function renderWork() {
+  const m = modBy(curModN), d = md(m.n);
+  const t = m.tasks.find(x => x.id === curTaskId);
+  let h = `<div class="stickbar"><button class="btn small" id="stTog">📌 Памятка</button><span style="flex:1"></span><span class="chip c">Блок ${m.n}</span></div>`;
+  if (!t) { $('work').innerHTML = h + '<p>Нет заданий</p>'; return; }
+  const st = stOf(t, d);
+  const steps = t.steps || [];
+  const hl = Math.min(d.hint[t.id] || 0, steps.length);
+  const repair = d.tries[t.id] > 0 && !d.done[t.id];
+  h += `<div class="card taskcard ${d.done[t.id]?'solved':''}">
+    ${repair ? `<div class="repair">🛠 Работа над ошибками — ответь верно, чтобы закрыть.</div>` : ''}
+    <div class="thead"><h2>${esc(t.title)}</h2>${st==='ok'?'<span class="chip ok">✓ Решено</span>':st==='bad'?`<span class="chip bad">ошибок: ${d.tries[t.id]}</span>`:''}</div>
+    <div class="cond">${m.cond(t)}</div>
+    <div class="tool"><div class="tl">${m.toolName(t)}</div><div id="toolHost"></div></div>`;
+
+  if (t.type === 'choice' && t.opts) {
+    h += `<div class="opts" id="optsBox">${t.opts.map((o,i)=>`<label class="opt" data-i="${i}"><input type="radio" name="opt" value="${i}"><span class="math">${esc(o)}</span></label>`).join('')}</div>`;
+  } else {
+    h += `<div class="ansrow"><input id="ans" autocomplete="off" placeholder="${esc(m.ansPh(t))}" value="${esc(d.ans[t.id]||'')}"><button class="btn primary" id="chk">Проверить</button>`;
+    if (steps.length) h += `<button class="btn" id="hintB">💡 Подсказка${hl?` (${hl}/${steps.length})`:''}</button>`;
+    h += `</div>`;
+  }
+  if (t.type === 'choice') {
+    h += `<div class="ansrow"><button class="btn primary" id="chk">Проверить</button>`;
+    if (steps.length) h += `<button class="btn" id="hintB">💡 Подсказка${hl?` (${hl}/${steps.length})`:''}</button>`;
+    h += `</div>`;
+  }
+  h += `<div class="fb" id="fb">${d.done[t.id]?'✓ Верно! Задание выполнено.':''}</div>
+    <div class="hintbox">${steps.slice(0,hl).map((s,i)=>`<div class="step"><b class="n">${i+1}</b><div><div class="h">${esc(s[0])}</div>${s[1]}</div></div>`).join('')}</div>
+    <div class="navrow"><button class="btn" id="prevB">← Назад</button><button class="btn" id="nextB">Дальше →</button></div>
+  </div>`;
+  $('work').innerHTML = h;
+
+  // choice handlers
+  if (t.type === 'choice') {
+    document.querySelectorAll('.opt').forEach(el => {
+      el.onclick = () => {
+        document.querySelectorAll('.opt').forEach(x => x.classList.remove('sel'));
+        el.classList.add('sel');
+        el.querySelector('input').checked = true;
+      };
+    });
+  }
+
+  const ctx = { work: d.work[t.id] || (d.work[t.id] = {}), save, done: !!d.done[t.id] };
+  m.tool(t, $('toolHost'), ctx);
+
+  if ($('ans')) {
+    $('ans').oninput = () => { d.ans[t.id] = $('ans').value; save(); };
+    $('ans').onkeydown = e => { if (e.key === 'Enter') doCheck(m, t, $('ans').value); };
+  }
+  $('chk').onclick = () => {
+    let v;
+    if (t.type === 'choice') {
+      const sel = document.querySelector('input[name="opt"]:checked');
+      v = sel ? sel.value : null;
+    } else v = $('ans') ? $('ans').value : '';
+    doCheck(m, t, v);
+  };
+  if ($('hintB')) $('hintB').onclick = () => { if (hl >= steps.length) return; d.hint[t.id] = hl + 1; save(); renderWork(); renderSide(); };
+  const i = m.tasks.indexOf(t);
+  $('prevB').disabled = i <= 0; $('nextB').disabled = i >= m.tasks.length - 1;
+  $('prevB').onclick = () => selTask(m.tasks[i-1].id);
+  $('nextB').onclick = () => selTask(m.tasks[i+1].id);
+  $('stTog').onclick = () => { $('work').insertAdjacentHTML('afterbegin', stickersHtml(m, true)); $('stTog').remove(); };
+}
+
+function selTask(id) { curTaskId = id; renderSide(); renderWork(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function doCheck(m, t, v) {
+  if (!needStu()) return;
+  const d = md(m.n);
+  if (v != null) d.ans[t.id] = v;
+  const ok = defCheck(t, v);
+  const fb = $('fb');
+  if (ok) {
+    const first = !d.done[t.id];
+    d.done[t.id] = true;
+    if (first && !(d.tries[t.id] > 0)) d.firstOk[t.id] = true;
+    d.tries[t.id] = 0;
+    save();
+    fb.className = 'fb ok'; fb.textContent = '✓ Верно! Задание выполнено.';
+    document.querySelector('.taskcard')?.classList.add('solved');
+    renderSide();
+    if (first) confetti();
+  } else {
+    d.tries[t.id] = (d.tries[t.id] || 0) + 1;
+    save();
+    fb.className = 'fb bad';
+    let msg = '✗ Пока неверно. ';
+    if (t.type === 'choice') msg += 'Выбери другой вариант.';
+    else msg += 'Проверь формулу и запись (допустимы 1/x, x^{-1}, 3*e^(2x) и т.п.).';
+    fb.textContent = msg;
+    renderSide();
+    document.querySelector('.taskcard')?.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:260});
+  }
+}
+
+function confetti() {
+  const box = document.createElement('div');
+  const C = ['#4f6bff','#ec4899','#10b981','#f59e0b','#8b5cf6'];
+  for (let i=0;i<30;i++) {
+    const s = document.createElement('i');
+    const x = Math.random()*100, dx = (Math.random()-.5)*160, dur = 900+Math.random()*700;
+    s.style.cssText = `position:absolute;left:${x}%;top:-12px;width:8px;height:12px;border-radius:2px;background:${C[i%5]}`;
+    s.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${dx}px,${innerHeight*.7}px) rotate(${Math.random()*720}deg)`,opacity:0}],{duration:dur,easing:'cubic-bezier(.2,.6,.4,1)'});
+    box.appendChild(s);
+  }
+  box.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:99';
+  document.body.appendChild(box); setTimeout(()=>box.remove(),1700);
+}
+
+// ================== СТИКЕРЫ ==================
+function stickersHtml(m, strip) {
+  return `<div class="board${strip?' strip':''}">${(m.stickers||[]).map(s=>`<div class="sticker"><h4>${s[0]}</h4>${s[1]}</div>`).join('')}</div>`;
+}
+function renderStickerWall() {
+  view = 'stickers'; show('page');
+  $('page').innerHTML = `<div style="max-width:1300px;margin:0 auto;padding:20px"><div class="hero"><div><h1>📌 Стена <span>стикеров</span></h1><p>Короткие памятки по формулам и приёмам — открой перед решением или распечатай.</p></div><button class="btn" onclick="window.print()">🖨 Печать</button></div>` +
+    MODS.map(m => `<div style="--c:${m.color};margin-bottom:10px"><h2 style="font-size:20px"><span class="chip c" style="font-size:15px">Блок ${m.n}</span> ${esc(m.title)}</h2></div>${stickersHtml(m)}`).join('') + '</div>';
+}
+
+// ================== УЧЕНИКИ ==================
+function renderStudents() {
+  const L = DB.list;
+  $('stuList').innerHTML = L.length ? L.map(x => `<div class="sturow${x.id===DB.cur?' cur':''}"><button class="pick" data-pick="${x.id}">${x.id===DB.cur?'✓ ':''}${esc(x.name)}</button><button class="btn small" data-del="${x.id}">🗑</button></div>`).join('') : '<div style="color:var(--muted);font-size:14px">Список пуст.</div>';
+}
+function openStudents() { renderStudents(); $('stuNew').value = ''; if (!$('stuModal').open) $('stuModal').showModal(); }
+function updStu() { const n = stuName(); $('stuBtn').textContent = '👤 ' + (n || 'Выбрать ученика'); }
+function switchStudent(id) { DB.cur = id; save(); updStu(); renderHome(); }
+
+// ================== НАСТРОЙКИ УЧИТЕЛЯ ==================
+function openSettings() {
+  $('setName').value = DB.teacher.name || '';
+  $('setEmail').value = DB.teacher.email || '';
+  $('setTg').value = DB.teacher.tg || '';
+  if (!$('setModal').open) $('setModal').showModal();
+}
+$('setSave').onclick = () => {
+  DB.teacher.name = $('setName').value.trim();
+  DB.teacher.email = $('setEmail').value.trim();
+  DB.teacher.tg = $('setTg').value.trim().replace(/^@/,'');
+  save();
+  $('setModal').close();
+};
+
+// ================== ОТЧЁТ + PDF ==================
+function collectStats() {
+  const nm = stuName() || 'Без имени';
+  let total = 0, done = 0, firstOk = 0, withTries = 0, withHint = 0, wrong = 0;
+  const byMod = [];
+  const hard = [];
+  for (const m of MODS) {
+    const d = md(m.n);
+    const p = modProg(m);
+    total += p.total; done += p.done;
+    let mFirst = 0, mTries = 0, mHint = 0;
+    m.tasks.forEach(t => {
+      if (d.done[t.id]) {
+        if (d.firstOk[t.id]) { firstOk++; mFirst++; }
+        else { withTries++; mTries++; }
+      }
+      if (d.hint[t.id]) { withHint++; mHint++; }
+      if (d.tries[t.id] && !d.done[t.id]) { wrong++; hard.push({mod:m.n, title:t.title, ans:d.ans[t.id]||'', correct: String(t.ans), tries:d.tries[t.id]}); }
+      else if (d.tries[t.id] > 0 && d.done[t.id]) hard.push({mod:m.n, title:t.title, ans:d.ans[t.id]||'', correct:String(t.ans), tries:d.tries[t.id], solved:true});
+    });
+    byMod.push({ n:m.n, title:m.title, done:p.done, total:p.total, first:mFirst, tries:mTries, hint:mHint });
+  }
+  const mins = Math.round((Date.now() - sessionStart) / 60000);
+  return { nm, total, done, firstOk, withTries, withHint, wrong, byMod, hard, mins, date: new Date().toLocaleString('ru-RU') };
+}
+
+function openReport() {
+  if (!needStu()) return;
+  const st = collectStats();
+  const tg = DB.teacher.tg ? `@${DB.teacher.tg}` : 'не указан';
+  const em = DB.teacher.email || 'не указан';
+  let rows = st.byMod.map(m => `<tr><td>Блок ${m.n}. ${esc(m.title)}</td><td>${m.done}/${m.total}</td><td>${m.first}</td><td>${m.tries}</td><td>${m.hint}</td></tr>`).join('');
+  let hardRows = st.hard.length ? st.hard.map(h => `<tr><td>${h.mod}. ${esc(h.title)}</td><td>${esc(h.ans)}</td><td>${esc(h.correct)}</td><td>${h.tries}${h.solved?' (решено)':''}</td></tr>`).join('') : '<tr><td colspan="4">Нет затруднений — отлично!</td></tr>';
+
+  openOverlay(`
+    <h2 style="margin-top:0">📋 Отчёт — ${esc(st.nm)}</h2>
+    <p style="color:var(--muted);margin:0 0 12px">${st.date} · ≈ ${st.mins} мин</p>
+    <div class="card" style="padding:14px;margin-bottom:14px">
+      <b>Сводка:</b> решено ${st.done} из ${st.total} · с первой попытки ${st.firstOk} · после ошибок ${st.withTries} · с подсказкой ${st.withHint} · неверных сейчас ${st.wrong}
+    </div>
+    <table class="mtable"><tr><th>Блок</th><th>Решено</th><th>С 1-й</th><th>После ошибок</th><th>Подсказки</th></tr>${rows}</table>
+    <h3 style="margin:18px 0 6px">Задания, требующие внимания</h3>
+    <table class="mtable"><tr><th>Задача</th><th>Ответ ученика</th><th>Верный</th><th>Попыток</th></tr>${hardRows}</table>
+    <div class="report-actions noprint">
+      <button class="btn primary" id="pdfDl">📄 Скачать PDF</button>
+      <button class="btn" id="pdfTg">✈️ Telegram</button>
+      <button class="btn" id="pdfMail">✉️ E-mail</button>
+      <button class="btn" id="pdfPrint">🖨 Печать</button>
+    </div>
+    <p style="font-size:13px;color:var(--muted)">Учитель: ${esc(DB.teacher.name||'—')} · ${esc(em)} · ${esc(tg)}</p>
+  `);
+
+  $('pdfDl').onclick = () => generatePDF(st, 'download');
+  $('pdfTg').onclick = () => generatePDF(st, 'telegram');
+  $('pdfMail').onclick = () => generatePDF(st, 'email');
+  $('pdfPrint').onclick = () => window.print();
+}
+
+function generatePDF(st, mode) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const margin = 40;
+  let y = 50;
+  const line = (txt, size=11, bold=false) => {
+    doc.setFontSize(size);
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    const lines = doc.splitTextToSize(String(txt), pageW - margin*2);
+    if (y + lines.length * (size+3) > 780) { doc.addPage(); y = 50; }
+    doc.text(lines, margin, y);
+    y += lines.length * (size + 4) + 2;
+  };
+
+  line('Тренажёр «Производная — формулы и приёмы»', 16, true);
+  line(`Ученик: ${st.nm}`, 13, true);
+  line(`Дата: ${st.date}  ·  Время работы ≈ ${st.mins} мин`);
+  line(`Учитель: ${DB.teacher.name || '—'}  ·  ${DB.teacher.email || ''}  ·  ${DB.teacher.tg ? '@'+DB.teacher.tg : ''}`);
+  y += 8;
+  line('СВОДКА', 13, true);
+  line(`Решено: ${st.done} из ${st.total}`);
+  line(`С первой попытки: ${st.firstOk}`);
+  line(`После ошибок: ${st.withTries}`);
+  line(`С подсказкой: ${st.withHint}`);
+  line(`Сейчас неверных: ${st.wrong}`);
+  y += 10;
+  line('ПО БЛОКАМ', 13, true);
+  st.byMod.forEach(m => {
+    line(`Блок ${m.n}. ${m.title}: ${m.done}/${m.total} (1-я попытка: ${m.first}, после ошибок: ${m.tries}, подсказки: ${m.hint})`);
+  });
+  y += 10;
+  line('ЗАДАНИЯ, ТРЕБУЮЩИЕ ВНИМАНИЯ', 13, true);
+  if (!st.hard.length) line('Нет — все основные задания решены уверенно.');
+  else st.hard.forEach(h => {
+    line(`${h.mod}. ${h.title}`);
+    line(`  Ответ ученика: ${h.ans || '—'}  |  Верный: ${h.correct}  |  Попыток: ${h.tries}${h.solved ? ' (в итоге решено)' : ''}`, 10);
+  });
+  y += 12;
+  line('Рекомендация: повторить темы с ошибками и ещё раз пройти смешанную проверку.', 10);
+
+  const filename = `Otchet_${(st.nm||'uchenik').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+
+  if (mode === 'download') {
+    doc.save(filename);
+    alert('Отчёт сохранён. Теперь его можно отправить учителю через Telegram, почту или другой мессенджер.');
+    return;
+  }
+
+  const blob = doc.output('blob');
+  const file = new File([blob], filename, { type: 'application/pdf' });
+
+  if (mode === 'telegram') {
+    const tg = DB.teacher.tg;
+    const text = `Отчёт по тренажёру «Производная» — ${st.nm}\nРешено ${st.done}/${st.total}, с 1-й попытки ${st.firstOk}.`;
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: filename, text }).catch(() => fallbackTg(tg, filename));
+    } else {
+      doc.save(filename);
+      fallbackTg(tg, filename);
+    }
+    return;
+  }
+
+  if (mode === 'email') {
+    const em = DB.teacher.email;
+    const subject = encodeURIComponent(`Отчёт по тренажёру — ${st.nm}`);
+    const body = encodeURIComponent(`Здравствуйте!\n\nОтчёт ученика ${st.nm} по тренажёру «Производная — формулы и приёмы».\nРешено: ${st.done} из ${st.total}.\nС первой попытки: ${st.firstOk}.\n\nPDF-файл прикрепите вручную (скачан на устройство).\n`);
+    doc.save(filename);
+    if (em) {
+      window.location.href = `mailto:${em}?subject=${subject}&body=${body}`;
+      setTimeout(() => alert('Письмо открыто. Прикрепите скачанный PDF вручную, если клиент не сделал этого сам.'), 500);
+    } else {
+      alert('E-mail учителя не указан в настройках. PDF скачан — отправьте его вручную.');
+    }
+  }
+}
+
+function fallbackTg(tg, filename) {
+  if (tg) {
+    window.open(`https://t.me/${tg}`, '_blank');
+    alert(`PDF скачан (${filename}).\nОткройте чат с @${tg} в Telegram и прикрепите файл вручную.`);
+  } else {
+    alert(`PDF скачан (${filename}).\nУкажите ник учителя в настройках (⚙) или отправьте файл вручную.`);
+  }
+}
+
+function openOverlay(html) {
+  $('ovl').innerHTML = `<div class="overlay" id="ov"><div class="modal"><button class="btn small x" id="ovX">✕</button>${html}</div></div>`;
+  $('ovX').onclick = closeOverlay;
+  $('ov').onclick = e => { if (e.target.id === 'ov') closeOverlay(); };
+}
+function closeOverlay() { $('ovl').innerHTML = ''; }
+
+// ================== СОБЫТИЯ ==================
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); return; }
+  const mo = e.target.closest('[data-mod]'); if (mo) { openMod(+mo.dataset.mod); return; }
+  const ta = e.target.closest('[data-task]'); if (ta) { selTask(ta.dataset.task); return; }
+  const fi = e.target.closest('[data-filter]'); if (fi) { filter = fi.dataset.filter; renderSide(); return; }
+});
+
+$('brand').onclick = () => go('home');
+$('stuBtn').onclick = openStudents;
+$('stuClose').onclick = () => $('stuModal').close();
+$('repBtn').onclick = openReport;
+$('setBtn').onclick = openSettings;
+$('stuAdd').onclick = () => {
+  const n = $('stuNew').value.trim(); if (!n) return;
+  const id = newSid(); DB.list.push({ id, name: n }); DB.data[id] = { m: {} }; switchStudent(id); renderStudents(); $('stuNew').value = '';
+};
+$('stuList').onclick = e => {
+  const p = e.target.closest('[data-pick]'); if (p) { switchStudent(p.dataset.pick); $('stuModal').close(); return; }
+  const d = e.target.closest('[data-del]'); if (d) {
+    if (!confirm('Удалить ученика?')) return;
+    DB.list = DB.list.filter(q => q.id !== d.dataset.del);
+    delete DB.data[d.dataset.del];
+    if (DB.cur === d.dataset.del) DB.cur = DB.list[0]?.id || null;
+    save(); updStu(); renderStudents(); renderHome();
+  }
+};
+$('themeBtn').onclick = () => { DB.theme = DB.theme === 'dark' ? 'light' : 'dark'; save(); applyTheme(); };
+function applyTheme() { document.body.style.filter = DB.theme === 'dark' ? 'invert(1) hue-rotate(180deg)' : ''; $('themeBtn').textContent = DB.theme === 'dark' ? '☀' : '☾'; }
+
+function boot() {
+  buildMods();
+  load();
+  updStu();
+  applyTheme();
+  renderHome();
+  if (!DB.cur) openStudents();
+}
+boot();
+</script>
+</body>
+</html>

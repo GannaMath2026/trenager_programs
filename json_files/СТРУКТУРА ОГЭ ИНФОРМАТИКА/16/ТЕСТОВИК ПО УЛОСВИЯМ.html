@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sibir.doska — инструкция</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#0d1320;
+    --bg2:#111a2b;
+    --panel:#16203a;
+    --panel2:#1b2745;
+    --line:#2b3a5e;
+    --ink:#e9eefb;
+    --muted:#9aa7c4;
+    --accent:#4f8bff;
+    --accent2:#9b6bff;
+    --accent3:#25e0c1;
+    --good:#3ed6a0;
+    --warn:#ffb95a;
+    --bad:#ff6f80;
+    --sh:0 18px 48px rgba(0,0,0,.45);
+    --r:18px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font:16px/1.65 'Onest',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1000px 620px at 0% -10%, #1e2d5c 0, transparent 55%),
+      radial-gradient(900px 560px at 110% 0%, #3d205a 0, transparent 55%),
+      radial-gradient(900px 700px at 50% 120%, #0b3a3f 0, transparent 60%),
+      var(--bg);
+    background-attachment:fixed;
+    min-height:100vh;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:30px 22px 80px}
+
+  /* ---------- Шапка ---------- */
+  .hero{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    flex-wrap:wrap;
+    margin-bottom:30px;
+  }
+  .logo{
+    width:66px;height:66px;border-radius:20px;
+    display:grid;place-items:center;
+    font:800 22px/1 'Onest';
+    letter-spacing:-.03em;
+    background:linear-gradient(135deg,#4f8bff,#9b6bff 55%,#25e0c1);
+    color:#fff;
+    box-shadow:0 12px 44px rgba(79,139,255,.45);
+    position:relative;
+  }
+  .logo::after{
+    content:"";position:absolute;inset:6px;border-radius:14px;
+    border:1.5px dashed rgba(255,255,255,.38);
+  }
+  .hero h1{
+    margin:0 0 4px;
+    font-size:clamp(24px,3.6vw,38px);
+    line-height:1.1;
+    letter-spacing:-.02em;
+    font-weight:700;
+  }
+  .hero h1 span{
+    background:linear-gradient(90deg,#4f8bff,#9b6bff 50%,#25e0c1);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p{margin:0;color:var(--muted);font-size:15px;max-width:620px}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+  .tag{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:6px 13px;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .tag b{color:var(--accent);font-weight:700}
+
+  /* ---------- Оглавление ---------- */
+  nav.toc{
+    background:linear-gradient(180deg,color-mix(in srgb,var(--panel) 95%,transparent),var(--panel2));
+    border:1px solid var(--line);
+    border-radius:var(--r);
+    padding:16px 18px;
+    box-shadow:var(--sh);
+    margin-bottom:26px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:8px;
+  }
+  nav.toc a{
+    color:var(--ink);
+    text-decoration:none;
+    font-size:14px;
+    font-weight:500;
+    padding:9px 12px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    transition:.15s;
+  }
+  nav.toc a:hover{background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent)}
+  nav.toc a::before{
+    content:attr(data-n);
+    flex:none;width:24px;height:24px;
+    border-radius:8px;
+    display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;font-weight:800;font-size:12px;
+  }
+
+  /* ---------- Секции ---------- */
+  section{
+    background:linear-gradient(180deg,color-mix(in srgb,var(--panel) 97%,transparent),var(--panel2));
+    border:1px solid var(--line);
+    border-radius:var(--r);
+    padding:26px 28px;
+    margin-bottom:20px;
+    box-shadow:var(--sh);
+    position:relative;
+    scroll-margin-top:20px;
+  }
+  section::before{
+    content:attr(data-n);
+    position:absolute;
+    top:-16px;left:24px;
+    width:34px;height:34px;
+    border-radius:11px;
+    display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;font-weight:800;font-size:14px;
+    box-shadow:0 8px 26px rgba(79,139,255,.55);
+  }
+  h2{
+    margin:6px 0 12px;
+    font-size:22px;
+    line-height:1.3;
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
+  h2 em{font-style:normal;color:var(--accent)}
+  h3{
+    font-size:16px;
+    margin:20px 0 8px;
+    font-weight:700;
+    display:flex;align-items:center;gap:9px;
+  }
+  h3::before{
+    content:"";width:4px;height:18px;border-radius:2px;
+    background:linear-gradient(180deg,var(--accent),var(--accent2));
+  }
+  p{margin:8px 0 12px}
+  ul,ol{margin:8px 0 12px;padding-left:22px}
+  li{margin:5px 0}
+  li::marker{color:var(--accent)}
+  b,strong{color:#fff}
+
+  /* ---------- Карточки ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:14px 0}
+  .card{
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    display:flex;gap:12px;
+    transition:.15s;
+  }
+  .card:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .card .ic{
+    flex:none;width:38px;height:38px;border-radius:11px;
+    display:grid;place-items:center;
+    font-size:18px;
+    background:linear-gradient(135deg,rgba(79,139,255,.2),rgba(155,107,255,.2));
+    border:1px solid var(--line);
+  }
+  .card .tt{font-weight:700;font-size:14px;margin-bottom:2px}
+  .card .dd{font-size:13px;color:var(--muted);line-height:1.5}
+
+  /* ---------- Шаги ---------- */
+  .steps{counter-reset:st;margin:12px 0}
+  .step{
+    counter-increment:st;
+    padding:12px 14px 12px 52px;
+    position:relative;
+    border-radius:12px;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    margin:8px 0;
+    font-size:14.5px;
+    line-height:1.6;
+  }
+  .step::before{
+    content:counter(st);
+    position:absolute;
+    left:12px;top:12px;
+    width:28px;height:28px;
+    border-radius:9px;
+    display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;font-weight:800;font-size:13px;
+  }
+  .step b{color:var(--accent)}
+
+  /* ---------- Клавиши ---------- */
+  kbd{
+    display:inline-block;
+    min-width:24px;
+    padding:1px 7px;
+    margin:0 1px;
+    font:600 12.5px/1.5 ui-monospace,'Cascadia Mono',Consolas,monospace;
+    color:#c8d6f5;
+    background:linear-gradient(180deg,#243358,#1a2440);
+    border:1px solid #33456e;
+    border-bottom-width:2px;
+    border-radius:6px;
+    text-align:center;
+    box-shadow:0 1px 0 rgba(0,0,0,.3);
+  }
+
+  /* ---------- Таблица ---------- */
+  .tbl{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    margin:12px 0;
+    border-radius:12px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    font-size:14px;
+  }
+  .tbl th{
+    background:color-mix(in srgb,var(--accent) 14%,var(--panel));
+    color:var(--accent);
+    text-align:left;
+    padding:11px 14px;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-weight:700;
+    border-bottom:1px solid var(--line);
+  }
+  .tbl td{
+    padding:10px 14px;
+    border-bottom:1px solid var(--line);
+    background:var(--bg2);
+  }
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl tr:hover td{background:color-mix(in srgb,var(--accent) 6%,var(--bg2))}
+  .tbl td:first-child{white-space:nowrap}
+
+  /* ---------- Плашки ---------- */
+  .note{
+    display:flex;gap:12px;
+    padding:12px 16px;
+    border-radius:12px;
+    background:rgba(79,139,255,.1);
+    border:1px solid rgba(79,139,255,.32);
+    font-size:14px;
+    line-height:1.6;
+    margin:14px 0;
+  }
+  .note .ico{flex:none;font-size:20px;line-height:1.3}
+  .note.tip{background:rgba(62,214,160,.09);border-color:rgba(62,214,160,.32)}
+  .note.tip .ico::before{content:"💡"}
+  .note.warn{background:rgba(255,185,90,.09);border-color:rgba(255,185,90,.35)}
+  .note.warn .ico::before{content:"⚠️"}
+  .note.info .ico::before{content:"ℹ️"}
+
+  /* ---------- Сценарии урока ---------- */
+  .scenario{
+    display:grid;
+    grid-template-columns:52px 1fr;
+    gap:14px;
+    padding:14px 16px;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    margin:10px 0;
+    align-items:start;
+  }
+  .scenario .num{
+    width:44px;height:44px;
+    border-radius:12px;
+    display:grid;place-items:center;
+    font:800 16px/1 'Onest';
+    color:#0d1320;
+    background:linear-gradient(135deg,var(--accent3),var(--accent));
+  }
+  .scenario b{color:#fff}
+  .scenario .txt{font-size:14.5px;line-height:1.6}
+  .scenario .txt small{display:block;color:var(--muted);margin-top:4px;font-size:13px}
+
+  /* ---------- Итог ---------- */
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    margin-top:30px;
+    line-height:1.75;
+  }
+  footer b{color:var(--accent)}
+
+  /* ---------- Печать ---------- */
+  @media print{
+    body{background:#fff;color:#111}
+    .wrap{padding:0}
+    section,nav.toc{box-shadow:none;border:1px solid #ccc;background:#fff;break-inside:avoid}
+    .tag,.card,.step,.tbl td,.tbl th,.scenario{background:#fff;border-color:#ddd}
+    .tbl th{background:#eef3fb;color:#111}
+    kbd{background:#f4f6fa;color:#333;border-color:#cfd6e0}
+    .hero h1 span{color:#2f6de0;-webkit-text-fill-color:#2f6de0}
+    .logo{box-shadow:none}
+    .scenario .num{background:#dfe9ff;color:#111}
+  }
+
+  @media (max-width:640px){
+    .wrap{padding:20px 14px 60px}
+    section{padding:20px 18px}
+    nav.toc{grid-template-columns:1fr 1fr}
+    .scenario{grid-template-columns:44px 1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="logo">S.</div>
+    <div>
+      <h1>Инструкция к <span>Sibir.doska</span></h1>
+      <p>Онлайн-доска для объяснения задач. Ниже — как ей пользоваться в уроке, что делает каждая кнопка и как не потерять доску.</p>
+    </div>
+    <div class="meta">
+      <span class="tag">✏️ рисование</span>
+      <span class="tag">📐 фигуры</span>
+      <span class="tag">🖼 картинки</span>
+      <span class="tag">🎥 видео</span>
+      <span class="tag">☁️ совместно</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Оглавление">
+    <a href="#start" data-n="1">Первые шаги</a>
+    <a href="#tools" data-n="2">Инструменты</a>
+    <a href="#shapes" data-n="3">Объёмные фигуры</a>
+    <a href="#colors" data-n="4">Цвета и толщина</a>
+    <a href="#files" data-n="5">Картинки и PDF</a>
+    <a href="#video" data-n="6">Видео и приложения</a>
+    <a href="#hotkeys" data-n="7">Горячие клавиши</a>
+    <a href="#share" data-n="8">Совместная работа</a>
+    <a href="#save" data-n="9">Сохранение</a>
+    <a href="#look" data-n="10">Оформление</a>
+    <a href="#scenarios" data-n="11">Сценарии урока</a>
+    <a href="#tips" data-n="12">Полезные советы</a>
+  </nav>
+
+  <!-- 1 -->
+  <section id="start" data-n="1">
+    <h2>Первые шаги</h2>
+    <p>Перед тобой бесконечная клетчатая доска. Всё, что на ней появится, сохраняется в браузере автоматически — нажимать «Сохранить» не нужно. Достаточно выбрать инструмент и работать.</p>
+
+    <div class="grid">
+      <div class="card"><div class="ic">✏️</div><div><div class="tt">Панель инструментов</div><div class="dd">Под верхним меню. Перо, ластик, линия, текст, фигуры.</div></div></div>
+      <div class="card"><div class="ic">📑</div><div><div class="tt">Вкладки досок</div><div class="dd">До 20 досок. Уроки, черновики, шаблоны — каждая отдельно.</div></div></div>
+      <div class="card"><div class="ic">🔍</div><div><div class="tt">Масштаб</div><div class="dd">Снизу справа. Отдалить, приблизить, вернуть 100%, показать всё.</div></div></div>
+      <div class="card"><div class="ic">💾</div><div><div class="tt">Резервные копии</div><div class="dd">Через кнопку 💾 сверху. Пригодятся для переноса на другой компьютер.</div></div></div>
+    </div>
+
+    <div class="note info">
+      <div class="ico"></div>
+      <div>Доска работает офлайн. Без интернета не работают только встраивание видео, PDF-импорт и совместные доски. Рисование и всё остальное — работают.</div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section id="tools" data-n="2">
+    <h2>Инструменты</h2>
+    <p>Панель под меню — от «руки» до «стикера». Инструменты разделены тонкими линиями на три группы: навигация, рисование, объекты.</p>
+
+    <h3>Навигация</h3>
+    <ul>
+      <li><b>Выбор</b> <kbd>V</kbd> — выделить, переместить, повернуть, растянуть.</li>
+      <li><b>Рука</b> <kbd>H</kbd> — двигать всю доску. Или удерживай <kbd>пробел</kbd> в любом инструменте.</li>
+    </ul>
+
+    <h3>Рисование</h3>
+    <ul>
+      <li><b>Перо</b> <kbd>P</kbd> — свободная линия. Работает пальцем, мышкой, стилусом.</li>
+      <li><b>Линия</b> <kbd>L</kbd> — протяни от начала до конца.</li>
+      <li><b>Полилиния</b> <kbd>K</kbd> — клики ставят вершины, <kbd>Enter</kbd> или правый клик завершает.</li>
+      <li><b>Стрелка</b> <kbd>A</kbd> — линия со стрелкой.</li>
+      <li><b>Указка</b> <kbd>J</kbd> — красный след, исчезает за 0,6 секунды.</li>
+      <li><b>Ластик</b> <kbd>E</kbd> — стирает штрихи целиком.</li>
+    </ul>
+
+    <h3>Объекты</h3>
+    <ul>
+      <li><b>Текст</b> <kbd>T</kbd> — клик по доске, дальше печатай.</li>
+      <li><b>Стикер</b> <kbd>N</kbd> — жёлтый квадрат для пометок.</li>
+      <li><b>Фигуры</b> <kbd>R</kbd> / <kbd>O</kbd> / <kbd>F</kbd> — прямоугольник, круг, объёмные тела.</li>
+    </ul>
+
+    <h3>Быстрая заливка</h3>
+    <p>Удерживай <b>Я</b> (физическая клавиша <kbd>Z</kbd>) и обведи область — она зальётся цветом без контура. Удобно для закраски пересечений.</p>
+  </section>
+
+  <!-- 3 -->
+  <section id="shapes" data-n="3">
+    <h2>Объёмные фигуры</h2>
+    <p>Кнопка с треугольником вниз рядом с «Фигуры» открывает меню тел. Все фигуры рисуются с корректным пунктиром для невидимых рёбер.</p>
+
+    <h3>Что есть</h3>
+    <ul>
+      <li><b>Многогранники:</b> куб, прямоугольный параллелепипед, тетраэдр, четырёх- и шестиугольная пирамиды, треугольная и шестиугольная призмы, октаэдр, усечённая пирамида.</li>
+      <li><b>Тела вращения:</b> цилиндр, конус, усечённый конус, шар.</li>
+    </ul>
+
+    <h3>Как редактировать</h3>
+    <ul>
+      <li><b>Выдели фигуру</b> — на вершинах появятся маленькие белые точки. Тяни за любую — двигается только эта вершина.</li>
+      <li><b>Зелёная ручка ↔</b> у призм и параллелепипеда — потяни вбок, чтобы сдвинуть верхнее основание. Так показывается наклонная призма.</li>
+      <li><b>Кружок сверху</b> — поворот. Зажми <kbd>Shift</kbd>, чтобы поворачивать по 15°.</li>
+      <li><b>Уголки</b> — масштабирование. С <kbd>Shift</kbd> сохраняются пропорции.</li>
+    </ul>
+
+    <div class="note tip">
+      <div class="ico"></div>
+      <div>Для объёмных фигур можно включить заливку — она рисует закрашенную оболочку. Хорошо для выделения основания или сечения.</div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section id="colors" data-n="4">
+    <h2>Цвета и толщина</h2>
+    <p>Палитра открывается кликом на иконку 🎨 в конце панели рисования. Если что-то выделено — цвет, толщина и прозрачность применяются к выделенному.</p>
+
+    <h3>Горячие клавиши для цвета</h3>
+    <table class="tbl">
+      <thead><tr><th>Клавиша</th><th>Цвет</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>1</kbd></td><td>Цикл: сплошная → маркер → пунктир</td></tr>
+        <tr><td><kbd>2</kbd></td><td>Красный</td></tr>
+        <tr><td><kbd>3</kbd></td><td>Синий</td></tr>
+        <tr><td><kbd>4</kbd></td><td>Зелёный</td></tr>
+        <tr><td><kbd>5</kbd></td><td>Фиолетовый</td></tr>
+        <tr><td><kbd>6</kbd></td><td>Оранжевый</td></tr>
+        <tr><td><kbd>7</kbd></td><td>Циан</td></tr>
+        <tr><td><kbd>8</kbd></td><td>Серый</td></tr>
+        <tr><td><kbd>9</kbd></td><td>Чёрный</td></tr>
+        <tr><td><kbd>0</kbd></td><td>Белый</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Толщина и прозрачность</h3>
+    <p><kbd>F</kbd> — толще, <kbd>D</kbd> — тоньше. <kbd>S</kbd> — прозрачнее, <kbd>A</kbd> — плотнее. <kbd>[</kbd> и <kbd>]</kbd> — размер текста.</p>
+
+    <h3>Маркер и пунктир «здесь и сейчас»</h3>
+    <p>Удерживай <kbd>M</kbd> во время рисования — только эта линия будет маркером. Удерживай <kbd>P</kbd> — только эта линия будет пунктиром. После отпускания следующая линия рисуется в обычном стиле.</p>
+  </section>
+
+  <!-- 5 -->
+  <section id="files" data-n="5">
+    <h2>Картинки и PDF</h2>
+    <p>Три способа добавить картинку:</p>
+    <div class="grid">
+      <div class="card"><div class="ic">🖱</div><div><div class="tt">Кнопка «Картинка»</div><div class="dd">Открывает выбор файлов. Можно несколько сразу.</div></div></div>
+      <div class="card"><div class="ic">📋</div><div><div class="tt">Ctrl+V</div><div class="dd">Скриншот в буфере — вставляется как объект.</div></div></div>
+      <div class="card"><div class="ic">💨</div><div><div class="tt">Перетаскивание</div><div class="dd">Просто тянешь файл на доску.</div></div></div>
+    </div>
+
+    <h3>PDF</h3>
+    <p>Кнопка <b>«PDF»</b> рядом с «Картинка». Открывает файл, спрашивает номер страницы и вставляет её как изображение. Удобно для того, чтобы сразу решать задачи из учебника.</p>
+
+    <div class="note">
+      <div class="ico"></div>
+      <div>Модуль чтения PDF подгружается с интернета. Без сети он не запустится, но уже вставленные картинки продолжат работать.</div>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section id="video" data-n="6">
+    <h2>Видео и веб-приложения</h2>
+    <p>Кнопка <b>«Видео»</b> или ссылка через <kbd>Ctrl+V</kbd>. Подходят YouTube, Vimeo, RuTube и прямые mp4/webm.</p>
+
+    <h3>Режим управления</h3>
+    <p>Видео на доске сначала в режиме «просмотра» — его нельзя случайно поставить на паузу. Чтобы управлять, выдели его и нажми <b>«Управлять видео»</b> в появившейся панели.</p>
+
+    <h3>Если сайт запрещает встраивание</h3>
+    <p>Вместо видео появится карточка с логотипом и кнопкой <b>«Открыть ссылку»</b> — ролик откроется в новой вкладке.</p>
+
+    <h3>Справочник приложений</h3>
+    <p>Кнопка ▦ сверху открывает личный справочник ссылок. Их можно добавлять, редактировать, экспортировать и импортировать. Приложение открывается в модальном окне прямо поверх доски или в новой вкладке — на выбор.</p>
+  </section>
+
+  <!-- 7 -->
+  <section id="hotkeys" data-n="7">
+    <h2>Горячие клавиши</h2>
+    <p>Полный список — по <kbd>?</kbd> или кнопке «Горячие клавиши». Там же можно переназначить любую клавишу.</p>
+
+    <table class="tbl">
+      <thead><tr><th>Клавиша</th><th>Действие</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>V</kbd> / <kbd>H</kbd></td><td>Выбор / рука</td></tr>
+        <tr><td><kbd>P</kbd> / <kbd>E</kbd></td><td>Перо / ластик</td></tr>
+        <tr><td><kbd>L</kbd> / <kbd>K</kbd> / <kbd>J</kbd> / <kbd>A</kbd></td><td>Линия / полилиния / указка / стрелка</td></tr>
+        <tr><td><kbd>R</kbd> / <kbd>O</kbd> / <kbd>F</kbd></td><td>Прямоугольник / круг / объёмные фигуры</td></tr>
+        <tr><td><kbd>T</kbd> / <kbd>N</kbd></td><td>Текст / стикер</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></td><td>Отменить / повторить</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>Дублировать</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>A</kbd></td><td>Выделить всё</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>Ctrl</kbd>+<kbd>V</kbd></td><td>Копировать / вставить</td></tr>
+        <tr><td><kbd>Delete</kbd></td><td>Удалить выделенное</td></tr>
+        <tr><td><kbd>F2</kbd></td><td>Переименовать вкладку</td></tr>
+        <tr><td><kbd>+</kbd> / <kbd>−</kbd> / <kbd>0</kbd></td><td>Масштаб / масштаб / сброс к 100%</td></tr>
+        <tr><td><kbd>Shift</kbd>+<kbd>1</kbd></td><td>Показать всё</td></tr>
+        <tr><td><kbd>?</kbd></td><td>Список клавиш</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <div class="ico"></div>
+      <div>Клавиши работают и в русской раскладке. <kbd>P</kbd> и <kbd>З</kbd> — одна и та же команда.</div>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section id="share" data-n="8">
+    <h2>Совместная работа</h2>
+    <p>Доску можно сделать общей: отправить ученику ссылку — и он увидит её без регистрации. Если вы оба на доске одновременно, вы рисуете вместе.</p>
+
+    <div class="steps">
+      <div class="step">Нажми <b>«Поделиться»</b> в верхнем меню (иконка с тремя кружками).</div>
+      <div class="step">Войди через Google — это <b>только для владельца</b>. Ученику вход не нужен.</div>
+      <div class="step">Нажми <b>«Сохранить в облако и получить ссылку»</b>.</div>
+      <div class="step">Скопируй ссылку и отправь ученику. Он открывает её и сразу видит доску.</div>
+    </div>
+
+    <h3>Что видно на общей доске</h3>
+    <ul>
+      <li>Курсоры других участников с именами и цветами.</li>
+      <li>Как рисует другой — штрих появляется в реальном времени.</li>
+      <li>Счётчик «сейчас на доске» в окне «Поделиться».</li>
+    </ul>
+
+    <h3>Пауза и удаление</h3>
+    <ul>
+      <li><b>«Приостановить»</b> — доска остаётся видимой, но рисовать могут только владельцы… то есть только ты. Ученики видят её в режиме просмотра.</li>
+      <li><b>«Возобновить»</b> — все снова могут рисовать.</li>
+      <li><b>«Удалить из облака»</b> — доска исчезнет у всех, у кого была ссылка.</li>
+    </ul>
+
+    <div class="note warn">
+      <div class="ico"></div>
+      <div>Если у ученика пропала связь, его локальные штрихи не потеряются. Как только связь вернётся — всё уйдёт в облако.</div>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section id="save" data-n="9">
+    <h2>Сохранение</h2>
+    <p>Доски хранятся в <b>IndexedDB</b> браузера. Это надёжнее LocalStorage и вмещает больше — но всё же привязано к конкретному браузеру.</p>
+
+    <h3>Что есть в меню 💾</h3>
+    <ul>
+      <li><b>Скачать приложение со всеми досками</b> — один HTML-файл со встроенными досками. Открывается на любом компьютере без интернета.</li>
+      <li><b>Экспорт всех досок (JSON)</b> — резервная копия.</li>
+      <li><b>Экспорт выбранной доски</b> — если нужна только одна.</li>
+      <li><b>Импорт</b> — заменить текущий набор досок из файла.</li>
+      <li><b>Очистить LocalStorage</b> — сбрасывает только настройки, доски остаются.</li>
+    </ul>
+
+    <div class="note">
+      <div class="ico"></div>
+      <div>Перед очисткой кэша браузера всегда скачивай резервную копию. Очистка кэша стирает IndexedDB — доски исчезнут.</div>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section id="look" data-n="10">
+    <h2>Оформление</h2>
+    <p>Кнопка 🎨 сверху — окно «Оформление». Здесь три настройки: тема, цвет акцента и фон доски.</p>
+
+    <h3>Тема</h3>
+    <ul>
+      <li><b>Системная</b> — следует за настройкой компьютера.</li>
+      <li><b>Тёмная</b> — для вечерней работы.</li>
+      <li><b>Светлая</b> — для проектора и печати.</li>
+    </ul>
+
+    <h3>Цвет акцента</h3>
+    <p>Меняет подсветку кнопок, обводку выделения и цвет активного инструмента. Пять вариантов: синий, бирюзовый, фиолетовый, янтарный, розовый.</p>
+
+    <h3>Фон доски</h3>
+    <ul>
+      <li><b>Белая</b> — обычная.</li>
+      <li><b>Тёплая</b> — мягкий бежевый.</li>
+      <li><b>Ночная</b> — тёмная, с автоматической светлой ручкой.</li>
+      <li><b>Школьная</b> — зелёная с мелом.</li>
+    </ul>
+
+    <div class="note tip">
+      <div class="ico"></div>
+      <div>На тёмном фоне перо само становится белым — не нужно менять цвет вручную.</div>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section id="scenarios" data-n="11">
+    <h2>Сценарии урока</h2>
+    <p>Несколько типичных ситуаций — что нажимать по шагам.</p>
+
+    <div class="scenario">
+      <div class="num">1</div>
+      <div class="txt">
+        <b>Объяснить задачу по стереометрии.</b> Создай новую доску, выбери призму из меню фигур, поставь рядом условие как текст и покажи сечение.
+        <small>Пригодится: <kbd>F</kbd> — фигуры, ручка ↔ у призмы, зелёная указка <kbd>J</kbd>.</small>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div class="num">2</div>
+      <div class="txt">
+        <b>Ученик присылает фото решения.</b> Он делает снимок тетради, вставляет через <kbd>Ctrl+V</kbd>, ты поверх пишешь замечания.
+        <small>Пригодится: перо другого цвета <kbd>2</kbd>, ластик <kbd>E</kbd>, текст <kbd>T</kbd>.</small>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div class="num">3</div>
+      <div class="txt">
+        <b>Разбор домашки вместе с учеником.</b> Делаешь общую доску через «Поделиться», отправляешь ссылку. Оба рисуете одновременно.
+        <small>Пригодится: общая доска, курсоры других, счётчик «сейчас на доске».</small>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div class="num">4</div>
+      <div class="txt">
+        <b>Доска-конспект по теме.</b> Разбей по вкладкам: «Теория», «Примеры», «ДЗ». Отдельные доски для каждой темы — можно возвращаться.
+        <small>Пригодится: <kbd>F2</kbd> — переименовать вкладку, <kbd>Ctrl+D</kbd> — дублировать готовый чертёж.</small>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div class="num">5</div>
+      <div class="txt">
+        <b>Показать видео с разбором.</b> Копируешь ссылку на YouTube, вставляешь на доску. Справа — тетрадь, слева — видео. После просмотра рисуешь поверх ключевые места.
+        <small>Пригодится: кнопка «Видео», режим «Управлять видео».</small>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section id="tips" data-n="12">
+    <h2>Полезные советы</h2>
+
+    <h3>Мелкие приятности</h3>
+    <ul>
+      <li><kbd>Shift+1</kbd> несколько раз подряд циклично меняет стиль линии: сплошная → маркер → пунктир.</li>
+      <li><kbd>Пробел</kbd> в любом инструменте временно включает «Руку».</li>
+      <li>Двойной клик по тексту или стикеру — редактирование.</li>
+      <li>Стрелки двигают выделенное на 1 пиксель, с <kbd>Shift</kbd> — на 10.</li>
+      <li><kbd>Ctrl+1</kbd>…<kbd>5</kbd> — быстрые перья. <kbd>Ctrl+клик</kbd> сохраняет текущее перо в слот.</li>
+    </ul>
+
+    <h3>Что делать, если что-то сломалось</h3>
+    <ul>
+      <li><b>Пропали штрихи</b> → <kbd>Ctrl+Z</kbd>.</li>
+      <li><b>Не работает видео в облачной доске</b> → проверь интернет, открой ссылку в отдельной вкладке.</li>
+      <li><b>Не загружается PDF</b> → нет связи с CDN, попробуй позже.</li>
+      <li><b>Ученик не видит доску</b> → проверь, что она «в облаке» (иконка ☁️ на вкладке) и ссылка полная.</li>
+    </ul>
+
+    <div class="note info">
+      <div class="ico"></div>
+      <div><kbd>Ctrl+Z</kbd> отменяет до 100 шагов назад. Если что-то потерялось надолго — не страшно, можно вернуться.</div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© Sibir.doska · <b>Инструкция</b></p>
+    <p>Сохрани эту страницу как PDF: <kbd>Ctrl+P</kbd> → «Сохранить как PDF».</p>
+  </footer>
+
+</div>
+</body>
+</html>

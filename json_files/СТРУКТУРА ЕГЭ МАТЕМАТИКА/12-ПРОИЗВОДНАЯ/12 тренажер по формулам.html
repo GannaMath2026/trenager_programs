@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: формулы, хитрости, вершина</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  :root{
+    --bg:#f4f7fb;--panel:#fff;--ink:#1d2b3a;--muted:#63768c;--line:#d6e0ea;
+    --accent:#2f6de0;--accent2:#1f4fb5;--good:#18794e;--good-bg:#e6f7ee;
+    --bad:#b42318;--bad-bg:#fdecea;--warn:#8a5a00;--warn-bg:#fff4d6;
+    --shadow:0 10px 30px rgba(20,40,70,.08);--radius:16px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;color:var(--ink);min-height:100vh;
+    background:radial-gradient(1200px 600px at 10% -10%,#e8f0ff 0,transparent 60%),
+               radial-gradient(900px 500px at 110% 10%,#e6fbf4 0,transparent 55%),var(--bg);}
+  .wrap{max-width:1080px;margin:0 auto;padding:18px 16px 40px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .brand h1{font-size:clamp(19px,2.8vw,26px);margin:0 0 3px;letter-spacing:-.02em}
+  .brand p{margin:0;color:var(--muted);font-size:13px}
+  .stats{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:700;
+    box-shadow:var(--shadow);display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .chip b{color:var(--accent2)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .row > span.lbl{font-weight:700;color:var(--muted);font-size:13px;min-width:auto}
+  .seg{display:inline-flex;background:#eef3f9;border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;flex-wrap:wrap}
+  .seg button{border:0;background:transparent;padding:7px 13px;border-radius:9px;font:inherit;font-weight:700;font-size:13.5px;color:#52657b;cursor:pointer;transition:.15s}
+  .seg button.active{background:#fff;color:var(--accent2);box-shadow:0 2px 8px rgba(30,70,140,.15)}
+  .switch{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;user-select:none;margin-left:auto}
+  .switch input{display:none}
+  .switch .track{width:40px;height:23px;background:#cfdbe8;border-radius:999px;position:relative;transition:.2s}
+  .switch .track::after{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:.2s}
+  .switch input:checked + .track{background:var(--accent)}
+  .switch input:checked + .track::after{transform:translateX(17px)}
+  .task{text-align:center;padding:10px 0 4px}
+  .task .sub{color:var(--muted);font-size:13px;min-height:18px}
+  .task .q{font-size:clamp(18px,2.6vw,24px);font-weight:800;margin:12px 0 6px;line-height:1.5;
+    display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+  .task .q .fx{background:#eef3fb;border:1px solid #d5e1f2;padding:10px 18px;border-radius:12px;color:var(--accent2);display:inline-block;font-size:22px}
+  .prompt{color:var(--muted);font-size:13.5px;margin:6px 0 0;font-weight:600;line-height:1.5}
+  .answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 6px}
+  .ans{border:2px solid var(--line);background:#fbfdff;border-radius:14px;padding:14px 12px;color:var(--ink);cursor:pointer;transition:.15s;min-height:64px;
+    display:flex;align-items:center;justify-content:center;gap:8px;font-size:18px;position:relative;line-height:1.4}
+  .ans .katex{font-size:1.12em}
+  .ans:hover:not(:disabled){border-color:var(--accent);background:#f0f6ff;transform:translateY(-1px)}
+  .ans:disabled{cursor:default}
+  .ans.correct{border-color:var(--good);background:var(--good-bg)}
+  .ans.correct .katex{color:var(--good)}
+  .ans.wrong{border-color:var(--bad);background:var(--bad-bg)}
+  .ans.wrong .katex{color:var(--bad)}
+  .ans .num{position:absolute;top:4px;right:8px;font-size:11px;opacity:.4;font-weight:600}
+  .feedback{margin:12px 0 2px;padding:12px 14px;border-radius:12px;font-size:14px;line-height:1.6;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:var(--good-bg);border:1px solid #b7e3cb;color:var(--good)}
+  .feedback.no{background:var(--bad-bg);border:1px solid #f2c2bd;color:var(--bad)}
+  .feedback .explain{margin-top:8px;color:var(--ink);font-weight:500;font-size:13.5px;line-height:1.7}
+  .feedback .explain .katex{font-size:1.05em}
+  .actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+  .btn{border:1px solid var(--line);background:#fff;color:#2c405e;border-radius:12px;padding:11px 18px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;transition:.15s;box-shadow:0 2px 8px rgba(20,40,70,.06)}
+  .btn:hover{background:#f4f8fd;border-color:#a9bdd6}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent2)}
+  .btn.ghost{background:transparent;box-shadow:none}
+  .btn.hint{background:var(--warn-bg);border-color:#ecd08a;color:var(--warn)}
+  .btn.hint:hover{background:#ffeab3}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .hintbox{display:none;margin:12px 0 0;padding:12px 14px;background:var(--warn-bg);border:1px solid #ecd08a;border-radius:12px;color:#6b4a00;font-size:13.5px;line-height:1.6}
+  .hintbox.show{display:block}
+  .hintbox .katex{font-size:1.05em;color:#4a3300}
+  .progress{height:8px;background:#e7eef7;border-radius:999px;overflow:hidden;margin-top:14px}
+  .progress > div{height:100%;width:0%;background:linear-gradient(90deg,#4f8bf0,#1f4fb5);border-radius:999px;transition:width .35s ease}
+  .footer-note{text-align:center;color:var(--muted);font-size:12.5px;margin-top:14px}
+  .streak-fire{color:#d9480f}
+  .kbd{display:inline-block;border:1px solid #c6d2df;border-bottom-width:2px;border-radius:6px;padding:0 6px;font-size:11.5px;font-family:Consolas,monospace;background:#f7fafc;color:#52657b}
+  dialog{border:0;border-radius:18px;padding:20px;width:min(460px,94vw);background:var(--panel);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.35)}
+  dialog::backdrop{background:rgba(14,20,36,.55);backdrop-filter:blur(3px)}
+  .sturow{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:6px;margin:6px 0}
+  .sturow.cur{border-color:var(--accent);background:#eef3ff}
+  .sturow .pick{flex:1;text-align:left;font-weight:700;border:0;background:none;cursor:pointer;padding:6px;font:inherit}
+  .stuadd{display:flex;gap:6px;margin-top:10px}
+  .stuadd input{flex:1;padding:9px 12px;border-radius:11px;border:1px solid var(--line);background:var(--bg);font:inherit}
+  .sturow small{color:var(--muted);white-space:nowrap;font-size:12px}
+  .btn.small{padding:5px 9px;font-size:12.5px;border-radius:9px}
+  @media(max-width:640px){
+    .panel{padding:15px}.answers{grid-template-columns:1fr;gap:8px}.ans{min-height:54px;padding:11px 8px;font-size:15px}
+    .chip{padding:6px 10px;font-size:12.5px}.switch{margin-left:0}.task .q{font-size:15px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>∂ Формулы, хитрости, вершина</h1>
+      <p>Формулы производных, почленное деление, логарифмы и вершина параболы. <span class="kbd">1</span>–<span class="kbd">4</span> — ответ, <span class="kbd">H</span> — подсказка.</p>
+    </div>
+    <div class="stats">
+      <div class="chip">👤 <b id="who">—</b></div>
+      <div class="chip">⭐ Очки: <b id="score">0</b></div>
+      <div class="chip">🔥 Серия: <b id="streak" class="streak-fire">0</b></div>
+      <div class="chip">✅ Верно: <b id="right">0</b> / <span id="total">0</span></div>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="row">
+      <span class="lbl">Тема:</span>
+      <div class="seg" id="topics">
+        <button data-topic="all" class="active">все</button>
+        <button data-topic="formula">формулы</button>
+        <button data-topic="divide">почленное деление</button>
+        <button data-topic="log">логарифмы: разложение</button>
+        <button data-topic="exp">сложная экспонента</button>
+        <button data-topic="vertex">вершина параболы</button>
+      </div>
+      <label class="switch" title="Автоматически переходить к следующей задаче после верного ответа">
+        <input type="checkbox" id="autoNext" checked>
+        <span class="track"></span><span>Автопереход</span>
+      </label>
+    </div>
+
+    <div class="task">
+      <div class="sub" id="sub">—</div>
+      <div class="q" id="question">Загрузка…</div>
+      <div class="prompt" id="prompt"></div>
+    </div>
+
+    <div class="answers" id="answers"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="hintbox" id="hintbox"></div>
+
+    <div class="actions">
+      <button class="btn hint" id="hintBtn">💡 Подсказка</button>
+      <button class="btn primary" id="nextBtn">Следующая задача →</button>
+      <button class="btn ghost" id="resetBtn">↺ Сброс счёта</button>
+      <button class="btn ghost" id="studentsBtn">👤 Ученик</button>
+    </div>
+
+    <div class="progress"><div id="bar"></div></div>
+    <div class="footer-note">
+      Производная сложной: $f(g(x))' = f'(g(x))\,g'(x)$ · Вершина параболы: $x_0=-\dfrac{b}{2a}$
+    </div>
+  </section>
+</div>
+
+<dialog id="stuModal">
+  <h2 style="margin:0 0 8px">Кто занимается?</h2>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:8px">У каждого ученика свой прогресс, сохранённый в браузере.</div>
+  <div id="stuList"></div>
+  <div class="stuadd"><input id="stuNew" placeholder="Имя нового ученика" maxlength="40"><button class="btn primary" id="stuAdd">Добавить</button></div>
+  <div style="text-align:right;margin-top:12px"><button class="btn" id="stuClose">Готово</button></div>
+</dialog>
+
+<script>
+(function(){
+  "use strict";
+
+  // ============ KaTeX / MD ============
+  let pendingRenders=[];
+  let currentRenderFn=null;
+
+  function tex(src,display=true){
+    if(window.katex){
+      try{return katex.renderToString(src,{throwOnError:false,displayMode:display,strict:'ignore'})}
+      catch(e){return `<span class="tex-err">${escapeHtml(src)}</span>`}
+    }
+    return `<span class="tex-fallback">${escapeHtml(src)}</span>`;
+  }
+  function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+  function mdToHtml(src){
+    const parts=String(src).split(/(\$\$[\s\S]+?\$\$|\$[^$]+?\$)/g);
+    let out='';
+    for(const p of parts){
+      if(!p)continue;
+      if(p.startsWith('$$')&&p.endsWith('$$')){
+        out+=tex(p.slice(2,-2),true);
+      }else if(p.startsWith('$')&&p.endsWith('$')&&p.length>=2){
+        out+=tex(p.slice(1,-1),false);
+      }else{
+        out+=escapeHtml(p);
+      }
+    }
+    return out;
+  }
+
+  function setTex(el,src,display=true){
+    if(window.katex){
+      try{el.innerHTML=katex.renderToString(src,{throwOnError:false,displayMode:display,strict:'ignore'})}
+      catch(e){el.textContent=src}
+    }else{
+      el.textContent=src;
+      pendingRenders.push({el,src,display});
+    }
+  }
+  function setMd(el,src){
+    el.innerHTML=mdToHtml(src);
+    if(!window.katex){pendingRenders.push({el,src,md:true})}
+  }
+
+  function ensureKatex(cb){
+    if(window.katex){cb&&cb();return}
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js';
+    s.onload=()=>cb&&cb();
+    s.onerror=()=>cb&&cb();
+    document.head.appendChild(s);
+  }
+  ensureKatex(()=>{
+    pendingRenders.forEach(item=>{
+      if(item.md){item.el.innerHTML=mdToHtml(item.src)}
+      else{try{item.el.innerHTML=katex.renderToString(item.src,{throwOnError:false,displayMode:item.display,strict:'ignore'})}catch(e){}}
+    });
+    pendingRenders=[];
+    if(typeof currentRenderFn==='function')currentRenderFn();
+  });
+
+  // ============ состояние ============
+  const KEY='derivative_short_trainer_v3';
+  const DB={list:[],cur:null,data:{}};
+  let state={topic:'all',score:0,streak:0,right:0,total:0,current:null,answered:false,hintUsed:false,autoNext:true,timer:null};
+
+  const $=id=>document.getElementById(id);
+  const ri=n=>Math.floor(Math.random()*n);
+  const pick=a=>a[ri(a.length)];
+  const rnd=(a,b)=>a+ri(b-a+1);
+  const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=ri(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+  const sign=v=>v<0?'−':'+';
+  const abs=v=>Math.abs(v);
+
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}}
+  function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.list){DB.list=d.list;DB.cur=d.cur;DB.data=d.data||{}}}catch(e){}}
+  function blank(){return {topic:'all',score:0,streak:0,right:0,total:0,autoNext:true}}
+  function curData(){if(!DB.cur)return null;return DB.data[DB.cur]||(DB.data[DB.cur]=blank())}
+  function stuName(){const s=DB.list.find(x=>x.id===DB.cur);return s?s.name:null}
+
+  // ============ Генераторы ============
+  function mkFormula(o){
+    return {topic:'formula',sub:o.sub,q:o.q,prompt:o.prompt||'Найди производную.',correct:o.correct,
+      options:shuffle([o.correct,...o.wrongs]).map(x=>x),hint:o.hint,explain:o.explain};
+  }
+
+  function genFormula(){
+    const kind=pick(['power','sum','sin','cos','tan','ctan','exp','ln','sqrt','inv','xsqrt']);
+    if(kind==='power'){
+      const n=rnd(3,9), k=rnd(1,6);
+      const ansTex=`${k*n===1?'':k*n}x^{${n-1}}`;
+      return mkFormula({
+        sub:'Степенная функция',
+        q:`${k===1?'':k}x^{${n}}`,
+        correct:ansTex,
+        wrongs:[`${k}x^{${n-1}}`,`${k*n}x^{${n}}`,`${k*(n-1)===0?'':k*(n-1)}x^{${n-1}}`],
+        hint:`$(x^{n})'=n\\,x^{n-1}$. Коэффициент ${k} сохраняется.`,
+        explain:`$(x^{${n}})'=${n}x^{${n-1}}$, умножаем на коэффициент ${k} ⇒ $${ansTex}$.`
+      });
+    }
+    if(kind==='sum'){
+      const a=rnd(2,5),b=rnd(2,6),p=rnd(2,5);
+      const ansTex=`${a*p}x^{${p-1}}${sign(b)}${b}`;
+      return mkFormula({
+        sub:'Сумма, коэффициент',
+        q:`${a}x^{${p}}${sign(b)}${b}x`,
+        correct:ansTex,
+        wrongs:[`${a*p}x^{${p-1}}${sign(b)}${b}x`,`${a}x^{${p-1}}${sign(b)}${b}`,`${a*p}x^{${p}}${sign(b)}${b}`],
+        hint:'$(u±v)\'=u\'±v\'$, $(kx^n)\'=kn\\,x^{n-1}$.',
+        explain:`$(${a}x^{${p}})'=${a*p}x^{${p-1}}$; $(${b}x)'=${b}$. Итог: $${ansTex}$.`
+      });
+    }
+    if(kind==='sin')return mkFormula({sub:'Тригонометрия',q:'\\sin x',correct:'\\cos x',
+      wrongs:['-\\cos x','\\sin x','-\\sin x'],hint:'$(\\sin x)\'=\\cos x$.',explain:'$(\\sin x)\'=\\cos x$.'});
+    if(kind==='cos')return mkFormula({sub:'Тригонометрия',q:'\\cos x',correct:'-\\sin x',
+      wrongs:['\\sin x','\\cos x','-\\cos x'],hint:'$(\\cos x)\'=-\\sin x$.',explain:'$(\\cos x)\'=-\\sin x$.'});
+    if(kind==='tan')return mkFormula({sub:'Тригонометрия',q:'\\operatorname{tg} x',
+      correct:'\\dfrac{1}{\\cos^{2}x}',wrongs:['\\dfrac{1}{\\sin^{2}x}','-\\dfrac{1}{\\cos^{2}x}','\\dfrac{\\sin x}{\\cos x}'],
+      hint:'$(\\operatorname{tg} x)\'=\\dfrac{1}{\\cos^{2}x}$.',explain:'$(\\operatorname{tg} x)\'=\\dfrac{1}{\\cos^{2}x}$.'});
+    if(kind==='ctan')return mkFormula({sub:'Тригонометрия',q:'\\operatorname{ctg} x',
+      correct:'-\\dfrac{1}{\\sin^{2}x}',wrongs:['-\\dfrac{1}{\\cos^{2}x}','\\dfrac{1}{\\sin^{2}x}','\\dfrac{\\cos x}{\\sin x}'],
+      hint:'$(\\operatorname{ctg} x)\'=-\\dfrac{1}{\\sin^{2}x}$.',explain:'$(\\operatorname{ctg} x)\'=-\\dfrac{1}{\\sin^{2}x}$.'});
+    if(kind==='exp')return mkFormula({sub:'Показательная',q:'e^{x}',
+      correct:'e^{x}',wrongs:['x\\,e^{x-1}','e^{x-1}','1'],
+      hint:'$(e^x)\'=e^x$ — особенная функция.',explain:'$(e^{x})\'=e^{x}$.'});
+    if(kind==='ln')return mkFormula({sub:'Логарифм',q:'\\ln x',
+      correct:'\\dfrac{1}{x}',wrongs:['x','-\\dfrac{1}{x}','\\dfrac{1}{\\ln x}'],
+      hint:'$(\\ln x)\'=\\dfrac{1}{x}$.',explain:'$(\\ln x)\'=\\dfrac{1}{x}$.'});
+    if(kind==='sqrt')return mkFormula({sub:'Корень',q:'\\sqrt{x}',
+      prompt:'Перепиши как степень и найди производную.',
+      correct:'\\dfrac{1}{2\\sqrt{x}}',wrongs:['\\dfrac{1}{\\sqrt{x}}','2\\sqrt{x}','\\dfrac{\\sqrt{x}}{2}'],
+      hint:'$\\sqrt{x}=x^{1/2}$, $(x^p)\'=p\\,x^{p-1}$.',
+      explain:'$\\sqrt{x}=x^{1/2}$ ⇒ $\\left(x^{1/2}\\right)\'=\\dfrac{1}{2}x^{-1/2}=\\dfrac{1}{2\\sqrt{x}}$.'});
+    if(kind==='inv')return mkFormula({sub:'Дробь как степень',q:'\\dfrac{1}{x}',
+      prompt:'Перепиши как степень и найди производную.',
+      correct:'-\\dfrac{1}{x^{2}}',wrongs:['\\dfrac{1}{x^{2}}','-\\dfrac{1}{x}','-x'],
+      hint:'$\\dfrac{1}{x}=x^{-1}$.',explain:'$x^{-1}$ ⇒ $-x^{-2}=-\\dfrac{1}{x^{2}}$.'});
+    return mkFormula({sub:'x·√x как степень',q:'x\\sqrt{x}',
+      prompt:'Перепиши как степень и найди производную.',
+      correct:'\\dfrac{3}{2}\\sqrt{x}',wrongs:['\\dfrac{1}{2}\\sqrt{x}','\\dfrac{3}{2}x','\\sqrt{x}'],
+      hint:'$x\\sqrt{x}=x^{3/2}$.',explain:'$x\\sqrt{x}=x^{3/2}$ ⇒ $\\dfrac{3}{2}x^{1/2}=\\dfrac{3}{2}\\sqrt{x}$.'});
+  }
+
+  // ---- B) почленное деление ----
+  function genDivide(){
+    const v=pick(['A','B','C','D']);
+    if(v==='A'){
+      const a=rnd(2,5),b=rnd(1,6);
+      const stepTex=`${a}x${sign(b)}${b}`;
+      const ansTex=`${a}`;
+      return {topic:'divide',sub:'Дробь / одночлен: почленно',
+        q:`\\dfrac{${a}x^{2}${sign(b)}${b}x}{x}`,
+        prompt:'Сначала почленно раздели — какое выражение получится?',
+        correct:stepTex,
+        options:shuffle([stepTex,`${a}x^{2}${sign(b)}${b}`,`${a}x${sign(b)}${b}x`,`${2*a}x${sign(b)}${b}`]),
+        hint:'В знаменателе одночлен — делим каждое слагаемое.',
+        explain:`$\\dfrac{${a}x^{2}${sign(b)}${b}x}{x}=${a}x${sign(b)}${b}$. Значит, $y'=${ansTex}$.`};
+    }
+    if(v==='B'){
+      const a=rnd(2,5),b=rnd(1,9),c=rnd(1,9);
+      const stepTex=`${a}x${sign(b)}${b}${sign(c)}\\dfrac{${c}}{x}`;
+      return {topic:'divide',sub:'Дробь / одночлен: почленно',
+        q:`\\dfrac{${a}x^{2}${sign(b)}${b}x${sign(c)}${c}}{x}`,
+        prompt:'Почленно раздели — какое выражение получится?',
+        correct:stepTex,
+        options:shuffle([stepTex,`${a}x${sign(b)}${b}${sign(c)}${c}`,`${a}x^{2}${sign(b)}${b}${sign(c)}\\dfrac{${c}}{x}`,`${a}x${sign(c)}\\dfrac{${c}}{x}`]),
+        hint:'Каждое слагаемое делим на $x$.',
+        explain:`$${stepTex}$. Дальше: $(${a}x)'=${a}$, $\\left(\\dfrac{${c}}{x}\\right)'=-\\dfrac{${c}}{x^{2}}$.`};
+    }
+    if(v==='C'){
+      const k=rnd(2,4),n=rnd(3,4),m=rnd(1,6);
+      const stepTex=`${k}x^{${n-1}}${sign(m)}${m}`;
+      return {topic:'divide',sub:'Дробь / одночлен: почленно',
+        q:`\\dfrac{${k}x^{${n}}${sign(m)}${m}x}{x}`,
+        prompt:'Почленно раздели — какое выражение получится?',
+        correct:stepTex,
+        options:shuffle([stepTex,`${k}x^{${n-1}}${sign(m)}${m}x`,`${k*n}x^{${n-1}}${sign(m)}${m}`,`${k}x^{${n}}${sign(m)}${m}`]),
+        hint:'Делим каждое слагаемое на $x$.',
+        explain:`$${stepTex}$ ⇒ производная $${k*(n-1)}x^{${n-2}}${sign(m)}${m}$.`};
+    }
+    const a=rnd(1,4),b=rnd(1,6);
+    return {topic:'divide',sub:'Ловушка: когда почленно НЕЛЬЗЯ',
+      q:`\\dfrac{${a}x^{2}${sign(b)}${b}}{x+1}`,
+      prompt:'Можно ли здесь почленно разделить?',
+      correct:'Нет, в знаменателе сумма — формула частного',
+      options:shuffle([
+        'Нет, в знаменателе сумма — формула частного',
+        'Да, разделим почленно: '+a+'x …',
+        'Да, $x$ сократится',
+        'Нет, здесь вообще нет производной'
+      ]),
+      hint:'Почленно можно ТОЛЬКО при одночлене в знаменателе ($x$, $x^{2}$, $2x$). Если в знаменателе сумма — только формула частного.',
+      explain:`В знаменателе $(x+1)$ — сумма. Применяем $(u/v)'=\\dfrac{u'v-uv'}{v^{2}}$, почленно делить нельзя.`};
+  }
+
+  // ---- C) логарифмы ----
+  function genLog(){
+    const v=pick(['ln_kx','ln_xn','ln_prod','ln_pow_a','ln_pow_ab']);
+    if(v==='ln_kx'){
+      const k=pick([2,3,5,7,11]);
+      return {topic:'log',sub:'$\\ln(kx)$: разложение в сумму',
+        q:`\\ln(${k}x)`,
+        prompt:'Упрости логарифм и найди производную.',
+        correct:'\\dfrac{1}{x}',
+        options:shuffle(['\\dfrac{1}{x}',`\\dfrac{${k}}{x}`,`\\dfrac{1}{${k}x}`,'\\dfrac{1}{\\ln x}']),
+        hint:`$\\ln(${k}x)=\\ln ${k}+\\ln x$. Производная константы равна 0.`,
+        explain:`$\\ln(${k}x)=\\ln ${k}+\\ln x$. $(\\ln ${k})'=0$, $(\\ln x)'=\\dfrac{1}{x}$. Итог: $\\dfrac{1}{x}$.`};
+    }
+    if(v==='ln_xn'){
+      const n=rnd(2,8);
+      return {topic:'log',sub:'$\\ln(x^{n})$: выносим показатель',
+        q:`\\ln(x^{${n}})`,
+        prompt:'Вынеси показатель и найди производную.',
+        correct:`\\dfrac{${n}}{x}`,
+        options:shuffle([`\\dfrac{${n}}{x}`,`\\dfrac{1}{${n}x}`,`\\dfrac{${n}}{x^{${n}}}`,`${n}x^{${n-1}}`]),
+        hint:`$\\ln(x^{${n}})=${n}\\ln x$; $(\\ln x)'=\\dfrac{1}{x}$.`,
+        explain:`$\\ln(x^{${n}})=${n}\\ln x$ ⇒ $${n}\\cdot\\dfrac{1}{x}=\\dfrac{${n}}{x}$.`};
+    }
+    if(v==='ln_prod'){
+      const a=rnd(1,6), b=rnd(a+1,9);
+      const stepTex=`\\dfrac{1}{x${sign(a)}${a}}+\\dfrac{1}{x${sign(b)}${b}}`;
+      return {topic:'log',sub:'$\\ln((x+a)(x+b))$: разложение в сумму',
+        q:`\\ln\\left((x${sign(a)}${a})(x${sign(b)}${b})\\right)`,
+        prompt:'Разложи логарифм произведения и найди производную.',
+        correct:stepTex,
+        options:shuffle([stepTex,`\\dfrac{1}{(x${sign(a)}${a})(x${sign(b)}${b})}`,`\\dfrac{2x${sign(a+b)}${abs(a+b)}}{(x${sign(a)}${a})(x${sign(b)}${b})}`,`\\dfrac{1}{x${sign(a+b)}${abs(a+b)}}`]),
+        hint:'$\\ln(uv)=\\ln u+\\ln v$.',
+        explain:`$\\ln((x${sign(a)}${a})(x${sign(b)}${b}))=\\ln(x${sign(a)}${a})+\\ln(x${sign(b)}${b})$. Производная: $${stepTex}$.`};
+    }
+    if(v==='ln_pow_a'){
+      const a=rnd(2,7), n=rnd(2,5);
+      const ansTex=`\\dfrac{${n}}{x${sign(a)}${a}}`;
+      const deriv=`${n}\\cdot\\dfrac{1}{x${sign(a)}${a}}`;
+      return {topic:'log',sub:'$\\ln(x+a)^{n}$: выносим показатель',
+        q:`\\ln(x${sign(a)}${a})^{${n}}`,
+        prompt:'Вынеси показатель и найди производную.',
+        correct:ansTex,
+        options:shuffle([ansTex,`\\dfrac{1}{${n}(x${sign(a)}${a})}`,`\\dfrac{${n}}{x}`,`${n}(x${sign(a)}${a})^{${n-1}}`]),
+        hint:`$\\ln(x+a)^{${n}}=${n}\\ln(x+a)$; $(\\ln u)'=\\dfrac{u'}{u}$.`,
+        explain:`$\\ln(x${sign(a)}${a})^{${n}}=${n}\\ln(x${sign(a)}${a})$. Производная аргумента: $u'=(x${sign(a)}${a})'=1$. Получаем: $${deriv}=\\dfrac{${n}}{x${sign(a)}${a}}$.`};
+    }
+    const a=rnd(2,8), b=rnd(2,6);
+    const ansTex=`\\dfrac{${b}}{x-${a}}`;
+    const deriv=`${b}\\cdot\\dfrac{1}{x-${a}}`;
+    return {topic:'log',sub:'$\\ln(x-a)^{n}$: выносим показатель',
+      q:`\\ln(x-${a})^{${b}}`,
+      prompt:'Вынеси показатель и найди производную.',
+      correct:ansTex,
+      options:shuffle([ansTex,`\\dfrac{1}{${b}(x-${a})}`,`-\\dfrac{${b}}{x-${a}}`,`${b}(x-${a})^{${b-1}}`]),
+      hint:`$\\ln(x-${a})^{${b}}=${b}\\ln(x-${a})$; производная $\\ln u$ равна $\\dfrac{u'}{u}$.`,
+      explain:`$\\ln(x-${a})^{${b}}=${b}\\ln(x-${a})$. Производная аргумента: $u'=(x-${a})'=1$. Получаем: $${deriv}=\\dfrac{${b}}{x-${a}}$.`};
+  }
+
+  // ---- D) сложная экспонента ----
+  function genExp(){
+    const v=pick(['e_kx','e_x2','e_poly','e_sin','e_ln','e_linear_neg']);
+    if(v==='e_kx'){
+      const k=pick([2,3,4,5,7]);
+      const kTex = k===1 ? '1' : String(k);
+      const ansTex=`${kTex}\\cdot e^{${k}x}`;
+      return {topic:'exp',sub:'Сложная экспонента $e^{kx}$',
+        q:`e^{${k}x}`,
+        prompt:'Найди производную (сложная функция).',
+        correct:ansTex,
+        options:shuffle([ansTex,`e^{${k}x}`,`${k}x\\,e^{${k}x-1}`,`e^{${k}x-1}`]),
+        hint:'$(e^{u})\'=e^{u}\\cdot u\'$, где $u='+k+'x$.',
+        explain:`$u=${k}x$, $u'=${k}$. $(e^{${k}x})'=e^{${k}x}\\cdot (${k})=${ansTex}$.`};
+    }
+    if(v==='e_x2'){
+      const ansTex=`2x\\cdot e^{x^{2}}`;
+      return {topic:'exp',sub:'Сложная экспонента $e^{x^{2}}$',
+        q:'e^{x^{2}}',
+        prompt:'Найди производную (сложная функция).',
+        correct:ansTex,
+        options:shuffle([ansTex,'e^{x^{2}}','2x\\,e^{x}','x^{2}e^{x^{2}}']),
+        hint:'$(e^{u})\'=e^{u}\\cdot u\'$, $u=x^{2}$.',
+        explain:'$u=x^{2}$, $u\'=2x$. $(e^{x^{2}})\'=e^{x^{2}}\\cdot (2x)=2x\\cdot e^{x^{2}}$.'};
+    }
+    if(v==='e_poly'){
+      const a=rnd(1,3), b=rnd(1,5);
+      const inner=`${a===1?'':a}x^{2}${sign(b)}${b}x`;
+      const innerDer=`${2*a}x${sign(b)}${b}`;
+      const ansTex=`(${innerDer})\\cdot e^{${inner}}`;
+      return {topic:'exp',sub:'Сложная экспонента $e^{f(x)}$',
+        q:`e^{${inner}}`,
+        prompt:'Найди производную (сложная функция).',
+        correct:ansTex,
+        options:shuffle([ansTex,`e^{${inner}}`,`${innerDer}\\,e^{${inner}}`+' ',`(${inner})e^{${inner}}`]),
+        hint:'$(e^{u})\'=e^{u}\\cdot u\'$, $u$ — показатель.',
+        explain:`$u=${inner}$, $u'=${innerDer}$. $(e^{${inner}})'=e^{${inner}}\\cdot(${innerDer})=${ansTex}$.`};
+    }
+    if(v==='e_sin'){
+      return {topic:'exp',sub:'Сложная экспонента $e^{\\sin x}$',
+        q:'e^{\\sin x}',
+        prompt:'Найди производную (сложная функция).',
+        correct:'\\cos x\\cdot e^{\\sin x}',
+        options:shuffle(['\\cos x\\cdot e^{\\sin x}','e^{\\sin x}','\\sin x\\cdot e^{\\cos x}','-\\cos x\\cdot e^{\\sin x}']),
+        hint:'$(e^{u})\'=e^{u}\\cdot u\'$, $u=\\sin x$.',
+        explain:'$u=\\sin x$, $u\'=\\cos x$. $(e^{\\sin x})\'=e^{\\sin x}\\cdot\\cos x$.'};
+    }
+    if(v==='e_ln'){
+      return {topic:'exp',sub:'Сложная экспонента $e^{\\ln x}$',
+        q:'e^{\\ln x}',
+        prompt:'Упрости и найди производную.',
+        correct:'1',
+        options:shuffle(['1','e^{\\ln x}\\cdot\\dfrac{1}{x}','\\dfrac{1}{x}','x']),
+        hint:'$e^{\\ln x}=x$ — сначала упрощаем, потом дифференцируем.',
+        explain:'$e^{\\ln x}=x$ ⇒ $(x)\'=1$. Можно и по формуле: $e^{\\ln x}\\cdot\\dfrac{1}{x}=x\\cdot\\dfrac{1}{x}=1$ — тот же ответ.'};
+    }
+    // e_linear_neg — линейный показатель со сдвигом (явно показываем 1 или -1)
+    const k=pick([2,3,4,5]);
+    const b=rnd(1,9);
+    const variant=pick(['plus','minus']);
+    if(variant==='minus'){
+      // e^{k - x} — производная показателя = -1
+      const ansTex=`-1\\cdot e^{${k}-x}`;
+      return {topic:'exp',sub:'Сложная экспонента $e^{k-x}$',
+        q:`e^{${k}-x}`,
+        prompt:'Найди производную (сложная функция).',
+        correct:ansTex,
+        options:shuffle([ansTex,`e^{${k}-x}`,`-e^{${k}-x}`+' ',`(-1)e^{${k}+x}`]),
+        hint:'$(e^{u})\'=e^{u}\\cdot u\'$, где $u='+k+'-x$.',
+        explain:`$u=${k}-x$, производная аргумента $u'=-1$. $(e^{${k}-x})'=e^{${k}-x}\\cdot(-1)=-1\\cdot e^{${k}-x}$.`};
+    }
+    // e^{x - k} — производная = 1
+    const ansTex=`1\\cdot e^{x-${b}}`;
+    return {topic:'exp',sub:'Сложная экспонента $e^{x-k}$',
+      q:`e^{x-${b}}`,
+      prompt:'Найди производную (сложная функция).',
+      correct:ansTex,
+      options:shuffle([ansTex,`e^{x-${b}}`,`-1\\cdot e^{x-${b}}`,`e^{x+${b}}`]),
+      hint:'$(e^{u})\'=e^{u}\\cdot u\'$, где $u=x-'+b+'$.',
+      explain:`$u=x-${b}$, производная аргумента $u'=1$. $(e^{x-${b}})'=e^{x-${b}}\\cdot(1)=1\\cdot e^{x-${b}}$.`};
+  }
+
+  // ---- E) вершина параболы ----
+  function genVertex(){
+    const v=pick(['poly','log','exp','sqrt','log_small_base']);
+    const A=pick([1,-1,2,-2,3,-3]);
+    const x0=rnd(-7,7);
+    const B=-2*A*x0;
+    const C=rnd(-6,10);
+    const Atex=(A===1?'':A===-1?'-':A);
+    const arg=`${Atex}x^{2}${sign(B)}${abs(B)}x${sign(C)}${abs(C)}`;
+    const atStr=`x_{0}=-\\dfrac{b}{2a}=-\\dfrac{${B}}{2\\cdot(${A})}=${x0}`;
+    const extType=A>0?'минимум':'максимум';
+
+    if(v==='poly'){
+      return {topic:'vertex',sub:'Квадратичная функция — вершина',
+        q:arg,
+        prompt:A>0?'Точка минимума функции':'Точка максимума функции',
+        correct:String(x0),
+        options:shuffle([String(x0),String(x0+rnd(1,5)),String(x0-rnd(1,5)),String(-x0)]),
+        hint:'Вершина параболы: $x_{0}=-\\dfrac{b}{2a}$. Ветви вверх ⇒ минимум, вниз ⇒ максимум.',
+        explain:`Коэффициенты: $a=${A}$, $b=${B}$, $c=${C}$. Ветви ${A>0?'вверх ⇒ минимум':'вниз ⇒ максимум'}. Вершина $${atStr}$. Значит, ${extType} при $x=${x0}$.`};
+    }
+    if(v==='log'){
+      const base=pick([5,7,2,3,11]);
+      return {topic:'vertex',sub:`$\\log_{${base}}(\\text{квадратичная})$ — через вершину`,
+        q:`\\log_{${base}}\\left(${arg}\\right)`,
+        prompt:A>0?'Точка минимума функции':'Точка максимума функции',
+        correct:String(x0),
+        options:shuffle([String(x0),String(x0+rnd(1,5)),String(x0-rnd(1,5)),String(-x0)]),
+        hint:`Основание ${base}>1 ⇒ логарифм возрастает ⇒ экстремум там же, где у аргумента. Вершина: $x_{0}=-\\dfrac{b}{2a}$.`,
+        explain:`Логарифм с основанием ${base}>1 монотонно возрастает. Значит, ${extType} достигается в той же точке, что ${extType} аргумента. Парабола $t=${arg}$ — ветви ${A>0?'вверх':'вниз'} ⇒ ${A>0?'наименьшее':'наибольшее'} значение в вершине. $${atStr}$. Проверка ОДЗ: $t(${x0})>0$ — да.`};
+    }
+    if(v==='log_small_base'){
+      const baseTex=pick(['\\tfrac{1}{2}','\\tfrac{1}{3}','\\tfrac{1}{5}']);
+      const flip=A>0?'максимум':'минимум';
+      return {topic:'vertex',sub:`$\\log_{1/2}(\\text{квадратичная})$ — экстремум меняется`,
+        q:`\\log_{${baseTex}}\\left(${arg}\\right)`,
+        prompt:flip==='максимум'?'Точка максимума функции':'Точка минимума функции',
+        correct:String(x0),
+        options:shuffle([String(x0),String(x0+rnd(1,5)),String(x0-rnd(1,5)),String(-x0)]),
+        hint:'Основание $<1$ ⇒ логарифм убывает ⇒ экстремум меняется на противоположный по сравнению с аргументом.',
+        explain:`Основание $<1$ ⇒ логарифм монотонно убывает. Аргумент $t=${arg}$ имеет ${A>0?'минимум':'максимум'} в вершине ⇒ у логарифма ${flip}. Вершина: $${atStr}$.`};
+    }
+    if(v==='exp'){
+      const base=pick([2,3,5,11]);
+      return {topic:'vertex',sub:`$${base}^{\\text{квадратичная}}$ — через вершину`,
+        q:`${base}^{${arg}}`,
+        prompt:A>0?'Точка минимума функции':'Точка максимума функции',
+        correct:String(x0),
+        options:shuffle([String(x0),String(x0+rnd(1,5)),String(x0-rnd(1,5)),String(-x0)]),
+        hint:`Основание ${base}>1 ⇒ $${base}^t$ возрастает ⇒ экстремум там же, где у показателя-параболы.`,
+        explain:`$${base}^t$ с основанием ${base}>1 монотонно возрастает ⇒ ${extType} в той же точке, что у показателя. Показатель $t=${arg}$ — парабола ветвями ${A>0?'вверх':'вниз'}. Вершина: $${atStr}$.`};
+    }
+    if(A<0)return genVertex();
+    return {topic:'vertex',sub:'$\\sqrt{\\text{квадратичная}}$ — через вершину',
+      q:`\\sqrt{${arg}}`,
+      prompt:'Точка минимума функции',
+      correct:String(x0),
+      options:shuffle([String(x0),String(x0+rnd(1,5)),String(x0-rnd(1,5)),String(-x0)]),
+      hint:'$\\sqrt{t}$ возрастает ⇒ минимум там же, где минимум аргумента. Вершина: $x_{0}=-\\dfrac{b}{2a}$.',
+      explain:`Корень возрастает ⇒ минимум функции совпадает с минимумом аргумента. Аргумент $t=${arg}$ — парабола вверх ⇒ минимум в вершине $${atStr}$. Проверка ОДЗ: $t(${x0})>0$ — да.`};
+  }
+
+  function makeTask(topic){
+    const t=topic==='all'?pick(['formula','divide','log','exp','vertex']):topic;
+    if(t==='formula')return genFormula();
+    if(t==='divide')return genDivide();
+    if(t==='log')return genLog();
+    if(t==='exp')return genExp();
+    if(t==='vertex')return genVertex();
+    return genFormula();
+  }
+
+  // ============ отрисовка ============
+  const els={
+    score:$('score'),streak:$('streak'),right:$('right'),total:$('total'),who:$('who'),
+    sub:$('sub'),question:$('question'),prompt:$('prompt'),answers:$('answers'),
+    feedback:$('feedback'),hintbox:$('hintbox'),hintBtn:$('hintBtn'),nextBtn:$('nextBtn'),
+    resetBtn:$('resetBtn'),bar:$('bar'),topics:$('topics'),autoNext:$('autoNext'),
+    studentsBtn:$('studentsBtn')
+  };
+
+  function clearTimer(){if(state.timer){clearTimeout(state.timer);state.timer=null}}
+
+  function renderTask(){
+    clearTimer();
+    state.answered=false;state.hintUsed=false;
+    state.current=makeTask(state.topic);
+    const t=state.current;
+
+    els.sub.innerHTML='';
+    setMd(els.sub,t.sub||'');
+
+    els.question.innerHTML='';
+    const lab=document.createElement('div');
+    lab.style.cssText='font-size:13px;color:var(--muted);font-weight:600;margin-bottom:4px';
+    lab.textContent='Дано:';
+    const box=document.createElement('div');
+    box.className='fx';
+    setTex(box,'f(x)='+t.q,false);
+    els.question.appendChild(box);
+    els.prompt.innerHTML='';
+    setMd(els.prompt,t.prompt||'');
+
+    els.answers.className='answers';
+    els.answers.innerHTML='';
+    t.options.forEach((val,i)=>{
+      const b=document.createElement('button');
+      b.className='ans';b.type='button';
+      b.dataset.value=val;
+      const num=document.createElement('span');
+      num.className='num';num.textContent='['+(i+1)+']';
+      const inner=document.createElement('span');
+      setTex(inner,val,false);
+      b.appendChild(inner);b.appendChild(num);
+      b.onclick=()=>choose(val);
+      els.answers.appendChild(b);
+    });
+
+    els.feedback.className='feedback';els.feedback.innerHTML='';
+    els.hintbox.className='hintbox';els.hintbox.innerHTML='';
+    els.hintBtn.disabled=false;
+    els.nextBtn.textContent='Следующая задача →';
+    els.nextBtn.disabled=false;
+    updateStats();updateProgress();saveCur();
+    currentRenderFn=renderTask;
+  }
+
+  function choose(val){
+    if(state.answered)return;
+    state.answered=true;
+    const t=state.current;
+    const isRight=String(val)===String(t.correct);
+
+    [...els.answers.children].forEach(b=>{
+      b.disabled=true;
+      const v=b.dataset.value;
+      if(String(v)===String(t.correct))b.classList.add('correct');
+      else if(String(v)===String(val))b.classList.add('wrong');
+    });
+
+    if(isRight){
+      state.right++;state.total++;state.streak++;
+      const bonus=state.hintUsed?5:10+Math.min(state.streak,5)*2;
+      state.score+=bonus;
+      els.feedback.className='feedback ok show';
+      els.feedback.innerHTML='';
+      const top=document.createElement('div');
+      top.innerHTML=`<b>Верно!</b> +${bonus} очков${state.hintUsed?' (с подсказкой)':''}.`;
+      const exp=document.createElement('div');
+      exp.className='explain';
+      setMd(exp,t.explain);
+      els.feedback.appendChild(top);els.feedback.appendChild(exp);
+      if(state.autoNext){
+        els.nextBtn.textContent='Следующая задача → (авто)';
+        clearTimer();
+        state.timer=setTimeout(()=>{
+          state.timer=null;
+          if(state.answered&&state.current===t)renderTask();
+        },1500);
+      }
+    }else{
+      state.total++;state.streak=0;
+      els.feedback.className='feedback no show';
+      els.feedback.innerHTML='';
+      const top=document.createElement('div');
+      top.innerHTML='<b>Неверно.</b> Правильный ответ:';
+      const ansBox=document.createElement('div');
+      ansBox.style.margin='6px 0 2px';
+      setTex(ansBox,t.correct,false);
+      const exp=document.createElement('div');
+      exp.className='explain';
+      setMd(exp,t.explain);
+      els.feedback.appendChild(top);
+      els.feedback.appendChild(ansBox);
+      els.feedback.appendChild(exp);
+      els.nextBtn.textContent='Следующая задача →';
+    }
+    updateStats();updateProgress();saveCur();
+  }
+
+  function showHint(){
+    if(state.answered||state.hintUsed)return;
+    state.hintUsed=true;
+    els.hintBtn.disabled=true;
+    els.hintbox.className='hintbox show';
+    els.hintbox.innerHTML='';
+    const lab=document.createElement('div');
+    lab.innerHTML='<b>💡 Подсказка:</b>';
+    const body=document.createElement('div');
+    body.style.marginTop='6px';
+    setMd(body,state.current.hint);
+    els.hintbox.appendChild(lab);els.hintbox.appendChild(body);
+  }
+
+  function nextTask(){clearTimer();renderTask()}
+
+  function updateStats(){
+    els.score.textContent=state.score;
+    els.streak.textContent=state.streak;
+    els.right.textContent=state.right;
+    els.total.textContent=state.total;
+    els.who.textContent=stuName()||'—';
+  }
+  function updateProgress(){const pct=Math.min(100,(state.streak/10)*100);els.bar.style.width=pct+'%'}
+
+  function saveCur(){const d=curData();if(!d)return;d.topic=state.topic;d.score=state.score;d.streak=state.streak;d.right=state.right;d.total=state.total;d.autoNext=state.autoNext;save()}
+  function loadCur(){const d=curData();if(!d)return false;state.topic=d.topic||'all';state.score=d.score||0;state.streak=d.streak||0;state.right=d.right||0;state.total=d.total||0;state.autoNext=d.autoNext!==false;return true}
+
+  function resetAll(){
+    state.score=0;state.streak=0;state.right=0;state.total=0;state.topic='all';
+    [...els.topics.children].forEach((b,i)=>b.classList.toggle('active',i===0));
+    clearTimer();renderTask();saveCur();
+  }
+
+  function renderStudents(){
+    const list=DB.list;const box=$('stuList');
+    box.innerHTML=list.length?list.map(x=>{
+      const d=DB.data[x.id]||blank();
+      return `<div class="sturow${x.id===DB.cur?' cur':''}"><button class="pick" data-pick="${x.id}">${x.id===DB.cur?'✓ ':''}${x.name}</button><small>✅ ${d.right}/${d.total}</small><button class="btn small" data-del="${x.id}">🗑</button></div>`;
+    }).join(''):'<div style="color:var(--muted);font-size:13px">Пока пусто — добавь ученика.</div>';
+  }
+  function openStudents(){renderStudents();$('stuNew').value='';if(!$('stuModal').open)$('stuModal').showModal()}
+  function switchStudent(id){
+    saveCur();DB.cur=id;save();
+    if(!DB.data[id])DB.data[id]=blank();
+    loadCur();
+    els.autoNext.checked=state.autoNext;
+    [...els.topics.children].forEach(b=>b.classList.toggle('active',b.dataset.topic===state.topic));
+    updateStats();updateProgress();renderTask();
+  }
+
+  // ============ инициализация ============
+  load();
+
+  els.topics.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-topic]');if(!b)return;
+    [...els.topics.children].forEach(x=>x.classList.toggle('active',x===b));
+    state.topic=b.dataset.topic;state.streak=0;clearTimer();renderTask();saveCur();
+  });
+  els.autoNext.addEventListener('change',e=>{state.autoNext=e.target.checked;if(!state.autoNext)clearTimer();saveCur()});
+  els.hintBtn.onclick=showHint;
+  els.nextBtn.onclick=nextTask;
+  els.resetBtn.onclick=resetAll;
+  els.studentsBtn.onclick=openStudents;
+  $('stuClose').onclick=()=>$('stuModal').close();
+  $('stuAdd').onclick=()=>{
+    const n=$('stuNew').value.trim();if(!n)return;
+    const id='s'+Date.now().toString(36);
+    DB.list.push({id,name:n});DB.data[id]=blank();save();
+    switchStudent(id);renderStudents();$('stuNew').value='';
+  };
+  $('stuNew').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('stuAdd').click()}};
+  $('stuList').onclick=e=>{
+    const p=e.target.closest('[data-pick]');if(p){switchStudent(p.dataset.pick);$('stuModal').close();return}
+    const d=e.target.closest('[data-del]');if(d){
+      if(!confirm('Удалить ученика и весь его прогресс?'))return;
+      DB.list=DB.list.filter(x=>x.id!==d.dataset.del);
+      delete DB.data[d.dataset.del];
+      if(DB.cur===d.dataset.del)DB.cur=DB.list[0]?.id||null;
+      save();if(DB.cur)loadCur();else state=blank();
+      updateStats();renderStudents();if(DB.cur)renderTask();
+    }
+  };
+  document.addEventListener('keydown',e=>{
+    if(e.target.matches('input,textarea'))return;
+    const k=e.key;
+    if(/^[1-4]$/.test(k)){
+      const idx=Number(k)-1;const b=els.answers.children[idx];
+      if(b&&!b.disabled){e.preventDefault();b.click()}
+    }else if(k==='Enter'||k===' '){
+      if(state.answered){e.preventDefault();nextTask()}
+    }else if(k.toLowerCase()==='h'){e.preventDefault();showHint()}
+  });
+
+  // старт
+  if(!DB.cur || !DB.list.length){
+    state=blank();els.autoNext.checked=true;
+    updateStats();updateProgress();renderTask();openStudents();
+  }else{
+    if(!DB.data[DB.cur])DB.data[DB.cur]=blank();
+    loadCur();
+    els.autoNext.checked=state.autoNext;
+    [...els.topics.children].forEach(b=>b.classList.toggle('active',b.dataset.topic===state.topic));
+    updateStats();updateProgress();renderTask();
+  }
+})();
+</script>
+</body>
+</html>
