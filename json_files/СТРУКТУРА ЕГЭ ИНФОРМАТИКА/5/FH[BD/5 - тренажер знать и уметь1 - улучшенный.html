@@ -1,0 +1,3220 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Самоучитель Python — ЕГЭ, задание 5</title>
+
+<style>
+:root {
+    --ink: #1e293b; --muted: #64748b; --primary: #6366f1; --primary-hover: #4f46e5;
+    --line: #e2e8f0; --bg: #f8fafc; --green: #10b981; --red: #ef4444; --yellow: #f59e0b;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0; background: var(--bg); font-family: system-ui, -apple-system, sans-serif;
+    color: var(--ink); height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* ШАПКА */
+header {
+    padding: 12px 24px; background: #fff; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center; z-index: 10;
+}
+.brand { font-weight: 800; font-size: 18px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+.btn {
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 14px;
+    cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:hover { background: #f1f5f9; }
+.btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn.primary:hover { background: var(--primary-hover); }
+.btn.danger { color: var(--red); border-color: #fca5a5; background: #fef2f2; }
+.btn.green { background: var(--green); color: #fff; border-color: var(--green); }
+.btn.yellow { background: var(--yellow); color: #fff; border-color: var(--yellow); }
+.btn.small { padding: 4px 8px; font-size: 12px; }
+
+/* МАКЕТ */
+.layout { display: flex; flex: 1; overflow: hidden; }
+
+/* ЛЕВОЕ МЕНЮ */
+aside.left {
+    width: 320px; background: #fff; border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; overflow-y: auto;
+}
+.sidebar-title {
+    padding: 16px 20px; font-size: 11px; font-weight: 800; text-transform: uppercase;
+    color: var(--muted); border-bottom: 1px solid var(--line); background: #f8fafc;
+    position: sticky; top: 0; z-index: 5;
+}
+.menu-lvl1 {
+    padding: 12px 16px; font-weight: 800; font-size: 14px; color: var(--ink);
+    background: #f8fafc; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; user-select: none; transition: background 0.2s;
+}
+.menu-lvl1:hover { background: #f1f5f9; }
+.menu-lvl1-content { display: flex; align-items: center; gap: 10px; flex: 1; }
+.menu-arrow { font-size: 12px; color: var(--muted); transition: transform 0.2s; display: inline-block; width: 16px; text-align: center;}
+.menu-lvl1.collapsed .menu-arrow { transform: rotate(-90deg); }
+
+.menu-lvl2 {
+    padding: 10px 16px 10px 46px; font-size: 13px; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    border-left: 3px solid transparent; transition: 0.2s;
+    animation: slideDown 0.2s ease-out;
+}
+@keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+.menu-lvl2:hover { background: #f1f5f9; }
+.menu-lvl2.active { background: #eff6ff; border-left-color: var(--primary); color: var(--primary); font-weight: 700; }
+.menu-lvl2.solved { border-left-color: var(--green); }
+.menu-status-dot { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; }
+.menu-lvl2.solved .menu-status-dot { background: var(--green); }
+.teacher-actions { padding: 16px; border-top: 1px solid var(--line); background: #f8fafc; display: flex; flex-direction: column; gap: 8px; margin-top: auto;}
+
+/* ЦЕНТР */
+main.center { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.tabs { display: flex; background: #fff; border-bottom: 1px solid var(--line); padding: 0 24px; }
+.tab {
+    padding: 16px 24px; cursor: pointer; font-weight: 700; color: var(--muted);
+    border-bottom: 2px solid transparent; transition: 0.2s;
+}
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.content-area { flex: 1; overflow-y: auto; padding: 24px; }
+.panel {
+    background: #fff; border: 1px solid var(--line); border-radius: 16px;
+    padding: 32px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+    max-width: 900px; margin: 0 auto; min-height: 100%;
+}
+
+/* ТЕОРИЯ */
+.theory-content h3 { color: var(--primary); margin-top: 0; font-size: 24px; font-weight: 900; }
+.theory-content h4 { color: var(--ink); margin-top: 24px; font-size: 18px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+.theory-content p, .theory-content ul { line-height: 1.7; color: #334155; font-size: 16px; }
+.theory-content code { background: #f1f5f9; padding: 3px 8px; border-radius: 6px; font-family: 'Consolas', monospace; color: #0f172a; font-weight: 600; }
+.theory-content pre { background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 12px; overflow-x: auto; font-family: 'Consolas', monospace; margin: 20px 0; font-size: 15px; line-height: 1.5; }
+.theory-content pre code { background: transparent !important; padding: 0 !important; color: inherit !important; font-weight: normal; }
+.theory-content .highlight-box { background: #eff6ff; border-left: 4px solid var(--primary); padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 20px 0; font-size: 16px; }
+
+/* Автоматически добавляемая теория по функциям и методам текущего подраздела */
+.section-method-theory { margin-top: 30px; padding-top: 22px; border-top: 2px solid #e2e8f0; }
+.section-method-theory > h3 { margin: 0 0 10px; color: var(--primary); font-size: 22px; }
+.section-method-theory > p { color: #475569; line-height: 1.65; font-size: 15px; }
+.theory-reference-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.theory-reference-card { min-width: 0; border: 1px solid #dbe4f0; border-radius: 10px; padding: 12px; background: #fbfdff; }
+.theory-reference-card > div:first-child { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.theory-reference-card strong { color: #3730a3; font-size: 15px; overflow-wrap: anywhere; }
+.theory-reference-card > div:first-child > code { font: 10px/1.3 system-ui,sans-serif; color: #64748b; background: #f1f5f9; border-radius: 99px; padding: 4px 6px; }
+.theory-reference-card p { font-size: 13px; line-height: 1.5; color: #334155; margin: 8px 0; }
+.theory-reference-card .theory-reference-syntax code { display: block; white-space: pre-wrap; overflow-wrap: anywhere; background: #eef2ff; color: #1e1b4b; padding: 7px 8px; border-radius: 7px; font: 12px/1.45 Consolas,monospace; }
+.theory-reference-card pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #0f172a; color: #e2e8f0; padding: 10px; border-radius: 7px; font: 12px/1.45 Consolas,monospace; margin: 8px 0 0; }
+.theory-reference-card pre code { padding: 0; color: inherit; background: transparent; font-weight: 400; }
+@media(max-width:760px) { .theory-reference-grid { grid-template-columns: 1fr; } }
+
+/* ПРАКТИКА */
+.task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.task-title { font-size: 20px; font-weight: 800; margin: 0; }
+.task-desc { color: #475569; margin-bottom: 20px; line-height: 1.6; font-size: 16px; white-space: pre-line; }
+.code-editor {
+    display: block; width: 100%; height: auto; min-height: 190px;
+    background: #0f172a; color: #e2e8f0;
+    border: 1px solid #334155; padding: 16px; border-radius: 12px;
+    font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.5;
+    resize: none; overflow-y: hidden; overflow-x: auto; white-space: pre;
+    tab-size: 4; box-sizing: border-box;
+}
+.output-box {
+    background: #0f172a; color: #a78bfa; padding: 16px; border-radius: 12px;
+    font-family: 'Consolas', monospace; min-height: 50px; margin-top: 16px; border: 1px solid #334155; font-size: 15px; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.hint-box { background: #fffbeb; border: 1px solid #fcd34d; padding: 20px; border-radius: 12px; margin-top: 16px; color: #92400e; }
+.hint-box pre { background: #0f172a; color: #f8fafc; padding: 12px; border-radius: 8px; margin: 12px 0 0; font-family: 'Consolas', monospace; }
+.hint-reference-list { display: grid; gap: 9px; margin-top: 12px; }
+.hint-reference-item { background: #fff; border: 1px solid #fcd34d; border-radius: 9px; padding: 11px; }
+.hint-reference-item strong { display: block; color: #78350f; }
+.hint-reference-item code { display: block; margin: 5px 0; color: #1e1b4b; white-space: pre-wrap; overflow-wrap: anywhere; }
+.hint-reference-item p { margin: 4px 0 8px; font-size: 13px; line-height: 1.45; }
+.solution-box { background: #eff6ff; border: 1px solid #93c5fd; padding: 18px; border-radius: 12px; margin-top: 14px; color: #1e3a8a; }
+.solution-box pre { background: #0f172a; color: #f8fafc; padding: 12px; border-radius: 8px; margin: 10px 0 0; font-family: 'Consolas', monospace; white-space: pre-wrap; }
+
+/* ПРАВАЯ ПАНЕЛЬ */
+aside.right { width: 310px; flex: 0 0 310px; min-height: 0; overflow: hidden; background: #fff; border-left: 1px solid var(--line); display: flex; flex-direction: column; }
+.progress-header { flex: 0 0 auto; padding: 14px 16px; border-bottom: 1px solid var(--line); text-align: center; }
+.progress-header .circular-progress { width: 82px; height: 82px; margin-bottom: 8px; }
+.progress-header .circular-progress::before { inset: 7px; }
+.progress-header .progress-text { font-size: 20px; }
+.current-reference { flex: 0 0 auto; padding: 10px 11px 8px; border-bottom: 1px solid var(--line); background: #fbfdff; min-height: 0; }
+.current-reference-heading { margin: 0 0 8px; }
+.current-reference-heading h3 { margin: 0 0 4px; font-size: 13px; line-height: 1.3; color: #3730a3; }
+.current-reference-heading span { display: block; font-size: 11px; color: var(--muted); line-height: 1.35; }
+.current-reference-list { display: flex; flex-direction: column; gap: 6px; max-height: 210px; overflow: auto; padding: 1px 3px 2px 0; }
+.current-reference-item { display: block; width: 100%; padding: 7px 8px; text-align: left; cursor: pointer; border: 1px solid #dbe4f0; border-radius: 8px; background: #fff; color: var(--ink); }
+.current-reference-item:hover, .current-reference-item:focus-visible { border-color: var(--primary); background: #f5f7ff; outline: none; }
+.current-reference-item strong { display: block; font-size: 12px; color: #3730a3; margin-bottom: 3px; overflow-wrap: anywhere; }
+.current-reference-item code { display: block; font: 11px/1.4 Consolas,monospace; color: #1e293b; white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 3px; }
+.current-reference-item span { display: block; font-size: 11px; color: #475569; line-height: 1.35; }
+.current-reference-empty { font-size: 12px; line-height: 1.45; color: var(--muted); padding: 8px; border: 1px dashed #cbd5e1; border-radius: 8px; }
+.current-reference-footnote { margin: 7px 0 0; color: #64748b; font-size: 10px; line-height: 1.35; }
+
+.circular-progress {
+    width: 120px; height: 120px; border-radius: 50%;
+    background: conic-gradient(var(--green) calc(var(--percent) * 1%), #e2e8f0 0);
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+    position: relative; transition: background 0.5s ease;
+}
+.circular-progress::before { content: ''; position: absolute; inset: 10px; background: #fff; border-radius: 50%; }
+.progress-text { position: relative; z-index: 1; font-size: 24px; font-weight: 800; color: var(--ink); }
+.progress-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.task-list { flex: 1 1 auto; min-height: 0; padding: 10px 12px 16px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+.task-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px;
+    border: 1px solid var(--line); border-radius: 8px; cursor: pointer; transition: 0.2s;
+}
+.task-item:hover { border-color: #cbd5e1; background: #f8fafc; }
+.task-item.active { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+.task-item.solved { border-color: #a7f3d0; background: #ecfdf5; }
+.task-item.wrong { border-color: #fecaca; background: #fef2f2; }
+.task-item.hint { border-color: #fde68a; background: #fffbeb; }
+.task-icon { font-size: 16px; }
+.task-name { font-size: 13px; font-weight: 600; flex: 1; }
+
+/* КНОПКА И ОКНО СПРАВОЧНИКА */
+.reference-trigger { display:flex; width:calc(100% - 28px); margin:12px 14px 0; justify-content:center; white-space:normal; text-align:center; line-height:1.25; }
+.reference-overlay { position:fixed; inset:0; z-index:2200; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(15,23,42,.68); }
+.reference-overlay.open { display:flex; }
+.reference-dialog { width:min(1180px, 98vw); height:min(88vh, 900px); background:#fff; border-radius:18px; box-shadow:0 24px 80px rgba(0,0,0,.32); display:flex; flex-direction:column; overflow:hidden; }
+.reference-header { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; padding:22px 24px 16px; border-bottom:1px solid var(--line); }
+.reference-header h2 { margin:0 0 7px; font-size:22px; color:var(--ink); }
+.reference-header p { margin:0; color:var(--muted); line-height:1.5; }
+.reference-header p code { background:#eef2ff; padding:2px 5px; border-radius:4px; color:#4338ca; }
+.reference-controls { display:grid; grid-template-columns:minmax(200px, 1fr) minmax(220px, 320px); gap:10px; padding:14px 24px 8px; }
+.reference-controls input, .reference-controls select { min-width:0; }
+.reference-result-line { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:4px 24px 10px; color:var(--muted); font-size:12px; }
+.reference-results { flex:1; min-height:0; overflow:auto; padding:0 24px 20px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; align-content:start; }
+.reference-card { border:1px solid #dbe4f0; background:#fbfdff; border-radius:12px; padding:14px; min-width:0; }
+.reference-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:8px; }
+.reference-card h3 { font:800 16px/1.3 system-ui,sans-serif; margin:0; color:#3730a3; overflow-wrap:anywhere; }
+.reference-syntax { display:block; white-space:pre-wrap; overflow-wrap:anywhere; padding:7px 9px; border-radius:7px; background:#eef2ff; color:#1e1b4b; font:13px/1.45 Consolas,monospace; margin:6px 0 8px; }
+.reference-card p { color:#334155; font-size:13px; line-height:1.5; margin:0 0 8px; }
+.reference-example { white-space:pre-wrap; overflow-wrap:anywhere; background:#0f172a; color:#e2e8f0; padding:10px; border-radius:8px; font:12px/1.45 Consolas,monospace; margin:0 0 10px; }
+.reference-copy { padding:5px 9px; font-size:12px; }
+.reference-tag { font-size:10px; color:#64748b; background:#f1f5f9; border-radius:99px; padding:4px 7px; white-space:nowrap; }
+.reference-empty { grid-column:1/-1; padding:36px 16px; text-align:center; color:var(--muted); border:1px dashed #cbd5e1; border-radius:12px; }
+.reference-footer { display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; border-top:1px solid var(--line); padding:12px 24px; color:var(--muted); font-size:12px; background:#f8fafc; }
+.reference-footer a { color:#4f46e5; font-weight:700; }
+@media(max-width:760px) {
+  .reference-overlay { padding:0; }
+  .reference-dialog { height:100dvh; width:100vw; border-radius:0; }
+  .reference-header { padding:16px; }
+  .reference-header h2 { font-size:18px; }
+  .reference-controls { grid-template-columns:1fr; padding:12px 16px 8px; }
+  .reference-result-line { padding:4px 16px 10px; }
+  .reference-results { grid-template-columns:1fr; padding:0 16px 16px; }
+  .reference-footer { padding:10px 16px; }
+}
+
+/* РЕДАКТОР */
+.edit-form { background: #f8fafc; border: 1px solid var(--line); padding: 20px; border-radius: 12px; margin-top: 24px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-weight: 700; font-size: 13px; margin-bottom: 6px; color: var(--muted); }
+.form-control { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 14px; }
+textarea.form-control { font-family: 'Consolas', monospace; height: 120px; resize: vertical; }
+.action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+/* МОДАЛЬНОЕ ОКНО */
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+    opacity: 0; visibility: hidden; transition: 0.3s;
+}
+.modal-overlay.open { opacity: 1; visibility: visible; }
+.modal-content {
+    background: #fff; border-radius: 16px; padding: 24px; width: 100%; max-width: 400px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); transform: translateY(20px); transition: 0.3s;
+}
+.modal-overlay.open .modal-content { transform: translateY(0); }
+.modal-title { font-size: 18px; font-weight: 800; margin-top: 0; margin-bottom: 20px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+
+@keyframes flashGreen { 0%{background:#dcfce7;} 50%{background:#bbf7d0;} 100%{background:#f0fdf4;} }
+.flash-correct { animation: flashGreen 0.7s ease; }
+.hidden { display: none !important; }
+
+/* Адаптация учебного интерфейса под планшеты и телефоны */
+@media (max-width: 1180px) {
+  aside.left { width: 245px; }
+  aside.right { width: 265px; flex-basis: 265px; }
+  .content-area { padding: 18px; }
+  .panel { padding: 22px; }
+}
+@media (max-width: 860px) {
+  body { height: auto; min-height: 100vh; overflow: auto; }
+  header { flex-wrap: wrap; gap: 10px; padding: 12px; }
+  header > div:last-child { flex-wrap: wrap; }
+  .layout { display: flex; flex-direction: column; overflow: visible; }
+  aside.left { width: 100%; max-height: 310px; flex: 0 0 auto; }
+  aside.right { width: 100%; max-height: none; flex: 0 0 auto; overflow: visible; }
+  .current-reference-list { max-height: 210px; }
+  .task-list { max-height: 240px; flex: 0 0 auto; }
+  main.center { min-height: 680px; overflow: visible; }
+  .content-area { overflow: visible; padding: 12px; }
+  .panel { padding: 16px; }
+  .tabs { padding: 0 12px; }
+  .tab { padding: 14px 16px; }
+  .code-editor { min-height: 190px; }
+}
+
+</style>
+</head>
+<body>
+
+<header>
+    <div class="brand">✦ Тренажёр: Задание 5 ЕГЭ — приёмы и практика</div>
+    <div style="display:flex; gap:10px;">
+        <button id="reportBtn" class="btn green">📄 Отчёт учителю</button>
+        <button id="toggleModeBtn" class="btn yellow">Режим Учителя</button>
+        <button id="saveAppBtn" class="btn primary">💾 Сохранить</button>
+        <button id="clearProgressBtn" class="btn danger">Очистить прогресс</button>
+    </div>
+</header>
+
+<div class="layout">
+    <!-- ЛЕВОЕ МЕНЮ -->
+    <aside class="left" id="leftMenu">
+        <div class="sidebar-title">Оглавление</div>
+        <div id="menuContainer"></div>
+        <div id="teacherMenuActions" class="teacher-actions hidden">
+            <button class="btn primary" onclick="addLvl1()">+ Добавить Раздел (Lvl 1)</button>
+            <button class="btn primary" onclick="openModalLvl2()">+ Добавить Подраздел (Lvl 2)</button>
+        </div>
+    </aside>
+
+    <!-- ЦЕНТР -->
+    <main class="center">
+        <div class="tabs" id="tabsContainer">
+            <div class="tab active" onclick="switchTab('theory')">Теория</div>
+            <div class="tab" onclick="switchTab('practice')">Практика</div>
+        </div>
+        <div class="content-area">
+            <!-- ТЕОРИЯ -->
+            <div id="theoryView" class="panel">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 id="theoryTitle" style="margin-top:0;"></h2>
+                </div>
+                <div id="theoryContent" class="theory-content"></div>
+                
+                <div id="teacherTheoryEdit" class="hidden edit-form">
+                    <h3>Редактирование теории</h3>
+                    <div class="form-group">
+                        <label>Название подраздела</label>
+                        <input type="text" id="editSectionTitle" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Содержимое (HTML разрешен)</label>
+                        <textarea id="editSectionContent" class="form-control" style="height:300px;"></textarea>
+                    </div>
+                    <button class="btn primary" onclick="saveSectionEdit()">💾 Сохранить теорию</button>
+                </div>
+            </div>
+
+            <!-- ПРАКТИКА -->
+            <div id="practiceView" class="panel hidden">
+                <div id="taskContentArea"></div>
+                <div id="teacherAddTaskBtn" class="hidden" style="margin-top:32px; text-align:center; border-top:1px dashed var(--line); padding-top:24px;">
+                    <button class="btn primary" onclick="addNewTask()">+ Добавить карточку с заданием</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ПРАВАЯ ПАНЕЛЬ: прогресс, актуальный справочник и список карточек -->
+    <aside class="right">
+        <div class="progress-header">
+            <div class="circular-progress" id="progressCircle" style="--percent: 0;">
+                <div class="progress-text" id="progressPercentText">0%</div>
+            </div>
+            <div class="progress-label" id="progressLabelText">0 из 0 задач</div>
+        </div>
+        <section class="current-reference" id="currentReferencePanel" aria-label="Справочник текущего подраздела">
+            <div class="current-reference-heading">
+                <h3>📌 Методы текущего блока</h3>
+                <span id="currentReferenceTitle">Текущий подраздел</span>
+            </div>
+            <div id="currentReferenceList" class="current-reference-list"></div>
+            <p class="current-reference-footnote">Нажми на метод, чтобы открыть его полное описание и пример.</p>
+        </section>
+        <button id="openReferenceBtn" class="btn primary reference-trigger" type="button">📚 Все методы и функции</button>
+        <div class="task-list" id="taskListContainer"></div>
+    </aside>
+</div>
+
+<!-- СПРАВОЧНИК МЕТОДОВ И ФУНКЦИЙ PYTHON -->
+<div class="reference-overlay" id="referenceOverlay" aria-hidden="true">
+  <section class="reference-dialog" role="dialog" aria-modal="true" aria-labelledby="referenceTitle">
+    <div class="reference-header">
+      <div>
+        <h2 id="referenceTitle">📚 Все методы и функции Python</h2>
+        <p>Поиск по названию, синтаксису, описанию и примеру. У числовых типов меньше методов, поэтому для чисел добавлены арифметические операции, встроенные функции и модуль math. Выбери категорию или введи, например, <code>isdigit</code>, <code>append</code>, <code>bin</code>, <code>set</code>.</p>
+      </div>
+      <button id="closeReferenceBtn" class="btn" type="button" aria-label="Закрыть справочник">✕</button>
+    </div>
+    <div class="reference-controls">
+      <input id="referenceSearch" type="search" class="form-control" placeholder="🔎 Найти метод или функцию…" autocomplete="off">
+      <select id="referenceCategory" class="form-control" aria-label="Категория справочника">
+        <option value="">Все категории</option>
+      </select>
+    </div>
+    <div class="reference-result-line"><span id="referenceCount">0 элементов</span><span>Нажми «Копировать пример», чтобы перенести код</span></div>
+    <div id="referenceResults" class="reference-results"></div>
+    <div class="reference-footer">
+      <span>Встроенный справочник: основные методы типов Python и функции, полезные в задачах ЕГЭ.</span>
+      <a href="https://docs.python.org/3/library/stdtypes.html" target="_blank" rel="noopener">Официальная документация</a>
+    </div>
+  </section>
+</div>
+<script id="method-reference-data" type="application/json">
+
+
+[
+  {
+    "category": "Строки и списки",
+    "name": "count",
+    "syntax": "s.count(fragment) / a.count(value)",
+    "description": "Считает вхождения подстроки в строке или значения в списке.",
+    "example": "\"banana\".count(\"an\")  # 2\n[2, 1, 2].count(2)  # 2"
+  },
+  {
+    "category": "Строки · str",
+    "name": "endswith",
+    "syntax": "s.endswith(suffix[, start[, end]])",
+    "description": "Проверяет окончание строки; возвращает True или False.",
+    "example": "\"result.bin\".endswith(\".bin\")  # True"
+  },
+  {
+    "category": "Строки · str",
+    "name": "find",
+    "syntax": "s.find(sub[, start[, end]])",
+    "description": "Ищет первое вхождение; если не найдено, возвращает -1.",
+    "example": "\"banana\".find(\"na\")  # 2"
+  },
+  {
+    "category": "Строки · str",
+    "name": "isalnum",
+    "syntax": "s.isalnum()",
+    "description": "True, если строка непустая и все символы буквенно-цифровые.",
+    "example": "\"task25\".isalnum()  # True"
+  },
+  {
+    "category": "Строки · str",
+    "name": "isalpha",
+    "syntax": "s.isalpha()",
+    "description": "True, если строка непустая и состоит только из букв.",
+    "example": "\"Python\".isalpha()  # True"
+  },
+  {
+    "category": "Строки · str",
+    "name": "isdigit",
+    "syntax": "s.isdigit()",
+    "description": "True, если строка непустая и все символы — цифры по правилам Unicode. Не проверяет знак или точку.",
+    "example": "\"123\".isdigit()  # True; \"12.5\".isdigit()  # False"
+  },
+  {
+    "category": "Строки · str",
+    "name": "join",
+    "syntax": "separator.join(iterable)",
+    "description": "Склеивает строки из последовательности, вставляя между ними разделитель. Все элементы должны быть строками.",
+    "example": "\"-\".join([\"a\", \"b\", \"c\"])  # \"a-b-c\""
+  },
+  {
+    "category": "Строки · str",
+    "name": "lower",
+    "syntax": "s.lower()",
+    "description": "Переводит буквы в нижний регистр.",
+    "example": "\"PyThOn\".lower()  # \"python\""
+  },
+  {
+    "category": "Строки · str",
+    "name": "replace",
+    "syntax": "s.replace(old, new[, count])",
+    "description": "Заменяет вхождения подстроки; count ограничивает число замен.",
+    "example": "\"10101\".replace(\"1\", \"X\", 2)  # \"X0X01\""
+  },
+  {
+    "category": "Строки · str",
+    "name": "rfind",
+    "syntax": "s.rfind(sub[, start[, end]])",
+    "description": "Ищет последнее вхождение; возвращает -1, если не найдено.",
+    "example": "\"banana\".rfind(\"na\")  # 4"
+  },
+  {
+    "category": "Строки · str",
+    "name": "split",
+    "syntax": "s.split(sep=None, maxsplit=-1)",
+    "description": "Разбивает строку на список частей. Без sep делит по группам пробелов.",
+    "example": "\"a,b,c\".split(\",\")  # [\"a\", \"b\", \"c\"]"
+  },
+  {
+    "category": "Строки · str",
+    "name": "startswith",
+    "syntax": "s.startswith(prefix[, start[, end]])",
+    "description": "Проверяет начало строки; можно передать кортеж возможных префиксов.",
+    "example": "\"Python\".startswith(\"Py\")  # True"
+  },
+  {
+    "category": "Строки · str",
+    "name": "strip",
+    "syntax": "s.strip([chars])",
+    "description": "Удаляет пробельные символы с обоих краёв. chars — набор символов для удаления.",
+    "example": "\"  0012  \".strip()  # \"0012\""
+  },
+  {
+    "category": "Строки · str",
+    "name": "upper",
+    "syntax": "s.upper()",
+    "description": "Переводит буквы в верхний регистр.",
+    "example": "\"python\".upper()  # \"PYTHON\""
+  },
+  {
+    "category": "Строки · str",
+    "name": "zfill",
+    "syntax": "s.zfill(width)",
+    "description": "Дополняет строку слева нулями до заданной длины; учитывает знак + или -.",
+    "example": "\"101\".zfill(8)  # \"00000101\""
+  },
+  {
+    "category": "Списки · list",
+    "name": "append",
+    "syntax": "a.append(x)",
+    "description": "Добавляет один элемент в конец исходного списка. Возвращает None.",
+    "example": "a = [1, 2]; a.append(3)  # [1, 2, 3]"
+  },
+  {
+    "category": "Списки · list",
+    "name": "clear",
+    "syntax": "a.clear()",
+    "description": "Удаляет все элементы списка.",
+    "example": "a = [1, 2]; a.clear()  # []"
+  },
+  {
+    "category": "Списки · list",
+    "name": "copy",
+    "syntax": "a.copy()",
+    "description": "Создаёт поверхностную копию списка.",
+    "example": "a = [1, 2]; b = a.copy()"
+  },
+  {
+    "category": "Списки · list",
+    "name": "extend",
+    "syntax": "a.extend(iterable)",
+    "description": "Добавляет в конец все элементы итерируемого объекта; не создаёт вложенный список.",
+    "example": "a = [1]; a.extend([2, 3])  # [1, 2, 3]"
+  },
+  {
+    "category": "Списки · list",
+    "name": "index",
+    "syntax": "a.index(x[, start[, end]])",
+    "description": "Возвращает индекс первого элемента со значением x; если его нет — ошибка.",
+    "example": "[4, 7, 7].index(7)  # 1"
+  },
+  {
+    "category": "Списки · list",
+    "name": "insert",
+    "syntax": "a.insert(i, x)",
+    "description": "Вставляет элемент перед индексом i.",
+    "example": "a = [1, 3]; a.insert(1, 2)  # [1, 2, 3]"
+  },
+  {
+    "category": "Списки · list",
+    "name": "pop",
+    "syntax": "a.pop([i])",
+    "description": "Удаляет и возвращает элемент по индексу; без индекса — последний.",
+    "example": "a = [5, 6]; x = a.pop()  # x=6, a=[5]"
+  },
+  {
+    "category": "Списки · list",
+    "name": "remove",
+    "syntax": "a.remove(x)",
+    "description": "Удаляет первое вхождение значения x; если нет — ошибка.",
+    "example": "a = [2, 3, 2]; a.remove(2)  # [3, 2]"
+  },
+  {
+    "category": "Списки · list",
+    "name": "reverse",
+    "syntax": "a.reverse()",
+    "description": "Переворачивает список на месте; возвращает None.",
+    "example": "a = [1, 2, 3]; a.reverse()  # [3, 2, 1]"
+  },
+  {
+    "category": "Списки · list",
+    "name": "sort",
+    "syntax": "a.sort(key=None, reverse=False)",
+    "description": "Сортирует список на месте. Для нового списка используй sorted(a).",
+    "example": "a = [3, 1, 2]; a.sort()  # [1, 2, 3]"
+  },
+  {
+    "category": "Множества · set",
+    "name": "add",
+    "syntax": "s.add(x)",
+    "description": "Добавляет элемент; повтор не создаёт дубликат.",
+    "example": "s = {1, 2}; s.add(2)  # {1, 2}"
+  },
+  {
+    "category": "Числа и math",
+    "name": "int",
+    "syntax": "int(x=0, base=10)",
+    "description": "Преобразует значение в целое число; base задаёт основание для строк.",
+    "example": "int(\"101\", 2)  # 5"
+  },
+  {
+    "category": "Числа и math",
+    "name": "bin",
+    "syntax": "bin(n)",
+    "description": "Строка с двоичной записью, начинающаяся с 0b.",
+    "example": "bin(13)  # \"0b1101\""
+  },
+  {
+    "category": "Числа и math",
+    "name": "oct",
+    "syntax": "oct(n)",
+    "description": "Строка с восьмеричной записью, начинающаяся с 0o.",
+    "example": "oct(8)  # \"0o10\""
+  },
+  {
+    "category": "Числа и math",
+    "name": "hex",
+    "syntax": "hex(n)",
+    "description": "Строка с шестнадцатеричной записью, начинающаяся с 0x.",
+    "example": "hex(255)  # \"0xff\""
+  },
+  {
+    "category": "Числа и math",
+    "name": "int(s, base)",
+    "syntax": "int(s, base)",
+    "description": "Преобразует запись числа из указанной системы счисления в десятичное целое.",
+    "example": "int(\"1111\", 2)  # 15"
+  },
+  {
+    "category": "Числа и math",
+    "name": "math.prod",
+    "syntax": "math.prod(iterable, start=1)",
+    "description": "Перемножает элементы итерируемого объекта.",
+    "example": "import math\nmath.prod([2, 3, 4])  # 24"
+  },
+  {
+    "category": "Встроенные функции",
+    "name": "len",
+    "syntax": "len(x)",
+    "description": "Количество элементов/символов.",
+    "example": "len(\"10101\")  # 5"
+  },
+  {
+    "category": "Встроенные функции",
+    "name": "sum",
+    "syntax": "sum(iterable[, start])",
+    "description": "Сумма элементов.",
+    "example": "sum([1, 2, 3])  # 6"
+  },
+  {
+    "category": "Встроенные функции",
+    "name": "min",
+    "syntax": "min(iterable) / min(a, b, ...)",
+    "description": "Минимальный элемент или аргумент.",
+    "example": "min([8, 3, 5])  # 3"
+  },
+  {
+    "category": "Встроенные функции",
+    "name": "max",
+    "syntax": "max(iterable) / max(a, b, ...)",
+    "description": "Максимальный элемент или аргумент.",
+    "example": "max(\"1029\")  # \"9\""
+  },
+  {
+    "category": "Встроенные функции",
+    "name": "sorted",
+    "syntax": "sorted(iterable, key=None, reverse=False)",
+    "description": "Возвращает новый отсортированный список, не меняя исходный объект.",
+    "example": "sorted(\"3102\")  # [\"0\", \"1\", \"2\", \"3\"]"
+  },
+  {
+    "category": "Встроенные функции",
+    "name": "range",
+    "syntax": "range(stop) / range(start, stop, step)",
+    "description": "Последовательность целых чисел; правую границу stop не включает.",
+    "example": "list(range(2, 8, 2))  # [2, 4, 6]"
+  },
+  {
+    "category": "Встроенные функции",
+    "name": "set",
+    "syntax": "set(iterable=())",
+    "description": "Создаёт множество уникальных элементов.",
+    "example": "set(\"abba\")  # {\"a\", \"b\"}"
+  },
+  {
+    "category": "Встроенные функции",
+    "name": "str",
+    "syntax": "str(x)",
+    "description": "Преобразует объект в строковое представление.",
+    "example": "str(42)  # \"42\""
+  },
+  {
+    "category": "Встроенные функции",
+    "name": "print",
+    "syntax": "print(*objects, sep=\" \", end=\"\\n\")",
+    "description": "Выводит значения; sep задаёт разделитель, end — окончание вывода.",
+    "example": "print(1, 2, 3, sep=\"-\")  # 1-2-3"
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Индекс",
+    "syntax": "s[i] / a[i]",
+    "description": "Получает элемент по индексу; нумерация начинается с 0.",
+    "example": "\"Python\"[0]  # \"P\""
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Срез",
+    "syntax": "s[start:stop:step]",
+    "description": "Берёт часть последовательности; stop не включается.",
+    "example": "\"012345\"[1:5:2]  # \"13\""
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Отрицательный индекс",
+    "syntax": "s[-1]",
+    "description": "Обращается к элементам с конца; -1 — последний.",
+    "example": "\"Python\"[-1]  # \"n\""
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Проверка in",
+    "syntax": "x in sequence",
+    "description": "Проверяет принадлежность элемента последовательности или множества.",
+    "example": "\"py\" in \"python\"  # True"
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Конкатенация +",
+    "syntax": "a + b",
+    "description": "Для строк и списков соединяет последовательности; для чисел складывает.",
+    "example": "\"10\" + \"2\"  # \"102\""
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Повторение *",
+    "syntax": "sequence * n",
+    "description": "Повторяет строку или список n раз.",
+    "example": "\"01\" * 3  # \"010101\""
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Условие if/else",
+    "syntax": "if condition: ... else: ...",
+    "description": "Выбирает действие в зависимости от условия.",
+    "example": "if n % 2: print(\"нечётное\")\nelse: print(\"чётное\")"
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Цикл for",
+    "syntax": "for item in iterable:",
+    "description": "Последовательно перебирает элементы.",
+    "example": "for c in \"101\":\n    print(c)"
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Генераторное выражение",
+    "syntax": "(expression for x in iterable)",
+    "description": "Создаёт вычисляемую по элементам последовательность; часто передаётся в sum/prod.",
+    "example": "sum(int(c) for c in \"123\")  # 6"
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Списковое включение",
+    "syntax": "[expression for x in iterable if condition]",
+    "description": "Создаёт список по правилу, при необходимости фильтруя элементы.",
+    "example": "[int(c) for c in \"123\" if int(c) % 2]  # [1, 3]"
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Разворот строкового числа",
+    "syntax": "str(n)[::-1]",
+    "description": "Переворачивает запись числа; для ведущих нулей результат остаётся строкой.",
+    "example": "str(120)[::-1]  # \"021\""
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Список уникальных значений",
+    "syntax": "sorted(set(iterable))",
+    "description": "Удаляет повторы и возвращает элементы в отсортированном списке.",
+    "example": "sorted(set([2, 1, 2]))  # [1, 2]"
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Проверка чётности",
+    "syntax": "n % 2 == 0",
+    "description": "Число чётное, если остаток от деления на 2 равен 0.",
+    "example": "8 % 2 == 0  # True"
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Деление нацело",
+    "syntax": "a // b",
+    "description": "Целая часть деления с округлением вниз.",
+    "example": "17 // 5  # 3"
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Остаток",
+    "syntax": "a % b",
+    "description": "Остаток от деления; часто нужен для чётности и циклических операций.",
+    "example": "17 % 5  # 2"
+  },
+  {
+    "category": "Общие операции и конструкции",
+    "name": "Проверка пустой коллекции",
+    "syntax": "if not items:",
+    "description": "Пустые строки, списки, множества и словари ведут себя как False.",
+    "example": "items = []\nif not items:\n    print(\"пусто\")"
+  }
+]
+
+
+</script>
+
+<!-- МОДАЛЬНОЕ ОКНО ДЛЯ ДОБАВЛЕНИЯ LVL 2 -->
+<div class="modal-overlay" id="modalLvl2">
+    <div class="modal-content">
+        <h3 class="modal-title">Добавление подраздела (Lvl 2)</h3>
+        <div class="form-group">
+            <label>Название подраздела</label>
+            <input type="text" id="newLvl2Title" class="form-control" placeholder="Например: Срезы">
+        </div>
+        <div class="form-group">
+            <label>Родительский раздел (Lvl 1)</label>
+            <select id="newLvl2Parent" class="form-control"></select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModalLvl2()">Отмена</button>
+            <button class="btn primary" onclick="confirmAddLvl2()">Добавить</button>
+        </div>
+    </div>
+</div>
+
+<!-- ДАННЫЕ -->
+<script id="data-store" type="application/json">
+
+
+{
+  "course": [
+    {
+      "id": "sec_1",
+      "title": "1. Числа и системы счисления",
+      "children": [
+        {
+          "id": "sub_1_1",
+          "title": "Типы данных: число и строка",
+          "theory": "<h3>🔤 Число или строка?</h3><p>В задании № 5 число часто превращают в текст, потому что запись можно разрезать на символы, перевернуть или заменить в ней цифры. Число удобно считать, а строку — редактировать.</p><h4>Две разные операции</h4><pre><code>n = 42\ns = str(n)       # &#x27;42&#x27;\nx = int(s)        # 42</code></pre><ul><li><code>str(x)</code> превращает значение в строку.</li><li><code>int(s)</code> превращает подходящую десятичную строку в целое число.</li><li><code>len(s)</code> считает символы, а не числовое значение.</li></ul><div class='highlight-box'><b>Важно:</b> Строки <code>\"007\"</code> и <code>\"7\"</code> различаются, хотя обе можно преобразовать в число 7. Не убирай ведущие нули, пока они важны как разряды записи.</div><h4>Источники для углубления</h4><ul><li><a href=\"https://docs.python.org/3/tutorial/introduction.html\" target=\"_blank\" rel=\"noopener\">Официальное руководство Python: числа, строки, базовые операции</a>.</li><li><a href=\"https://docs.python.org/3/library/stdtypes.html\" target=\"_blank\" rel=\"noopener\">Официальный справочник встроенных типов и методов строк</a>.</li><li><a href=\"https://docs.python.org/3/tutorial/datastructures.html\" target=\"_blank\" rel=\"noopener\">Официальное руководство: списки, генераторные выражения и структуры данных</a>.</li><li><a href=\"https://egeniy.ru/inf/ege/5/\" target=\"_blank\" rel=\"noopener\">Разбор подходов к заданию № 5 ЕГЭ по информатике</a>.</li><li><a href=\"https://learnpython.org/en/Welcome\" target=\"_blank\" rel=\"noopener\">Интерактивный самоучитель Python</a>.</li></ul>",
+          "tasks": [
+            {
+              "title": "Приписать знак",
+              "desc": "Дано число <code>n = 42</code>. Выведи строку <code>42!</code>. Методы/функции на выбор: <code>str</code>, <code>int</code>, <code>+</code>.",
+              "template": "n = 42\nprint(     )",
+              "hint": "n = 42\nprint(str(n) + '!')",
+              "answer": "42!",
+              "id": "ege5_t_1_1_1"
+            },
+            {
+              "title": "Преобразовать строку в число",
+              "desc": "Дана строка <code>s = \"123\"</code>. Выведи число, увеличенное на 7.",
+              "template": "s = \"123\"\nprint(     )",
+              "hint": "s = '123'\nprint(int(s) + 7)",
+              "answer": "130",
+              "id": "ege5_t_1_1_2"
+            },
+            {
+              "title": "Количество символов",
+              "desc": "Дана запись числа <code>20261028</code>. Выведи количество цифр. Используй <code>str</code> и <code>len</code>.",
+              "template": "n = 20261028\nprint(     )",
+              "hint": "n = 20261028\nprint(len(str(n)))",
+              "answer": "8",
+              "id": "ege5_t_1_1_3"
+            },
+            {
+              "title": "Сложить строковые цифры нельзя",
+              "desc": "Даны строки <code>a = \"12\"</code> и <code>b = \"3\"</code>. Выведи их сумму как чисел, а не как текст.",
+              "template": "a = \"12\"\nb = \"3\"\nprint(     )",
+              "hint": "a = '12'\nb = '3'\nprint(int(a) + int(b))",
+              "answer": "15",
+              "id": "ege5_t_1_1_4"
+            }
+          ]
+        },
+        {
+          "id": "sub_1_2",
+          "title": "Двоичная, восьмеричная и шестнадцатеричная записи",
+          "theory": "<h3>🔢 Перевод числа в систему счисления</h3><p>Python хранит целые числа как числа, но для обработки разрядов мы получаем строку записи числа.</p><h4>Функции записи</h4><pre><code>bin(13)       # &#x27;0b1101&#x27;\nbin(13)[2:]   # &#x27;1101&#x27;\noct(83)[2:]   # &#x27;123&#x27;\nhex(255)[2:]  # &#x27;ff&#x27;</code></pre><h4>Обратный перевод</h4><pre><code>int(&#x27;1101&#x27;, 2)   # 13\nint(&#x27;123&#x27;, 8)    # 83\nint(&#x27;ff&#x27;, 16)    # 255</code></pre><div class='highlight-box'><b>Важно:</b> Параметр основания в <code>int(s, base)</code> обязателен для записи, которая не является десятичной. В шестнадцатеричной системе используются цифры <code>0–9</code> и буквы <code>a–f</code>.</div>",
+          "tasks": [
+            {
+              "title": "Получить двоичную запись",
+              "desc": "Для <code>n = 13</code> выведи двоичную запись без приставки <code>0b</code>.",
+              "template": "n = 13\nprint(     )",
+              "hint": "n = 13\nprint(bin(n)[2:])",
+              "answer": "1101",
+              "id": "ege5_t_1_2_1"
+            },
+            {
+              "title": "Получить восьмеричную запись",
+              "desc": "Для <code>n = 83</code> выведи восьмеричную запись без приставки.",
+              "template": "n = 83\nprint(     )",
+              "hint": "n = 83\nprint(oct(n)[2:])",
+              "answer": "123",
+              "id": "ege5_t_1_2_2"
+            },
+            {
+              "title": "Получить шестнадцатеричную запись",
+              "desc": "Для <code>n = 255</code> выведи шестнадцатеричную запись в нижнем регистре.",
+              "template": "n = 255\nprint(     )",
+              "hint": "n = 255\nprint(hex(n)[2:])",
+              "answer": "ff",
+              "id": "ege5_t_1_2_3"
+            },
+            {
+              "title": "Из двоичной записи в число",
+              "desc": "Переведи строку <code>s = \"110101\"</code> из двоичной системы в десятичную.",
+              "template": "s = \"110101\"\nprint(     )",
+              "hint": "s = '110101'\nprint(int(s, 2))",
+              "answer": "53",
+              "id": "ege5_t_1_2_4"
+            },
+            {
+              "title": "Из шестнадцатеричной записи в число",
+              "desc": "Переведи <code>\"2f\"</code> из шестнадцатеричной системы в десятичную.",
+              "template": "s = \"2f\"\nprint(     )",
+              "hint": "s = '2f'\nprint(int(s, 16))",
+              "answer": "47",
+              "id": "ege5_t_1_2_5"
+            }
+          ]
+        },
+        {
+          "id": "sub_1_3",
+          "title": "Фиксированная длина и ведущие нули",
+          "theory": "<h3>🧱 Запись заданной длины</h3><p>Иногда требуется получить двоичную запись ровно из 8 или 16 символов либо шестнадцатеричную — из 8 символов. Для этого можно дополнить строку нулями слева.</p><pre><code>bin(13)[2:].zfill(8)   # &#x27;00001101&#x27;\nhex(31)[2:].zfill(4)   # &#x27;001f&#x27;\n&#x27;9&#x27;.zfill(4)           # &#x27;0009&#x27;</code></pre><ul><li><code>zfill(k)</code> возвращает новую строку не короче <code>k</code>.</li><li>Если запись длиннее указанного размера, она не обрезается.</li><li>Не используй <code>int(s)</code>, пока ведущие нули должны остаться видимыми.</li></ul><h4>Не перепутай строку и число при работе с основанием</h4><pre><code>sn = bin(n)[2:].zfill(16)  # 16 бит двоичной записи\nn2 = hex(n)[2:].zfill(8)  # 8 символов шестнадцатеричной записи\nr = int(sn, 2)             # перевод двоичной строки в число</code></pre><div class='highlight-box'>Функция <code>bin()</code> принимает целое число, а не строку. Для обратного перевода обязательно укажи основание в <code>int(sn, 2)</code>. Ведущие нули нельзя удалять, пока нужно сохранить фиксированную длину записи.</div>",
+          "tasks": [
+            {
+              "title": "Восемь двоичных разрядов",
+              "desc": "Выведи двоичную запись числа 13 как строку длины 8. Методы/функции: <code>bin</code>, срез, <code>zfill</code>.",
+              "template": "n = 13\nprint(     )",
+              "hint": "n = 13\nprint(bin(n)[2:].zfill(8))",
+              "answer": "00001101",
+              "id": "ege5_t_1_3_1"
+            },
+            {
+              "title": "Четыре шестнадцатеричных разряда",
+              "desc": "Выведи запись числа 31 в шестнадцатеричной системе длиной 4 символа.",
+              "template": "n = 31\nprint(     )",
+              "hint": "n = 31\nprint(hex(n)[2:].zfill(4))",
+              "answer": "001f",
+              "id": "ege5_t_1_3_2"
+            },
+            {
+              "title": "Сохранить нули строки",
+              "desc": "Дополнить строку <code>\"007\"</code> слева до длины 5.",
+              "template": "s = \"007\"\nprint(     )",
+              "hint": "s = '007'\nprint(s.zfill(5))",
+              "answer": "00007",
+              "id": "ege5_t_1_3_3"
+            },
+            {
+              "title": "Проверить длину",
+              "desc": "Сформируй восьмибитную двоичную запись числа 5 и выведи её длину.",
+              "template": "n = 5\ns =      \nprint(len(s))",
+              "hint": "n = 5\ns = bin(n)[2:].zfill(8)\nprint(len(s))",
+              "answer": "8",
+              "id": "ege5_t_1_3_4"
+            }
+          ]
+        },
+        {
+          "id": "sub_1_4",
+          "title": "Остаток, деление нацело и условия",
+          "theory": "<h3>➗ Арифметика, которая нужна в алгоритмах</h3><pre><code>n % 2     # остаток: проверяем чётность\nn % 6     # остаток от деления на 6\nn // 6    # целочисленное деление\nn -= 1    # то же, что n = n - 1</code></pre><ul><li><code>n % k == 0</code> означает, что <code>n</code> делится на <code>k</code> без остатка.</li><li><code>//</code> даёт целую часть частного.</li><li>В ветке <code>if/else</code> выполняется только одна из двух частей.</li></ul><div class='highlight-box'><b>Важно:</b> Оператор <code>/</code> возвращает обычное деление (часто число с точкой), а <code>//</code> используется, когда в условии сказано «делится нацело».</div>",
+          "tasks": [
+            {
+              "title": "Проверить делимость на 6",
+              "desc": "Если <code>n</code> делится на 6, раздели его на 6; иначе вычти 1. Для <code>n = 18</code> выведи результат.",
+              "template": "n = 18\nif      :\n    n //= 6\nelse:\n    n -= 1\nprint(n)",
+              "hint": "n = 18\nif n % 6 == 0:\n    n //= 6\nelse:\n    n -= 1\nprint(n)",
+              "answer": "3",
+              "id": "ege5_t_1_4_1"
+            },
+            {
+              "title": "Условие чётности",
+              "desc": "Если <code>n</code> чётное, раздели на 2 нацело, иначе прибавь 3. Для <code>n = 17</code>.",
+              "template": "n = 17\nif      :\n    n //= 2\nelse:\n    n += 3\nprint(n)",
+              "hint": "n = 17\nif n % 2 == 0:\n    n //= 2\nelse:\n    n += 3\nprint(n)",
+              "answer": "20",
+              "id": "ege5_t_1_4_2"
+            },
+            {
+              "title": "Последняя цифра и оставшаяся часть",
+              "desc": "Для <code>n = 123</code> выведи последнюю цифру, затем число без этой цифры. Методы/операторы: <code>%</code>, <code>//</code>.",
+              "template": "n = 123\nprint(     ,      )",
+              "hint": "n = 123\nprint(n % 10, n // 10)",
+              "answer": "3 12",
+              "id": "ege5_t_1_4_3"
+            },
+            {
+              "title": "Число больше порога",
+              "desc": "Если <code>n</code> больше 100, выведи <code>\"BIG\"</code>, иначе <code>\"SMALL\"</code>.",
+              "template": "n = 75\nif      :\n    print(\"BIG\")\nelse:\n    print(\"SMALL\")",
+              "hint": "n = 75\nif n > 100:\n    print(\"BIG\")\nelse:\n    print(\"SMALL\")",
+              "answer": "SMALL",
+              "id": "ege5_t_1_4_4"
+            },
+            {
+              "title": "Применение: добавить бит чётности",
+              "desc": "Если в двоичной записи числа 13 количество единиц нечётное, добавь справа 1, иначе 0; выведи результат как десятичное число.",
+              "template": "n = 13\nsn = bin(n)[2:]\nbit =      \nsn += str(bit)\nprint(     )",
+              "hint": "n = 13\nsn = bin(n)[2:]\nbit = sn.count('1') % 2\nsn += str(bit)\nprint(int(sn, 2))",
+              "answer": "27",
+              "id": "ege5_t_5_6_3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sec_2",
+      "title": "2. Строки: индексы и методы",
+      "children": [
+        {
+          "id": "sub_2_1",
+          "title": "Индексы и длина строки",
+          "theory": "<h3>🔎 Индексы символов</h3><p>Индексация начинается с нуля. Для строки <code>s = \"Python\"</code> индекс 0 указывает на <code>P</code>, а индекс -1 — на последний символ <code>n</code>.</p><pre><code>s = &#x27;Python&#x27;\ns[0]    # &#x27;P&#x27;\ns[2]    # &#x27;t&#x27;\ns[-1]   # &#x27;n&#x27;\nlen(s)  # 6</code></pre><ul><li>Индекс выбирает один символ.</li><li>Отрицательные индексы отсчитывают от конца: <code>-1</code> — последний, <code>-2</code> — предпоследний.</li><li>Индекс вне диапазона вызовет ошибку <code>IndexError</code>; срезы ведут себя иначе.</li></ul>",
+          "tasks": [
+            {
+              "title": "Первый символ",
+              "desc": "Выведи первый символ строки <code>s = \"Python\"</code>.",
+              "template": "s = \"Python\"\nprint(     )",
+              "hint": "s = 'Python'\nprint(s[0])",
+              "answer": "P",
+              "id": "ege5_t_2_1_1"
+            },
+            {
+              "title": "Последний символ",
+              "desc": "Выведи последний символ через отрицательный индекс.",
+              "template": "s = \"Python\"\nprint(     )",
+              "hint": "s = 'Python'\nprint(s[-1])",
+              "answer": "n",
+              "id": "ege5_t_2_1_2"
+            },
+            {
+              "title": "Предпоследний символ",
+              "desc": "Выведи предпоследний символ строки <code>\"123456\"</code>.",
+              "template": "s = \"123456\"\nprint(     )",
+              "hint": "s = '123456'\nprint(s[-2])",
+              "answer": "5",
+              "id": "ege5_t_2_1_3"
+            },
+            {
+              "title": "Длина строки",
+              "desc": "Выведи длину строки <code>\"010101\"</code>.",
+              "template": "s = \"010101\"\nprint(     )",
+              "hint": "s = '010101'\nprint(len(s))",
+              "answer": "6",
+              "id": "ege5_t_2_1_4"
+            }
+          ]
+        },
+        {
+          "id": "sub_2_2",
+          "title": "Срезы и шаг",
+          "theory": "<h3>✂️ Срезы строк</h3><p>Срез имеет вид <code>s[start:stop:step]</code>. Начало включается, конец не включается; если шаг не указан, он равен 1.</p><pre><code>s = &#x27;0123456789&#x27;\ns[:3]      # &#x27;012&#x27;\ns[3:]      # &#x27;3456789&#x27;\ns[2:7]     # &#x27;23456&#x27;\ns[::2]     # &#x27;02468&#x27;\ns[1::2]    # &#x27;13579&#x27;\ns[::-1]    # &#x27;9876543210&#x27;</code></pre><ul><li><code>s[-3:]</code> — последние три символа.</li><li><code>s[:-1]</code> — всё, кроме последнего символа.</li><li>Срезы не меняют исходную строку, а создают новую.</li></ul>",
+          "tasks": [
+            {
+              "title": "Первые три символа",
+              "desc": "Выведи первые три символа строки <code>\"abcdef\"</code>.",
+              "template": "s = \"abcdef\"\nprint(     )",
+              "hint": "s = 'abcdef'\nprint(s[:3])",
+              "answer": "abc",
+              "id": "ege5_t_2_2_1"
+            },
+            {
+              "title": "С 4-го символа до конца",
+              "desc": "Выведи строку с индекса 3 до конца.",
+              "template": "s = \"abcdef\"\nprint(     )",
+              "hint": "s = 'abcdef'\nprint(s[3:])",
+              "answer": "def",
+              "id": "ege5_t_2_2_2"
+            },
+            {
+              "title": "Каждый второй символ",
+              "desc": "Выведи символы с чётными индексами строки <code>\"0123456789\"</code>.",
+              "template": "s = \"0123456789\"\nprint(     )",
+              "hint": "s = '0123456789'\nprint(s[::2])",
+              "answer": "02468",
+              "id": "ege5_t_2_2_3"
+            },
+            {
+              "title": "Последние три символа",
+              "desc": "Выведи последние три символа строки <code>\"123456789\"</code>.",
+              "template": "s = \"123456789\"\nprint(     )",
+              "hint": "s = '123456789'\nprint(s[-3:])",
+              "answer": "789",
+              "id": "ege5_t_2_2_4"
+            },
+            {
+              "title": "Перевернуть строку",
+              "desc": "Выведи <code>\"Python\"</code> справа налево. Используй срез с отрицательным шагом.",
+              "template": "s = \"Python\"\nprint(     )",
+              "hint": "s = 'Python'\nprint(s[::-1])",
+              "answer": "nohtyP",
+              "id": "ege5_t_2_2_5"
+            }
+          ]
+        },
+        {
+          "id": "sub_2_3",
+          "title": "Сборка строк: +, *, f-строка, join",
+          "theory": "<h3>🧩 Собираем новую строку</h3><p>Строки можно соединять, повторять и собирать из элементов списка.</p><pre><code>&#x27;ab&#x27; + &#x27;cd&#x27;        # &#x27;abcd&#x27;\n&#x27;01&#x27; * 3           # &#x27;010101&#x27;\nf&#x27;Ответ: {42}&#x27;     # &#x27;Ответ: 42&#x27;\n&#x27;-&#x27;.join([&#x27;a&#x27;,&#x27;b&#x27;,&#x27;c&#x27;])  # &#x27;a-b-c&#x27;</code></pre><ul><li><code>join</code> — метод строки-разделителя; каждый элемент последовательности должен быть строкой.</li><li>Чтобы соединить числа, сначала преобразуй каждый элемент через <code>str</code>.</li><li>Конкатенация создаёт новую строку: исходные строки не изменяются.</li></ul>",
+          "tasks": [
+            {
+              "title": "Соединить две строки",
+              "desc": "Соедини <code>a = \"01\"</code> и <code>b = \"10\"</code> без разделителя.",
+              "template": "a = \"01\"\nb = \"10\"\nprint(     )",
+              "hint": "a = '01'\nb = '10'\nprint(a + b)",
+              "answer": "0110",
+              "id": "ege5_t_2_3_1"
+            },
+            {
+              "title": "Повторить запись",
+              "desc": "Получи строку <code>\"101010\"</code> из <code>\"10\"</code> и оператора повторения.",
+              "template": "s = \"10\"\nprint(     )",
+              "hint": "s = '10'\nprint(s * 3)",
+              "answer": "101010",
+              "id": "ege5_t_2_3_2"
+            },
+            {
+              "title": "Собрать список через дефис",
+              "desc": "Собери строку из <code>[\"a\", \"b\", \"c\"]</code> с разделителем <code>-</code>.",
+              "template": "parts = [\"a\", \"b\", \"c\"]\nprint(     )",
+              "hint": "parts = ['a','b','c']\nprint('-'.join(parts))",
+              "answer": "a-b-c",
+              "id": "ege5_t_2_3_3"
+            },
+            {
+              "title": "Собрать текст с числом",
+              "desc": "Для <code>n = 16</code> выведи <code>n=16</code> с помощью f-строки.",
+              "template": "n = 16\nprint(     )",
+              "hint": "n = 16\nprint(f\"n={n}\")",
+              "answer": "n=16",
+              "id": "ege5_t_2_3_4"
+            },
+            {
+              "title": "Соединить цифры списка",
+              "desc": "Дан список <code>digits = [1, 2, 3]</code>. Выведи строку <code>123</code>. Методы: <code>join</code>, <code>str</code>.",
+              "template": "digits = [1, 2, 3]\nprint(     )",
+              "hint": "digits = [1,2,3]\nprint(''.join(str(x) for x in digits))",
+              "answer": "123",
+              "id": "ege5_t_2_3_5"
+            }
+          ]
+        },
+        {
+          "id": "sub_2_4",
+          "title": "Поиск и подсчёт подстрок",
+          "theory": "<h3>🧭 Найти символ или проверить фрагмент</h3><pre><code>s.count(&#x27;1&#x27;)       # сколько единиц\ns.find(&#x27;101&#x27;)      # индекс первого совпадения или -1\ns.index(&#x27;101&#x27;)     # индекс, но ошибка, если нет\ns.startswith(&#x27;10&#x27;) # начинается ли с &#x27;10&#x27;\ns.endswith(&#x27;01&#x27;)   # заканчивается ли на &#x27;01&#x27;\n&#x27;11&#x27; in s           # есть ли фрагмент</code></pre><ul><li><code>count</code> возвращает количество неперекрывающихся вхождений.</li><li><code>find</code> безопаснее <code>index</code>, если фрагмент может отсутствовать.</li><li><code>startswith</code> и <code>endswith</code> возвращают <code>True</code> или <code>False</code>.</li></ul>",
+          "tasks": [
+            {
+              "title": "Посчитать единицы",
+              "desc": "Посчитай число символов <code>1</code> в строке <code>\"1011011\"</code>.",
+              "template": "s = \"1011011\"\nprint(     )",
+              "hint": "s = '1011011'\nprint(s.count('1'))",
+              "answer": "5",
+              "id": "ege5_t_2_4_1"
+            },
+            {
+              "title": "Проверить начало",
+              "desc": "Выведи <code>True</code>, если запись <code>\"101101\"</code> начинается с <code>\"10\"</code>.",
+              "template": "s = \"101101\"\nprint(     )",
+              "hint": "s = '101101'\nprint(s.startswith('10'))",
+              "answer": "True",
+              "id": "ege5_t_2_4_2"
+            },
+            {
+              "title": "Проверить конец",
+              "desc": "Проверь, заканчивается ли строка <code>\"110101\"</code> на <code>\"01\"</code>.",
+              "template": "s = \"110101\"\nprint(     )",
+              "hint": "s = '110101'\nprint(s.endswith('01'))",
+              "answer": "True",
+              "id": "ege5_t_2_4_3"
+            },
+            {
+              "title": "Найти фрагмент",
+              "desc": "Найди индекс первого вхождения <code>\"ab\"</code> в строке <code>\"zzabyyab\"</code>.",
+              "template": "s = \"zzabyyab\"\nprint(     )",
+              "hint": "s = 'zzabyyab'\nprint(s.find('ab'))",
+              "answer": "2",
+              "id": "ege5_t_2_4_4"
+            },
+            {
+              "title": "Проверить наличие цифры",
+              "desc": "Выведи <code>YES</code>, если в строке <code>\"2a4b\"</code> есть символ <code>4</code>, иначе <code>NO</code>.",
+              "template": "s = \"2a4b\"\nif      :\n    print(\"YES\")\nelse:\n    print(\"NO\")",
+              "hint": "s = '2a4b'\nif '4' in s:\n    print('YES')\nelse:\n    print('NO')",
+              "answer": "YES",
+              "id": "ege5_t_2_4_5"
+            },
+            {
+              "title": "Сколько нулей",
+              "desc": "Посчитай нули в двоичной записи <code>\"1001000\"</code>.",
+              "template": "s = \"1001000\"\nprint(     )",
+              "hint": "s = '1001000'\nprint(s.count('0'))",
+              "answer": "5",
+              "id": "ege5_t_2_4_6"
+            }
+          ]
+        },
+        {
+          "id": "sub_2_5",
+          "title": "Проверки строк, пробелы и регистр",
+          "theory": "<h3>Проверка и подготовка строк</h3><pre><code>\"123\".isdigit()       # True\n\"12.5\".isdigit()      # False\n\"Python\".isalpha()    # True\n\"task25\".isalnum()    # True\n\"  101  \".strip()    # \"101\"\n\"AbC\".lower()         # \"abc\"\n\"AbC\".upper()         # \"ABC\"</code></pre><ul><li><code>isdigit()</code> проверяет, что непустая строка состоит из цифр; знак и точка не подходят.</li><li><code>isalpha()</code> принимает только буквы, а <code>isalnum()</code> — буквы и цифры.</li><li><code>strip()</code> удаляет пробелы по краям. <code>lower()</code> и <code>upper()</code> меняют регистр.</li></ul>",
+          "tasks": [
+            {
+              "title": "Проверить цифры",
+              "desc": "Проверь, состоит ли <code>s = \"2026\"</code> только из цифр.",
+              "template": "s = \"2026\"\nprint(     )",
+              "hint": "s = '2026'\nprint(s.isdigit())",
+              "answer": "True",
+              "id": "ege5_t_2_5_1"
+            },
+            {
+              "title": "Точка — не цифра",
+              "desc": "Проверь строку <code>\"12.5\"</code> методом <code>isdigit</code>.",
+              "template": "s = \"12.5\"\nprint(     )",
+              "hint": "s = '12.5'\nprint(s.isdigit())",
+              "answer": "False",
+              "id": "ege5_t_2_5_2"
+            },
+            {
+              "title": "Только буквы",
+              "desc": "Проверь, состоит ли <code>\"Python\"</code> из букв.",
+              "template": "s = \"Python\"\nprint(     )",
+              "hint": "s = 'Python'\nprint(s.isalpha())",
+              "answer": "True",
+              "id": "ege5_t_2_5_3"
+            },
+            {
+              "title": "Буквы и цифры",
+              "desc": "Проверь строку <code>\"task25\"</code> методом <code>isalnum</code>.",
+              "template": "s = \"task25\"\nprint(     )",
+              "hint": "s = 'task25'\nprint(s.isalnum())",
+              "answer": "True",
+              "id": "ege5_t_2_5_4"
+            },
+            {
+              "title": "Убрать внешние пробелы",
+              "desc": "Удали пробелы только в начале и конце строки <code>\"  101  \"</code>. Используй <code>strip</code>.",
+              "template": "s = \"  101  \"\nprint(     )",
+              "hint": "s = '  101  '\nprint(s.strip())",
+              "answer": "101",
+              "id": "ege5_t_2_5_5"
+            },
+            {
+              "title": "Привести к нижнему регистру",
+              "desc": "Преобразуй строку <code>\"AbCDef\"</code> к нижнему регистру.",
+              "template": "s = \"AbCDef\"\nprint(     )",
+              "hint": "s = 'AbCDef'\nprint(s.lower())",
+              "answer": "abcdef",
+              "id": "ege5_t_2_5_6"
+            },
+            {
+              "title": "Привести к верхнему регистру",
+              "desc": "Преобразуй строку <code>\"aBc\"</code> к верхнему регистру.",
+              "template": "s = \"aBc\"\nprint(     )",
+              "hint": "s = 'aBc'\nprint(s.upper())",
+              "answer": "ABC",
+              "id": "ege5_t_2_5_7"
+            }
+          ]
+        },
+        {
+          "id": "sub_2_6",
+          "title": "replace: замена символов и безопасная инверсия",
+          "theory": "<h3>Замена символов и фрагментов</h3><p><code>replace</code> создаёт новую строку, заменяя найденные фрагменты. Для взаимной замены двух символов используй временный символ, чтобы первая замена не повлияла на вторую.</p><pre><code>s = \"0101\"\\ns = s.replace(\"0\", \"X\").replace(\"1\", \"0\").replace(\"X\", \"1\")</code></pre>",
+          "tasks": [
+            {
+              "title": "Заменить все нули",
+              "desc": "Замени в строке <code>\"100100\"</code> все нули на <code>X</code>.",
+              "template": "s = \"100100\"\nprint(     )",
+              "hint": "s = '100100'\nprint(s.replace('0', 'X'))",
+              "answer": "1XX1XX",
+              "id": "ege5_t_2_6_1"
+            },
+            {
+              "title": "Заменить только первую пятёрку",
+              "desc": "В строке <code>\"50555\"</code> убери только первое вхождение цифры <code>5</code>.",
+              "template": "s = \"50555\"\nprint(     )",
+              "hint": "s = '50555'\nprint(s.replace('5', '', 1))",
+              "answer": "0555",
+              "id": "ege5_t_2_6_2"
+            },
+            {
+              "title": "Инвертировать нули и единицы",
+              "desc": "В строке <code>\"0101\"</code> замени 0 на 1, а 1 на 0 безопасно через временный символ.",
+              "template": "s = \"0101\"\ns = s.replace(     )\ns = s.replace(     )\nprint(s)",
+              "hint": "s = '0101'\ns = s.replace('0', 'X').replace('1', '0').replace('X', '1')\nprint(s)",
+              "answer": "1010",
+              "id": "ege5_t_2_6_3"
+            },
+            {
+              "title": "Заменить пробелы",
+              "desc": "Удали все пробелы из строки <code>\"1 0 1 1\"</code>.",
+              "template": "s = \"1 0 1 1\"\nprint(     )",
+              "hint": "s = '1 0 1 1'\nprint(s.replace(' ', ''))",
+              "answer": "1011",
+              "id": "ege5_t_2_6_4"
+            },
+            {
+              "title": "Дублировать двоичные разряды",
+              "desc": "Каждую 1 замени на 11, а каждый 0 — на 00. Исходная строка <code>\"101\"</code>.",
+              "template": "s = \"101\"\ns = s.replace(     )\ns = s.replace(     )\nprint(s)",
+              "hint": "s = '101'\ns = s.replace('1', '11').replace('0', '00')\nprint(s)",
+              "answer": "110011",
+              "id": "ege5_t_2_6_5"
+            }
+          ]
+        },
+        {
+          "id": "sub_2_7",
+          "title": "Разделение и соединение строк",
+          "theory": "<h3>Разделить строку и собрать заново</h3><pre><code>s = \"red blue green\"\nparts = s.split()\n\"-\".join(parts)  # \"red-blue-green\"</code></pre><ul><li><code>split(sep)</code> разбивает строку на список частей; без разделителя использует группы пробелов.</li><li><code>join(iterable)</code> вызывается у строки-разделителя и соединяет элементы, которые уже являются строками.</li></ul>",
+          "tasks": [
+            {
+              "title": "Разделить и соединить",
+              "desc": "Из <code>\"a,b,c\"</code> получи <code>\"a:b:c\"</code> через <code>split</code> и <code>join</code>.",
+              "template": "s = \"a,b,c\"\nparts =      \nprint(     )",
+              "hint": "s = 'a,b,c'\nparts = s.split(',')\nprint(':'.join(parts))",
+              "answer": "a:b:c",
+              "id": "ege5_t_2_7_1"
+            },
+            {
+              "title": "Разделить слова",
+              "desc": "Выведи количество слов в строке <code>\"red blue green\"</code>.",
+              "template": "s = \"red blue green\"\nprint(     )",
+              "hint": "s = 'red blue green'\nprint(len(s.split()))",
+              "answer": "3",
+              "id": "ege5_t_2_7_2"
+            },
+            {
+              "title": "Соединить слова в обратном порядке",
+              "desc": "Из списка <code>[\"one\", \"two\", \"three\"]</code> создай строку <code>three two one</code>.",
+              "template": "words = [\"one\", \"two\", \"three\"]\nprint(     )",
+              "hint": "words = ['one','two','three']\nprint(' '.join(words[::-1]))",
+              "answer": "three two one",
+              "id": "ege5_t_2_7_4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sec_3",
+      "title": "3. Разрядные задачи: применение строк",
+      "children": [
+        {
+          "id": "sub_3_1",
+          "title": "Приписать слева/справа и взять крайние разряды",
+          "theory": "<h3>↔️ Префиксы и суффиксы записи</h3><p>При обработке записи разрядов нужно различать действия со строкой и с числом. К строке приписывают символы; в число приписывают разряд математически, через умножение и остаток.</p><pre><code>s = &#x27;10110&#x27;\ns = s + &#x27;1&#x27;       # справа\ns = &#x27;11&#x27; + s      # слева\ns[-3:]            # три последних символа\ns[:3]             # три первых символа</code></pre><ul><li>Для строк используем <code>+</code> и срезы.</li><li>Если справа приписывается остаток числа, преобразуй его в строку: <code>s += str(n % 8)</code>.</li><li>Не путай «первые три символа записи» и «три младших разряда»: первые берутся срезом <code>[:3]</code>, младшие — <code>[-3:]</code>.</li></ul>",
+          "tasks": [
+            {
+              "title": "Приписать остаток справа",
+              "desc": "К строке <code>s = \"1011\"</code> справа допиши остаток <code>n % 8</code> для <code>n = 13</code>.",
+              "template": "n = 13\ns = \"1011\"\ns = s +      \nprint(s)",
+              "hint": "n = 13\ns = \"1011\"\ns = s + str(n % 8)\nprint(s)",
+              "answer": "10115",
+              "id": "ege5_t_3_1_1"
+            },
+            {
+              "title": "Дополнить слева тремя младшими разрядами",
+              "desc": "К строке <code>s = \"101101\"</code> слева допиши её три последних символа.",
+              "template": "s = \"101101\"\ns =      + s\nprint(s)",
+              "hint": "s = '101101'\ns = s[-3:] + s\nprint(s)",
+              "answer": "101101101",
+              "id": "ege5_t_3_1_2"
+            },
+            {
+              "title": "Приписать справа первые три символа",
+              "desc": "К <code>\"110101\"</code> справа приписать три первых символа.",
+              "template": "s = \"110101\"\ns = s +      \nprint(s)",
+              "hint": "s = '110101'\ns = s + s[:3]\nprint(s)",
+              "answer": "110101110",
+              "id": "ege5_t_3_1_3"
+            },
+            {
+              "title": "Максимальная цифра алфавита",
+              "desc": "К строке <code>\"101\"</code> приписать справа максимальный символ двоичного алфавита <code>\"01\"</code>.",
+              "template": "s = \"101\"\nalphabet = \"01\"\ns +=      \nprint(s)",
+              "hint": "s = '101'\nalphabet = '01'\ns += max(alphabet)\nprint(s)",
+              "answer": "1011",
+              "id": "ege5_t_3_1_4"
+            },
+            {
+              "title": "Максимальный символ самой записи",
+              "desc": "К строке <code>\"10231\"</code> приписать самый большой символ, уже присутствующий в самой строке.",
+              "template": "s = \"10231\"\ns +=      \nprint(s)",
+              "hint": "s = '10231'\ns += max(s)\nprint(s)",
+              "answer": "102313",
+              "id": "ege5_t_3_1_5"
+            }
+          ]
+        },
+        {
+          "id": "sub_3_2",
+          "title": "Количество, сумма и произведение цифр",
+          "theory": "<h3>🧮 Считаем разряды</h3><pre><code>s = &#x27;12031&#x27;\ns.count(&#x27;1&#x27;)                  # количество единиц\nsum(int(c) for c in s)        # сумма десятичных цифр\nfrom math import prod\nprod(int(c) for c in s)       # произведение цифр</code></pre><p>Генераторное выражение <code>int(c) for c in s</code> последовательно берёт каждый символ строки и превращает его в число. Для цифр в системе с основанием больше 10 нужно указывать основание: <code>int(c, 16)</code>.</p><div class='highlight-box'><b>Важно:</b> Если строка содержит <code>a–f</code> и посторонние знаки, сначала отфильтруй допустимые символы: <code>if c in \"0123456789abcdef\"</code>. Иначе преобразование может завершиться ошибкой.</div><h4>Не перепутай нули и единицы</h4><pre><code>s.count('0')  # количество нулей\ns.count('1')  # количество единиц</code></pre><div class='highlight-box'><b>Проверка исходного конспекта:</b> в PDF в одном комментарии сказано «вычитается количество нулей», а рядом написано <code>count('1')</code>. Этот код считает единицы. Для нулей нужен <code>count('0')</code>; всегда сверяй комментарий с выражением и условием задачи.</div>",
+          "tasks": [
+            {
+              "title": "Сумма десятичных цифр",
+              "desc": "Найди сумму цифр числа <code>5072</code>. Используй генераторное выражение и <code>sum</code>.",
+              "template": "s = \"5072\"\nprint(     )",
+              "hint": "s = '5072'\nprint(sum(int(c) for c in s))",
+              "answer": "14",
+              "id": "ege5_t_3_2_1"
+            },
+            {
+              "title": "Произведение цифр",
+              "desc": "Найди произведение цифр строки <code>\"234\"</code> через <code>math.prod</code>.",
+              "template": "from math import prod\ns = \"234\"\nprint(     )",
+              "hint": "from math import prod\ns = '234'\nprint(prod(int(c) for c in s))",
+              "answer": "24",
+              "id": "ege5_t_3_2_2"
+            },
+            {
+              "title": "Количество нулей",
+              "desc": "В двоичной строке <code>\"1001000\"</code> найди количество нулей методом <code>count</code>.",
+              "template": "s = \"1001000\"\nprint(     )",
+              "hint": "s = '1001000'\nprint(s.count('0'))",
+              "answer": "5",
+              "id": "ege5_t_3_2_3"
+            },
+            {
+              "title": "Сумма значений шестнадцатеричных цифр",
+              "desc": "В строке <code>\"1af\"</code> вычисли сумму значений цифр в основании 16. Функции: <code>int(c, 16)</code>, <code>sum</code>.",
+              "template": "s = \"1af\"\nprint(     )",
+              "hint": "s = '1af'\nprint(sum(int(c, 16) for c in s))",
+              "answer": "26",
+              "id": "ege5_t_3_2_4"
+            },
+            {
+              "title": "Игнорировать посторонние символы",
+              "desc": "В строке <code>\"12+3=f4!\"</code> сложи только значения шестнадцатеричных цифр. Алфавит: <code>0123456789abcdef</code>.",
+              "template": "s = \"12+3=f4!\"\nalphabet = \"0123456789abcdef\"\nprint(     )",
+              "hint": "s = '12+3=f4!'\nalphabet = '0123456789abcdef'\nprint(sum(int(c, 16) for c in s if c in alphabet))",
+              "answer": "25",
+              "id": "ege5_t_3_2_5"
+            },
+            {
+              "title": "Сумма цифр троичной записи",
+              "desc": "Для строки <code>\"10212\"</code> найди сумму числовых значений цифр в основании 3.",
+              "template": "s = \"10212\"\nprint(     )",
+              "hint": "s = '10212'\nprint(sum(int(c, 3) for c in s))",
+              "answer": "6",
+              "id": "ege5_t_3_2_6"
+            }
+          ]
+        },
+        {
+          "id": "sub_3_3",
+          "title": "Чётные и нечётные позиции символов",
+          "theory": "<h3>📍 Индексы — не номера позиций</h3><p>При нумерации с нуля индексы <code>0, 2, 4, …</code> — чётные, а <code>1, 3, 5, …</code> — нечётные. В формулировке задания «чётные позиции» могут нумероваться с единицы, поэтому внимательно читай условие.</p><pre><code>s = &#x27;123456&#x27;\ns[0::2]   # индексы 0,2,4 -&gt; &#x27;135&#x27;\ns[1::2]   # индексы 1,3,5 -&gt; &#x27;246&#x27;\ns[:2]     # первые два символа\ns[-2:]    # последние два символа</code></pre><p>Чтобы получить сумму разрядов, сначала выбери нужные символы срезом, затем преврати их в числа и вызови <code>sum</code>.</p>",
+          "tasks": [
+            {
+              "title": "Символы с индексами 0, 2, 4",
+              "desc": "Выведи символы с чётными индексами строки <code>\"123456\"</code>.",
+              "template": "s = \"123456\"\nprint(     )",
+              "hint": "s = '123456'\nprint(s[0::2])",
+              "answer": "135",
+              "id": "ege5_t_3_3_1"
+            },
+            {
+              "title": "Символы с индексами 1, 3, 5",
+              "desc": "Выведи символы с нечётными индексами строки <code>\"123456\"</code>.",
+              "template": "s = \"123456\"\nprint(     )",
+              "hint": "s = '123456'\nprint(s[1::2])",
+              "answer": "246",
+              "id": "ege5_t_3_3_2"
+            },
+            {
+              "title": "Сумма цифр на индексах 0, 2, 4",
+              "desc": "Найди сумму символов строки <code>\"123456\"</code> на чётных индексах.",
+              "template": "s = \"123456\"\nprint(     )",
+              "hint": "s = '123456'\nprint(sum(int(c) for c in s[0::2]))",
+              "answer": "9",
+              "id": "ege5_t_3_3_3"
+            },
+            {
+              "title": "Сумма цифр на индексах 1, 3, 5",
+              "desc": "Найди сумму символов строки <code>\"123456\"</code> на нечётных индексах.",
+              "template": "s = \"123456\"\nprint(     )",
+              "hint": "s = '123456'\nprint(sum(int(c) for c in s[1::2]))",
+              "answer": "12",
+              "id": "ege5_t_3_3_4"
+            },
+            {
+              "title": "Суммы первых и последних двух",
+              "desc": "Найди сумму первых двух и последних двух цифр строки <code>\"123456\"</code>; выведи обе суммы.",
+              "template": "s = \"123456\"\ns1 =      \ns2 =      \nprint(s1, s2)",
+              "hint": "s = '123456'\ns1 = sum(int(c) for c in s[:2])\ns2 = sum(int(c) for c in s[-2:])\nprint(s1, s2)",
+              "answer": "3 11",
+              "id": "ege5_t_3_3_5"
+            },
+            {
+              "id": "ege5_t_5_6_7",
+              "title": "Применение: склеить суммы разрядов",
+              "desc": "Для строки <code>\"110101\"</code> вычисли сумму первых двух цифр и сумму последних двух цифр. Затем выведи сначала меньшую сумму, затем большую, <b>склеив их как строку</b>. Не складывай суммы между собой.",
+              "template": "sn = \"110101\"\ns1 = sum(int(c) for c in sn[:2])\ns2 = sum(int(c) for c in sn[-2:])\nprint(     )",
+              "hint": "sn = \"110101\"\ns1 = sum(int(c) for c in sn[:2])\ns2 = sum(int(c) for c in sn[-2:])\nprint(str(min(s1, s2)) + str(max(s1, s2)))",
+              "answer": "12"
+            }
+          ]
+        },
+        {
+          "id": "sub_3_4",
+          "title": "Перестановка, удаление и замена крайних разрядов",
+          "theory": "<h3>🔧 Собираем запись из частей</h3><pre><code>s = &#x27;12345&#x27;\ns[-1] + s[1:-1] + s[0]  # поменять крайние символы\ns[1:]                    # убрать первый символ\ns[:-1]                   # убрать последний символ\n&#x27;1&#x27; + s[2:]              # поставить &#x27;1&#x27; первым и убрать два первых символа исходника</code></pre><div class='highlight-box'><b>Важно:</b> Строку нельзя изменить по индексу: <code>s[0] = \"1\"</code> вызовет ошибку. Нужно собрать новую строку из срезов и новых символов. Внимательно различай «заменить первые два символа» и «заменить два левых разряда одним символом».</div>",
+          "tasks": [
+            {
+              "title": "Поменять первый и последний символ",
+              "desc": "Для <code>\"12345\"</code> поменяй местами первую и последнюю цифры.",
+              "template": "s = \"12345\"\nprint(     )",
+              "hint": "s = '12345'\nprint(s[-1] + s[1:-1] + s[0])",
+              "answer": "52341",
+              "id": "ege5_t_3_4_1"
+            },
+            {
+              "title": "Удалить старший символ записи",
+              "desc": "Удали самый левый символ строки <code>\"110101\"</code>.",
+              "template": "s = \"110101\"\nprint(     )",
+              "hint": "s = '110101'\nprint(s[1:])",
+              "answer": "10101",
+              "id": "ege5_t_3_4_2"
+            },
+            {
+              "title": "Заменить два первых символа одним",
+              "desc": "Из строки <code>\"101101\"</code> сделай запись <code>\"11101\"</code>: оставь первый символ как <code>1</code> и возьми исходную строку с индекса 2.",
+              "template": "s = \"101101\"\nprint(     )",
+              "hint": "s = '101101'\nprint('1' + s[2:])",
+              "answer": "11101",
+              "id": "ege5_t_3_4_3"
+            },
+            {
+              "title": "Удалить первое вхождение 5",
+              "desc": "Из <code>\"152535\"</code> удали только первое вхождение цифры 5.",
+              "template": "s = \"152535\"\nprint(     )",
+              "hint": "s = '152535'\nprint(s.replace('5', '', 1))",
+              "answer": "12535",
+              "id": "ege5_t_3_4_4"
+            },
+            {
+              "title": "Удалить ведущие нули в десятичной записи",
+              "desc": "Из строки <code>\"00042\"</code> получи строку <code>\"42\"</code> через преобразование в число и обратно.",
+              "template": "s = \"00042\"\nprint(     )",
+              "hint": "s = '00042'\nprint(str(int(s)))",
+              "answer": "42",
+              "id": "ege5_t_3_4_5"
+            }
+          ]
+        },
+        {
+          "id": "sub_3_5",
+          "title": "Вставка в середину строки",
+          "theory": "<h3>🪡 Вставить символ в середину</h3><pre><code>s = &#x27;12344&#x27;\np = len(s) // 2\nif len(s) % 2 == 0:\n    s = s[:p] + &#x27;#&#x27; + s[p:]\nelse:\n    s = s[:p] + &#x27;!!!&#x27; + s[p + 1:]</code></pre><ul><li>Индекс середины вычисляют как <code>len(s) // 2</code>.</li><li>Для чётной длины между двумя центральными символами вставляют текст, не удаляя символы.</li><li>Для нечётной длины центральный символ существует: его можно заменить фрагментом, используя <code>s[:p] + new + s[p+1:]</code>.</li></ul>",
+          "tasks": [
+            {
+              "title": "Добавить знак в середину чётной строки",
+              "desc": "В строку <code>\"1234\"</code> вставь <code>#</code> между двумя центральными символами.",
+              "template": "s = \"1234\"\np = len(s) // 2\ns =      + \"#\" +      \nprint(s)",
+              "hint": "s = '1234'\np = len(s) // 2\ns = s[:p] + '#' + s[p:]\nprint(s)",
+              "answer": "12#34",
+              "id": "ege5_t_3_5_1"
+            },
+            {
+              "title": "Заменить центральный символ",
+              "desc": "В строке <code>\"12345\"</code> замени центральный символ на <code>!!!</code>.",
+              "template": "s = \"12345\"\np = len(s) // 2\ns =      + \"!!!\" +      \nprint(s)",
+              "hint": "s = '12345'\np = len(s) // 2\ns = s[:p] + '!!!' + s[p+1:]\nprint(s)",
+              "answer": "12!!!45",
+              "id": "ege5_t_3_5_2"
+            },
+            {
+              "title": "Вставить слева три символа записи",
+              "desc": "К строке <code>\"123456\"</code> слева допиши её три последних символа.",
+              "template": "s = \"123456\"\ns =      + s\nprint(s)",
+              "hint": "s = '123456'\ns = s[-3:] + s\nprint(s)",
+              "answer": "456123456",
+              "id": "ege5_t_3_5_3"
+            },
+            {
+              "title": "Вставить справа три символа записи",
+              "desc": "К строке <code>\"123456\"</code> справа допиши её первые три символа.",
+              "template": "s = \"123456\"\ns = s +      \nprint(s)",
+              "hint": "s = '123456'\ns = s + s[:3]\nprint(s)",
+              "answer": "123456123",
+              "id": "ege5_t_3_5_4"
+            }
+          ]
+        },
+        {
+          "id": "sub_3_6",
+          "title": "Сортировка символов и разрядов",
+          "theory": "<h3>📊 Сортировка символов</h3><pre><code>s = &#x27;39152&#x27;\nsorted(s)                  # список символов по возрастанию\n&#x27;&#x27;.join(sorted(s))         # &#x27;12359&#x27;\n&#x27;&#x27;.join(sorted(s, reverse=True))  # &#x27;95321&#x27;</code></pre><ul><li><code>sorted(s)</code> возвращает список, поэтому для строки используй <code>join</code>.</li><li>Для убывания указывай <code>reverse=True</code>.</li><li>Преобразование <code>int('0012')</code> теряет ведущие нули, поэтому до финального шага храни запись строкой.</li></ul>",
+          "tasks": [
+            {
+              "title": "Упорядочить по возрастанию",
+              "desc": "Отсортируй символы строки <code>\"39152\"</code> по возрастанию и склей обратно.",
+              "template": "s = \"39152\"\nprint(     )",
+              "hint": "s = '39152'\nprint(''.join(sorted(s)))",
+              "answer": "12359",
+              "id": "ege5_t_3_6_1"
+            },
+            {
+              "title": "Упорядочить по убыванию",
+              "desc": "Отсортируй символы строки <code>\"39152\"</code> по убыванию.",
+              "template": "s = \"39152\"\nprint(     )",
+              "hint": "s = '39152'\nprint(''.join(sorted(s, reverse=True)))",
+              "answer": "95321",
+              "id": "ege5_t_3_6_2"
+            },
+            {
+              "title": "Отсортировать только цифры",
+              "desc": "В строке <code>\"9a1b3\"</code> выбери только цифры и выведи их по возрастанию.",
+              "template": "s = \"9a1b3\"\ndigits =      \nprint(     )",
+              "hint": "s = '9a1b3'\ndigits = [c for c in s if c.isdigit()]\nprint(''.join(sorted(digits)))",
+              "answer": "139",
+              "id": "ege5_t_3_6_3"
+            },
+            {
+              "title": "Убывающий порядок при условии",
+              "desc": "Если первый символ строки <code>\"13524\"</code> — нечётная цифра, выведи все символы по убыванию, иначе исходную строку.",
+              "template": "s = \"13524\"\nif      :\n    s = ''.join(sorted(s, reverse=True))\nprint(s)",
+              "hint": "s = '13524'\nif int(s[0]) % 2 == 1:\n    s = ''.join(sorted(s, reverse=True))\nprint(s)",
+              "answer": "54321",
+              "id": "ege5_t_3_6_4"
+            }
+          ]
+        },
+        {
+          "id": "sub_3_7",
+          "title": "Чётные и нечётные цифры в разных основаниях",
+          "theory": "<h3>⚖️ Чётность значения цифры</h3><p>Для двоичных цифр достаточно проверять <code>c == \"0\"</code> или <code>c == \"1\"</code>. Для шестнадцатеричной записи цифры могут быть буквами; тогда переведи каждый символ в числовое значение с основанием 16.</p><pre><code>s = &#x27;19af&#x27;\nvalues = [int(c, 16) for c in s]\neven = [c for c in s if int(c, 16) % 2 == 0]\nodd = [c for c in s if int(c, 16) % 2 == 1]</code></pre><div class='highlight-box'><b>Важно:</b> В PDF приведён общий приём <code>int(c, 36)</code>, который позволяет читать цифры и буквы до основания 36. В условии всегда проверь алфавит: символы должны быть допустимы для выбранного основания.</div>",
+          "tasks": [
+            {
+              "title": "Оставить чётные двоичные цифры",
+              "desc": "Оставь в строке <code>\"10110010\"</code> только нули. Подсказка: выбрать символы, равные <code>0</code>.",
+              "template": "s = \"10110010\"\nprint(     )",
+              "hint": "s = '10110010'\nprint(''.join(c for c in s if c == '0'))",
+              "answer": "0000",
+              "id": "ege5_t_3_7_1"
+            },
+            {
+              "title": "Сосчитать единицы",
+              "desc": "Найди количество единиц в строке <code>\"11010111\"</code>.",
+              "template": "s = \"11010111\"\nprint(     )",
+              "hint": "s = '11010111'\nprint(len([c for c in s if c == '1']))",
+              "answer": "6",
+              "id": "ege5_t_3_7_2"
+            },
+            {
+              "title": "Выбрать чётные шестнадцатеричные значения",
+              "desc": "Из <code>\"123abc\"</code> выведи символы с чётным значением в основании 16.",
+              "template": "s = \"123abc\"\nprint(     )",
+              "hint": "s = '123abc'\nprint(''.join(c for c in s if int(c, 16) % 2 == 0))",
+              "answer": "2ac",
+              "id": "ege5_t_3_7_3"
+            },
+            {
+              "title": "Подсчитать чётные значения в алфавите 36",
+              "desc": "В строке <code>\"19af\"</code> посчитай символы, значение которых в основании 36 чётно.",
+              "template": "s = \"19af\"\nprint(     )",
+              "hint": "s = '19af'\nprint(sum(1 for c in s if int(c, 36) % 2 == 0))",
+              "answer": "1",
+              "id": "ege5_t_3_7_4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sec_4",
+      "title": "4. Списки, множества и отбор результатов",
+      "children": [
+        {
+          "id": "sub_4_1",
+          "title": "Список: добавление, поиск, сортировка",
+          "theory": "<h3>📚 Списки и их методы</h3><pre><code>a = [3, 1, 3]\na.append(5)       # добавить один элемент в конец\na.extend([7, 8])   # добавить несколько элементов\na.insert(0, 9)    # вставить по индексу\na.count(3)        # сколько троек\na.index(3)        # индекс первой тройки\na.remove(3)       # удалить первое значение 3\na.pop()           # удалить и вернуть последний элемент\na.sort()          # сортировать на месте\na.reverse()       # перевернуть на месте</code></pre><ul><li><code>sort()</code> меняет сам список и возвращает <code>None</code>.</li><li><code>sorted(a)</code> создаёт новый отсортированный список.</li><li><code>pop()</code> удаляет элемент и возвращает его; если индекс не указан, берёт последний.</li><li>Другие методы: <code>clear()</code> очищает, <code>copy()</code> делает поверхностную копию.</li></ul>",
+          "tasks": [
+            {
+              "title": "Добавить элемент",
+              "desc": "Добавь число 4 в конец списка <code>[1, 2, 3]</code> и выведи список через пробелы.",
+              "template": "a = [1, 2, 3]\na.      (4)\nprint(*a)",
+              "hint": "a = [1,2,3]\na.append(4)\nprint(*a)",
+              "answer": "1 2 3 4",
+              "id": "ege5_t_4_1_1"
+            },
+            {
+              "title": "Добавить несколько элементов",
+              "desc": "К списку <code>[1, 2]</code> добавь все элементы списка <code>[3, 4]</code> методом <code>extend</code>.",
+              "template": "a = [1, 2]\na.      ([3, 4])\nprint(*a)",
+              "hint": "a = [1,2]\na.extend([3,4])\nprint(*a)",
+              "answer": "1 2 3 4",
+              "id": "ege5_t_4_1_2"
+            },
+            {
+              "title": "Посчитать повторения в списке",
+              "desc": "Сколько раз число 2 встречается в списке <code>[2, 1, 2, 2, 3]</code>?",
+              "template": "a = [2, 1, 2, 2, 3]\nprint(     )",
+              "hint": "a = [2,1,2,2,3]\nprint(a.count(2))",
+              "answer": "3",
+              "id": "ege5_t_4_1_3"
+            },
+            {
+              "title": "Удалить последний элемент",
+              "desc": "Удали последний элемент списка <code>[4, 7, 9]</code> и выведи удалённое значение.",
+              "template": "a = [4, 7, 9]\nprint(a.      ())",
+              "hint": "a = [4,7,9]\nprint(a.pop())",
+              "answer": "9",
+              "id": "ege5_t_4_1_4"
+            },
+            {
+              "title": "Отсортировать на месте",
+              "desc": "Отсортируй список <code>[5, 1, 4, 2]</code> по возрастанию и выведи его элементы.",
+              "template": "a = [5, 1, 4, 2]\na.      ()\nprint(*a)",
+              "hint": "a = [5,1,4,2]\na.sort()\nprint(*a)",
+              "answer": "1 2 4 5",
+              "id": "ege5_t_4_1_5"
+            },
+            {
+              "title": "Разница sort и sorted",
+              "desc": "Выведи исходный список и отдельно новый отсортированный список: <code>[3, 1, 2]</code>.",
+              "template": "a = [3, 1, 2]\nb =      (a)\nprint(a, b)",
+              "hint": "a = [3,1,2]\nb = sorted(a)\nprint(a, b)",
+              "answer": "[3, 1, 2] [1, 2, 3]",
+              "id": "ege5_t_4_1_6"
+            },
+            {
+              "title": "Вставить по индексу",
+              "desc": "Вставь 2 в список <code>[1, 3, 4]</code> на индекс 1. Выведи элементы через пробел.",
+              "template": "a = [1, 3, 4]\na.      (1, 2)\nprint(*a)",
+              "hint": "a = [1,3,4]\na.insert(1,2)\nprint(*a)",
+              "answer": "1 2 3 4",
+              "id": "ege5_t_4_1_7"
+            },
+            {
+              "title": "Удалить первое совпадение",
+              "desc": "Удали первое значение 2 из списка <code>[2, 1, 2, 3]</code> и выведи список. Метод: <code>remove</code>.",
+              "template": "a = [2, 1, 2, 3]\na.      (2)\nprint(*a)",
+              "hint": "a = [2,1,2,3]\na.remove(2)\nprint(*a)",
+              "answer": "1 2 3",
+              "id": "ege5_t_4_1_8"
+            },
+            {
+              "title": "Найти индекс элемента",
+              "desc": "Найди индекс первого значения 5 в списке <code>[2, 5, 5, 3]</code>. Метод: <code>index</code>.",
+              "template": "a = [2, 5, 5, 3]\nprint(     )",
+              "hint": "a = [2,5,5,3]\nprint(a.index(5))",
+              "answer": "1",
+              "id": "ege5_t_4_1_9"
+            },
+            {
+              "title": "Перевернуть список на месте",
+              "desc": "Переверни список <code>[1, 2, 3]</code> методом <code>reverse</code> и выведи элементы через пробел.",
+              "template": "a = [1, 2, 3]\na.      ()\nprint(*a)",
+              "hint": "a = [1,2,3]\na.reverse()\nprint(*a)",
+              "answer": "3 2 1",
+              "id": "ege5_t_4_1_10"
+            },
+            {
+              "title": "Очистить список",
+              "desc": "Очисти список <code>[4, 5, 6]</code> методом <code>clear</code> и выведи длину.",
+              "template": "a = [4, 5, 6]\na.      ()\nprint(len(a))",
+              "hint": "a = [4,5,6]\na.clear()\nprint(len(a))",
+              "answer": "0",
+              "id": "ege5_t_4_1_11"
+            },
+            {
+              "title": "Сделать копию",
+              "desc": "Создай копию списка <code>[1, 2]</code>, добавь 3 только в копию и выведи оба списка.",
+              "template": "a = [1, 2]\nb = a.      ()\nb.append(3)\nprint(a, b)",
+              "hint": "a = [1,2]\nb = a.copy()\nb.append(3)\nprint(a, b)",
+              "answer": "[1, 2] [1, 2, 3]",
+              "id": "ege5_t_4_1_12"
+            }
+          ]
+        },
+        {
+          "id": "sub_4_2",
+          "title": "Множество set: уникальные значения",
+          "theory": "<h3>🧺 Множество — без повторов</h3><p>Множество хранит уникальные элементы. Оно удобно, когда один и тот же исходный <code>N</code> не должен учитываться несколько раз.</p><pre><code>s = set(&#x27;101101&#x27;)   # {&#x27;0&#x27;, &#x27;1&#x27;}\nlen(s)              # 2\ns.add(&#x27;2&#x27;)          # добавить элемент\nunique = set([2, 2, 3, 3, 3])  # {2, 3}</code></pre><ul><li><code>set()</code> создаёт пустое множество. Запись <code>{}</code> создаёт пустой словарь, а не множество.</li><li>Порядок элементов множества не определён; если нужен отсортированный вывод, используй <code>sorted(s)</code>.</li><li>Добавление выполняется методом <code>add</code>, несколько множеств можно объединять через <code>|</code> или <code>union</code>.</li></ul>",
+          "tasks": [
+            {
+              "title": "Убрать повторы",
+              "desc": "Посчитай количество различных символов в <code>\"101101\"</code>.",
+              "template": "s = \"101101\"\nprint(     )",
+              "hint": "s = '101101'\nprint(len(set(s)))",
+              "answer": "2",
+              "id": "ege5_t_4_2_1"
+            },
+            {
+              "title": "Добавить элемент в множество",
+              "desc": "Создай множество из строки <code>\"010\"</code>, добавь символ <code>2</code> и выведи число элементов.",
+              "template": "s = set(\"010\")\ns.      (\"2\")\nprint(len(s))",
+              "hint": "s = set('010')\ns.add('2')\nprint(len(s))",
+              "answer": "3",
+              "id": "ege5_t_4_2_2"
+            },
+            {
+              "title": "Уникальные цифры числа",
+              "desc": "Сколько разных цифр есть в числе 120121?",
+              "template": "n = 120121\ns = set(str(n))\nprint(     )",
+              "hint": "n = 120121\ns = set(str(n))\nprint(len(s))",
+              "answer": "3",
+              "id": "ege5_t_4_2_3"
+            },
+            {
+              "title": "Отсортировать уникальные символы",
+              "desc": "Выведи уникальные цифры строки <code>\"312131\"</code> по возрастанию слитно.",
+              "template": "s = \"312131\"\nprint(     )",
+              "hint": "s = '312131'\nprint(''.join(sorted(set(s))))",
+              "answer": "123",
+              "id": "ege5_t_4_2_4"
+            },
+            {
+              "title": "Пересечение множеств",
+              "desc": "Найди общие символы строк <code>\"10123\"</code> и <code>\"34501\"</code>; выведи их по возрастанию.",
+              "template": "a = set(\"10123\")\nb = set(\"34501\")\nprint(     )",
+              "hint": "a = set('10123')\nb = set('34501')\nprint(''.join(sorted(a & b)))",
+              "answer": "013",
+              "id": "ege5_t_4_2_5"
+            },
+            {
+              "title": "Объединение множеств",
+              "desc": "Найди все уникальные цифры из строк <code>\"123\"</code> и <code>\"345\"</code> и выведи их по возрастанию.",
+              "template": "a = set(\"123\")\nb = set(\"345\")\nprint(     )",
+              "hint": "a = set('123')\nb = set('345')\nprint(''.join(sorted(a | b)))",
+              "answer": "12345",
+              "id": "ege5_t_4_2_6"
+            },
+            {
+              "title": "Разность множеств",
+              "desc": "Выведи символы строки <code>\"12345\"</code>, которых нет в строке <code>\"245\"</code>, в порядке возрастания.",
+              "template": "a = set(\"12345\")\nb = set(\"245\")\nprint(     )",
+              "hint": "a = set('12345')\nb = set('245')\nprint(''.join(sorted(a - b)))",
+              "answer": "13",
+              "id": "ege5_t_4_2_7"
+            }
+          ]
+        },
+        {
+          "id": "sub_4_3",
+          "title": "Генераторные выражения и фильтрация",
+          "theory": "<h3>🧰 Отбор элементов по правилу</h3><pre><code>s = &#x27;102938&#x27;\ndigits = [c for c in s if c in &#x27;02468&#x27;]\nones = [c for c in s if c == &#x27;1&#x27;]\nvalues = [int(c) for c in s if c.isdigit()]</code></pre><p>Шаблон <code>[выражение for элемент in последовательность if условие]</code> читает элементы по одному и включает только те, что проходят условие. Если нужны уникальные результаты, можно использовать <code>{...}</code> или обернуть список в <code>set</code>.</p><div class='highlight-box'><b>Важно:</b> Проверь, что отбираешь именно символы, а не их индексы; и что преобразуешь в число только допустимые символы.</div>",
+          "tasks": [
+            {
+              "title": "Выбрать чётные десятичные цифры",
+              "desc": "Из строки <code>\"1234567890\"</code> собери цифры 0, 2, 4, 6, 8 в исходном порядке.",
+              "template": "s = \"1234567890\"\nprint(     )",
+              "hint": "s = '1234567890'\nprint(''.join(c for c in s if c in '02468'))",
+              "answer": "24680",
+              "id": "ege5_t_4_3_1"
+            },
+            {
+              "title": "Выбрать только буквы",
+              "desc": "Из строки <code>\"a1b2c3\"</code> выведи буквы, сохраняя порядок.",
+              "template": "s = \"a1b2c3\"\nprint(     )",
+              "hint": "s = 'a1b2c3'\nprint(''.join(c for c in s if c.isalpha()))",
+              "answer": "abc",
+              "id": "ege5_t_4_3_2"
+            },
+            {
+              "title": "Сформировать список квадратов",
+              "desc": "Из чисел 1, 2, 3, 4 создай список их квадратов.",
+              "template": "nums = [1, 2, 3, 4]\nprint(     )",
+              "hint": "nums = [1,2,3,4]\nprint([x*x for x in nums])",
+              "answer": "[1, 4, 9, 16]",
+              "id": "ege5_t_4_3_3"
+            },
+            {
+              "title": "Отобрать значения больше двух",
+              "desc": "Из списка <code>[1, 4, 2, 7, 3]</code> выведи только числа больше 2 в исходном порядке.",
+              "template": "nums = [1, 4, 2, 7, 3]\nprint(     )",
+              "hint": "nums = [1,4,2,7,3]\nprint([x for x in nums if x > 2])",
+              "answer": "[4, 7, 3]",
+              "id": "ege5_t_4_3_4"
+            },
+            {
+              "title": "Уникальные отобранные цифры",
+              "desc": "Из строки <code>\"11223344\"</code> выведи уникальные чётные цифры по возрастанию.",
+              "template": "s = \"11223344\"\nprint(     )",
+              "hint": "s = '11223344'\nprint(''.join(sorted({c for c in s if int(c) % 2 == 0})))",
+              "answer": "24",
+              "id": "ege5_t_4_3_5"
+            }
+          ]
+        },
+        {
+          "id": "sub_4_4",
+          "title": "min, max, sum, len и среднее",
+          "theory": "<h3>📈 Подводим итоги по найденным данным</h3><pre><code>values = [3, 7, 2, 9]\nmin(values)             # 2\nmax(values)             # 9\nsum(values)             # 21\nlen(values)             # 4\nsum(values) / len(values)  # среднее</code></pre><ul><li>Перед вычислением среднего убедись, что коллекция непуста.</li><li>Чтобы получить количество подходящих элементов, используй <code>len</code> для списка или множества.</li><li>Для суммы значений часто подходит <code>sum</code>; для произведения — <code>math.prod</code>.</li></ul>",
+          "tasks": [
+            {
+              "title": "Минимум и максимум",
+              "desc": "Для списка <code>[8, 2, 11, 4]</code> выведи минимум и максимум.",
+              "template": "a = [8, 2, 11, 4]\nprint(     ,     )",
+              "hint": "a = [8,2,11,4]\nprint(min(a), max(a))",
+              "answer": "2 11",
+              "id": "ege5_t_4_4_1"
+            },
+            {
+              "title": "Сумма и количество",
+              "desc": "Для списка <code>[5, 10, 15]</code> выведи сумму и количество элементов.",
+              "template": "a = [5, 10, 15]\nprint(     ,     )",
+              "hint": "a = [5,10,15]\nprint(sum(a), len(a))",
+              "answer": "30 3",
+              "id": "ege5_t_4_4_2"
+            },
+            {
+              "title": "Среднее арифметическое",
+              "desc": "Для списка <code>[2, 4, 6, 8]</code> найди среднее арифметическое.",
+              "template": "a = [2, 4, 6, 8]\nprint(     )",
+              "hint": "a = [2,4,6,8]\nprint(sum(a) / len(a))",
+              "answer": "5.0",
+              "id": "ege5_t_4_4_3"
+            },
+            {
+              "title": "Количество подходящих цифр",
+              "desc": "Посчитай в строке <code>\"123456789\"</code> сколько цифр больше 5.",
+              "template": "s = \"123456789\"\nprint(     )",
+              "hint": "s = '123456789'\nprint(sum(1 for c in s if int(c) > 5))",
+              "answer": "4",
+              "id": "ege5_t_4_4_4"
+            },
+            {
+              "title": "Сумма подходящих значений",
+              "desc": "Сложи только нечётные цифры строки <code>\"123456\"</code>.",
+              "template": "s = \"123456\"\nprint(     )",
+              "hint": "s = '123456'\nprint(sum(int(c) for c in s if int(c) % 2 == 1))",
+              "answer": "9",
+              "id": "ege5_t_4_4_5"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sec_5",
+      "title": "5. Перебор и отбор результатов",
+      "children": [
+        {
+          "id": "sub_5_1",
+          "title": "Ветвление при преобразовании числа",
+          "theory": "<h3>🚦 Алгоритм с условием</h3><p>В заданиях часто описывают правило «если…, то…, иначе…». Переводи его в <code>if/else</code>, а каждую операцию выполняй над нужным объектом — числом или строкой.</p><pre><code>if n % 6 == 0:\n    n //= 6\nelse:\n    n -= 1</code></pre><ul><li>Сначала установи, что именно проверяется: исходное число, сумма цифр или строка записи.</li><li>После изменения переменной последующие действия используют новое значение.</li><li>Не используй <code>=</code> в проверке равенства: нужно <code>==</code>.</li></ul>",
+          "tasks": [
+            {
+              "title": "Если кратно 6",
+              "desc": "Выполни правило для <code>n = 24</code>: если кратно 6 — разделить нацело на 6, иначе вычесть 1.",
+              "template": "n = 24\nif      :\n    n //= 6\nelse:\n    n -= 1\nprint(n)",
+              "hint": "n = 24\nif n % 6 == 0:\n    n //= 6\nelse:\n    n -= 1\nprint(n)",
+              "answer": "4",
+              "id": "ege5_t_5_1_1"
+            },
+            {
+              "title": "Сначала проверить нечётность",
+              "desc": "Если <code>n</code> нечётное, прибавь 5, иначе раздели на 2. Выполни для 8.",
+              "template": "n = 8\nif      :\n    n += 5\nelse:\n    n //= 2\nprint(n)",
+              "hint": "n = 8\nif n % 2 == 1:\n    n += 5\nelse:\n    n //= 2\nprint(n)",
+              "answer": "4",
+              "id": "ege5_t_5_1_2"
+            },
+            {
+              "title": "Условие по первой цифре записи",
+              "desc": "Если первая цифра строки <code>\"31245\"</code> нечётная, выведи <code>YES</code>, иначе <code>NO</code>.",
+              "template": "s = \"31245\"\nif      :\n    print(\"YES\")\nelse:\n    print(\"NO\")",
+              "hint": "s = '31245'\nif int(s[0]) % 2 == 1:\n    print('YES')\nelse:\n    print('NO')",
+              "answer": "YES",
+              "id": "ege5_t_5_1_3"
+            },
+            {
+              "title": "Условие по числу единиц",
+              "desc": "Если в строке <code>\"101101\"</code> больше трёх единиц, выведи <code>MORE</code>, иначе <code>NOT MORE</code>.",
+              "template": "s = \"101101\"\nif      :\n    print(\"MORE\")\nelse:\n    print(\"NOT MORE\")",
+              "hint": "s = '101101'\nif s.count('1') > 3:\n    print('MORE')\nelse:\n    print('NOT MORE')",
+              "answer": "MORE",
+              "id": "ege5_t_5_1_4"
+            },
+            {
+              "title": "Два условия",
+              "desc": "Выведи <code>YES</code>, если число 135 одновременно нечётное и больше 100.",
+              "template": "n = 135\nif      and      :\n    print(\"YES\")\nelse:\n    print(\"NO\")",
+              "hint": "n = 135\nif n % 2 == 1 and n > 100:\n    print(\"YES\")\nelse:\n    print(\"NO\")",
+              "answer": "YES",
+              "id": "ege5_t_5_1_5"
+            }
+          ]
+        },
+        {
+          "id": "sub_5_2",
+          "title": "Бит чётности и дописывание разряда",
+          "theory": "<h3>🧷 Контрольный бит</h3><p>Бит чётности — цифра, которую дописывают так, чтобы общее число единиц стало чётным (чётная чётность) либо нечётным (по правилу условия). В PDF используется правило: дописать 1, если единиц нечётное количество, иначе 0.</p><pre><code>sn = bin(n)[2:]\nbit = sn.count(&#x27;1&#x27;) % 2\nsn = sn + str(bit)\nr = int(sn, 2)</code></pre><ul><li>Остаток <code>count % 2</code> равен 0, если количество единиц чётное, и 1, если нечётное.</li><li>После дописывания проверяй основание: если запись двоичная, используй <code>int(sn, 2)</code>, а не <code>int(sn)</code>.</li><li>Если правило применяется повторно, нужно повторно посчитать единицы в уже изменённой записи.</li></ul>",
+          "tasks": [
+            {
+              "title": "Вычислить добавляемый бит",
+              "desc": "В строке <code>\"101101\"</code> найди остаток количества единиц при делении на 2.",
+              "template": "sn = \"101101\"\nprint(     )",
+              "hint": "sn = '101101'\nprint(sn.count('1') % 2)",
+              "answer": "0",
+              "id": "ege5_t_5_2_1"
+            },
+            {
+              "title": "Дополнить запись битом чётности",
+              "desc": "К строке <code>\"10110\"</code> справа допиши бит, равный остатку от количества единиц по модулю 2.",
+              "template": "sn = \"10110\"\nbit =      \nsn += str(bit)\nprint(sn)",
+              "hint": "sn = '10110'\nbit = sn.count('1') % 2\nsn += str(bit)\nprint(sn)",
+              "answer": "101101",
+              "id": "ege5_t_5_2_2"
+            },
+            {
+              "title": "Перевести запись обратно в число",
+              "desc": "Переведи двоичную строку <code>\"101100\"</code> в десятичное число.",
+              "template": "sn = \"101100\"\nprint(     )",
+              "hint": "sn = '101100'\nprint(int(sn, 2))",
+              "answer": "44",
+              "id": "ege5_t_5_2_3"
+            },
+            {
+              "title": "Выполнить правило дважды",
+              "desc": "К двоичной записи 7 дважды допиши бит: остаток числа единиц по модулю 2. Выведи результат в десятичной системе.",
+              "template": "n = 7\nsn = bin(n)[2:]\nfor _ in range(2):\n    bit =      \n    sn += str(bit)\nprint(int(sn, 2))",
+              "hint": "n = 7\nsn = bin(n)[2:]\nfor _ in range(2):\n    bit = sn.count('1') % 2\n    sn += str(bit)\nprint(int(sn, 2))",
+              "answer": "30",
+              "id": "ege5_t_5_2_4"
+            },
+            {
+              "title": "Проверить чётность единиц",
+              "desc": "Для строки <code>\"111010\"</code> выведи <code>EVEN</code>, если единиц чётное количество, иначе <code>ODD</code>.",
+              "template": "sn = \"111010\"\nif      :\n    print(\"EVEN\")\nelse:\n    print(\"ODD\")",
+              "hint": "sn = '111010'\nif sn.count('1') % 2 == 0:\n    print('EVEN')\nelse:\n    print('ODD')",
+              "answer": "EVEN",
+              "id": "ege5_t_5_2_5"
+            }
+          ]
+        },
+        {
+          "id": "sub_5_3",
+          "title": "Инверсия и дублирование двоичных цифр",
+          "theory": "<h3>🔁 Инверсия и дублирование</h3><p>Инверсия двоичной записи меняет каждую 0 на 1 и каждую 1 на 0. При двух последовательных заменах используй временные символы, чтобы новая цифра не подверглась второй замене.</p><pre><code>sn = &#x27;0101&#x27;\nsn = sn.replace(&#x27;0&#x27;, &#x27;X&#x27;)\nsn = sn.replace(&#x27;1&#x27;, &#x27;0&#x27;)\nsn = sn.replace(&#x27;X&#x27;, &#x27;1&#x27;)\n\nsn = &#x27;101&#x27;\nsn = sn.replace(&#x27;1&#x27;, &#x27;11&#x27;).replace(&#x27;0&#x27;, &#x27;00&#x27;)</code></pre><div class='highlight-box'><b>Важно:</b> Для переворота строки применяй <code>sn[::-1]</code>, а для инверсии битов — замену символов. Это две разные операции.</div>",
+          "tasks": [
+            {
+              "title": "Инвертировать запись",
+              "desc": "Инвертируй строку <code>\"001101\"</code> через временный символ.",
+              "template": "sn = \"001101\"\nsn = sn.replace(     )\nsn = sn.replace(     )\nsn = sn.replace(     )\nprint(sn)",
+              "hint": "sn = '001101'\nsn = sn.replace('0','X').replace('1','0').replace('X','1')\nprint(sn)",
+              "answer": "110010",
+              "id": "ege5_t_5_3_1"
+            },
+            {
+              "title": "Дублировать каждый разряд",
+              "desc": "В строке <code>\"1010\"</code> замени 1 на 11, а 0 на 00.",
+              "template": "sn = \"1010\"\nsn = sn.replace(     ).replace(     )\nprint(sn)",
+              "hint": "sn = '1010'\nsn = sn.replace('1','11').replace('0','00')\nprint(sn)",
+              "answer": "11001100",
+              "id": "ege5_t_5_3_2"
+            },
+            {
+              "title": "Инверсия только при нечётном N",
+              "desc": "Если <code>n = 7</code> нечётное, инвертируй его двоичную строку <code>\"111\"</code>, иначе оставь без изменений.",
+              "template": "n = 7\nsn = \"111\"\nif      :\n    sn = sn.replace(\"0\", \"X\").replace(\"1\", \"0\").replace(\"X\", \"1\")\nprint(sn)",
+              "hint": "n = 7\nsn = \"111\"\nif n % 2 == 1:\n    sn = sn.replace(\"0\", \"X\").replace(\"1\", \"0\").replace(\"X\", \"1\")\nprint(sn)",
+              "answer": "000",
+              "id": "ege5_t_5_3_3"
+            },
+            {
+              "title": "Убрать старший разряд и вернуть число",
+              "desc": "Из двоичной строки <code>\"11010\"</code> убери старший разряд, затем переведи оставшуюся запись в десятичное число.",
+              "template": "sn = \"11010\"\nsn =      \nprint(     )",
+              "hint": "sn = '11010'\nsn = sn[1:]\nprint(int(sn, 2))",
+              "answer": "10",
+              "id": "ege5_t_5_3_4"
+            },
+            {
+              "title": "Убрать ведущие нули двоичной записи",
+              "desc": "Приведи <code>\"0001010\"</code> к обычной двоичной записи без ведущих нулей, сохранив основание 2.",
+              "template": "sn = \"0001010\"\nprint(     )",
+              "hint": "sn = '0001010'\nprint(bin(int(sn, 2))[2:])",
+              "answer": "1010",
+              "id": "ege5_t_5_3_5"
+            }
+          ]
+        },
+        {
+          "id": "sub_5_4",
+          "title": "Цикл for и перебор range: практика",
+          "theory": "<h3>🔁 Перебираем возможные N</h3><p>Чтобы найти подходящее исходное число, программа перебирает кандидатов по одному и вычисляет результат алгоритма для каждого.</p><pre><code>for n in range(1, 100):\n    sn = bin(n)[2:]\n    # выполнить преобразование\n    r = int(sn, 2)\n    if r &gt; 20:\n        print(n, r)</code></pre><ul><li><code>range(1, 100)</code> включает 1 и не включает 100.</li><li>Если нужны только первые несколько ответов, увеличивай счётчик и останови цикл через <code>break</code>.</li><li>Для каждого <code>n</code> начинай вычисления заново: не оставляй строку от предыдущего кандидата.</li></ul>",
+          "tasks": [
+            {
+              "title": "Вывести числа от 1 до 5",
+              "desc": "Заполни границы <code>range</code>, чтобы программа вывела числа 1, 2, 3, 4, 5 каждое с новой строки.",
+              "template": "for n in range(     ):\n    print(n)",
+              "hint": "for n in range(1, 6):\n    print(n)",
+              "answer": "1\n2\n3\n4\n5",
+              "id": "ege5_t_5_4_1"
+            },
+            {
+              "title": "Первые подходящие чётные",
+              "desc": "Перебери числа от 1 до 10 и выведи только чётные.",
+              "template": "for n in range(1, 11):\n    if      :\n        print(n)",
+              "hint": "for n in range(1, 11):\n    if n % 2 == 0:\n        print(n)",
+              "answer": "2\n4\n6\n8\n10",
+              "id": "ege5_t_5_4_2"
+            },
+            {
+              "title": "Первые три числа больше 7",
+              "desc": "Перебери 1..20, выведи первые три числа, которые делятся на 4, и остановись.",
+              "template": "k = 0\nfor n in range(1, 21):\n    if      :\n        print(n)\n        k += 1\n        if      :\n            break",
+              "hint": "k = 0\nfor n in range(1, 21):\n    if n % 4 == 0:\n        print(n)\n        k += 1\n        if k == 3:\n            break",
+              "answer": "4\n8\n12",
+              "id": "ege5_t_5_4_3"
+            },
+            {
+              "title": "Выполнить преобразование для каждого N",
+              "desc": "Для каждого n от 1 до 4 переведи n в двоичную строку и выведи её.",
+              "template": "for n in range(1, 5):\n    sn =      \n    print(sn)",
+              "hint": "for n in range(1, 5):\n    sn = bin(n)[2:]\n    print(sn)",
+              "answer": "1\n10\n11\n100",
+              "id": "ege5_t_5_4_4"
+            },
+            {
+              "title": "Результат алгоритма и исходное N",
+              "desc": "Для каждого n от 1 до 5 приписывай справа к двоичной записи ноль, затем выводи n и результат в десятичной системе.",
+              "template": "for n in range(1, 6):\n    sn = bin(n)[2:] + \"0\"\n    r =      \n    print(n, r)",
+              "hint": "for n in range(1, 6):\n    sn = bin(n)[2:] + \"0\"\n    r = int(sn, 2)\n    print(n, r)",
+              "answer": "1 2\n2 4\n3 6\n4 8\n5 10",
+              "id": "ege5_t_5_4_5"
+            },
+            {
+              "title": "Применение: перебор, условие и преобразование",
+              "desc": "Для n от 1 до 99: получи двоичную запись, если n делится на 3 — допиши справа 1, иначе допиши 0; переведи результат в десятичное число и посчитай, сколько результатов больше 100.",
+              "template": "k = 0\nfor n in range(1, 100):\n    sn = bin(n)[2:]\n    if      :\n        sn += \"1\"\n    else:\n        sn += \"0\"\n    r =      \n    if      :\n        k += 1\nprint(k)",
+              "hint": "k = 0\nfor n in range(1,100):\n    sn = bin(n)[2:]\n    if n % 3 == 0:\n        sn += \"1\"\n    else:\n        sn += \"0\"\n    r = int(sn, 2)\n    if r > 100:\n        k += 1\nprint(k)",
+              "answer": "49",
+              "id": "ege5_t_5_6_6"
+            }
+          ]
+        },
+        {
+          "id": "sub_5_5",
+          "title": "Множество подходящих N: количество, min, max, среднее",
+          "theory": "<h3>🎯 Сначала собери ответы, потом посчитай</h3><p>В вопросах задания № 5 могут попросить количество подходящих исходных чисел, сумму минимального и максимального, среднее арифметическое или число различных результатов.</p><pre><code>good = set()\nfor n in range(1, 100):\n    r = ...  # результат алгоритма\n    if r &gt; 10:\n        good.add(n)\nprint(len(good))\nprint(min(good), max(good))\nif good:\n    print(sum(good) / len(good))</code></pre><ul><li><code>set</code> помогает не повторять одинаковые исходные значения.</li><li>Для количества используй <code>len</code>, для границ — <code>min</code> и <code>max</code>.</li><li>Среднее вычисляется как сумма, делённая на количество; проверь, что множество не пусто.</li></ul>",
+          "tasks": [
+            {
+              "title": "Посчитать подходящие N",
+              "desc": "Для <code>n</code> от 1 до 99 результат алгоритма равен <code>r = 2*n</code>. Сколько N дают результат больше 50?",
+              "template": "good = set()\nfor n in range(1, 100):\n    r =      \n    if      :\n        good.add(n)\nprint(len(good))",
+              "hint": "good = set()\nfor n in range(1,100):\n    r = 2*n\n    if r > 50:\n        good.add(n)\nprint(len(good))",
+              "answer": "74",
+              "id": "ege5_t_5_5_1"
+            },
+            {
+              "title": "Сумма минимального и максимального N",
+              "desc": "Для <code>n</code> от 1 до 20 выбирай числа, которые делятся на 3. Выведи сумму самого маленького и самого большого.",
+              "template": "good = set()\nfor n in range(1, 21):\n    if      :\n        good.add(n)\nprint(     )",
+              "hint": "good = set()\nfor n in range(1,21):\n    if n % 3 == 0:\n        good.add(n)\nprint(min(good) + max(good))",
+              "answer": "21",
+              "id": "ege5_t_5_5_2"
+            },
+            {
+              "title": "Среднее подходящих N",
+              "desc": "Среди чисел от 1 до 10 выбери кратные 3 и выведи их среднее.",
+              "template": "good = set()\nfor n in range(1, 11):\n    if      :\n        good.add(n)\nif good:\n    print(     )",
+              "hint": "good = set()\nfor n in range(1,11):\n    if n % 3 == 0:\n        good.add(n)\nif good:\n    print(sum(good) / len(good))",
+              "answer": "6.0",
+              "id": "ege5_t_5_5_3"
+            },
+            {
+              "title": "Количество различных результатов",
+              "desc": "Для n от 1 до 10 сохрани в множество остатки от деления на 4. Сколько разных остатков возможно?",
+              "template": "results = set()\nfor n in range(1, 11):\n    results.add(     )\nprint(len(results))",
+              "hint": "results = set()\nfor n in range(1,11):\n    results.add(n % 4)\nprint(len(results))",
+              "answer": "4",
+              "id": "ege5_t_5_5_4"
+            },
+            {
+              "title": "Минимальное подходящее N",
+              "desc": "Найди наименьшее n от 1 до 100, для которого <code>n*n &gt; 200</code>. Используй список или множество.",
+              "template": "good = []\nfor n in range(1, 101):\n    if      :\n        good.append(n)\nprint(min(good))",
+              "hint": "good = []\nfor n in range(1,101):\n    if n*n > 200:\n        good.append(n)\nprint(min(good))",
+              "answer": "15",
+              "id": "ege5_t_5_5_5"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "progress": {}
+}
+
+
+</script>
+
+<script>
+const $ = id => document.getElementById(id);
+
+// --- ВСТРОЕННЫЙ СПРАВОЧНИК МЕТОДОВ И ФУНКЦИЙ ---
+const methodReference = JSON.parse($('method-reference-data').textContent);
+function initReferenceCategories() {
+    const select = $('referenceCategory');
+    [...new Set(methodReference.map(item => item.category))].forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        select.appendChild(option);
+    });
+}
+function makeReferenceElement(tag, className, text) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text !== undefined) el.textContent = text;
+    return el;
+}
+function renderReference() {
+    const q = $('referenceSearch').value.trim().toLocaleLowerCase('ru');
+    const category = $('referenceCategory').value;
+    const results = $('referenceResults');
+    results.innerHTML = '';
+    const shown = methodReference.filter(item => {
+        if (category && item.category !== category) return false;
+        const haystack = [item.category, item.name, item.syntax, item.description, item.example].join(' ').toLocaleLowerCase('ru');
+        return !q || haystack.includes(q);
+    });
+    $('referenceCount').textContent = `${shown.length} ${shown.length === 1 ? 'элемент' : shown.length >= 2 && shown.length <= 4 ? 'элемента' : 'элементов'}`;
+    if (!shown.length) {
+        results.appendChild(makeReferenceElement('div', 'reference-empty', 'Ничего не найдено. Попробуй другое название или выбери «Все категории».'));
+        return;
+    }
+    shown.forEach(item => {
+        const card = makeReferenceElement('article', 'reference-card');
+        const head = makeReferenceElement('div', 'reference-card-head');
+        head.appendChild(makeReferenceElement('h3', '', item.name));
+        head.appendChild(makeReferenceElement('span', 'reference-tag', item.category));
+        card.appendChild(head);
+        card.appendChild(makeReferenceElement('code', 'reference-syntax', item.syntax));
+        card.appendChild(makeReferenceElement('p', '', item.description));
+        card.appendChild(makeReferenceElement('pre', 'reference-example', item.example));
+        const copy = makeReferenceElement('button', 'btn reference-copy', '📋 Копировать пример');
+        copy.type = 'button';
+        copy.addEventListener('click', async () => {
+            const text = item.example;
+            let ok = false;
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                    ok = true;
+                }
+            } catch (e) { /* пробуем запасной способ ниже */ }
+            if (!ok) {
+                const temp = document.createElement('textarea');
+                temp.value = text;
+                temp.style.position = 'fixed'; temp.style.opacity = '0';
+                document.body.appendChild(temp); temp.select();
+                try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+                temp.remove();
+            }
+            copy.textContent = ok ? '✓ Скопировано' : 'Не удалось скопировать';
+            setTimeout(() => { if (copy.isConnected) copy.textContent = '📋 Копировать пример'; }, 1500);
+        });
+        card.appendChild(copy);
+        results.appendChild(card);
+    });
+}
+function openReference() {
+    $('referenceOverlay').classList.add('open');
+    $('referenceOverlay').setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    renderReference();
+    $('referenceSearch').focus();
+}
+function closeReference() {
+    $('referenceOverlay').classList.remove('open');
+    $('referenceOverlay').setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    $('openReferenceBtn').focus();
+}
+
+
+// Инициализация структуры
+function initData() {
+    let data;
+    try { data = JSON.parse($('data-store').textContent); } catch(e) { data = { course: [] }; }
+    if (data.course && data.course.length > 0 && data.course[0].children.length > 0) return data.course;
+
+    const course = [];
+    const stringsSection = {
+        id: "sec_1", title: "Строки", children: [
+            { id: "sub_1_1", title: "Срезы", theory: "", tasks: [] },
+            { id: "sub_1_2", title: "Сборка строк", theory: "", tasks: [] },
+            { id: "sub_1_3", title: "Замены", theory: "", tasks: [] }
+        ]
+    };
+    for (let i = 4; i <= 10; i++) stringsSection.children.push({ id: `sub_1_${i}`, title: `Пустой подраздел ${i}`, theory: "", tasks: [] });
+    course.push(stringsSection);
+
+    for (let i = 2; i <= 10; i++) {
+        const sec = { id: `sec_${i}`, title: `Раздел ${i}`, children: [] };
+        for (let j = 1; j <= 10; j++) sec.children.push({ id: `sub_${i}_${j}`, title: `Подраздел ${i}.${j}`, theory: "", tasks: [] });
+        course.push(sec);
+    }
+    return course;
+}
+
+let courseData = initData();
+const PROGRESS_KEY = 'trainer_progress_ege5_full_course_v2';
+function loadLocalProgress() {
+    try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}') || {}; }
+    catch (e) { return {}; }
+}
+let progress = loadLocalProgress();
+let currentMode = 'student';
+let activeSecId = courseData[0].id;
+let activeSubId = courseData[0].children[0].id;
+let activeTaskIndex = 0;
+let currentTab = 'theory';
+let pyReady = false, py = null;
+
+// Состояние свернутых разделов
+let collapsedSecs = {};
+
+// Поиск подраздела
+function findSubSection(subId) {
+    for (let sec of courseData) {
+        const found = sec.children.find(s => s.id === subId);
+        if (found) return found;
+    }
+    return null;
+}
+
+// --- РЕНДЕР ЛЕВОГО МЕНЮ ---
+function renderMenu() {
+    const container = $('menuContainer');
+    container.innerHTML = '';
+    
+    courseData.forEach(sec => {
+        const isCollapsed = collapsedSecs[sec.id];
+        
+        const div1 = document.createElement('div');
+        div1.className = `menu-lvl1 ${isCollapsed ? 'collapsed' : ''}`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'menu-lvl1-content';
+        contentDiv.onclick = () => {
+            collapsedSecs[sec.id] = !collapsedSecs[sec.id];
+            renderMenu();
+        };
+        
+        const arrow = document.createElement('span');
+        arrow.className = 'menu-arrow';
+        arrow.textContent = '▼';
+        
+        const titleSpan = document.createElement('span');
+        titleSpan.textContent = sec.title;
+        
+        contentDiv.appendChild(arrow);
+        contentDiv.appendChild(titleSpan);
+        div1.appendChild(contentDiv);
+        
+        // Кнопка удаления (в режиме учителя)
+        if (currentMode === 'teacher') {
+            const delBtn = document.createElement('button');
+            delBtn.className = 'btn danger small';
+            delBtn.textContent = '🗑';
+            delBtn.onclick = (e) => { e.stopPropagation(); deleteLvl1(sec.id); };
+            div1.appendChild(delBtn);
+        }
+        
+        container.appendChild(div1);
+        
+        // Дети (если не свернуто)
+        if (!isCollapsed) {
+            sec.children.forEach(sub => {
+                const isSolved = sub.tasks && sub.tasks.length > 0 && sub.tasks.every(t => progress[t.id]?.solved);
+                const div2 = document.createElement('div');
+                div2.className = `menu-lvl2 ${activeSubId === sub.id ? 'active' : ''} ${isSolved ? 'solved' : ''}`;
+                
+                const titleSubSpan = document.createElement('span');
+                titleSubSpan.textContent = sub.title;
+                div2.appendChild(titleSubSpan);
+                
+                if (currentMode === 'teacher') {
+                    const delSubBtn = document.createElement('button');
+                    delSubBtn.className = 'btn danger small';
+                    delSubBtn.textContent = '🗑';
+                    delSubBtn.onclick = (e) => { e.stopPropagation(); deleteLvl2(sub.id); };
+                    div2.appendChild(delSubBtn);
+                } else {
+                    const dot = document.createElement('div');
+                    dot.className = 'menu-status-dot';
+                    div2.appendChild(dot);
+                }
+
+                div2.onclick = () => {
+                    activeSecId = sec.id;
+                    activeSubId = sub.id;
+                    activeTaskIndex = 0;
+                    render();
+                };
+                container.appendChild(div2);
+            });
+        }
+    });
+
+    if (currentMode === 'teacher') {
+        $('teacherMenuActions').classList.remove('hidden');
+    } else {
+        $('teacherMenuActions').classList.add('hidden');
+    }
+}
+
+// Автоматически увеличиваем редактор до высоты всего кода, добавляя запас в три строки.
+function fitCodeEditor(editor) {
+    if (!editor) return;
+    editor.style.height = 'auto';
+    const style = window.getComputedStyle(editor);
+    const lineHeight = Number.parseFloat(style.lineHeight) || 22.5;
+    const extraSpace = lineHeight * 3;
+    const desiredHeight = Math.max(190, editor.scrollHeight + extraSpace);
+    editor.style.height = `${Math.ceil(desiredHeight)}px`;
+}
+
+// --- РЕНДЕР ЦЕНТРА ---
+function renderCenter() {
+    const sub = findSubSection(activeSubId);
+    if (!sub) return;
+
+    if (currentTab === 'theory') {
+        $('theoryView').classList.remove('hidden');
+        $('practiceView').classList.add('hidden');
+        $('tabsContainer').children[0].classList.add('active');
+        $('tabsContainer').children[1].classList.remove('active');
+        
+        $('theoryTitle').textContent = sub.title;
+        $('theoryContent').innerHTML = renderTheoryWithContext(sub);
+        
+        if (currentMode === 'teacher') {
+            $('teacherTheoryEdit').classList.remove('hidden');
+            $('editSectionTitle').value = sub.title;
+            $('editSectionContent').value = sub.theory || '';
+        } else {
+            $('teacherTheoryEdit').classList.add('hidden');
+        }
+    } else {
+        $('theoryView').classList.add('hidden');
+        $('practiceView').classList.remove('hidden');
+        $('tabsContainer').children[0].classList.remove('active');
+        $('tabsContainer').children[1].classList.add('active');
+        
+        renderPracticeCard(sub);
+    }
+}
+
+function renderPracticeCard(sub) {
+    const container = $('taskContentArea');
+    container.innerHTML = '';
+    
+    if (!sub.tasks || sub.tasks.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#64748b; padding:40px 0;">В этом подразделе пока нет заданий.</p>';
+        return;
+    }
+
+    if (activeTaskIndex >= sub.tasks.length) activeTaskIndex = sub.tasks.length - 1;
+    if (activeTaskIndex < 0) activeTaskIndex = 0;
+    
+    const task = sub.tasks[activeTaskIndex];
+    const state = progress[task.id] || { solved: false, wrong: false, hintUsed: false };
+    const savedCode = Object.prototype.hasOwnProperty.call(state, 'code') ? state.code : task.template;
+    const hintReferences = getTaskReferenceItems(sub, task);
+    const hintReferenceMarkup = hintReferences.length ? hintReferences.map(item => `
+        <article class="hint-reference-item">
+            <strong>${escapeHtml(item.name)}</strong>
+            <code>${escapeHtml(item.syntax)}</code>
+            <p>${escapeHtml(item.description)}</p>
+            <button type="button" class="btn small" data-reference-name="${escapeHtml(item.name)}" data-reference-category="${escapeHtml(item.category)}">Открыть пример в справочнике</button>
+        </article>`).join('') : '<p>Для этого задания достаточно приёмов из условия и текущей темы.</p>';
+    
+    let statusClass = '';
+    if (state.solved) statusClass = 'solved';
+    else if (state.wrong) statusClass = 'wrong';
+    else if (state.hintUsed) statusClass = 'hint';
+
+    const div = document.createElement('div');
+    div.className = `task-card ${statusClass}`;
+    div.id = `task_card_${task.id}`;
+    
+    if (currentMode === 'teacher') {
+        div.innerHTML = `
+            <div class="task-header"><h2 class="task-title">Редактирование</h2></div>
+            <div class="form-group"><label>Название</label><input type="text" id="edit_title_${task.id}" class="form-control" value="${task.title}"></div>
+            <div class="form-group"><label>Описание</label><textarea id="edit_desc_${task.id}" class="form-control" style="height:80px;">${task.desc}</textarea></div>
+            <div class="form-group"><label>Шаблон кода</label><textarea id="edit_template_${task.id}" class="form-control">${task.template}</textarea></div>
+            <div class="form-group"><label>Ответ</label><input type="text" id="edit_answer_${task.id}" class="form-control" value="${task.answer}"></div>
+            <div class="form-group"><label>Подсказка</label><textarea id="edit_hint_${task.id}" class="form-control">${task.hint}</textarea></div>
+            <div class="action-row">
+                <button class="btn primary" onclick="saveTaskEdit('${task.id}')">💾 Сохранить</button>
+                <button class="btn" onclick="moveTask('${task.id}', -1)">⬆️ Выше</button>
+                <button class="btn" onclick="moveTask('${task.id}', 1)">⬇️ Ниже</button>
+                <button class="btn danger" onclick="deleteTask('${task.id}')">🗑 Удалить</button>
+            </div>
+        `;
+    } else {
+        div.innerHTML = `
+            <div class="task-header"><h2 class="task-title">${activeTaskIndex + 1}. ${task.title}</h2></div>
+            <div class="task-desc">${task.desc}</div>
+            <label style="font-weight:700; display:block; margin-bottom:8px;">Напиши код:</label>
+            <textarea class="code-editor" id="code_${task.id}" spellcheck="false">${savedCode}</textarea>
+            <div class="action-row">
+                <button class="btn green" onclick="runCode('${task.id}')">▶ Запустить код</button>
+                <button class="btn yellow" onclick="toggleHint('${task.id}')" id="hint_btn_${task.id}">${state.hintUsed ? 'Скрыть подсказку' : '💡 Подсказка: нужные приёмы'}</button>
+                <button class="btn" onclick="toggleSolution('${task.id}')" id="solution_btn_${task.id}">${state.codeShown ? 'Скрыть код' : 'Показать код'}</button>
+            </div>
+            <div class="output-box" id="out_${task.id}">${escapeHtml(state.output !== undefined ? state.output : '— вывод —')}</div>
+            
+            <div class="hint-box" id="hint_box_${task.id}" style="${state.hintUsed ? 'display:block;' : 'display:none;'}">
+                <strong>💡 Перед решением вспомни эти пункты справочника</strong>
+                <div class="hint-reference-list">${hintReferenceMarkup}</div>
+            </div>
+            <div class="solution-box" id="solution_box_${task.id}" style="${state.codeShown ? 'display:block;' : 'display:none;'}">
+                <strong>Код решения</strong>
+                <pre>${escapeHtml(task.hint)}</pre>
+            </div>
+        `;
+    }
+    container.appendChild(div);
+
+    const liveEditor = $(`code_${task.id}`);
+    if (liveEditor) {
+        // Подгоняем высоту под весь код и оставляем три свободные строки снизу.
+        fitCodeEditor(liveEditor);
+        liveEditor.addEventListener('input', () => {
+            fitCodeEditor(liveEditor);
+            saveProgress(task.id, { code: liveEditor.value });
+        });
+    }
+    div.querySelectorAll('[data-reference-name]').forEach(button => {
+        button.addEventListener('click', () => openReferenceForItemByName(button.dataset.referenceName, button.dataset.referenceCategory));
+    });
+    $('teacherAddTaskBtn').classList.toggle('hidden', currentMode !== 'teacher');
+}
+
+// --- СПРАВОЧНИК ТЕКУЩЕГО ПОДРАЗДЕЛА И ПОЯСНЕНИЯ В ТЕОРИИ ---
+// Список составлен по фактическим заготовкам и решениям карточек. Автоматическое
+// извлечение вызовов функций дополняет карту, если в карточке появится новый приём.
+const SUB_REFERENCE_NAMES = {
+  sub_1_1: ['int','str','print','type','len','Конкатенация +'],
+  sub_1_2: ['bin','oct','hex','int','int(s, base)','print'],
+  sub_1_3: ['bin','hex','zfill','len','print'],
+  sub_1_4: ['Остаток','Деление нацело','Условие if/else','Проверка чётности','print'],
+  sub_2_1: ['Индекс','Отрицательный индекс','len','print'],
+  sub_2_2: ['Срез','Отрицательный индекс','Разворот строкового числа','print'],
+  sub_2_3: ['Конкатенация +','Повторение *','f-строка','str','join','print'],
+  sub_2_4: ['count','find','rfind','startswith','endswith','print'],
+  sub_2_5: ['isdigit','isalpha','isalnum','strip','lower','upper','print'],
+  sub_2_6: ['replace','print'],
+  sub_2_7: ['split','join','len','print'],
+  sub_3_1: ['str','max','Срез','Конкатенация +','print'],
+  sub_3_2: ['count','int','math.prod','sum','Генераторное выражение','print'],
+  sub_3_3: ['Срез','sum','int','print'],
+  sub_3_4: ['int','str','replace','Срез','Разворот строкового числа','print'],
+  sub_3_5: ['len','Деление нацело','Остаток','Срез','print'],
+  sub_3_6: ['sorted','join','isdigit','int','print'],
+  sub_3_7: ['int','join','len','sum','Проверка in','Генераторное выражение','print'],
+  sub_4_1: ['append','insert','extend','remove','pop','clear','copy','count','index','reverse','sort','len','sorted','print'],
+  sub_4_2: ['set','add','len','sorted','Список уникальных значений','join','str','Проверка in','print'],
+  sub_4_3: ['int','isalpha','join','sorted','Генераторное выражение','Списковое включение','Проверка in','print'],
+  sub_4_4: ['int','len','max','min','sum','Проверка пустой коллекции','print'],
+  sub_5_1: ['count','int','Остаток','Деление нацело','Условие if/else','print'],
+  sub_5_2: ['bin','count','int','range','str','Остаток','Проверка чётности','print'],
+  sub_5_3: ['bin','int','replace','Срез','Разворот строкового числа','print'],
+  sub_5_4: ['range','Цикл for','Условие if/else','print'],
+  sub_5_5: ['set','add','append','len','max','min','sum','range','Генераторное выражение','Проверка пустой коллекции','print'],
+};
+
+// Дополняем общий справочник теми конструкциями, которые применяются в карточках,
+// но не являются обычными методами объекта (например, f-строки) или часто импортируются под коротким именем.
+const EXTRA_REFERENCE_ITEMS = [
+  { category: 'Общие операции и конструкции', name: 'f-строка', syntax: 'f"текст {выражение}"', description: 'Вставляет значения переменных и выражений прямо в строку. Полезна для сборки текста с числами и именами.', example: 'name = "Ира"\nf"Привет, {name}!"  # "Привет, Ира!"' },
+  { category: 'Числа и math', name: 'prod', syntax: 'from math import prod\nprod(iterable)', description: 'Перемножает все элементы последовательности. В задачах по разрядам можно передать генератор int(c) for c in s.', example: 'from math import prod\nprod(int(c) for c in "123")  # 6' }
+];
+for (const extra of EXTRA_REFERENCE_ITEMS) {
+  if (!methodReference.some(item => item.name === extra.name && item.category === extra.category)) methodReference.push(extra);
+}
+
+const GENERAL_REFERENCE_NAMES = new Set(['Индекс','Срез','Отрицательный индекс','Проверка in','Конкатенация +','Повторение *','Условие if/else','Цикл for','Генераторное выражение','Списковое включение','Разворот строкового числа','Список уникальных значений','Проверка чётности','Деление нацело','Остаток','Проверка пустой коллекции','f-строка']);
+const LIST_REFERENCE_NAMES = new Set(['append','clear','copy','count','extend','index','insert','pop','remove','reverse','sort']);
+const SET_REFERENCE_NAMES = new Set(['add']);
+const STRING_REFERENCE_NAMES = new Set(['count','endswith','find','isalnum','isalpha','isdigit','join','lower','replace','rfind','split','startswith','strip','upper','zfill']);
+function preferredReferenceCategory(name, subId) {
+  if (GENERAL_REFERENCE_NAMES.has(name)) return 'Общие операции и конструкции';
+  if (name === 'count' || name === 'index' || name === 'clear' || name === 'copy' || name === 'pop' || name === 'remove' || name === 'update') {
+    if (subId === 'sub_4_1' && LIST_REFERENCE_NAMES.has(name)) return 'Списки · list';
+    if (subId === 'sub_4_2' && SET_REFERENCE_NAMES.has(name)) return 'Множества · set';
+    if (subId.startsWith('sub_2_') || subId.startsWith('sub_3_')) return 'Строки · str';
+  }
+  if (subId === 'sub_4_1' && LIST_REFERENCE_NAMES.has(name)) return 'Списки · list';
+  if (subId === 'sub_4_2' && SET_REFERENCE_NAMES.has(name)) return 'Множества · set';
+  if (STRING_REFERENCE_NAMES.has(name)) return 'Строки · str';
+  if (['int','bin','oct','hex','math.prod','prod'].includes(name)) return 'Числа и math';
+  if (['len','sum','min','max','sorted','range','set','str','print'].includes(name)) return 'Встроенные функции';
+  return '';
+}
+function findContextReferenceItem(name, subId) {
+  if (name === 'prod') return methodReference.find(item => item.name === 'prod' && item.category === 'Числа и math') || null;
+  const exact = methodReference.filter(item => item.name === name);
+  if (!exact.length) return null;
+  const preferred = preferredReferenceCategory(name, subId);
+  if (preferred) {
+    const match = exact.find(item => item.category === preferred);
+    if (match) return match;
+  }
+  return exact[0];
+}
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function getRelevantReferenceItems(sub) {
+  if (!sub) return [];
+  const names = [];
+  const seenNames = new Set();
+  const addName = name => { if (name && !seenNames.has(name)) { seenNames.add(name); names.push(name); } };
+  (SUB_REFERENCE_NAMES[sub.id] || []).forEach(addName);
+  const source = (sub.tasks || []).map(task => [task.title, task.desc, task.template, task.hint].join('\n')).join('\n');
+  const callPattern = /(?<![A-Za-z0-9_])([A-Za-z_][A-Za-z0-9_]*)\s*\(/gm;
+  for (const match of source.matchAll(callPattern)) {
+    let name = match[1];
+    if (name === 'prod') addName('prod');
+    else addName(name);
+  }
+  const items = [];
+  const seen = new Set();
+  for (const name of names) {
+    const item = findContextReferenceItem(name, sub.id);
+    if (!item) continue;
+    const key = item.category + '|' + item.name;
+    if (!seen.has(key)) { seen.add(key); items.push(item); }
+  }
+  return items;
+}
+function getTaskReferenceItems(sub, task) {
+  const items = getRelevantReferenceItems(sub);
+  if (!task) return items;
+  const source = [task.title, task.desc, task.template, task.hint].join('\n');
+  const hasCall = name => source.includes(name + '(') || source.includes('.' + name + '(');
+  const needed = items.filter(item => {
+    const name = item.name;
+    if (name === 'int(s, base)') return /int\([^,\n]+,\s*(2|8|10|16|36)\)/.test(source);
+    if (name === 'math.prod' || name === 'prod') return /(?:math\.)?prod\s*\(/.test(source);
+    if (['Остаток','Проверка чётности'].includes(name)) return /%/.test(source);
+    if (name === 'Деление нацело') return /\/\//.test(source);
+    if (name === 'Условие if/else') return /\bif\b|\belse\b/.test(source);
+    if (name === 'Цикл for') return /\bfor\b/.test(source);
+    if (name === 'Срез') return /\[[^\]]*:[^\]]*\]/.test(source);
+    if (name === 'Отрицательный индекс') return /\[-\d/.test(source);
+    if (name === 'Индекс') return /\[[^\]:]+\]/.test(source);
+    if (name === 'Проверка in') return /\bin\b/.test(source);
+    if (name === 'Генераторное выражение') return /[({][^\n]*\bfor\b[^\n]*\bin\b/.test(source);
+    if (name === 'Списковое включение') return /\[[^\]]*\bfor\b/.test(source);
+    if (name === 'Конкатенация +') return /\s\+\s/.test(source) && /["']/.test(source);
+    if (name === 'Повторение *') return /\*\s*\d/.test(source);
+    if (name === 'Разворот строкового числа') return /\[::-1\]/.test(source);
+    if (name === 'Список уникальных значений') return /set\s*\(|sorted\s*\(/.test(source);
+    if (name === 'Проверка пустой коллекции') return /if\s+not\s+\w+/.test(source);
+    if (name === 'f-строка') return /f["']/.test(source);
+    return hasCall(name.replace(/^.*\./, ''));
+  });
+  return needed.length ? needed : items.slice(0, 5);
+}
+function renderTheoryWithContext(sub) {
+  return sub.theory || '<p style="color:#94a3b8;">Теория пока не добавлена. Открой единый справочник методов и функций.</p>';
+}
+function renderCurrentReference(sub) {
+  const panel = $('currentReferencePanel');
+  const list = $('currentReferenceList');
+  if (!panel || !list) return;
+  list.innerHTML = '';
+  if (!sub) {
+    $('currentReferenceTitle').textContent = 'Нет выбранного подраздела';
+    list.appendChild(makeReferenceElement('div', 'current-reference-empty', 'Выбери подраздел в оглавлении.'));
+    return;
+  }
+  $('currentReferenceTitle').textContent = sub.title;
+  const items = getRelevantReferenceItems(sub);
+  if (!items.length) {
+    list.appendChild(makeReferenceElement('div', 'current-reference-empty', 'Для этого подраздела пока не настроены методы и функции.'));
+    return;
+  }
+  items.forEach(item => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'current-reference-item';
+    const title = makeReferenceElement('strong', '', item.name);
+    const syntax = makeReferenceElement('code', '', item.syntax);
+    const description = makeReferenceElement('span', '', item.description);
+    button.append(title, syntax, description);
+    button.addEventListener('click', () => openReferenceForItem(item));
+    list.appendChild(button);
+  });
+}
+function openReferenceForItem(item) {
+  const sub = findSubSection(activeSubId);
+  const task = sub && sub.tasks && sub.tasks[activeTaskIndex];
+  if (task && currentMode === 'student') {
+    const state = progress[task.id] || {};
+    const viewed = new Set(state.referenceViewed || []);
+    viewed.add(item.name);
+    saveProgress(task.id, { referenceViewed: [...viewed] });
+  }
+  openReference();
+  $('referenceSearch').value = item.name;
+  $('referenceCategory').value = item.category;
+  renderReference();
+  $('referenceSearch').focus();
+}
+function openReferenceForItemByName(name, category) {
+  const item = methodReference.find(entry => entry.name === name && entry.category === category);
+  if (item) openReferenceForItem(item);
+}
+
+// --- РЕНДЕР ПРАВОЙ ПАНЕЛИ ---
+function renderRightPanel() {
+    const sub = findSubSection(activeSubId);
+    if (!sub) return;
+    renderCurrentReference(sub);
+    const tasks = Array.isArray(sub.tasks) ? sub.tasks : [];
+    let solvedCount = 0;
+    const listContainer = $('taskListContainer');
+    listContainer.innerHTML = '';
+    
+    tasks.forEach((task, i) => {
+        const state = progress[task.id] || {};
+        if (state.solved) solvedCount++;
+        
+        let cls = '', icon = '⚪';
+        if (state.solved) { cls = 'solved'; icon = '🟢'; }
+        else if (state.wrong) { cls = 'wrong'; icon = '🔴'; }
+        else if (state.hintUsed) { cls = 'hint'; icon = '🟡'; }
+        
+        if (i === activeTaskIndex && currentTab === 'practice') cls += ' active';
+        
+        const item = document.createElement('div');
+        item.className = `task-item ${cls}`;
+        item.innerHTML = `<span class="task-icon">${icon}</span><span class="task-name">${task.title}</span>`;
+        item.onclick = () => {
+            activeTaskIndex = i;
+            switchTab('practice');
+        };
+        listContainer.appendChild(item);
+    });
+    
+    const total = tasks.length;
+    const percent = total === 0 ? 0 : Math.round((solvedCount / total) * 100);
+    
+    $('progressCircle').style.setProperty('--percent', percent);
+    $('progressPercentText').textContent = `${percent}%`;
+    $('progressLabelText').textContent = `${solvedCount} из ${total} задач решено`;
+}
+
+// Сравниваем вывод по содержимому: число пробелов и переводов строк не должны мешать проверке таблицы.
+function normaliseOutput(value) { return String(value ?? '').trim().replace(/\s+/g, ' '); }
+
+// --- ФУНКЦИИ УЧЕНИКА ---
+async function runCode(taskId) {
+    const sub = findSubSection(activeSubId);
+    const task = sub && sub.tasks.find(t => t.id === taskId);
+    if (!task) return;
+    const editor = $(`code_${taskId}`);
+    const out = $(`out_${taskId}`);
+    if (!editor || !out) return;
+    const code = editor.value;
+    const runSubId = activeSubId; // Подраздел фиксируем до await, чтобы не менять навигацию ученика после выполнения.
+    out.textContent = '⏳ Запуск Python…';
+    saveProgress(taskId, { code: code, output: out.textContent });
+    try {
+        const py = await initPy();
+        let output = '';
+        py.setStdout({ batched: msg => { output += msg; } });
+        py.setStderr({ batched: msg => { output += msg; } });
+        out.textContent = '';
+        await py.runPythonAsync(code);
+        const actual = output.trim();
+        out.textContent = actual || '— программа ничего не вывела —';
+        if (normaliseOutput(actual) === normaliseOutput(String(task.answer))) {
+            out.textContent = '✅ Верно! Вывод: ' + actual;
+            saveProgress(taskId, { solved: true, wrong: false, code: code, output: out.textContent });
+            const card = document.getElementById(`task_card_${taskId}`);
+            if (card) card.classList.add('flash-correct');
+            setTimeout(() => {
+                renderMenu(); renderRightPanel();
+                // Не перехватываем навигацию, если ученик сам успел открыть другую карточку/подраздел.
+                if (activeSubId !== runSubId) return;
+                const currentTask = sub.tasks[activeTaskIndex];
+                if (currentTask && currentTask.id !== taskId) return;
+                const allSolved = sub.tasks.every(t => progress[t.id]?.solved);
+                if (allSolved) {
+                    alert(`Подраздел "${sub.title}" пройден!`);
+                } else {
+                    const nextTaskIdx = sub.tasks.findIndex(t => !progress[t.id]?.solved);
+                    if (nextTaskIdx !== -1) activeTaskIndex = nextTaskIdx;
+                    renderCenter(); renderRightPanel();
+                }
+            }, 500);
+        } else {
+            out.textContent = '❌ Пока не совпало. Вывод программы: ' + (actual || '(пусто)');
+            saveProgress(taskId, { wrong: true, solved: false, code: code, output: out.textContent });
+            renderRightPanel(); renderMenu();
+        }
+    } catch(e) {
+        out.textContent = 'Ошибка выполнения: ' + (e && e.message ? e.message : String(e));
+        saveProgress(taskId, { code: code, output: out.textContent });
+    }
+}
+
+function toggleHint(taskId) {
+    const hintBox = $(`hint_box_${taskId}`);
+    const hintBtn = $(`hint_btn_${taskId}`);
+    
+    if (hintBox.style.display === 'none') {
+        hintBox.style.display = 'block';
+        hintBtn.textContent = 'Скрыть подсказку';
+        const sub = findSubSection(activeSubId);
+        const task = sub && sub.tasks.find(item => item.id === taskId);
+        const referenceNames = getTaskReferenceItems(sub, task).map(item => item.name);
+        saveProgress(taskId, { hintUsed: true, hintReferences: referenceNames });
+        renderRightPanel();
+        renderMenu();
+    } else {
+        hintBox.style.display = 'none';
+        hintBtn.textContent = '💡 Подсказка: нужные приёмы';
+    }
+}
+
+function toggleSolution(taskId) {
+    const solutionBox = $(`solution_box_${taskId}`);
+    const solutionBtn = $(`solution_btn_${taskId}`);
+    if (!solutionBox || !solutionBtn) return;
+    if (solutionBox.style.display === 'none') {
+        solutionBox.style.display = 'block';
+        solutionBtn.textContent = 'Скрыть код';
+        saveProgress(taskId, { codeShown: true });
+    } else {
+        solutionBox.style.display = 'none';
+        solutionBtn.textContent = 'Показать код';
+    }
+}
+
+// --- ФУНКЦИИ УЧИТЕЛЯ ---
+function addLvl1() {
+    const title = prompt('Название нового Раздела (Lvl 1):');
+    if (!title) return;
+    const newSec = { id: 'sec_' + Date.now(), title: title, children: [] };
+    for (let j = 1; j <= 10; j++) {
+        newSec.children.push({ id: `sub_${Date.now()}_${j}`, title: `Подраздел ${j}`, theory: "", tasks: [] });
+    }
+    courseData.push(newSec);
+    render();
+}
+
+// --- МОДАЛЬНОЕ ОКНО ДЛЯ ДОБАВЛЕНИЯ LVL 2 ---
+function openModalLvl2() {
+    $('newLvl2Title').value = '';
+    const select = $('newLvl2Parent');
+    select.innerHTML = '';
+    courseData.forEach(sec => {
+        const opt = document.createElement('option');
+        opt.value = sec.id;
+        opt.textContent = sec.title;
+        select.appendChild(opt);
+    });
+    $('modalLvl2').classList.add('open');
+}
+
+function closeModalLvl2() {
+    $('modalLvl2').classList.remove('open');
+}
+
+function confirmAddLvl2() {
+    const title = $('newLvl2Title').value.trim();
+    const parentId = $('newLvl2Parent').value;
+    if (!title) {
+        alert('Введите название подраздела!');
+        return;
+    }
+    
+    const parentSec = courseData.find(s => s.id === parentId);
+    if (!parentSec) return;
+
+    const newSub = { id: 'sub_' + Date.now(), title: title, theory: "", tasks: [] };
+    parentSec.children.push(newSub);
+    activeSecId = parentSec.id;
+    activeSubId = newSub.id;
+    currentTab = 'theory';
+    
+    closeModalLvl2();
+    render();
+}
+
+function deleteLvl1(id) {
+    if (!confirm('Удалить весь раздел и все его подразделы?')) return;
+    courseData = courseData.filter(s => s.id !== id);
+    if (courseData.length > 0) {
+        activeSecId = courseData[0].id;
+        activeSubId = courseData[0].children[0].id;
+    }
+    render();
+}
+
+function deleteLvl2(id) {
+    if (!confirm('Удалить этот подраздел?')) return;
+    for (let sec of courseData) {
+        const idx = sec.children.findIndex(s => s.id === id);
+        if (idx !== -1) {
+            sec.children.splice(idx, 1);
+            break;
+        }
+    }
+    const firstSec = courseData[0];
+    activeSubId = firstSec.children[0].id;
+    render();
+}
+
+function saveSectionEdit() {
+    const sub = findSubSection(activeSubId);
+    sub.title = $('editSectionTitle').value;
+    sub.theory = $('editSectionContent').value;
+    render();
+    alert('Теория сохранена!');
+}
+
+function addNewTask() {
+    const sub = findSubSection(activeSubId);
+    const newTask = {
+        id: 'task_' + Date.now(),
+        title: 'Новое задание',
+        desc: 'Описание',
+        answer: 'ответ',
+        template: '# Код',
+        hint: '# Решение'
+    };
+    sub.tasks.push(newTask);
+    activeTaskIndex = sub.tasks.length - 1;
+    switchTab('practice');
+}
+
+function saveTaskEdit(id) {
+    const sub = findSubSection(activeSubId);
+    const task = sub.tasks.find(t => t.id === id);
+    task.title = $(`edit_title_${id}`).value;
+    task.desc = $(`edit_desc_${id}`).value;
+    task.template = $(`edit_template_${id}`).value;
+    task.answer = $(`edit_answer_${id}`).value;
+    task.hint = $(`edit_hint_${id}`).value;
+    render();
+    alert('Задание сохранено!');
+}
+
+function moveTask(id, dir) {
+    const sub = findSubSection(activeSubId);
+    const idx = sub.tasks.findIndex(t => t.id === id);
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= sub.tasks.length) return;
+    const temp = sub.tasks[idx];
+    sub.tasks[idx] = sub.tasks[newIdx];
+    sub.tasks[newIdx] = temp;
+    activeTaskIndex = newIdx;
+    render();
+}
+
+function deleteTask(id) {
+    if (!confirm('Удалить задание?')) return;
+    const sub = findSubSection(activeSubId);
+    sub.tasks = sub.tasks.filter(t => t.id !== id);
+    activeTaskIndex = Math.max(0, activeTaskIndex - 1);
+    render();
+}
+
+// --- ВСПОМОГАТЕЛЬНЫЕ ---
+function saveProgress(id, data) {
+    progress[id] = { ...(progress[id] || {}), ...data };
+    try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); }
+    catch (e) { console.warn('Не удалось записать прогресс в localStorage:', e); }
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    renderCenter();
+    renderRightPanel();
+}
+
+function render() {
+    renderMenu();
+    renderCenter();
+    renderRightPanel();
+}
+
+let pyInitPromise = null;
+async function initPy() {
+    if (pyReady && py) return py;
+    if (pyInitPromise) return pyInitPromise;
+    pyInitPromise = (async () => {
+        if (typeof window.loadPyodide !== 'function') {
+            await new Promise((resolve, reject) => {
+                const existing = document.querySelector('script[src*="pyodide.js"]');
+                if (existing) {
+                    existing.addEventListener('load', resolve, { once: true });
+                    existing.addEventListener('error', reject, { once: true });
+                    // If the CDN script already ran, the load event has passed; check once more.
+                    setTimeout(() => { if (typeof window.loadPyodide === 'function') resolve(); }, 0);
+                } else {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js';
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('Не удалось загрузить Pyodide. Проверьте подключение к интернету.'));
+                    document.head.appendChild(script);
+                }
+            });
+        }
+        if (typeof window.loadPyodide !== 'function') throw new Error('Библиотека Pyodide не загрузилась.');
+        py = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/' });
+        pyReady = true;
+        return py;
+    })();
+    try { return await pyInitPromise; }
+    catch (e) { pyInitPromise = null; throw e; }
+}
+
+// --- ГЕНЕРАЦИЯ ОТЧЁТА ---
+$('reportBtn').onclick = () => {
+    let totalTasks = 0;
+    let solvedTasks = 0;
+    let wrongTasks = 0;
+    let hintTasks = 0;
+    let solutionShownTasks = 0;
+    let referenceOpenedTasks = 0;
+
+    courseData.forEach(sec => {
+        sec.children.forEach(sub => {
+            if(sub.tasks) {
+                sub.tasks.forEach(t => {
+                    totalTasks++;
+                    const state = progress[t.id] || {};
+                    if (state.solved) solvedTasks++;
+                    else if (state.wrong) wrongTasks++;
+                    if (state.hintUsed) hintTasks++;
+                    if (state.codeShown) solutionShownTasks++;
+                    if (state.referenceViewed && state.referenceViewed.length) referenceOpenedTasks++;
+                });
+            }
+        });
+    });
+
+    const percent = totalTasks === 0 ? 0 : Math.round((solvedTasks / totalTasks) * 100);
+
+    let html = `
+        <!DOCTYPE html>
+        <html lang="ru">
+        <head>
+            <meta charset="utf-8">
+            <title>Отчёт учителю</title>
+            <style>
+                body { font-family: Arial, sans-serif; color: #1e293b; margin: 30px; line-height: 1.5; }
+                h1 { color: #6366f1; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+                h2 { color: #334155; margin-top: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+                h3 { color: #475569; margin-top: 20px; }
+                .summary { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 16px; }
+                .summary span { font-weight: bold; margin-right: 15px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+                th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; vertical-align: top; }
+                th { background: #f1f5f9; font-weight: bold; }
+                .status-icon { font-size: 20px; text-align: center; width: 50px; }
+                pre { background: #0f172a; color: #f8fafc; padding: 10px; border-radius: 6px; font-size: 12px; overflow-x: auto; margin: 0; white-space: pre-wrap; }
+                .print-btn { background: #6366f1; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 16px; cursor: pointer; display: block; margin: 20px auto; }
+                @media print {
+                    .print-btn { display: none; }
+                    body { margin: 0; }
+                    table { page-break-inside: auto; }
+                    tr { page-break-inside: avoid; page-break-after: auto; }
+                }
+            </style>
+        </head>
+        <body>
+            <h1>📄 Отчёт ученика</h1>
+            <div class="summary">
+                <span>Всего задач: ${totalTasks}</span>
+                <span>🟢 Решено верно: ${solvedTasks}</span>
+                <span>🔴 С ошибками: ${wrongTasks}</span>
+                <span>🟡 С подсказкой: ${hintTasks}</span>
+                <span>📖 Открывали справочник: ${referenceOpenedTasks}</span>
+                <span>💻 Показывали код решения: ${solutionShownTasks}</span>
+                <br><br>
+                <strong>Общий прогресс: ${percent}%</strong>
+            </div>
+            
+            <button class="print-btn" onclick="window.print()">🖨 Сохранить в PDF</button>
+    `;
+
+    courseData.forEach(sec => {
+        let secHasTasks = sec.children.some(sub => sub.tasks && sub.tasks.length > 0);
+        if (!secHasTasks) return;
+
+        html += `<h2>📚 Раздел: ${sec.title}</h2>`;
+        
+        sec.children.forEach(sub => {
+            if (!sub.tasks || sub.tasks.length === 0) return;
+            
+            html += `<h3>📂 ${sub.title}</h3>`;
+            html += `<table>
+                <thead>
+                    <tr>
+                        <th class="status-icon">Статус</th>
+                        <th>Задание</th>
+                        <th>Подсказка и пункты справочника</th>
+                        <th>Код решения</th>
+                        <th>Код ученика</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            sub.tasks.forEach(task => {
+                const state = progress[task.id] || {};
+                let statusEmoji = '⚪';
+                let bgColor = '#fff';
+                let statusText = 'Не начато';
+
+                if (state.solved) { 
+                    statusEmoji = '🟢'; bgColor = '#ecfdf5'; statusText = 'Верно'; 
+                    if (state.hintUsed) statusText += ' (с подсказкой)';
+                } else if (state.wrong) { 
+                    statusEmoji = '🔴'; bgColor = '#fef2f2'; statusText = 'Неверно'; 
+                    if (state.hintUsed) statusText += ' (с подсказкой)';
+                } else if (state.hintUsed) { 
+                    statusEmoji = '🟡'; bgColor = '#fffbeb'; statusText = 'Использовал подсказку'; 
+                }
+
+                const code = Object.prototype.hasOwnProperty.call(state, 'code') ? state.code : (task.template || '');
+                const hintNames = Array.isArray(state.hintReferences) ? state.hintReferences : [];
+                const openedNames = Array.isArray(state.referenceViewed) ? state.referenceViewed : [];
+                const hintReport = state.hintUsed
+                    ? `Показана<br><strong>Приёмы:</strong> ${hintNames.length ? hintNames.map(escapeHtml).join(', ') : 'список не сохранён'}${openedNames.length ? `<br><strong>Открывал в справочнике:</strong> ${openedNames.map(escapeHtml).join(', ')}` : ''}`
+                    : 'Не показывалась';
+                const solutionReport = state.codeShown
+                    ? `Показан ученику<pre>${escapeHtml(task.hint || '')}</pre>`
+                    : 'Не показывался';
+
+                html += `
+                    <tr style="background-color: ${bgColor};">
+                        <td class="status-icon" style="text-align:center; vertical-align:middle;">${statusEmoji}</td>
+                        <td>
+                            <strong>${task.title}</strong><br>
+                            <span style="font-size: 12px; color: #64748b;">${statusText}</span>
+                        </td>
+                        <td>${hintReport}</td>
+                        <td>${solutionReport}</td>
+                        <td><pre>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre></td>
+                    </tr>`;
+            });
+
+            html += `</tbody></table>`;
+        });
+    });
+
+    html += `</body></html>`;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+};
+
+// Обработчики справочника
+initReferenceCategories();
+$('openReferenceBtn').addEventListener('click', openReference);
+$('closeReferenceBtn').addEventListener('click', closeReference);
+$('referenceSearch').addEventListener('input', renderReference);
+$('referenceCategory').addEventListener('change', renderReference);
+$('referenceOverlay').addEventListener('click', event => {
+    if (event.target === $('referenceOverlay')) closeReference();
+});
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && $('referenceOverlay').classList.contains('open')) closeReference();
+});
+
+// --- ГЛОБАЛЬНЫЕ ---
+$('toggleModeBtn').onclick = () => {
+    currentMode = currentMode === 'student' ? 'teacher' : 'student';
+    $('toggleModeBtn').textContent = currentMode === 'student' ? 'Режим Учителя' : 'Режим Ученика';
+    $('toggleModeBtn').className = currentMode === 'student' ? 'btn yellow' : 'btn primary';
+    render();
+};
+
+$('clearProgressBtn').onclick = () => {
+    if (confirm('Очистить весь прогресс ученика?')) {
+        progress = {};
+        try { localStorage.removeItem(PROGRESS_KEY); } catch (e) {}
+        render();
+    }
+};
+
+$('saveAppBtn').onclick = () => {
+    const currentEditor = document.querySelector('.code-editor');
+    if (currentEditor) {
+        const taskId = currentEditor.id.replace(/^code_/, '');
+        progress[taskId] = { ...(progress[taskId] || {}), code: currentEditor.value };
+    }
+    const storeObj = { course: courseData, progress: progress };
+    document.getElementById('data-store').textContent = JSON.stringify(storeObj, null, 2).replace(/</g, '\\u003c');
+    
+    const clone = document.documentElement.cloneNode(true);
+    clone.querySelector('#menuContainer').innerHTML = '';
+    clone.querySelector('#theoryContent').innerHTML = '';
+    clone.querySelector('#taskContentArea').innerHTML = '';
+    clone.querySelector('#taskListContainer').innerHTML = '';
+    
+    const htmlString = '<!DOCTYPE html>\n' + clone.outerHTML;
+    const blob = new Blob([htmlString], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'trainer_saved.html';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    alert('Файл сохранен!');
+};
+
+window.onload = () => {
+    const store = JSON.parse($('data-store').textContent);
+    if (store.progress && Object.keys(store.progress).length > 0) {
+        progress = { ...store.progress, ...progress };
+    }
+    // In the previous version, the hint button exposed the solution code directly.
+    // Preserve that history in the report when loading older progress records.
+    Object.values(progress).forEach(state => {
+        if (state && state.hintUsed && !Array.isArray(state.hintReferences) && !state.codeShown) state.codeShown = true;
+    });
+    if (!activeSubId) {
+        activeSubId = courseData[0].children[0].id;
+    }
+    render();
+};
+</script>
+</body>
+</html>
