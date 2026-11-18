@@ -237,6 +237,20 @@ const ORDER=TASKS.map(t=>t.id);const TK=Object.fromEntries(TASKS.map(t=>[t.id,t]
 const ref=c=>c.replace(/⟦([^⟧¦]*)(¦[^⟧]*)?⟧/g,'$1');
 const tpl=c=>c.replace(/⟦([^⟧¦]*)(¦([^⟧]*))?⟧/g,(m,a,b,c2)=>c2!=null?c2:BLANK);
 function tplFields(c){const fields=[];let shift=0;c.replace(/⟦([^⟧¦]*)(¦([^⟧]*))?⟧/g,(m,a,b,c2,at)=>{const out=c2!=null?c2:BLANK;if(c2==null){const start=at+shift;fields.push({start,end:start+BLANK.length,touched:false});}shift+=out.length-m.length;return out;});return fields;}
+function savedTemplateFields(template,code){
+  const tLines=template.split('\n'),cLines=String(code||'').split('\n');
+  const specs=tLines.map(line=>{const base=tpl(line),fields=tplFields(line);return {base,fields};});
+  const locate=(spec,candidate)=>{let cursor=0,result=[];for(const f of spec.fields){const before=spec.base.slice(cursor,f.start),p=candidate.indexOf(before,cursor);if(p<0)return null;const start=p+before.length;const next=spec.fields[result.length+1],after=spec.base.slice(f.end,next?next.start:spec.base.length);const end=after?candidate.indexOf(after,start):candidate.length;if(end<start)return null;result.push({start,end,touched:/\S/.test(candidate.slice(start,end))});cursor=end+after.length;}return result;};
+  const n=specs.length,m=cLines.length,dp=Array.from({length:n+1},()=>Array(m+1).fill(-1e9)),way=Array.from({length:n+1},()=>Array(m+1).fill(''));
+  dp[0][0]=0;for(let j=1;j<=m;j++){dp[0][j]=dp[0][j-1]-1;way[0][j]='c';}for(let i=1;i<=n;i++){dp[i][0]=dp[i-1][0]-2;way[i][0]='t';}
+  for(let i=1;i<=n;i++)for(let j=1;j<=m;j++){
+    const spec=specs[i-1],candidate=cLines[j-1],mapped=spec.fields.length?locate(spec,candidate):null;
+    const score=spec.fields.length?(mapped?5+Math.min(5,spec.base.length/8):-7):(candidate===spec.base?9:-5);
+    const opts=[[dp[i-1][j-1]+score,'m'],[dp[i][j-1]-1,'c'],[dp[i-1][j]-2,'t']].sort((a,b)=>b[0]-a[0]);dp[i][j]=opts[0][0];way[i][j]=opts[0][1];
+  }
+  const fields=[];let i=n,j=m;while(i||j){const w=way[i][j];if(w==='m'){const found=specs[i-1].fields.length?locate(specs[i-1],cLines[j-1]):null;if(found)for(const f of found){const start=cLines.slice(0,j-1).reduce((a,x)=>a+x.length+1,0)+f.start,end=cLines.slice(0,j-1).reduce((a,x)=>a+x.length+1,0)+f.end;fields.push({start,end,touched:f.touched});}i--;j--;}else if(w==='c')j--;else if(w==='t')i--;else break;}
+  return fields.sort((a,b)=>a.start-b.start);
+}
 
 /* ===== Python в браузере: Pyodide в Worker ===== */
 const PY_RUNNER=String.raw`
@@ -605,7 +619,9 @@ function openTask(id){
   bindTop();bindSide();
   $('#fold button').onclick=()=>{const p=$('#fold pre');p.style.display=p.style.display==='none'?'':'none';};
   let saveC=null;
-  ED=makeEditor($('#edh'),x.code||tpl(t.code),{minLines:10,initialFields:x.fields||(x.code?[]:tplFields(t.code)),onRun:()=>runMain(),onHistory:(u,r)=>{$('#bUndo').disabled=!u;$('#bRedo').disabled=!r;},onChange:(v,fields)=>{clearTimeout(saveC);saveC=setTimeout(()=>{X(id).code=v;X(id).fields=fields;bump();},500);$('#bList').classList.toggle('on',/^l = \[\]/m.test(v));}});
+  const editorFields=x.fieldVersion===2&&x.fields?x.fields:(x.code?savedTemplateFields(t.code,x.code):tplFields(t.code));
+  if(x.fieldVersion!==2){x.fields=editorFields;x.fieldVersion=2;bump();}
+  ED=makeEditor($('#edh'),x.code||tpl(t.code),{minLines:10,initialFields:editorFields,onRun:()=>runMain(),onHistory:(u,r)=>{$('#bUndo').disabled=!u;$('#bRedo').disabled=!r;},onChange:(v,fields)=>{clearTimeout(saveC);saveC=setTimeout(()=>{X(id).code=v;X(id).fields=fields;X(id).fieldVersion=2;bump();},500);$('#bList').classList.toggle('on',/^l = \[\]/m.test(v));}});
   $('#bRun').onclick=()=>runMain();$('#bStop').onclick=()=>PY.kill();
   document.querySelectorAll('[data-ex]').forEach(b=>b.onclick=()=>runExample(t.ex[+b.dataset.ex][0],t.ex[+b.dataset.ex][1]));
   $('#bExN').onclick=()=>{const v=parseInt($('#exN').value);if(!(v>=0)){$('#exN').focus();return;}const e=t.ex.find(z=>z[0]===v);runExample(v,e?e[1]:null);};
