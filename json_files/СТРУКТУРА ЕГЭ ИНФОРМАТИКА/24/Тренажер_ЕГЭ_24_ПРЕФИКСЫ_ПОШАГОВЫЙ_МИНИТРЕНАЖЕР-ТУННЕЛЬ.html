@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><title>Песочница ЕГЭ 24 — префиксные суммы</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font:14px system-ui,Segoe UI,sans-serif;background:#0f1420;color:#e6eaf3}
+header{padding:10px 16px;background:#18202f;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h1{font-size:17px;margin:0;flex:1}button{background:#3b6cf6;color:#fff;border:0;border-radius:6px;padding:7px 13px;cursor:pointer;font-size:14px}
+button.g{background:#2b364d}button:disabled{opacity:.4}
+main{display:grid;grid-template-columns:minmax(340px,430px) 1fr;gap:12px;padding:12px}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+.card{background:#18202f;border-radius:10px;padding:12px;margin-bottom:12px}
+.card h3{margin:0 0 8px;font-size:13px;color:#8fa3c8;text-transform:uppercase;letter-spacing:.05em}
+#code{font:13px/1.55 Consolas,monospace;white-space:pre}
+.ln{display:flex;cursor:pointer;border-radius:4px;padding:0 4px}.ln:hover{background:#243049}
+.ln .n{width:26px;color:#5c6b8a;flex:none}.ln .t{flex:1;overflow:hidden}.ln .b{color:#8fa3c8;font-size:11px;margin-left:6px}
+.ln.sel{background:#2a3a63}.ln.cur{outline:2px solid #f5b83d;background:#3a3320}
+textarea{width:100%;height:340px;background:#0b0f19;color:#e6eaf3;border:1px solid #2b364d;border-radius:6px;font:13px/1.5 Consolas,monospace;padding:8px}
+.cells{display:flex;flex-wrap:wrap;gap:0;padding:26px 0 8px;overflow-x:auto}
+.c{width:34px;text-align:center;position:relative;flex:none}
+.c .ch{height:34px;line-height:34px;font:bold 17px Consolas,monospace;background:#243049;border:1px solid #0f1420}
+.c .ix{font-size:10px;color:#5c6b8a;margin-top:2px}.c .pv{font:12px Consolas;color:#7de0b0;margin-top:2px;height:16px}
+.c.seg .ch{background:#3b6cf6}.c.fnd .ch{background:#1f9d62}
+.c.ai::before,.c.aj::before{position:absolute;top:-20px;left:0;right:0;font-size:12px;font-weight:bold}
+.c.ai::before{content:"i▼";color:#f5b83d}.c.aj::before{content:"j▼";color:#ff7a8a}.c.ai.aj::before{content:"i,j▼";color:#fff}
+.run{display:inline-flex;flex-direction:column;align-items:center;margin:3px 4px 3px 0;padding:4px 8px;border-radius:6px;background:#243049}
+.run b{font:bold 16px Consolas}.run span{font-size:11px;color:#8fa3c8}
+.run+.arr{margin:0 2px;color:#5c6b8a}
+.f{padding:5px 8px;border-radius:6px;cursor:pointer;font:13px Consolas;display:flex;gap:8px}.f:hover{background:#243049}.f.on{background:#1b4d38}.f.best{border-left:3px solid #f5b83d}
+table{border-collapse:collapse;font:13px Consolas}td,th{border:1px solid #2b364d;padding:3px 8px;text-align:left}th{color:#8fa3c8}
+.muted{color:#6f7f9f}.err{color:#ff7a8a;white-space:pre-wrap}
+.note{background:#0b0f19;border-radius:6px;padding:8px 10px;margin-top:8px;line-height:1.6}
+.ok{color:#7de0b0}.bad{color:#ff7a8a}input[type=range]{width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.chip{padding:2px 8px;border-radius:12px;background:#2b364d;cursor:pointer;font-size:12px}.chip.on{background:#f5b83d;color:#000}
+</style></head><body>
+<header><h1>🧪 Песочница: префиксные суммы, найденные строки, их «превращение»</h1>
+<button class="g" id="bEdit">✏️ Редактировать код</button><button id="bRun">▶ Запустить и трассировать</button><span id="status" class="muted">Загрузка Python…</span></header>
+<main>
+<div>
+ <div class="card"><h3>Код задачи (кликай по строке)</h3>
+  <div id="code"></div><textarea id="ta" style="display:none"></textarea>
+  <div id="chips" class="chips"></div></div>
+ <div class="card"><h3>Вывод программы</h3><pre id="out" style="margin:0;max-height:160px;overflow:auto"></pre></div>
+</div>
+<div>
+ <div class="card"><h3>Шаг выполнения</h3>
+  <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+   <button class="g" id="b0">⏮</button><button class="g" id="bP">◀</button><button id="bN">▶</button><button class="g" id="bE">⏭</button>
+   <button class="g" id="bPl">⏯ Авто</button><span id="stepInfo" class="muted"></span></div>
+  <input type="range" id="sl" min="0" max="0" value="0" style="margin-top:8px"></div>
+ <div class="card"><h3>Строка и префиксные суммы смен</h3><div id="cells" class="cells"></div><div id="note" class="note"></div></div>
+ <div class="card"><h3>Во что превратилась рассматриваемая строка (серии одинаковых символов)</h3><div id="runs"></div></div>
+ <div class="card"><h3>Найденные строки (клик — показать на исходной)</h3><div id="found" class="muted">Пока ничего не найдено</div></div>
+ <div class="card"><h3>Переменные на этом шаге</h3><div id="vars"></div></div>
+</div></main>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script>
+const DEFAULT=`s='AAABBBBBCCDDDDDDDAAA'
+K=2   # допустимое число смен символов
+# Префиксные суммы смен символов
+pr=[0]*len(s)
+for k in range(1,len(s)):
+    pr[k]=pr[k-1]+(s[k]!=s[k-1])
+l=0
+for i in range(len(s)):
+    j=i+l+1
+    while j<=len(s):
+        ss=s[i:j]
+        if pr[j-1]-pr[i]>K: break      # ПЛОХО: смен больше K
+        if pr[j-1]-pr[i]==K:           # ХОРОШО: ровно K смен
+            l=len(ss)
+            print(i,l,ss)
+        j+=1                           # в любом случае расширяем
+print('Ответ:',l)`;
+const PYRUN=`
+import sys, json, io
+def _ser(v,d=0):
+    if isinstance(v,(bool,int,float)): return v
+    if isinstance(v,str): return v[:300]
+    if isinstance(v,(list,tuple)) and d==0 and len(v)<=300 and all(isinstance(x,(bool,int,float,str)) for x in v): return list(v)
+    return repr(v)[:60]
+def _snap(g):
+    return {k:_ser(v) for k,v in g.items() if not k.startswith('__') and not callable(v) and not hasattr(v,'__spec__')}
+def run_user(code):
+    buf=io.StringIO(); steps=[]; g={'__name__':'__main__'}; err=None
+    def tr(frame,ev,arg):
+        if frame.f_code.co_filename!='<user>': return None
+        if ev=='line' and len(steps)<20000:
+            steps.append([frame.f_lineno,_snap(frame.f_globals),len(buf.getvalue())])
+        return tr
+    old=sys.stdout; sys.stdout=buf
+    try:
+        sys.settrace(tr); exec(compile(code,'<user>','exec'),g)
+    except BaseException as e: err=repr(e)
+    finally: sys.settrace(None); sys.stdout=old
+    return json.dumps({'steps':steps,'out':buf.getvalue(),'err':err})
+`;
+let py,code=DEFAULT,T=null,cur=0,selLine=null,focus=null,timer=null,editing=false;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+$('ta').value=code;
+async function init(){py=await loadPyodide();py.runPython(PYRUN);$('status').textContent='Python готов';run();}
+function run(){
+ if(!py)return; if(editing)toggleEdit();
+ const r=JSON.parse(py.globals.get('run_user')(code));T=r;T.lines=r.out.split('\n');
+ cur=0;selLine=null;focus=null;$('sl').max=Math.max(0,r.steps.length-1);$('sl').value=0;
+ $('out').innerHTML=esc(r.out)+(r.err?'<div class="err">'+esc(r.err)+'</div>':'');
+ $('status').textContent='Шагов: '+r.steps.length;render();
+}
+function toggleEdit(){editing=!editing;if(!editing)code=$('ta').value;
+ $('ta').style.display=editing?'block':'none';$('code').style.display=editing?'none':'block';
+ $('bEdit').textContent=editing?'✔ Готово':'✏️ Редактировать код';if(!editing)run();}
+// какие значения были найдены к шагу k
+function foundUpTo(k){
+ const n=T.steps.length?(k+1<T.steps.length?T.steps[k+1][2]:T.out.length):0;
+ const txt=T.out.slice(0,n);const res=[];
+ for(const ln of txt.split('\n')){const m=ln.match(/^(\d+)\s+(\d+)\s+(\S+)$/);if(m)res.push({i:+m[1],l:+m[2],ss:m[3]});}
+ return res;
+}
+function render(){
+ // код
+ const L=code.split('\n'),cnt={};T.steps.forEach(s=>cnt[s[0]]=(cnt[s[0]]||0)+1);
+ const curL=T.steps[cur]?T.steps[cur][0]:-1;
+ $('code').innerHTML=L.map((t,i)=>`<div class="ln ${selLine==i+1?'sel':''} ${curL==i+1?'cur':''}" data-l="${i+1}"><span class="n">${i+1}</span><span class="t">${esc(t)||' '}</span>${cnt[i+1]?`<span class="b">×${cnt[i+1]}</span>`:''}</div>`).join('');
+ document.querySelectorAll('.ln').forEach(e=>e.onclick=()=>{selLine=+e.dataset.l;const f=T.steps.findIndex(s=>s[0]==selLine);if(f>=0)cur=f;focus=null;$('sl').value=cur;render();});
+ // чипы выполнений выбранной строки
+ let ch='';if(selLine){const ids=[];T.steps.forEach((s,k)=>{if(s[0]==selLine)ids.push(k)});
+  if(!ids.length)ch='<span class="muted">Эта строка не выполнялась</span>';
+  else{ch=`<span class="muted">Строка ${selLine}, выполнений: ${ids.length}. Выбери:</span> `;
+   const show=ids.length>80?ids.filter((_,q)=>q<80):ids;ch+=show.map((k,q)=>`<span class="chip ${k==cur?'on':''}" data-k="${k}">#${q+1}</span>`).join('');if(ids.length>80)ch+=' …';}}
+ $('chips').innerHTML=ch;document.querySelectorAll('.chip[data-k]').forEach(e=>e.onclick=()=>{cur=+e.dataset.k;$('sl').value=cur;focus=null;render();});
+ if(!T.steps.length){$('cells').innerHTML='<span class="err">'+esc(T.err||'Нет шагов')+'</span>';return;}
+ const st=T.steps[cur],V=st[1];
+ $('stepInfo').textContent=`шаг ${cur+1} из ${T.steps.length} · строка ${st[0]}`;
+ // авто-определение главной строки и префиксов
+ let sName=('s' in V&&typeof V.s=='string')?'s':Object.keys(V).filter(k=>typeof V[k]=='string').sort((a,b)=>V[b].length-V[a].length)[0];
+ const S=V[sName]||'';
+ let pName=Object.keys(V).find(k=>Array.isArray(V[k])&&V[k].length==S.length&&V[k].every(x=>typeof x=='number'));
+ const P=pName?V[pName]:null;
+ const i=Number.isInteger(V.i)?V.i:null,j=Number.isInteger(V.j)?V.j:null;
+ const F=foundUpTo(cur);const fo=focus!=null?F[focus]:null;
+ let h='';
+ for(let c=0;c<S.length;c++){
+  let cl='c';
+  if(fo&&c>=fo.i&&c<fo.i+fo.l)cl+=' fnd';
+  else if(!fo&&i!=null&&j!=null&&c>=i&&c<j)cl+=' seg';
+  if(!fo&&i==c)cl+=' ai';if(!fo&&j!=null&&j==c)cl+=' aj';
+  h+=`<div class="${cl}"><div class="ch">${esc(S[c])}</div><div class="ix">${c}</div><div class="pv">${P?P[c]:''}</div></div>`;}
+ if(!fo&&j!=null&&j==S.length)h+=`<div class="c aj"><div class="ch" style="background:none;border:0"></div></div>`;
+ $('cells').innerHTML=h;
+ // пояснение
+ let n='';
+ if(P)n+=`<div>Нижняя строка — <b>${pName}[k]</b>: сколько раз символ сменился на отрезке от 0 до k.</div>`;
+ if(fo){const a=fo.i,b=fo.i+fo.l-1;n+=`<div>Выбрана найденная строка <b>${esc(fo.ss)}</b>: позиции <b>${a}…${b}</b>, длина <b>${fo.l}</b>.`+(P?` Смен внутри: <b>${P[b]}−${P[a]} = ${P[b]-P[a]}</b>`:'')+`</div>`;}
+ else if(i!=null&&j!=null&&P&&j-1>=i&&j-1<S.length){const d=P[j-1]-P[i];
+  n+=`<div>Отрезок <b>s[${i}:${j}]</b> = <b>${esc(S.slice(i,j))}</b> (длина ${j-i}). Смен внутри: <b>${P[j-1]} − ${P[i]} = ${d}</b>`+(Number.isInteger(V.K)?` — при K=${V.K} это <b class="${d>V.K?'bad':d==V.K?'ok':''}">${d>V.K?'ПЛОХО (больше K, break)':d==V.K?'ХОРОШО (ровно K)':'пока меньше K, расширяем'}</b>`:'')+`</div>`;}
+ else if(i!=null)n+=`<div>i = ${i}${j!=null?', j = '+j:''}</div>`;
+ if(Number.isInteger(V.l))n+=`<div>Лучшая длина на сейчас: <b>l = ${V.l}</b></div>`;
+ $('note').innerHTML=n||'<span class="muted">Нет данных для визуализации</span>';
+ // серии
+ let target=fo?fo.ss:(typeof V.ss=='string'&&V.ss?V.ss:(i!=null&&j!=null?S.slice(i,j):''));
+ const runs=[];for(const ch of target){if(runs.length&&runs[runs.length-1][0]==ch)runs[runs.length-1][1]++;else runs.push([ch,1]);}
+ $('runs').innerHTML=runs.length?`<div class="muted" style="margin-bottom:4px">${esc(target)}</div>`+runs.map((r,q)=>(q?'<span class="arr">→</span>':'')+`<span class="run"><b>${esc(r[0])}</b><span>×${r[1]}</span></span>`).join('')+`<div class="note">Серий: <b>${runs.length}</b>, смен символов: <b>${Math.max(0,runs.length-1)}</b> (между соседними сериями).</div>`:'<span class="muted">Пустая строка</span>';
+ // найденные
+ const best=F.reduce((m,x)=>Math.max(m,x.l),0);
+ $('found').innerHTML=F.length?F.map((x,q)=>`<div class="f ${focus==q?'on':''} ${x.l==best?'best':''}" data-q="${q}"><span>#${q+1}</span><span>i=${x.i}</span><span>l=${x.l}</span><span>${esc(x.ss)}</span></div>`).join('')+'<div class="muted" style="margin-top:6px">Золотая полоска — самая длинная на данный момент. Клик ещё раз — снять выделение.</div>':'<span class="muted">Пока ничего не найдено</span>';
+ document.querySelectorAll('.f').forEach(e=>e.onclick=()=>{const q=+e.dataset.q;focus=focus==q?null:q;render();});
+ // переменные
+ $('vars').innerHTML='<table><tr><th>Имя</th><th>Значение</th></tr>'+Object.keys(V).map(k=>`<tr><td>${esc(k)}</td><td>${esc(Array.isArray(V[k])?'['+V[k].join(', ')+']':V[k])}</td></tr>`).join('')+'</table><div class="muted" style="margin-top:4px">Значения — до выполнения выделенной строки.</div>';
+}
+function go(k){if(!T||!T.steps.length)return;cur=Math.max(0,Math.min(T.steps.length-1,k));$('sl').value=cur;focus=null;render();}
+$('bRun').onclick=()=>{code=editing?$('ta').value:code;if(editing)toggleEdit();else run();};
+$('bEdit').onclick=toggleEdit;
+$('b0').onclick=()=>go(0);$('bE').onclick=()=>go(1e9);$('bP').onclick=()=>go(cur-1);$('bN').onclick=()=>go(cur+1);
+$('sl').oninput=e=>go(+e.target.value);
+$('bPl').onclick=()=>{if(timer){clearInterval(timer);timer=null;$('bPl').textContent='⏯ Авто';return}
+ $('bPl').textContent='⏸ Стоп';timer=setInterval(()=>{if(cur>=T.steps.length-1){$('bPl').click();return}go(cur+1)},350);};
+document.addEventListener('keydown',e=>{if(editing)return;if(e.key=='ArrowRight')go(cur+1);if(e.key=='ArrowLeft')go(cur-1);});
+init();
+</script></body></html>

@@ -1,0 +1,370 @@
+{
+  "blocks": [
+    ["А", "Базовый перебор подстрок", "usl + break: растим окно, пока условие выполняется"],
+    ["Б", "Replace / split", "замены и разрезание строки на куски"],
+    ["В", "Скользящее окно / два указателя", ""],
+    ["Г", "Префиксные суммы", ""],
+    ["Д", "Баланс (словарь первых вхождений)", ""],
+    ["Е", "Регулярки и маски", ""],
+    ["Ж", "Арифметические выражения", ""],
+    ["З", "Цепочки «число=число=…»", ""],
+    ["И", "Подсчёт подстрок", ""],
+    ["К", "Подстроки с границами", ""],
+    ["Л", "Многострочные и особые", ""]
+  ],
+  "families": [
+    {
+      "main": {
+        "id": "2250", "blk": "А", "main": "loops", "norx": true, "d": 1,
+        "title": "№ 2250 · не более одной буквы A",
+        "src": "Кабанов", "realAns": "337",
+        "real": "Текстовый файл содержит только заглавные буквы латинского алфавита (ABC…Z). Определите максимальное количество идущих подряд символов, среди которых не более одной буквы A.",
+        "idea": "Условие «не более одной A» монотонно: если окно плохое, то любое более длинное тоже плохое. Поэтому при первой неудаче делаем break.",
+        "note": "j начинается с i+l+1: проверяем сразу окна длиннее текущего ответа.",
+        "tr": "Учебная строка 50 символов, буква A стоит на позициях 10, 21, 32. В файле длина ответа 337.",
+        "ans": "28",
+        "tpl": "s='BCDEFGHIJKALMNOPQRSTUAVWXYZBCDEFAGHIJKLMNOPQRSTUVW'\n# f=open('24-2250.txt')\n# s=f.readline().strip()\nprint(len(s), s[:100])\nl=⟦0⟧\nfor i in range(len(s)):\n    j=⟦i+l+1⟧\n    while j<=len(s):\n        ss=s[i:j]\n        if ⟦ss.count('A')<=1⟧:\n            l=len(ss)\n            print(i,l)\n        ⟦else: break⟧\n        j+=1\nprint(l)",
+        "methods": {
+          "loops": "s='BCDEFGHIJKALMNOPQRSTUAVWXYZBCDEFAGHIJKLMNOPQRSTUVW'\n# f=open('24-2250.txt')\n# s=f.readline().strip()\nprint(len(s), s[:100])\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if ss.count('A')<=1:\n            l=len(ss)\n            print(i,l)\n        else: break\n        j+=1\nprint(l)"
+        }
+      },
+      "analogs": [
+        {
+          "id": "142143", "blk": "А", "main": "loops", "norx": true, "d": 2,
+          "title": "№ 142143 · по одной A и B (≈2250)",
+          "src": "СтатГрад (Школково #142143)",
+          "real": "Текстовый файл содержит только заглавные буквы латинского алфавита (ABC...Z). Определите максимальное количество идущих подряд символов, среди которых ровно по одному разу встречаются буквы A и B.",
+          "idea": "«Ровно» не монотонно. Ломаем цикл по «больше одного» (≤1), а длину обновляем только при «ровно один».",
+          "note": "≈ аналог 2250: двойной if.",
+          "tr": "Учебная строка 50 символов: A на позициях 6, 22, 36; B на 12, 31, 44; остальное — буквы C–H.",
+          "ans": "24",
+          "tpl": "s='CDEFGHACDEFGBHCDEFGHCDAEFGHCDEFBGHCDAEFGHCDEBFGHCD'\n# f=open('24-142143.txt')\n# s=f.readline().strip()\ndef usl(s): return ⟦s.count('A')<=1 and s.count('B')<=1⟧\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if usl(ss):\n            if ⟦ss.count('A')==1 and ss.count('B')==1⟧:\n                l=len(ss)\n                print(i,l,ss)\n        else: break\n        j+=1\nprint(l)",
+          "methods": {
+            "loops": "s='CDEFGHACDEFGBHCDEFGHCDAEFGHCDEFBGHCDAEFGHCDEBFGHCD'\n# f=open('24-142143.txt')\n# s=f.readline().strip()\ndef usl(s): return s.count('A')<=1 and s.count('B')<=1\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if usl(ss):\n            if ss.count('A')==1 and ss.count('B')==1:\n                l=len(ss)\n                print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+          }
+        },
+        {
+          "id": "7201", "blk": "А", "main": "loops", "norx": true, "d": 3,
+          "title": "№ 7201 · X, Y, Z ровно по 5, A, B, C нет (≈2250)",
+          "src": "Школково", "realAns": "77",
+          "real": "Определите максимальное количество идущих подряд символов, среди которых буквы X, Y и Z встречаются ровно по пять раз, а буквы A, B и C не встречаются совсем.",
+          "idea": "Ломаем цикл по «не более 5» и по наличию A, B, C. Обновляем длину только при «ровно 5».",
+          "note": "≈ аналог 2250.",
+          "tr": "Учебная строка 50 символов; A на позиции 29 обрывает окно. В файле ответ 77.",
+          "ans": "29",
+          "tpl": "s='DDDDDXYZDDXYZDDXYZDDXYZDDXYZDAXDDDDZDDDDDDDDDDDDDD'\n# f=open('24-7201.txt')\n# s=f.readline().strip()\ndef usl(s): return ⟦'A' not in s and 'B' not in s and 'C' not in s and all(s.count(c)<=5 for c in 'XYZ')⟧\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if usl(ss):\n            if ⟦all(ss.count(c)==5 for c in 'XYZ')⟧:\n                l=len(ss)\n                print(i,l,ss)\n        else: break\n        j+=1\nprint(l)",
+          "methods": {
+            "loops": "s='DDDDDXYZDDXYZDDXYZDDXYZDDXYZDAXDDDDZDDDDDDDDDDDDDD'\n# f=open('24-7201.txt')\n# s=f.readline().strip()\ndef usl(s): return 'A' not in s and 'B' not in s and 'C' not in s and all(s.count(c)<=5 for c in 'XYZ')\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if usl(ss):\n            if all(ss.count(c)==5 for c in 'XYZ'):\n                l=len(ss)\n                print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+          }
+        },
+        {
+          "id": "4753", "blk": "А", "main": "loops", "norx": true, "d": 3,
+          "title": "№ 4753 · нет гласных, не менее 6 точек (≈2250)",
+          "src": "Школково", "realAns": "26",
+          "real": "Определите максимальное количество идущих подряд символов, среди которых нет гласных букв (символов A, E, I, O, U, Y), но есть не менее 6 точек.",
+          "idea": "Гласная ломает окно (break). Точек должно быть не меньше 6 — это проверка перед обновлением длины.",
+          "note": "≈ аналог 2250. В оригинале строка начиналась с пробела (s=' '+...) — здесь он не нужен.",
+          "tr": "Учебная строка 50 символов: гласные A и E режут её на три блока (12, 16 и 20 символов), в последнем только 5 точек.",
+          "ans": "16",
+          "tpl": "s='B.C.D.F.G.H.AMN.PQ.R.ST.VW.X.EBCD.FG.HJ.KL.MN.PQRS'\n# f=open('24-4753.txt')\n# s=f.readline().strip()\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        gl=[c for c in ss if c in 'AEIOUY']\n        if ⟦len(gl)==0⟧:\n            if ⟦ss.count('.')>=6⟧:\n                l=len(ss)\n                print(i,l,ss)\n        else: break\n        j+=1\nprint(l)",
+          "methods": {
+            "loops": "s='B.C.D.F.G.H.AMN.PQ.R.ST.VW.X.EBCD.FG.HJ.KL.MN.PQRS'\n# f=open('24-4753.txt')\n# s=f.readline().strip()\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        gl=[c for c in ss if c in 'AEIOUY']\n        if len(gl)==0:\n            if ss.count('.')>=6:\n                l=len(ss)\n                print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+          }
+        },
+        {
+          "id": "6610", "blk": "А", "main": "loops", "norx": true, "d": 4,
+          "title": "№ 6610 · SOLO ≤ 4 и ≥ 5 различных цифр (≈2250)",
+          "src": "М. Шагитов", "realAns": "431",
+          "real": "(М. Шагитов) Определите максимальную длину подпоследовательности, в которой комбинация символов \"SOLO\" встречается не более четырёх раз и присутствуют как минимум 5 различных цифр.",
+          "idea": "Ломаем цикл по «SOLO больше 4». «Не менее 5 различных цифр» — множество цифр в окне, его проверяем перед обновлением длины.",
+          "note": "≈ аналог 2250: два условия, одно монотонное, другое нет.",
+          "tr": "Учебная строка 50 символов: шесть SOLO и цифры 1–5 в самом конце. В файле ответ 431.",
+          "ans": "42",
+          "tpl": "s='SOLOQQQSOLOQQQSOLOQQQSOLOQQQSOLOQQQSOLOQQQQQQ12345'\n# f=open('24-6610.txt')\n# s=f.readline().strip()\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        cifr=set([c for c in ss if c.isdigit()])\n        if ⟦ss.count('SOLO')<=4⟧:\n            if ⟦len(cifr)>=5⟧:\n                l=len(ss)\n                print(i,l,ss)\n        else: break\n        j+=1\nprint(l)",
+          "methods": {
+            "loops": "s='SOLOQQQSOLOQQQSOLOQQQSOLOQQQSOLOQQQSOLOQQQQQQ12345'\n# f=open('24-6610.txt')\n# s=f.readline().strip()\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        cifr=set([c for c in ss if c.isdigit()])\n        if ss.count('SOLO')<=4:\n            if len(cifr)>=5:\n                l=len(ss)\n                print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+          }
+        }
+      ]
+    },
+    {
+      "main": {
+        "id": "2422", "blk": "А", "main": "loops", "norx": true, "d": 2,
+        "title": "№ 2422 · символы в алфавитном порядке",
+        "src": "Кабанов", "realAns": "15",
+        "real": "Текстовый файл состоит не более чем из 10⁶ символов X, Y, Z. Определите максимальное количество идущих подряд символов, расположенных в алфавитном порядке (возможно с повторением символов).",
+        "idea": "Условие «каждый символ не больше следующего» проверяем через all по соседним парам. Оно монотонно, значит break.",
+        "note": "В оригинале была опечатка «s=f.readline()l=[1]»: l должно быть числом.",
+        "tr": "Учебная строка 50 символов состоит из 13 неубывающих кусков, самый длинный — 11 символов. В файле ответ 15.",
+        "ans": "11",
+        "tpl": "s='XYZXXYYZYZXXXYYYYZZZZYZXYZYYZXZYYYZZZZXXYYZXYZYZXZ'\n# f=open('24-2422.txt')\n# s=f.readline().strip()\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if ⟦all(ss[k]<=ss[k+1] for k in range(len(ss)-1))⟧:\n            l=len(ss)\n            print(i,l,ss)\n        ⟦else: break⟧\n        j+=1\nprint(l)",
+        "methods": {
+          "loops": "s='XYZXXYYZYZXXXYYYYZZZZYZXYZYYZXZYYYZZZZXXYYZXYZYZXZ'\n# f=open('24-2422.txt')\n# s=f.readline().strip()\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if all(ss[k]<=ss[k+1] for k in range(len(ss)-1)):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+        }
+      },
+      "analogs": [
+        {
+          "id": "В-14", "blk": "А", "main": "loops", "norx": true, "d": 2,
+          "title": "В-14 КР24 · обратный алфавитный порядок (≈2422)",
+          "src": "Крылов, КР24 В-14", "realAns": "19",
+          "real": "Текстовый файл состоит не более чем из 10⁶ символов X, Y и Z. Определите максимальное количество идущих подряд символов, расположенных в обратном алфавитном порядке (возможно, с повторением символов).",
+          "idea": "Как 2422, но знак сравнения меняется на >=.",
+          "note": "≈ аналог 2422. В PDF есть ещё один вариант с таким же номером В-14 (AB=21), он относится к разделу Г.",
+          "tr": "Учебная строка 50 символов, самый длинный невозрастающий кусок — 12. В файле ответ 19.",
+          "ans": "12",
+          "tpl": "s='ZYXZZYYXYXZZZYYYYXXXXXYXZYXYYXZXYYYXXXXZZYYXZYXZZX'\n# f=open('24var13-17.txt')\n# s=f.readline().strip()\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if ⟦all(ss[k]>=ss[k+1] for k in range(len(ss)-1))⟧:\n            l=len(ss)\n            print(i,l,ss)\n        ⟦else: break⟧\n        j+=1\nprint(l)",
+          "methods": {
+            "loops": "s='ZYXZZYYXYXZZZYYYYXXXXXYXZYXYYXZXYYYXXXXZZYYXZYXZZX'\n# f=open('24var13-17.txt')\n# s=f.readline().strip()\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if all(ss[k]>=ss[k+1] for k in range(len(ss)-1)):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+          }
+        },
+        {
+          "id": "В-20", "blk": "А", "main": "loops", "norx": true, "d": 2,
+          "title": "В-20 КР24 · строго возрастающие цифры (≈2422)",
+          "src": "Крылов, КР24 В-20", "realAns": "8",
+          "real": "Текстовый файл состоит не более чем из 10⁶ символов арабских цифр (0, 1, …, 9). Определите максимальное количество идущих подряд цифр, расположенных в строгом возрастающем порядке.",
+          "idea": "Как 2422, но строгое неравенство: ss[k]<ss[k+1].",
+          "note": "≈ аналог 2422.",
+          "tr": "Учебная строка 50 цифр, самый длинный строго возрастающий кусок 123456789 — 9 цифр. В файле ответ 8.",
+          "ans": "9",
+          "tpl": "s='13592468123456789044789235701234135689024635781234'\n# f=open('24var18-20.txt')\n# s=f.readline().strip()\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if ⟦all(ss[k]<ss[k+1] for k in range(len(ss)-1))⟧:\n            l=len(ss)\n            print(i,l,ss)\n        ⟦else: break⟧\n        j+=1\nprint(l)",
+          "methods": {
+            "loops": "s='13592468123456789044789235701234135689024635781234'\n# f=open('24var18-20.txt')\n# s=f.readline().strip()\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if all(ss[k]<ss[k+1] for k in range(len(ss)-1)):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+          }
+        },
+        {
+          "id": "3362", "blk": "А", "main": "loops", "norx": true, "d": 3, "star": true,
+          "title": "№ 3362 · номер начала возрастающей подпоследовательности (≈2422)",
+          "src": "Школково", "realAns": "45718",
+          "real": "Возрастающей подпоследовательностью будем называть непрерывную последовательность символов, расположенных в порядке увеличения их номера в кодовой таблице символов ASCII. Запишите в ответе номер символа, с которого начинается наибольшая возрастающая подпоследовательность. Если таких последовательностей несколько, используйте первую из них. Нумерация символов начинается с 1.",
+          "idea": "Окно растёт только при строгом возрастании. Запоминаем num=i+1 лишь когда нашли строго более длинное окно: тогда в ответе окажется первая из равных.",
+          "note": "≈ аналог 2422. В оригинале переменная num не была инициализирована — добавлено num=1.",
+          "tr": "Учебная строка 50 символов: две подпоследовательности длины 8, первая начинается с позиции 9 (нумерация с 1). В файле ответ 45718.",
+          "ans": "9",
+          "tpl": "s='ACEBDFHJABCDEFGHDECEGIKMOQBFKAJGHIJCDEFBCDEFGHADGJ'\n# f=open('24-3362.txt')\n# s=f.readline().strip()\nl=1\nnum=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if ⟦all(ss[k]<ss[k+1] for k in range(len(ss)-1))⟧:\n            l=len(ss); num=⟦i+1⟧\n            print(i,l,'ответ:',num,ss)\n        ⟦else: break⟧\n        j+=1\nprint(num)",
+          "methods": {
+            "loops": "s='ACEBDFHJABCDEFGHDECEGIKMOQBFKAJGHIJCDEFBCDEFGHADGJ'\n# f=open('24-3362.txt')\n# s=f.readline().strip()\nl=1\nnum=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if all(ss[k]<ss[k+1] for k in range(len(ss)-1)):\n            l=len(ss); num=i+1\n            print(i,l,'ответ:',num,ss)\n        else: break\n        j+=1\nprint(num)"
+          }
+        },
+        {
+          "id": "4105", "blk": "А", "main": "loops", "norx": true, "d": 3, "star": true,
+          "title": "№ 4105 · ровно три различных символа по неубыванию (≈2422)",
+          "src": "Школково", "realAns": "6",
+          "real": "Определите наибольшую длину последовательности из трех различных символов, расположенных в порядке неубывания.",
+          "idea": "Ломаем цикл при нарушении порядка, а длину обновляем только если в окне ровно три разных символа (len(set(ss))==3).",
+          "note": "≈ аналог 2422: двойной if.",
+          "tr": "Учебная строка 50 символов, подходящая подпоследовательность AAAAAABBBBBBCCC — 15. В файле ответ 6.",
+          "ans": "15",
+          "tpl": "s='AAABBBCCCBBCCCCCCDDDEEABAAAAAABBBBBBCCCDEFCDEFGHIJ'\n# f=open('24-4105.txt')\n# s=f.readline().strip()\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if ⟦all(ss[k]<=ss[k+1] for k in range(len(ss)-1))⟧:\n            if ⟦len(set(ss))==3⟧:\n                l=len(ss)\n                print(i,l,ss)\n        else: break\n        j+=1\nprint(l)",
+          "methods": {
+            "loops": "s='AAABBBCCCBBCCCCCCDDDEEABAAAAAABBBBBBCCCDEFCDEFGHIJ'\n# f=open('24-4105.txt')\n# s=f.readline().strip()\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if all(ss[k]<=ss[k+1] for k in range(len(ss)-1)):\n            if len(set(ss))==3:\n                l=len(ss)\n                print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+          }
+        }
+      ]
+    },
+    {
+      "main": {
+        "id": "21", "blk": "А", "main": "loops", "norx": true, "d": 2,
+        "title": "№ 21 · соседние символы различны",
+        "src": "Кабанов, демоверсия 2021", "realAns": "35",
+        "real": "Текстовый файл состоит не более чем из 10⁶ символов X, Y и Z. Определите максимальное количество идущих подряд символов, среди которых каждые два соседних различны.",
+        "idea": "Проверка пар соседей: all(ss[k]!=ss[k+1] ...). При первом нарушении — break.",
+        "note": "Решение через split (замена «cc» на «c c») — в разделе Б.",
+        "tr": "Учебная строка 50 символов, куски без повторов подряд разделены удвоенными символами; самый длинный — 13. В файле ответ 35.",
+        "ans": "13",
+        "tpl": "s='XYXYZZXZYXYZXYYZXZZYXYZXYZXZYXZZYXYZYXXYZXYZZXYZXY'\n# f=open('24-21.txt')\n# s=f.readline().strip()\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if ⟦all(ss[k]!=ss[k+1] for k in range(len(ss)-1))⟧:\n            l=len(ss)\n            print(i,l,ss)\n        ⟦else: break⟧\n        j+=1\nprint(l)",
+        "methods": {
+          "loops": "s='XYXYZZXZYXYZXYYZXZZYXYZXYZXZYXZZYXYZYXXYZXYZZXYZXY'\n# f=open('24-21.txt')\n# s=f.readline().strip()\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if all(ss[k]!=ss[k+1] for k in range(len(ss)-1)):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+        }
+      },
+      "analogs": [
+        {
+          "id": "6554", "blk": "А", "main": "loops", "norx": true, "d": 2,
+          "title": "№ 6554 · нет рядом чётной и нечётной цифры (≈21)",
+          "src": "Школково", "realAns": "263",
+          "real": "Определите максимальное количество идущих подряд символов, среди которых нет рядом стоящих четных и нечетных цифр.",
+          "idea": "Запрещённая пара: нечётная рядом с чётной в любом порядке. Условие записываем через not any(...) по соседям.",
+          "note": "≈ аналог 21. Буквы не нарушают условие.",
+          "tr": "Учебная строка 50 символов: цифры и буквы A–F, пять запрещённых стыков; самый длинный блок 14. В файле ответ 263.",
+          "ans": "14",
+          "tpl": "s='AB246813A5B7C912C4D6E8F0A2BD41A3B5C70A2B4C689A7B5C'\n# f=open('24-6554.txt')\n# s=f.readline().strip()\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if ⟦not any(ss[k] in '13579' and ss[k+1] in '02468' or ss[k+1] in '13579' and ss[k] in '02468' for k in range(len(ss)-1))⟧:\n            l=len(ss)\n            print(i,l,ss)\n        ⟦else: break⟧\n        j+=1\nprint(l)",
+          "methods": {
+            "loops": "s='AB246813A5B7C912C4D6E8F0A2BD41A3B5C70A2B4C689A7B5C'\n# f=open('24-6554.txt')\n# s=f.readline().strip()\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if not any(ss[k] in '13579' and ss[k+1] in '02468' or ss[k+1] in '13579' and ss[k] in '02468' for k in range(len(ss)-1)):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+          }
+        },
+        {
+          "id": "6782", "blk": "А", "main": "loops", "norx": true, "d": 3,
+          "title": "№ 6782 · буквы и цифры чередуются (≈21)",
+          "src": "Школково", "realAns": "18",
+          "real": "Определите максимальную длину подстроки, в которой ни одна буква не стоит рядом с буквой и ни одна цифра не стоит рядом с цифрой.",
+          "idea": "Каждая соседняя пара — «буква+цифра» или «цифра+буква». Это all по парам.",
+          "note": "≈ аналог 21.",
+          "tr": "Учебная строка 50 символов из шести чередующихся блоков; самый длинный — 12. В файле ответ 18.",
+          "ans": "12",
+          "tpl": "s='A1B2CD3E4F5G67H8I9J0K1L2MN3O4P56Q7R8S9T01U2V3W4X5Y'\n# f=open('24-6782.txt')\n# s=f.readline().strip()\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if ⟦all(ss[k].isalpha() and ss[k+1].isdigit() or ss[k+1].isalpha() and ss[k].isdigit() for k in range(len(ss)-1))⟧:\n            l=len(ss)\n            print(i,l,ss)\n        ⟦else: break⟧\n        j+=1\nprint(l)",
+          "methods": {
+            "loops": "s='A1B2CD3E4F5G67H8I9J0K1L2MN3O4P56Q7R8S9T01U2V3W4X5Y'\n# f=open('24-6782.txt')\n# s=f.readline().strip()\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if all(ss[k].isalpha() and ss[k+1].isdigit() or ss[k+1].isalpha() and ss[k].isdigit() for k in range(len(ss)-1)):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+          }
+        },
+        {
+          "id": "2716", "blk": "А", "main": "loops", "norx": true, "d": 3,
+          "title": "№ 2716 · сумма соседних цифр ≥ 10 (≈21)",
+          "src": "Школково",
+          "real": "Найдите максимальную длину последовательности, каждые две соседние цифры в которой в сумме дают значение не меньшее 10.",
+          "idea": "Условие по парам: int(ss[k])+int(ss[k+1])>=10 для каждого k.",
+          "note": "≈ аналог 21. В оригинале внутри all была переменная i вместо k — исправлено. Ответ для файла в PDF не указан.",
+          "tr": "Учебная строка 50 цифр, девять кусков, самый длинный 464646464646 — 12.",
+          "ans": "12",
+          "tpl": "s='55553737346464646464619190282827373737282819191919'\n# f=open('24-2716.txt')\n# s=f.readline().strip()\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if ⟦all(int(ss[k])+int(ss[k+1])>=10 for k in range(len(ss)-1))⟧:\n            l=len(ss)\n            print(i,l,ss)\n        ⟦else: break⟧\n        j+=1\nprint(l)",
+          "methods": {
+            "loops": "s='55553737346464646464619190282827373737282819191919'\n# f=open('24-2716.txt')\n# s=f.readline().strip()\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if all(int(ss[k])+int(ss[k+1])>=10 for k in range(len(ss)-1)):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+          }
+        },
+        {
+          "id": "6392", "blk": "А", "main": "loops", "norx": true, "d": 3,
+          "title": "№ 6392 · N, O, T не через один символ (≈21)",
+          "src": "Школково", "realAns": "1461",
+          "real": "Определите максимальное количество идущих подряд символов, среди которых любые два символа из набора N,O,T в различных комбинациях (с учётом повторений) не стоят через один символ (который может быть любым).",
+          "idea": "Сравниваем символы на расстоянии 2: ss[k] и ss[k+2] не должны оба быть из NOT.",
+          "note": "≈ аналог 21: сосед — это символ через один.",
+          "tr": "Учебная строка 50 символов из букв A и трёх пар «N?O», «T?N», «O?T» через один символ; самое длинное окно 18. В файле ответ 1461.",
+          "ans": "18",
+          "tpl": "s='AAAAAAAANAOAAAAAAAAAAAAAATANAAAAAAAAOATAAAAAAAAAAA'\n# f=open('24-6392.txt')\n# s=f.readline().strip()\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if ⟦not any(ss[k] in 'NOT' and ss[k+2] in 'NOT' for k in range(len(ss)-2))⟧:\n            l=len(ss)\n            print(i,l,ss)\n        ⟦else: break⟧\n        j+=1\nprint(l)",
+          "methods": {
+            "loops": "s='AAAAAAAANAOAAAAAAAAAAAAAATANAAAAAAAAOATAAAAAAAAAAA'\n# f=open('24-6392.txt')\n# s=f.readline().strip()\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if not any(ss[k] in 'NOT' and ss[k+2] in 'NOT' for k in range(len(ss)-2)):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+          }
+        },
+        {
+          "id": "5830", "blk": "А", "main": "loops", "norx": true, "d": 3,
+          "title": "№ 5830 · нет пар одинаковых, сколько раз самый частый символ (≈21)",
+          "src": "Школково", "realAns": "19",
+          "real": "Определите максимальное количество подряд идущих символов, среди которых нет пар одинаковых символов. В ответе укажите количество повторений самого часто встречающегося символ в найденной строке. Если таких строк несколько, используйте последнюю из них.",
+          "idea": "Окно как в задаче 21, но j начинается с i+l, а не i+l+1: окна равной длины тоже проверяются, и последнее найденное перезаписывает maxi.",
+          "note": "≈ аналог 21. Ответ — maxi[0], то есть число повторений.",
+          "tr": "Учебная строка 50 символов: два куска длины 12; в первом самый частый символ встречается 6 раз, в последнем — 4. Правильный ответ 4.",
+          "ans": "4",
+          "tpl": "s='ABABABABABABBCDBCDBCCDCDCDXXYZXYZXYZXYZZAZAZAZAZAZ'\n# f=open('24-5830.txt')\n# s=f.readline().strip()\nl=1\nmaxi=(0,'')\nfor i in range(len(s)):\n    j=⟦i+l⟧\n    while j<=len(s):\n        ss=s[i:j]\n        if all(ss[k]!=ss[k+1] for k in range(len(ss)-1)):\n            l=len(ss)\n            maxi=⟦max((ss.count(c),c) for c in set(ss))⟧\n            print(i,maxi,ss)\n        else: break\n        j+=1\nprint(maxi[0])",
+          "methods": {
+            "loops": "s='ABABABABABABBCDBCDBCCDCDCDXXYZXYZXYZXYZZAZAZAZAZAZ'\n# f=open('24-5830.txt')\n# s=f.readline().strip()\nl=1\nmaxi=(0,'')\nfor i in range(len(s)):\n    j=i+l\n    while j<=len(s):\n        ss=s[i:j]\n        if all(ss[k]!=ss[k+1] for k in range(len(ss)-1)):\n            l=len(ss)\n            maxi=max((ss.count(c),c) for c in set(ss))\n            print(i,maxi,ss)\n        else: break\n        j+=1\nprint(maxi[0])"
+          }
+        }
+      ]
+    },
+    {
+      "main": {
+        "id": "7199", "blk": "А", "main": "loops", "norx": true, "d": 3,
+        "title": "№ 7199 · каждая буква не более 10 раз",
+        "src": "Школково", "realAns": "226",
+        "real": "Определите максимальное количество идущих подряд символов, среди которых каждая из латинских букв встречается не более 10 раз.",
+        "idea": "Условие оформляем функцией usl(s): all(s.count(c)<=10 for c in s). Оно монотонно, значит break.",
+        "note": "",
+        "tr": "Учебная строка 50 символов — ABC, повторённое 16 раз, плюс AB. В окне по 10 каждой буквы — 30 символов, 31-й добавляет 11-ю. В файле ответ 226.",
+        "ans": "30",
+        "tpl": "s='ABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCAB'\n# f=open('24-7199.txt')\n# s=f.readline().strip()\ndef usl(s): return ⟦all(s.count(c)<=10 for c in s)⟧\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if usl(ss):\n            l=len(ss)\n            print(i,l,ss)\n        ⟦else: break⟧\n        j+=1\nprint(l)",
+        "methods": {
+          "loops": "s='ABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCAB'\n# f=open('24-7199.txt')\n# s=f.readline().strip()\ndef usl(s): return all(s.count(c)<=10 for c in s)\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if usl(ss):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+        }
+      },
+      "analogs": [
+        {
+          "id": "7203", "blk": "А", "main": "loops", "norx": true, "d": 3,
+          "title": "№ 7203 · S, U, N не более 10 раз, X и Y нет (≈7199)",
+          "src": "Школково", "realAns": "128",
+          "real": "Определите максимальное количество идущих подряд символов, среди которых каждая из букв S, U и N встречается не более 10 раз, а буквы X и Y не встречаются совсем.",
+          "idea": "Тот же usl, но считаем только S, U, N, а X и Y — запрет.",
+          "note": "≈ аналог 7199.",
+          "tr": "Учебная строка 50 символов: в первом блоке окно ограничено 10 вхождениями S/U/N (34 символа), Y обрывает блок. В файле ответ 128.",
+          "ans": "34",
+          "tpl": "s='AAAASUNSUNSUNSUNSUNSUNSUNSUNSUNSUNSUNYSUNAAAAAAAAA'\n# f=open('24-7203.txt')\n# s=f.readline().strip()\ndef usl(s): return ⟦all(s.count(c)<=10 for c in 'SUN') and 'X' not in s and 'Y' not in s⟧\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if usl(ss):\n            l=len(ss)\n            print(i,l,ss)\n        ⟦else: break⟧\n        j+=1\nprint(l)",
+          "methods": {
+            "loops": "s='AAAASUNSUNSUNSUNSUNSUNSUNSUNSUNSUNSUNYSUNAAAAAAAAA'\n# f=open('24-7203.txt')\n# s=f.readline().strip()\ndef usl(s): return all(s.count(c)<=10 for c in 'SUN') and 'X' not in s and 'Y' not in s\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if usl(ss):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+          }
+        }
+      ]
+    },
+    {
+      "main": {
+        "id": "2715", "blk": "А", "main": "loops", "norx": true, "d": 2,
+        "title": "№ 2715 · цифры одинаковой чётности",
+        "src": "Школково", "realAns": "18",
+        "real": "Найдите максимальную длину последовательности, которая состоит из цифр одинаковой четности.",
+        "idea": "Все цифры чётные ИЛИ все нечётные: all(...)  or  all(...).",
+        "note": "",
+        "tr": "Учебная строка 50 цифр: куски чётных и нечётных цифр чередуются, самый длинный нечётный — 12. В файле ответ 18.",
+        "ans": "12",
+        "tpl": "s='24680135791322881357913579134602465790246802461357'\n# f=open('24-2715.txt')\n# s=f.readline().strip()\ndef usl(s): return ⟦all(int(c)%2==0 for c in s) or all(int(c)%2==1 for c in s)⟧\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if usl(ss):\n            l=len(ss)\n            print(i,l,ss)\n        ⟦else: break⟧\n        j+=1\nprint(l)",
+        "methods": {
+          "loops": "s='24680135791322881357913579134602465790246802461357'\n# f=open('24-2715.txt')\n# s=f.readline().strip()\ndef usl(s): return all(int(c)%2==0 for c in s) or all(int(c)%2==1 for c in s)\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if usl(ss):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+        }
+      },
+      "analogs": []
+    },
+    {
+      "main": {
+        "id": "2508", "blk": "А", "main": "loops", "norx": true, "d": 3,
+        "title": "№ 2508 · цепочки одинаковых символов максимальной длины",
+        "src": "Школково", "realAns": "E 9 Y 9",
+        "real": "Найдите длину самой длинной подцепочки, состоящей из одинаковых символов. Для каждой цепочки максимальной длины выведите отдельной строке сначала символ, из которого строится эта цепочка, а затем через пробел – длину этой цепочки. Данные о найденных цепочках расположите в порядке их появления в файле.",
+        "idea": "Первым циклом находим длину l. Вторым проходом собираем все цепочки длины l: цепочка начинается там, где символ отличается от предыдущего.",
+        "note": "В приложении ответ записывается одной строкой через пробелы: «символ длина символ длина …».",
+        "tr": "Учебная строка 50 символов: две цепочки длины 7 (D и N). В файле ответ «E 9 Y 9».",
+        "ans": "D 7 N 7",
+        "tpl": "s='AABBBCDDDDDDDEFFGGGHIIIIJKKLMNNNNNNNOPPQRRRSTTUVVV'\n# f=open('24-2508.txt')\n# s=f.readline().strip()\ndef usl(s): return ⟦len(set(s))<=1⟧\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if usl(ss):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nm=[]\nfor i in range(len(s)):\n    if s[i:i+l]==⟦s[i]*l⟧ and (i==0 or s[i-1]!=s[i]):\n        m.append(s[i]+' '+str(l))\nprint(' '.join(m))",
+        "methods": {
+          "loops": "s='AABBBCDDDDDDDEFFGGGHIIIIJKKLMNNNNNNNOPPQRRRSTTUVVV'\n# f=open('24-2508.txt')\n# s=f.readline().strip()\ndef usl(s): return len(set(s))<=1\nl=0\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if usl(ss):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nm=[]\nfor i in range(len(s)):\n    if s[i:i+l]==s[i]*l and (i==0 or s[i-1]!=s[i]):\n        m.append(s[i]+' '+str(l))\nprint(' '.join(m))"
+        }
+      },
+      "analogs": []
+    },
+    {
+      "main": {
+        "id": "7108", "blk": "А", "main": "loops", "norx": true, "d": 2,
+        "title": "№ 7108 · запись шестнадцатеричного числа",
+        "src": "Школково", "realAns": "21",
+        "real": "Определите максимальное количество идущих подряд символов, которые могут представлять запись числа в шестнадцатеричной системе счисления. Незначащие нули учитывать не следует.",
+        "idea": "Все символы окна — шестнадцатеричные цифры, и окно не начинается с нуля.",
+        "note": "Окно, начинающееся с «0», сразу даёт break, но следующий i проверит его без нуля.",
+        "tr": "Учебная строка 50 символов: блоки шестнадцатеричных цифр разделены буквами G, H, Z, Q. Лучший блок FEDCBA9876543210 — 16. В файле ответ 21.",
+        "ans": "16",
+        "tpl": "s='1A2B3CG0007FF1H00D1E2F3A4B5C6D7EZFEDCBA9876543210Q'\n# f=open('24-7108.txt')\n# s=f.readline().strip()\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if ⟦all(c in '0123456789ABCDEF' for c in ss) and ss[0]!='0'⟧:\n            l=len(ss)\n            print(i,l,ss)\n        ⟦else: break⟧\n        j+=1\nprint(l)",
+        "methods": {
+          "loops": "s='1A2B3CG0007FF1H00D1E2F3A4B5C6D7EZFEDCBA9876543210Q'\n# f=open('24-7108.txt')\n# s=f.readline().strip()\nl=1\nfor i in range(len(s)):\n    j=i+l+1\n    while j<=len(s):\n        ss=s[i:j]\n        if all(c in '0123456789ABCDEF' for c in ss) and ss[0]!='0':\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j+=1\nprint(l)"
+        }
+      },
+      "analogs": []
+    },
+    {
+      "main": {
+        "id": "6099", "blk": "А", "main": "loops", "norx": true, "d": 3,
+        "title": "№ 6099 · минимальная подстрока со всеми hex-цифрами",
+        "src": "Школково", "realAns": "42",
+        "real": "Найдите минимальную длину подстроки, содержащей все шестнадцатеричные цифры. Строка может включать повторяющиеся цифры и другие символы.",
+        "idea": "Для минимума окно сжимаем: j идёт вниз от i+l-1. Условие «содержит все цифры» теряется при сжатии — тогда break.",
+        "note": "В оригинале в строке цифр была лишняя «G» — исправлено. Начало цикла j=min(i+l-1,len(s)) нужно, чтобы не пропускать конец строки.",
+        "tr": "Учебная строка 50 символов: два окна со всеми цифрами, длиной 18 и 20. В файле ответ 42.",
+        "ans": "18",
+        "tpl": "s='GG0123456789ABCZZDEFHHHHHHHH0123456789KKKKABCDEFGG'\n# f=open('24-6099.txt')\n# s=f.readline().strip()\ndef usl(s): return ⟦all(c in s for c in '0123456789ABCDEF')⟧\nl=⟦len(s)+1⟧\nfor i in range(len(s)):\n    j=min(i+l-1,len(s))\n    while j>i:\n        ss=s[i:j]\n        if usl(ss):\n            l=len(ss)\n            print(i,l,ss)\n        ⟦else: break⟧\n        j-=1\nprint(l)",
+        "methods": {
+          "loops": "s='GG0123456789ABCZZDEFHHHHHHHH0123456789KKKKABCDEFGG'\n# f=open('24-6099.txt')\n# s=f.readline().strip()\ndef usl(s): return all(c in s for c in '0123456789ABCDEF')\nl=len(s)+1\nfor i in range(len(s)):\n    j=min(i+l-1,len(s))\n    while j>i:\n        ss=s[i:j]\n        if usl(ss):\n            l=len(ss)\n            print(i,l,ss)\n        else: break\n        j-=1\nprint(l)"
+        }
+      },
+      "analogs": []
+    },
+    {
+      "main": {
+        "id": "137754", "blk": "А", "main": "split", "norx": true, "d": 4,
+        "title": "№ 137754 · максимальное чётное 14-ричное число",
+        "src": "Банк ФИПИ, ЕГЭ 2025 (Школково #137754)",
+        "real": "Текстовый файл состоит из десятичных цифр и заглавных букв латинского алфавита. Определите в этом файле последовательность идущих подряд символов, представляющих собой запись максимального чётного 14-ричного числа. В ответе запишите количество символов (значащих цифр в записи числа) в этой последовательности. Примечание. Латинские буквы A, B, C и D означают цифры из алфавита 14-ричной системы счисления.",
+        "idea": "Буквы E…Z — разделители: заменяем их пробелом и делаем split. В каждом куске отрезаем справа нечётные цифры (чётные: 0 2 4 6 8 A C) и слева нули. Числа сравниваем парой (длина, строка): для равной длины строковое сравнение совпадает с числовым.",
+        "note": "Кода этой задачи в PDF нет — решение написано по стилю остальных split-задач. Ответ для файла в PDF не указан.",
+        "tr": "Учебная строка 50 символов: самое длинное чётное число 7C4A1D2B8C60A — 13 цифр.",
+        "ans": "13",
+        "tpl": "s='0012A9CX5DB3Q1A3B5C7D9Z000AC0K7C4A1D2B8C60AM1B3D5D'\n# f=open('24-137754.txt')\n# s=f.readline().strip()\nfor c in ⟦'EFGHIJKLMNOPQRSTUVWXYZ'⟧: s=s.replace(c,' ')\nbest=(0,'')\nfor b in s.split():\n    while b and b[-1] not in ⟦'02468AC'⟧: b=b[:-1]\n    b=⟦b.lstrip('0')⟧\n    best=max(best,(len(b),b))\n    print(b)\nprint(best[0])",
+        "methods": {
+          "split": "s='0012A9CX5DB3Q1A3B5C7D9Z000AC0K7C4A1D2B8C60AM1B3D5D'\n# f=open('24-137754.txt')\n# s=f.readline().strip()\nfor c in 'EFGHIJKLMNOPQRSTUVWXYZ': s=s.replace(c,' ')\nbest=(0,'')\nfor b in s.split():\n    while b and b[-1] not in '02468AC': b=b[:-1]\n    b=b.lstrip('0')\n    best=max(best,(len(b),b))\n    print(b)\nprint(best[0])"
+        }
+      },
+      "analogs": []
+    }
+  ]
+}
