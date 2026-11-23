@@ -1,0 +1,1134 @@
+<!doctype html>
+<html lang="ru" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Мои приложения — каталог ЕГЭ и ОГЭ</title>
+<style>
+:root{--bg:#f3f5fb;--card:#fff;--ink:#202942;--mut:#6c7690;--line:#e0e6f1;--blue:#4168ed;--violet:#8055dc;--green:#15945d;--amber:#c17b13;--red:#d34a58;--shadow:0 5px 20px #26365b12}
+[data-theme=dark]{--bg:#111722;--card:#1b2433;--ink:#edf2ff;--mut:#a2aec5;--line:#303d52;--blue:#8ba6ff;--violet:#b79aff;--green:#55d69a;--amber:#f3c46a;--red:#ff8995;--shadow:0 6px 22px #0004}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,Segoe UI,Arial,sans-serif}
+header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);box-shadow:var(--shadow)}
+.head{max-width:1150px;margin:auto;padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+h1{font-size:20px;margin:0;font-weight:850;flex:1}.status{font-size:12px;color:var(--mut)}
+main{max-width:1150px;margin:0 auto;padding:16px}
+button,input,select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+button{cursor:pointer;font-weight:700}button:hover{border-color:var(--blue)}button.primary{background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff;border:0}
+button.soft{background:var(--bg)}button.danger{color:var(--red)}button.small{padding:5px 8px;font-size:12px}
+input[type=search]{min-width:220px;flex:1}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 12px}.nav button{padding:10px 17px;font-size:16px}
+.nav button.active{background:var(--blue);color:white;border-color:var(--blue)}
+.subnav{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 14px}.subnav button.active{background:var(--violet);color:white;border-color:var(--violet)}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.info{background:linear-gradient(110deg,#eaf0ff,#f5efff);color:#2a3d75;border:1px solid #d7e1ff;padding:11px 14px;border-radius:13px;margin-bottom:14px}
+[data-theme=dark] .info{background:#202d49;color:#dce6ff;border-color:#35466c}
+.list{display:flex;flex-direction:column;gap:9px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px 14px;box-shadow:var(--shadow)}
+.taskhead{display:flex;gap:11px;align-items:center;min-width:0}
+.icon{width:40px;height:40px;border-radius:12px;background:var(--tint,var(--bg));display:grid;place-items:center;font-size:21px;flex:none}
+.number{font-weight:900;color:var(--blue);min-width:34px}
+.taskname{font-weight:750;flex:1;min-width:0}
+.meta{font-size:11px;color:var(--mut);margin-top:2px}
+.count{font-size:11px;color:var(--mut);white-space:nowrap}
+details.links{margin:10px 0 0 51px;border-top:1px dashed var(--line);padding-top:8px}
+details.links summary{cursor:pointer;color:var(--blue);font-weight:750;font-size:13px;list-style:none}
+details.links summary::-webkit-details-marker{display:none}
+details.links summary:before{content:"▸";display:inline-block;margin-right:7px;transition:.15s}
+details.links[open] summary:before{transform:rotate(90deg)}
+.linklist{display:flex;flex-direction:column;gap:7px;margin-top:9px}
+.linkrow{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:var(--bg);border:1px solid var(--line);min-width:0}
+.linkrow a{color:var(--ink);text-decoration:none;font-weight:650;flex:1;min-width:0;overflow-wrap:anywhere}
+.linkrow a:hover{color:var(--blue);text-decoration:underline}
+.kind{font-size:11px;padding:3px 7px;border-radius:99px;background:#e8efff;color:#3457bd;white-space:nowrap}
+.kind.sol{background:#fff1d7;color:#925900}
+.empty{color:var(--mut);text-align:center;padding:30px}
+.editbar{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.editbar button{font-size:12px;padding:5px 8px}
+.editing{border-color:color-mix(in srgb,var(--blue) 55%,var(--line))}
+.overlay{position:fixed;inset:0;background:#0b1020a8;z-index:50;display:grid;place-items:center;padding:15px}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:18px;width:min(620px,100%);max-height:92vh;overflow:auto;box-shadow:0 20px 70px #0005}
+.modal h2{margin:0 0 12px;font-size:19px}.modal label{display:block;font-size:12px;color:var(--mut);font-weight:750;margin:10px 0 4px}
+.modal input,.modal select{width:100%}.modal .hint{font-size:11px;color:var(--mut);margin-top:4px}
+.modal .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#202b48;color:white;padding:10px 15px;border-radius:11px;z-index:90;box-shadow:var(--shadow);max-width:90vw}
+@media(max-width:650px){.head{padding:9px}.head h1{width:100%;flex-basis:100%}main{padding:10px}.task{padding:10px}.taskhead{gap:8px}.icon{width:35px;height:35px}.count{display:none}details.links{margin-left:42px}input[type=search]{min-width:0;width:100%;flex-basis:100%}}
+</style></head><body>
+<header><div class="head"><h1>🧭 Мои приложения</h1><span class="status" id="status">✓ HTML сохранён вместе со всеми данными</span>
+<input type="search" id="search" placeholder="🔎 Поиск по заданиям и названиям приложений">
+<button id="editBtn" class="soft">✓ Завершить редактирование</button><button id="saveBtn" class="primary">💾 Сохранить приложение целиком вместе с данными</button><button id="themeBtn" class="soft" title="Тема">☀️</button></div></header>
+<main><div class="info">📚 Каталог приложений и решебников. Открой задание, чтобы увидеть все связанные материалы. В режиме редактирования можно менять названия, добавлять ссылки и сохранять весь каталог прямо в HTML-файл.</div>
+<div class="nav" id="level1"><button class="active" onclick="pickTop('ege')">🎓 ЕГЭ</button><button class="" onclick="pickTop('oge')">📝 ОГЭ</button><button class="" onclick="pickTop('misc')">🗂️ Разное</button><button onclick="addGroup(0)" class="soft">＋ Раздел</button></div><div class="subnav" id="level2"><button class="active" onclick="pickSub('ege-m')">📐 Математика</button><button class="" onclick="pickSub('ege-i')">💻 Информатика</button><button class="soft" onclick="addGroup(1)">＋ Подраздел</button></div>
+<div class="toolbar"><span id="pathLabel" class="status">ЕГЭ  /  Математика</span><span style="flex:1"></span><button id="addTask" class="soft">＋ Добавить задание</button></div>
+<div class="list" id="taskList"><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#e9f1ff">📐</div><div class="number">1</div><div class="taskname">Планиметрия<div class="meta">Геометрия</div></div><span class="count">2 материал(а)</span><button class="small" onclick="editTask('nmwsv71f5cc5k')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f5cc5k')">✕</button></div><details class="links" open=""><summary>Материалы и ссылки · 2</summary><div class="linklist"><div class="linkrow"><span>🧩</span><a href="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/1%20%D0%BF%D0%BB%D0%B0%D0%BD%D0%B8%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/1-%D0%A2%D0%A0%D0%95%D0%9D%D0%90%D0%96%D0%95%D0%A0.html" target="_blank" rel="noopener" title="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/1%20%D0%BF%D0%BB%D0%B0%D0%BD%D0%B8%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/1-%D0%A2%D0%A0%D0%95%D0%9D%D0%90%D0%96%D0%95%D0%A0.html">1-ЗАДАЧИ</a><span class="kind ">Приложение</span><button class="small" onclick="editLink('nmwsv71f5cc5k','l102171615845')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f5cc5k','l102171615845')">✕</button></div><div class="linkrow"><span>📘</span><a href="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/1%20%D0%BF%D0%BB%D0%B0%D0%BD%D0%B8%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/%D0%BF%D0%B0%D0%BC%D1%8F%D1%82%D0%BA%D0%B0%20%D0%BF%D0%BE%20%D1%84%D0%B0%D0%BA%D1%82%D0%B0%D0%BC.html" target="_blank" rel="noopener" title="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/1%20%D0%BF%D0%BB%D0%B0%D0%BD%D0%B8%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/%D0%BF%D0%B0%D0%BC%D1%8F%D1%82%D0%BA%D0%B0%20%D0%BF%D0%BE%20%D1%84%D0%B0%D0%BA%D1%82%D0%B0%D0%BC.html">ПАМЯТКА ПО ФАКТАМ</a><span class="kind sol">Решебник</span><button class="small" onclick="editLink('nmwsv71f5cc5k','id-mwsy0q0r-6kvzk')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f5cc5k','id-mwsy0q0r-6kvzk')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f5cc5k','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f5cc5k','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#e9f1ff">📐</div><div class="number">2</div><div class="taskname">Векторы<div class="meta">Геометрия</div></div><span class="count">1 материал(а)</span><button class="small" onclick="editTask('nmwsv71f5tatp')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f5tatp')">✕</button></div><details class="links"><summary>Материалы и ссылки · 1</summary><div class="linklist"><div class="linkrow"><span>📘</span><a href="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/2%20%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B0/%D0%95%D0%93%D0%AD%20%E2%84%962%20%C2%B7%20%D0%92%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D1%8B%20%E2%80%94%20%D1%82%D1%80%D0%B5%D0%BD%D0%B0%D0%B6%D1%91%D1%80.html" target="_blank" rel="noopener" title="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/2%20%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B0/%D0%95%D0%93%D0%AD%20%E2%84%962%20%C2%B7%20%D0%92%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D1%8B%20%E2%80%94%20%D1%82%D1%80%D0%B5%D0%BD%D0%B0%D0%B6%D1%91%D1%80.html">2-ЗАДАЧИ</a><span class="kind sol">Решебник</span><button class="small" onclick="editLink('nmwsv71f5tatp','id-mwsy115r-56mjl')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f5tatp','id-mwsy115r-56mjl')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f5tatp','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f5tatp','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#e9f1ff">📐</div><div class="number">3</div><div class="taskname">Стереометрия<div class="meta">Геометрия</div></div><span class="count">1 материал(а)</span><button class="small" onclick="editTask('nmwsv71f58qlf')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f58qlf')">✕</button></div><details class="links" open=""><summary>Материалы и ссылки · 1</summary><div class="linklist"><div class="linkrow"><span>📘</span><a href="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/3%20%D1%81%D1%82%D0%B5%D1%80%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/3-%D0%A1%D0%A2%D0%95%D0%A0%D0%95%D0%9E.html" target="_blank" rel="noopener" title="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/3%20%D1%81%D1%82%D0%B5%D1%80%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/3-%D0%A1%D0%A2%D0%95%D0%A0%D0%95%D0%9E.html">3-ЗАДАЧИ</a><span class="kind sol">Решебник</span><button class="small" onclick="editLink('nmwsv71f58qlf','id-mwsy1bqp-h1725')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f58qlf','id-mwsy1bqp-h1725')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f58qlf','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f58qlf','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#f5edff">🎲</div><div class="number">4</div><div class="taskname">Начала теории вероятностей<div class="meta">Вероятность</div></div><span class="count">пусто</span><button class="small" onclick="editTask('nmwsv71f52rog')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f52rog')">✕</button></div><details class="links"><summary>Материалы и ссылки · 0</summary><div class="linklist"></div><div class="editbar"><button onclick="addLink('nmwsv71f52rog','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f52rog','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#f5edff">🎲</div><div class="number">5</div><div class="taskname">Вероятности сложных событий<div class="meta">Вероятность</div></div><span class="count">пусто</span><button class="small" onclick="editTask('nmwsv71f5lffl')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f5lffl')">✕</button></div><details class="links"><summary>Материалы и ссылки · 0</summary><div class="linklist"></div><div class="editbar"><button onclick="addLink('nmwsv71f5lffl','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f5lffl','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#fff4df">🧮</div><div class="number">6</div><div class="taskname">Простейшие уравнения<div class="meta">Вычисления</div></div><span class="count">пусто</span><button class="small" onclick="editTask('nmwsv71f54smz')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f54smz')">✕</button></div><details class="links"><summary>Материалы и ссылки · 0</summary><div class="linklist"></div><div class="editbar"><button onclick="addLink('nmwsv71f54smz','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f54smz','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#fff4df">🧮</div><div class="number">7</div><div class="taskname">Вычисления и преобразования<div class="meta">Вычисления</div></div><span class="count">пусто</span><button class="small" onclick="editTask('nmwsv71f5xtj1')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f5xtj1')">✕</button></div><details class="links"><summary>Материалы и ссылки · 0</summary><div class="linklist"></div><div class="editbar"><button onclick="addLink('nmwsv71f5xtj1','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f5xtj1','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#fff4df">🧮</div><div class="number">8</div><div class="taskname">Производная и первообразная<div class="meta">Вычисления</div></div><span class="count">пусто</span><button class="small" onclick="editTask('nmwsv71f5mqno')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f5mqno')">✕</button></div><details class="links"><summary>Материалы и ссылки · 0</summary><div class="linklist"></div><div class="editbar"><button onclick="addLink('nmwsv71f5mqno','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f5mqno','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#f0f1f5">🗂️</div><div class="number">9</div><div class="taskname">Задачи с прикладным содержанием<div class="meta">Разное</div></div><span class="count">1 материал(а)</span><button class="small" onclick="editTask('nmwsv71f5509q')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f5509q')">✕</button></div><details class="links"><summary>Материалы и ссылки · 1</summary><div class="linklist"><div class="linkrow"><span>📘</span><a href="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/10%20%D1%84%D0%BE%D1%80%D0%BC%D1%83%D0%BB%D1%8B/10-%D0%A4%D0%9E%D0%A0%D0%9C%D0%A3%D0%9B%D0%AB.html" target="_blank" rel="noopener" title="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/10%20%D1%84%D0%BE%D1%80%D0%BC%D1%83%D0%BB%D1%8B/10-%D0%A4%D0%9E%D0%A0%D0%9C%D0%A3%D0%9B%D0%AB.html">9 - ЗАДАЧИ - ДОЛЕЛАТЬ</a><span class="kind sol">Решебник</span><button class="small" onclick="editLink('nmwsv71f5509q','id-mwsy1s8q-bided')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f5509q','id-mwsy1s8q-bided')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f5509q','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f5509q','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#f0f1f5">🗂️</div><div class="number">10</div><div class="taskname">Текстовые задачи<div class="meta">Разное</div></div><span class="count">1 материал(а)</span><button class="small" onclick="editTask('nmwsv71f5rhu2')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f5rhu2')">✕</button></div><details class="links"><summary>Материалы и ссылки · 1</summary><div class="linklist"><div class="linkrow"><span>📘</span><a href="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/11%20%D0%B7%D0%B0%D0%B4%D0%B0%D1%87%D0%B8/11-%D0%9F%D0%95%D0%A0%D0%95%D0%94%D0%95%D0%9B%D0%90%D0%A2%D0%AC.html" target="_blank" rel="noopener" title="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/11%20%D0%B7%D0%B0%D0%B4%D0%B0%D1%87%D0%B8/11-%D0%9F%D0%95%D0%A0%D0%95%D0%94%D0%95%D0%9B%D0%90%D0%A2%D0%AC.html">10-ЗАДАЧИ</a><span class="kind sol">Решебник</span><button class="small" onclick="editLink('nmwsv71f5rhu2','id-mwsy2dju-kc1nx')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f5rhu2','id-mwsy2dju-kc1nx')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f5rhu2','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f5rhu2','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#e9f8ef">📈</div><div class="number">11</div><div class="taskname">Графики функций<div class="meta">Графики</div></div><span class="count">1 материал(а)</span><button class="small" onclick="editTask('nmwsv71f511vw')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f511vw')">✕</button></div><details class="links"><summary>Материалы и ссылки · 1</summary><div class="linklist"><div class="linkrow"><span>🧩</span><a href="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/12%20-%20%D0%B3%D1%80%D0%B0%D1%84%D0%B8%D0%BA%D0%B8/%D0%93%D0%A0%D0%90%D0%A4%D0%98%D0%9A%D0%98%20%2B%20%D0%9C%D0%9E%D0%94%D0%A3%D0%9B%D0%98__.html" target="_blank" rel="noopener" title="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/12%20-%20%D0%B3%D1%80%D0%B0%D1%84%D0%B8%D0%BA%D0%B8/%D0%93%D0%A0%D0%90%D0%A4%D0%98%D0%9A%D0%98%20%2B%20%D0%9C%D0%9E%D0%94%D0%A3%D0%9B%D0%98__.html">ВСЁ ПРО ГРАФИКИ</a><span class="kind ">Приложение</span><button class="small" onclick="editLink('nmwsv71f511vw','id-mwsy34ce-mzah8')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f511vw','id-mwsy34ce-mzah8')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f511vw','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f511vw','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#e9f8ef">📈</div><div class="number">12</div><div class="taskname">Наибольшее и наименьшее значение функции<div class="meta">Графики</div></div><span class="count">1 материал(а)</span><button class="small" onclick="editTask('nmwsv71f5dt36')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f5dt36')">✕</button></div><details class="links"><summary>Материалы и ссылки · 1</summary><div class="linklist"><div class="linkrow"><span>📘</span><a href="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/12-%D0%9F%D0%A0%D0%9E%D0%98%D0%97%D0%92%D0%9E%D0%94%D0%9D%D0%90%D0%AF/12-%D0%94%D0%9E%D0%94%D0%95%D0%9B%D0%90%D0%A2%D0%AC%20%D0%9E%D0%97%D0%92%D0%A3%D0%A7%D0%9A%D0%A3.html" target="_blank" rel="noopener" title="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/12-%D0%9F%D0%A0%D0%9E%D0%98%D0%97%D0%92%D0%9E%D0%94%D0%9D%D0%90%D0%AF/12-%D0%94%D0%9E%D0%94%D0%95%D0%9B%D0%90%D0%A2%D0%AC%20%D0%9E%D0%97%D0%92%D0%A3%D0%A7%D0%9A%D0%A3.html">12-ЗАДАЧИ - ДОЕДАЛТЬ ОЗВУЧКУ</a><span class="kind sol">Решебник</span><button class="small" onclick="editLink('nmwsv71f5dt36','id-mwsy3h59-dt8fw')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f5dt36','id-mwsy3h59-dt8fw')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f5dt36','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f5dt36','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#fff4df">🧮</div><div class="number">13</div><div class="taskname">Уравнения<div class="meta">Вычисления</div></div><span class="count">1 материал(а)</span><button class="small" onclick="editTask('nmwsv71f5vbqs')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f5vbqs')">✕</button></div><details class="links"><summary>Материалы и ссылки · 1</summary><div class="linklist"><div class="linkrow"><span>🧩</span><a href="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/14%20%D0%A3%D0%A0%D0%90%D0%92%D0%9D%D0%95%D0%9D%D0%98%D0%AF/14%20%D0%A3%D0%A0%D0%90%D0%92%D0%9D%D0%95%D0%9D%D0%98%D0%AF%20-%20%D0%A0%D0%90%D0%97%D0%91%D0%9E%D0%A0%D0%AB%20%D0%9A%D0%90%D0%96%D0%94%D0%9E%D0%93%D0%9E%20%D0%A3%D0%A0%D0%90%D0%92%D0%9D%D0%95%D0%9D%D0%98%D0%AF_%D0%BB%D0%B0%D1%81%D1%821.html" target="_blank" rel="noopener" title="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/14%20%D0%A3%D0%A0%D0%90%D0%92%D0%9D%D0%95%D0%9D%D0%98%D0%AF/14%20%D0%A3%D0%A0%D0%90%D0%92%D0%9D%D0%95%D0%9D%D0%98%D0%AF%20-%20%D0%A0%D0%90%D0%97%D0%91%D0%9E%D0%A0%D0%AB%20%D0%9A%D0%90%D0%96%D0%94%D0%9E%D0%93%D0%9E%20%D0%A3%D0%A0%D0%90%D0%92%D0%9D%D0%95%D0%9D%D0%98%D0%AF_%D0%BB%D0%B0%D1%81%D1%821.html">Тригонометрические уравнения: разбор по шагам</a><span class="kind ">Приложение</span><button class="small" onclick="editLink('nmwsv71f5vbqs','l752694958575')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f5vbqs','l752694958575')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f5vbqs','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f5vbqs','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#e9f1ff">📐</div><div class="number">14</div><div class="taskname">Стереометрическая задача<div class="meta">Геометрия</div></div><span class="count">1 материал(а)</span><button class="small" onclick="editTask('nmwsv71f5wl9m')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f5wl9m')">✕</button></div><details class="links"><summary>Материалы и ссылки · 1</summary><div class="linklist"><div class="linkrow"><span>📘</span><a href="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/15%20-%20%D1%81%D1%82%D0%B5%D1%80%D0%B5%D0%BE/%D0%A1%D1%82%D0%B5%D1%80%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F-14%20%D0%BF%D1%80%D0%BE%D0%B1%D0%B0.html" target="_blank" rel="noopener" title="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/15%20-%20%D1%81%D1%82%D0%B5%D1%80%D0%B5%D0%BE/%D0%A1%D1%82%D0%B5%D1%80%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F-14%20%D0%BF%D1%80%D0%BE%D0%B1%D0%B0.html">14 - ВСЕ В ОДНОМ</a><span class="kind sol">Решебник</span><button class="small" onclick="editLink('nmwsv71f5wl9m','id-mwsy5v4h-yy9l3')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f5wl9m','id-mwsy5v4h-yy9l3')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f5wl9m','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f5wl9m','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#fff4df">🧮</div><div class="number">15</div><div class="taskname">Неравенства<div class="meta">Вычисления</div></div><span class="count">1 материал(а)</span><button class="small" onclick="editTask('nmwsv71f5vhyl')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f5vhyl')">✕</button></div><details class="links"><summary>Материалы и ссылки · 1</summary><div class="linklist"><div class="linkrow"><span>📘</span><a href="https://chudo-train-math.web.app/neravenstva.html" target="_blank" rel="noopener" title="https://chudo-train-math.web.app/neravenstva.html">15-НА ОГНЕННОЙ БАЗЕ</a><span class="kind sol">Решебник</span><button class="small" onclick="editLink('nmwsv71f5vhyl','id-mwsy7uv7-egjv2')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f5vhyl','id-mwsy7uv7-egjv2')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f5vhyl','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f5vhyl','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#f0f1f5">🗂️</div><div class="number">16</div><div class="taskname">Финансовая (экономическая) задача<div class="meta">Разное</div></div><span class="count">1 материал(а)</span><button class="small" onclick="editTask('nmwsv71f5ckps')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f5ckps')">✕</button></div><details class="links" open=""><summary>Материалы и ссылки · 1</summary><div class="linklist"><div class="linkrow"><span>🧩</span><a href="https://gannamath2026.github.io/trenager_programs/16-%D0%A4%D0%98%D0%9D%D0%90%D0%9D%D0%A1%D0%AB.html" target="_blank" rel="noopener" title="https://gannamath2026.github.io/trenager_programs/16-%D0%A4%D0%98%D0%9D%D0%90%D0%9D%D0%A1%D0%AB.html">Финансовая задача: разбор по шагам</a><span class="kind ">Приложение</span><button class="small" onclick="editLink('nmwsv71f5ckps','l893130943693')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f5ckps','l893130943693')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f5ckps','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f5ckps','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#e9f1ff">📐</div><div class="number">17</div><div class="taskname">Планиметрическая задача<div class="meta">Геометрия</div></div><span class="count">2 материал(а)</span><button class="small" onclick="editTask('nmwsv71f52tjh')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f52tjh')">✕</button></div><details class="links" open=""><summary>Материалы и ссылки · 2</summary><div class="linklist"><div class="linkrow"><span>🧩</span><a href="https://chudo-train-math.web.app/Метод_площадей.html" target="_blank" rel="noopener" title="https://chudo-train-math.web.app/Метод_площадей.html">Метод площадей: тренажёр</a><span class="kind ">Приложение</span><button class="small" onclick="editLink('nmwsv71f52tjh','l747083818392')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f52tjh','l747083818392')">✕</button></div><div class="linkrow"><span>🧩</span><a href="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/17%20%D0%9F%D0%9B%D0%90%D0%9D%D0%98%D0%9C%D0%95%D0%A2%D0%A0%D0%98%D0%AF/%D0%A0%D0%90%D0%97%D0%91%D0%9E%D0%A0%20%D0%92%D0%A1%D0%95%D0%99%20%D0%9F%D0%9B%D0%90%D0%9D%D0%98%D0%9C%D0%95%D0%A2%D0%A0%D0%98%D0%98%20%D0%9A%D0%9B%D0%9E%D0%943-%20%D0%B3%D0%BF%D1%82%20%D0%B4%D0%BE%D0%B4%D0%B5%D0%BB%D1%8B%D0%B2%D0%B0%D0%B5%D1%82%20%D1%80%D0%B5%D0%BD%D0%B4%D0%B5%D1%80.html" target="_blank" rel="noopener" title="https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/17%20%D0%9F%D0%9B%D0%90%D0%9D%D0%98%D0%9C%D0%95%D0%A2%D0%A0%D0%98%D0%AF/%D0%A0%D0%90%D0%97%D0%91%D0%9E%D0%A0%20%D0%92%D0%A1%D0%95%D0%99%20%D0%9F%D0%9B%D0%90%D0%9D%D0%98%D0%9C%D0%95%D0%A2%D0%A0%D0%98%D0%98%20%D0%9A%D0%9B%D0%9E%D0%943-%20%D0%B3%D0%BF%D1%82%20%D0%B4%D0%BE%D0%B4%D0%B5%D0%BB%D1%8B%D0%B2%D0%B0%D0%B5%D1%82%20%D1%80%D0%B5%D0%BD%D0%B4%D0%B5%D1%80.html">17-ЗАДАЧИ</a><span class="kind ">Приложение</span><button class="small" onclick="editLink('nmwsv71f52tjh','id-mwsyajaj-i6bpw')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f52tjh','id-mwsyajaj-i6bpw')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f52tjh','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f52tjh','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#f0f1f5">🗂️</div><div class="number">18</div><div class="taskname">Задача с параметром<div class="meta">Разное</div></div><span class="count">1 материал(а)</span><button class="small" onclick="editTask('nmwsv71f52nwy')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f52nwy')">✕</button></div><details class="links" open=""><summary>Материалы и ссылки · 1</summary><div class="linklist"><div class="linkrow"><span>🧩</span><a href="https://chudo-train-math.web.app/18_Параметры.html" target="_blank" rel="noopener" title="https://chudo-train-math.web.app/18_Параметры.html">Параметры — пошаговый решатель</a><span class="kind ">Приложение</span><button class="small" onclick="editLink('nmwsv71f52nwy','l69025975360')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f52nwy','l69025975360')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f52nwy','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f52nwy','sol')">＋ Решебник</button></div></details></article><article class="task editing"><div class="taskhead"><div class="icon" style="--tint:#fff4df">🧮</div><div class="number">19</div><div class="taskname">Числа и их свойства<div class="meta">Вычисления</div></div><span class="count">1 материал(а)</span><button class="small" onclick="editTask('nmwsv71f51i51')">✎</button><button class="small danger" onclick="deleteTask('nmwsv71f51i51')">✕</button></div><details class="links" open=""><summary>Материалы и ссылки · 1</summary><div class="linklist"><div class="linkrow"><span>📘</span><a href="https://chudo-train-math.web.app/19.html" target="_blank" rel="noopener" title="https://chudo-train-math.web.app/19.html">19-ЗАДАЧИ</a><span class="kind sol">Решебник</span><button class="small" onclick="editLink('nmwsv71f51i51','id-mwsycjm5-awmc5')">✎</button><button class="small danger" onclick="removeLink('nmwsv71f51i51','id-mwsycjm5-awmc5')">✕</button></div></div><div class="editbar"><button onclick="addLink('nmwsv71f51i51','app')">＋ Приложение</button><button onclick="addLink('nmwsv71f51i51','sol')">＋ Решебник</button></div></details></article></div>
+</main><div id="modalHost"></div><div id="toastHost"></div>
+<script id="embedded-data" type="application/json">{
+  "tree": [
+    {
+      "id": "ege",
+      "t": "ЕГЭ",
+      "kids": [
+        {
+          "id": "ege-m",
+          "t": "Математика",
+          "kids": [
+            {
+              "id": "nmwsv71f5cc5k",
+              "n": "1",
+              "t": "Планиметрия",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l102171615845",
+                  "t": "1-ЗАДАЧИ",
+                  "local": "\"C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ЕГЭ МАТЕМАТИКА\\1 планиметрия\\1-ТРЕНАЖЕР.html\"",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/1%20%D0%BF%D0%BB%D0%B0%D0%BD%D0%B8%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/1-%D0%A2%D0%A0%D0%95%D0%9D%D0%90%D0%96%D0%95%D0%A0.html",
+                  "k": "app"
+                },
+                {
+                  "id": "id-mwsy0q0r-6kvzk",
+                  "t": "ПАМЯТКА ПО ФАКТАМ",
+                  "local": "\"C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ЕГЭ МАТЕМАТИКА\\1 планиметрия\\памятка по фактам.html\"",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/1%20%D0%BF%D0%BB%D0%B0%D0%BD%D0%B8%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/%D0%BF%D0%B0%D0%BC%D1%8F%D1%82%D0%BA%D0%B0%20%D0%BF%D0%BE%20%D1%84%D0%B0%D0%BA%D1%82%D0%B0%D0%BC.html",
+                  "k": "sol"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5tatp",
+              "n": "2",
+              "t": "Векторы",
+              "kind": "",
+              "links": [
+                {
+                  "id": "id-mwsy115r-56mjl",
+                  "t": "2-ЗАДАЧИ",
+                  "local": "\"C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ЕГЭ МАТЕМАТИКА\\2 вектора\\ЕГЭ №2 · Векторы — тренажёр.html\"",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/2%20%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B0/%D0%95%D0%93%D0%AD%20%E2%84%962%20%C2%B7%20%D0%92%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D1%8B%20%E2%80%94%20%D1%82%D1%80%D0%B5%D0%BD%D0%B0%D0%B6%D1%91%D1%80.html",
+                  "k": "sol"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f58qlf",
+              "n": "3",
+              "t": "Стереометрия",
+              "kind": "",
+              "links": [
+                {
+                  "id": "id-mwsy1bqp-h1725",
+                  "t": "3-ЗАДАЧИ",
+                  "local": "\"C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ЕГЭ МАТЕМАТИКА\\3 стереометрия\\3-СТЕРЕО.html\"",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/3%20%D1%81%D1%82%D0%B5%D1%80%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/3-%D0%A1%D0%A2%D0%95%D0%A0%D0%95%D0%9E.html",
+                  "k": "sol"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f52rog",
+              "n": "4",
+              "t": "Начала теории вероятностей",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5lffl",
+              "n": "5",
+              "t": "Вероятности сложных событий",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f54smz",
+              "n": "6",
+              "t": "Простейшие уравнения",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5xtj1",
+              "n": "7",
+              "t": "Вычисления и преобразования",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5mqno",
+              "n": "8",
+              "t": "Производная и первообразная",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5509q",
+              "n": "9",
+              "t": "Задачи с прикладным содержанием",
+              "kind": "",
+              "links": [
+                {
+                  "id": "id-mwsy1s8q-bided",
+                  "t": "9 - ЗАДАЧИ - ДОЛЕЛАТЬ",
+                  "local": "\"C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ЕГЭ МАТЕМАТИКА\\10 формулы\\10-ФОРМУЛЫ.html\"",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/10%20%D1%84%D0%BE%D1%80%D0%BC%D1%83%D0%BB%D1%8B/10-%D0%A4%D0%9E%D0%A0%D0%9C%D0%A3%D0%9B%D0%AB.html",
+                  "k": "sol"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5rhu2",
+              "n": "10",
+              "t": "Текстовые задачи",
+              "kind": "",
+              "links": [
+                {
+                  "id": "id-mwsy2dju-kc1nx",
+                  "t": "10-ЗАДАЧИ",
+                  "local": "\"C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ЕГЭ МАТЕМАТИКА\\11 задачи\\11-ПЕРЕДЕЛАТЬ.html\"",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/11%20%D0%B7%D0%B0%D0%B4%D0%B0%D1%87%D0%B8/11-%D0%9F%D0%95%D0%A0%D0%95%D0%94%D0%95%D0%9B%D0%90%D0%A2%D0%AC.html",
+                  "k": "sol"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f511vw",
+              "n": "11",
+              "t": "Графики функций",
+              "kind": "",
+              "links": [
+                {
+                  "id": "id-mwsy34ce-mzah8",
+                  "t": "ВСЁ ПРО ГРАФИКИ",
+                  "local": "\"C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ЕГЭ МАТЕМАТИКА\\12 - графики\\ГРАФИКИ + МОДУЛИ__.html\"",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/12%20-%20%D0%B3%D1%80%D0%B0%D1%84%D0%B8%D0%BA%D0%B8/%D0%93%D0%A0%D0%90%D0%A4%D0%98%D0%9A%D0%98%20%2B%20%D0%9C%D0%9E%D0%94%D0%A3%D0%9B%D0%98__.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5dt36",
+              "n": "12",
+              "t": "Наибольшее и наименьшее значение функции",
+              "kind": "",
+              "links": [
+                {
+                  "id": "id-mwsy3h59-dt8fw",
+                  "t": "12-ЗАДАЧИ - ДОЕДАЛТЬ ОЗВУЧКУ",
+                  "local": "\"C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ЕГЭ МАТЕМАТИКА\\12-ПРОИЗВОДНАЯ\\12-ДОДЕЛАТЬ ОЗВУЧКУ.html\"",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/12-%D0%9F%D0%A0%D0%9E%D0%98%D0%97%D0%92%D0%9E%D0%94%D0%9D%D0%90%D0%AF/12-%D0%94%D0%9E%D0%94%D0%95%D0%9B%D0%90%D0%A2%D0%AC%20%D0%9E%D0%97%D0%92%D0%A3%D0%A7%D0%9A%D0%A3.html",
+                  "k": "sol"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5vbqs",
+              "n": "13",
+              "t": "Уравнения",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l752694958575",
+                  "t": "Тригонометрические уравнения: разбор по шагам",
+                  "local": "\"C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ЕГЭ МАТЕМАТИКА\\14 УРАВНЕНИЯ\\14 УРАВНЕНИЯ - РАЗБОРЫ КАЖДОГО УРАВНЕНИЯ_ласт1.html\"",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/14%20%D0%A3%D0%A0%D0%90%D0%92%D0%9D%D0%95%D0%9D%D0%98%D0%AF/14%20%D0%A3%D0%A0%D0%90%D0%92%D0%9D%D0%95%D0%9D%D0%98%D0%AF%20-%20%D0%A0%D0%90%D0%97%D0%91%D0%9E%D0%A0%D0%AB%20%D0%9A%D0%90%D0%96%D0%94%D0%9E%D0%93%D0%9E%20%D0%A3%D0%A0%D0%90%D0%92%D0%9D%D0%95%D0%9D%D0%98%D0%AF_%D0%BB%D0%B0%D1%81%D1%821.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5wl9m",
+              "n": "14",
+              "t": "Стереометрическая задача",
+              "kind": "",
+              "links": [
+                {
+                  "id": "id-mwsy5v4h-yy9l3",
+                  "t": "14 - ВСЕ В ОДНОМ",
+                  "local": "\"C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ЕГЭ МАТЕМАТИКА\\15 - стерео\\Стереометрия-14 проба.html\"",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/15%20-%20%D1%81%D1%82%D0%B5%D1%80%D0%B5%D0%BE/%D0%A1%D1%82%D0%B5%D1%80%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F-14%20%D0%BF%D1%80%D0%BE%D0%B1%D0%B0.html",
+                  "k": "sol"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5vhyl",
+              "n": "15",
+              "t": "Неравенства",
+              "kind": "",
+              "links": [
+                {
+                  "id": "id-mwsy7uv7-egjv2",
+                  "t": "15-НА ОГНЕННОЙ БАЗЕ",
+                  "local": "",
+                  "u": "https://chudo-train-math.web.app/neravenstva.html",
+                  "k": "sol"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5ckps",
+              "n": "16",
+              "t": "Финансовая (экономическая) задача",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l893130943693",
+                  "t": "Финансовая задача: разбор по шагам",
+                  "local": "16-ФИНАНСЫ.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/16-%D0%A4%D0%98%D0%9D%D0%90%D0%9D%D0%A1%D0%AB.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f52tjh",
+              "n": "17",
+              "t": "Планиметрическая задача",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l747083818392",
+                  "t": "Метод площадей: тренажёр",
+                  "local": "",
+                  "u": "https://chudo-train-math.web.app/Метод_площадей.html",
+                  "k": "app"
+                },
+                {
+                  "id": "id-mwsyajaj-i6bpw",
+                  "t": "17-ЗАДАЧИ",
+                  "local": "\"C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ЕГЭ МАТЕМАТИКА\\17 ПЛАНИМЕТРИЯ\\РАЗБОР ВСЕЙ ПЛАНИМЕТРИИ КЛОД3- гпт доделывает рендер.html\"",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%95%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/17%20%D0%9F%D0%9B%D0%90%D0%9D%D0%98%D0%9C%D0%95%D0%A2%D0%A0%D0%98%D0%AF/%D0%A0%D0%90%D0%97%D0%91%D0%9E%D0%A0%20%D0%92%D0%A1%D0%95%D0%99%20%D0%9F%D0%9B%D0%90%D0%9D%D0%98%D0%9C%D0%95%D0%A2%D0%A0%D0%98%D0%98%20%D0%9A%D0%9B%D0%9E%D0%943-%20%D0%B3%D0%BF%D1%82%20%D0%B4%D0%BE%D0%B4%D0%B5%D0%BB%D1%8B%D0%B2%D0%B0%D0%B5%D1%82%20%D1%80%D0%B5%D0%BD%D0%B4%D0%B5%D1%80.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f52nwy",
+              "n": "18",
+              "t": "Задача с параметром",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l69025975360",
+                  "t": "Параметры — пошаговый решатель",
+                  "local": "",
+                  "u": "https://chudo-train-math.web.app/18_Параметры.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f51i51",
+              "n": "19",
+              "t": "Числа и их свойства",
+              "kind": "",
+              "links": [
+                {
+                  "id": "id-mwsycjm5-awmc5",
+                  "t": "19-ЗАДАЧИ",
+                  "local": "",
+                  "u": "https://chudo-train-math.web.app/19.html",
+                  "k": "sol"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ege-i",
+          "t": "Информатика",
+          "kids": [
+            {
+              "id": "nmwsv71f5wtca",
+              "n": "1",
+              "t": "Анализ информационных моделей (графы, таблицы)",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f52j85",
+              "n": "2",
+              "t": "Таблицы истинности",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5mgxw",
+              "n": "3",
+              "t": "Поиск в реляционных базах данных",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5px7a",
+              "n": "4",
+              "t": "Кодирование и декодирование, условие Фано",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5x4r7",
+              "n": "5",
+              "t": "Анализ алгоритма для исполнителя (автомат)",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5qyon",
+              "n": "6",
+              "t": "Исполнитель Черепаха",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5cd9v",
+              "n": "7",
+              "t": "Кодирование графической и звуковой информации",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5wfbz",
+              "n": "8",
+              "t": "Комбинаторика: перебор слов",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5zb2u",
+              "n": "9",
+              "t": "Обработка данных в электронных таблицах",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f54aic",
+              "n": "10",
+              "t": "Поиск слов в текстовом документе",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5jgun",
+              "n": "11",
+              "t": "Вычисление количества информации",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f53srg",
+              "n": "12",
+              "t": "Исполнитель Редактор",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5bppw",
+              "n": "13",
+              "t": "IP-адреса и маски сети",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5e9xu",
+              "n": "14",
+              "t": "Системы счисления",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f59ljl",
+              "n": "15",
+              "t": "Логические выражения",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5s7rx",
+              "n": "16",
+              "t": "Рекурсивные алгоритмы",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f532l2",
+              "n": "17",
+              "t": "Обработка последовательностей чисел",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5x4aj",
+              "n": "18",
+              "t": "Динамическое программирование в электронных таблицах (Робот)",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5i4ox",
+              "n": "19–21",
+              "t": "Теория игр",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5ryye",
+              "n": "22",
+              "t": "Параллельные процессы",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f59b1c",
+              "n": "23",
+              "t": "Динамическое программирование: число программ",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5k81t",
+              "n": "24",
+              "t": "Обработка символьных строк",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5oopd",
+              "n": "25",
+              "t": "Обработка целых чисел (маски, делители)",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5vn7e",
+              "n": "26",
+              "t": "Обработка данных: сортировка",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5xnat",
+              "n": "27",
+              "t": "Анализ данных (кластеризация)",
+              "kind": "",
+              "links": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "oge",
+      "t": "ОГЭ",
+      "kids": [
+        {
+          "id": "oge-m",
+          "t": "Математика",
+          "kids": [
+            {
+              "id": "nmwsv71f5yaur",
+              "n": "1–5",
+              "t": "Практико-ориентированные задачи (план, тарифы, шины, печь…)",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l218486924784",
+                  "t": "1-5 ЗАДАЧИ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\ОГЭ\\1-5_все_задачи+ПЕЧАТЬ.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/%D0%9E%D0%93%D0%AD/1-5_%D0%B2%D1%81%D0%B5_%D0%B7%D0%B0%D0%B4%D0%B0%D1%87%D0%B8%2B%D0%9F%D0%95%D0%A7%D0%90%D0%A2%D0%AC.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5d6jp",
+              "n": "6",
+              "t": "Числа и вычисления (дроби)",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l853708273631",
+                  "t": "6-ВЫЧИСЛЕНИЯ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ МАТЕМАТИКА\\6\\Числа-и-вычисления-ОГЭ6-тренажёр.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/6/%D0%A7%D0%B8%D1%81%D0%BB%D0%B0-%D0%B8-%D0%B2%D1%8B%D1%87%D0%B8%D1%81%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-%D0%9E%D0%93%D0%AD6-%D1%82%D1%80%D0%B5%D0%BD%D0%B0%D0%B6%D1%91%D1%80.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5pl74",
+              "n": "7",
+              "t": "Координатная прямая, числовые неравенства",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5pidw",
+              "n": "8",
+              "t": "Степени и корни, значение выражений",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5q4yp",
+              "n": "9",
+              "t": "Уравнения и системы уравнений",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5vc5e",
+              "n": "10",
+              "t": "Статистика и вероятность",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l294799257590",
+                  "t": "ДЕРЕВО",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\ВЕРОЯТНОСТЬ - ДЕРЕВО.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/%D0%92%D0%95%D0%A0%D0%9E%D0%AF%D0%A2%D0%9D%D0%9E%D0%A1%D0%A2%D0%AC%20-%20%D0%94%D0%95%D0%A0%D0%95%D0%92%D0%9E.html",
+                  "k": "app"
+                },
+                {
+                  "id": "l971673161754",
+                  "t": "ДЕТИ ПО КРУГУ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\ВЕРОЯТНОСТЬ-ДЕТИ_ПО_КРУГУ.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/%D0%92%D0%95%D0%A0%D0%9E%D0%AF%D0%A2%D0%9D%D0%9E%D0%A1%D0%A2%D0%AC-%D0%94%D0%95%D0%A2%D0%98_%D0%9F%D0%9E_%D0%9A%D0%A0%D0%A3%D0%93%D0%A3.html",
+                  "k": "app"
+                },
+                {
+                  "id": "l371220104345",
+                  "t": "КУБИК",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\ВЕРОЯТНОСТЬ-КУБИК.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/%D0%92%D0%95%D0%A0%D0%9E%D0%AF%D0%A2%D0%9D%D0%9E%D0%A1%D0%A2%D0%AC-%D0%9A%D0%A3%D0%91%D0%98%D0%9A.html",
+                  "k": "app"
+                },
+                {
+                  "id": "l359617708594",
+                  "t": "ПОДГРУППЫ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\ВЕРОЯТНСТЬ-ПОДГРУППЫ.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/%D0%92%D0%95%D0%A0%D0%9E%D0%AF%D0%A2%D0%9D%D0%A1%D0%A2%D0%AC-%D0%9F%D0%9E%D0%94%D0%93%D0%A0%D0%A3%D0%9F%D0%9F%D0%AB.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5m9ks",
+              "n": "11",
+              "t": "Графики функций",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5755w",
+              "n": "12",
+              "t": "Расчёты по формулам",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5wyzk",
+              "n": "13",
+              "t": "Неравенства и системы неравенств",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5l463",
+              "n": "14",
+              "t": "Числовые последовательности, прогрессии",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5eah3",
+              "n": "15",
+              "t": "Треугольники",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l825055261466",
+                  "t": "15-ТРЕУГОЛЬНИКИ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ МАТЕМАТИКА\\15_ТРЕУГОЛЬНИКИ\\13_дз_прототипы.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/15_%D0%A2%D0%A0%D0%95%D0%A3%D0%93%D0%9E%D0%9B%D0%AC%D0%9D%D0%98%D0%9A%D0%98/13_%D0%B4%D0%B7_%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%82%D0%B8%D0%BF%D1%8B.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5v5n9",
+              "n": "16",
+              "t": "Окружность, круг",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l417538922010",
+                  "t": "16-ЗАДАЧИ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ МАТЕМАТИКА\\16 ОКРУЖНОСТИ\\Окружность_ОГЭ16_тренажёр3 + дз.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/16%20%D0%9E%D0%9A%D0%A0%D0%A3%D0%96%D0%9D%D0%9E%D0%A1%D0%A2%D0%98/%D0%9E%D0%BA%D1%80%D1%83%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C_%D0%9E%D0%93%D0%AD16_%D1%82%D1%80%D0%B5%D0%BD%D0%B0%D0%B6%D1%91%D1%803%20%2B%20%D0%B4%D0%B7.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f59wod",
+              "n": "17",
+              "t": "Четырёхугольники, площади фигур",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l328869623307",
+                  "t": "17 - ЗАДАЧИ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ МАТЕМАТИКА\\17 четырехугольники\\Четырёхугольники-ОГЭ17-тренажёр.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/17%20%D1%87%D0%B5%D1%82%D1%8B%D1%80%D0%B5%D1%85%D1%83%D0%B3%D0%BE%D0%BB%D1%8C%D0%BD%D0%B8%D0%BA%D0%B8/%D0%A7%D0%B5%D1%82%D1%8B%D1%80%D1%91%D1%85%D1%83%D0%B3%D0%BE%D0%BB%D1%8C%D0%BD%D0%B8%D0%BA%D0%B8-%D0%9E%D0%93%D0%AD17-%D1%82%D1%80%D0%B5%D0%BD%D0%B0%D0%B6%D1%91%D1%80.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5tanu",
+              "n": "18",
+              "t": "Фигуры на квадратной решётке",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l722896904717",
+                  "t": "18 - ЗАДАЧИ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ МАТЕМАТИКА\\18  КЛЕТЧАТАЯ БУМАГА\\18-CLAUD.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/18%20%20%D0%9A%D0%9B%D0%95%D0%A2%D0%A7%D0%90%D0%A2%D0%90%D0%AF%20%D0%91%D0%A3%D0%9C%D0%90%D0%93%D0%90/18-CLAUD.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5lw73",
+              "n": "19",
+              "t": "Анализ геометрических высказываний",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l533066377623",
+                  "t": "19-ВОПРОСЫ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ МАТЕМАТИКА\\19 утверждения\\19 - ТЕСТОВИК - ЛАСТ ОТ ДИПСИКА.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/19%20%D1%83%D1%82%D0%B2%D0%B5%D1%80%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D1%8F/19%20-%20%D0%A2%D0%95%D0%A1%D0%A2%D0%9E%D0%92%D0%98%D0%9A%20-%20%D0%9B%D0%90%D0%A1%D0%A2%20%D0%9E%D0%A2%20%D0%94%D0%98%D0%9F%D0%A1%D0%98%D0%9A%D0%90.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5n30k",
+              "n": "20",
+              "t": "Алгебраические выражения, уравнения, неравенства и их системы",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l989857547261",
+                  "t": "20-ЗАДАЧИ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ МАТЕМАТИКА\\20 УРАВНЕНИЯ  НЕРАВЕНСТВА СИСТЕМЫ\\Алгебра_ОГЭ_тренажёр - клод.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/20%20%D0%A3%D0%A0%D0%90%D0%92%D0%9D%D0%95%D0%9D%D0%98%D0%AF%20%20%D0%9D%D0%95%D0%A0%D0%90%D0%92%D0%95%D0%9D%D0%A1%D0%A2%D0%92%D0%90%20%D0%A1%D0%98%D0%A1%D0%A2%D0%95%D0%9C%D0%AB/%D0%90%D0%BB%D0%B3%D0%B5%D0%B1%D1%80%D0%B0_%D0%9E%D0%93%D0%AD_%D1%82%D1%80%D0%B5%D0%BD%D0%B0%D0%B6%D1%91%D1%80%20-%20%D0%BA%D0%BB%D0%BE%D0%B4.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5e9u5",
+              "n": "21",
+              "t": "Текстовые задачи",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5oo85",
+              "n": "22",
+              "t": "Функции и их свойства, графики",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l49739520699",
+                  "t": "22-ГРАФИКИ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ МАТЕМАТИКА\\22_ГРАФИКИ\\22-HW.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/22_%D0%93%D0%A0%D0%90%D0%A4%D0%98%D0%9A%D0%98/22-HW.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5ripn",
+              "n": "23",
+              "t": "Геометрическая задача на вычисление",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l844612545257",
+                  "t": "23-ЗАДАЧИ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ МАТЕМАТИКА\\23\\23-TASKS.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/23/23-TASKS.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f56fhq",
+              "n": "24",
+              "t": "Геометрическая задача на доказательство",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l43578908183",
+                  "t": "24-ЗАДАЧИ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ МАТЕМАТИКА\\24\\24-TASKS.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/24/24-TASKS.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f58u7l",
+              "n": "25",
+              "t": "Геометрическая задача повышенной сложности",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l793082558020",
+                  "t": "25-ЗАДАЧИ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ МАТЕМАТИКА\\25 геометрия\\Геометрия25_ЕГЭ_тренажёр.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%9C%D0%90%D0%A2%D0%95%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/25%20%D0%B3%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/%D0%93%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F25_%D0%95%D0%93%D0%AD_%D1%82%D1%80%D0%B5%D0%BD%D0%B0%D0%B6%D1%91%D1%80.html",
+                  "k": "app"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "oge-i",
+          "t": "Информатика",
+          "kids": [
+            {
+              "id": "nmwsv71f5ty1l",
+              "n": "1",
+              "t": "Количественные параметры информационных объектов",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l537339851602",
+                  "t": "1-ЗАДАНИЯ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ ИНФОРМАТИКА\\1\\1-ласт+звук2.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%98%D0%9D%D0%A4%D0%9E%D0%A0%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/1/1-%D0%BB%D0%B0%D1%81%D1%82%2B%D0%B7%D0%B2%D1%83%D0%BA2.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f566wd",
+              "n": "2",
+              "t": "Кодирование и декодирование информации",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l31931352522",
+                  "t": "1 - ЗАДАНИЯ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ ИНФОРМАТИКА\\2\\2-клод+звук3.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%98%D0%9D%D0%A4%D0%9E%D0%A0%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/2/2-%D0%BA%D0%BB%D0%BE%D0%B4%2B%D0%B7%D0%B2%D1%83%D0%BA3.html",
+                  "k": "app"
+                }
+              ]
+            },
+            {
+              "id": "nmwsv71f5k7mn",
+              "n": "3",
+              "t": "Значение логического выражения",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f548l1",
+              "n": "4",
+              "t": "Графы и таблицы: кратчайший путь",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f54h9q",
+              "n": "5",
+              "t": "Простой линейный алгоритм для исполнителя",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5ptpv",
+              "n": "6",
+              "t": "Программа с условным оператором",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f58b0q",
+              "n": "7",
+              "t": "Адрес файла в сети (URL)",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5b8nt",
+              "n": "8",
+              "t": "Запросы к поисковой системе",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5hjlx",
+              "n": "9",
+              "t": "Количество путей в графе",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5nvig",
+              "n": "10",
+              "t": "Системы счисления: сравнение чисел",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5a531",
+              "n": "11",
+              "t": "Поиск информации в файлах",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5eq9e",
+              "n": "12",
+              "t": "Анализ файловой системы",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5xblf",
+              "n": "13",
+              "t": "Презентация или форматирование текста",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5u1b7",
+              "n": "14",
+              "t": "Обработка данных в электронных таблицах",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5m54c",
+              "n": "15",
+              "t": "Алгоритм для исполнителя Робот",
+              "kind": "",
+              "links": []
+            },
+            {
+              "id": "nmwsv71f5zflc",
+              "n": "16",
+              "t": "Программа на языке программирования",
+              "kind": "",
+              "links": [
+                {
+                  "id": "l167335587299",
+                  "t": "16-ТЕСТ ПО ПИТОНУ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ ИНФОРМАТИКА\\16\\16-tasks-last.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%98%D0%9D%D0%A4%D0%9E%D0%A0%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/16/16-tasks-last.html",
+                  "k": "app"
+                },
+                {
+                  "id": "l506921145533",
+                  "t": "16-ПИШЕМ ПРОГРАММЫ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\json_files\\СТРУКТУРА ОГЭ ИНФОРМАТИКА\\16\\oge16_obrabotka_chisel_клод_исправлено гпт.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/json_files/%D0%A1%D0%A2%D0%A0%D0%A3%D0%9A%D0%A2%D0%A3%D0%A0%D0%90%20%D0%9E%D0%93%D0%AD%20%D0%98%D0%9D%D0%A4%D0%9E%D0%A0%D0%9C%D0%90%D0%A2%D0%98%D0%9A%D0%90/16/oge16_obrabotka_chisel_%D0%BA%D0%BB%D0%BE%D0%B4_%D0%B8%D1%81%D0%BF%D1%80%D0%B0%D0%B2%D0%BB%D0%B5%D0%BD%D0%BE%20%D0%B3%D0%BF%D1%82.html",
+                  "k": "sol"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "misc",
+      "t": "Разное",
+      "kids": [
+        {
+          "id": "misc-board",
+          "t": "Доска",
+          "kids": [
+            {
+              "id": "misc-board-task",
+              "n": "ДОСКА",
+              "t": "Доска для работы",
+              "links": [
+                {
+                  "id": "l366820294342",
+                  "t": "ДОСКА-ОНЛАЙН",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\ДОСКА_РАБОЧАЯ_ЛАСТ.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/%D0%94%D0%9E%D0%A1%D0%9A%D0%90_%D0%A0%D0%90%D0%91%D0%9E%D0%A7%D0%90%D0%AF_%D0%9B%D0%90%D0%A1%D0%A2.html",
+                  "k": "app"
+                },
+                {
+                  "id": "l268620846710",
+                  "t": "ДОСКА-ЛОКАЛЬНАЯ",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\ДОСКА_РАБОЧАЯ_ЛАСТ-ЛОКАЛЬНАЯ.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/%D0%94%D0%9E%D0%A1%D0%9A%D0%90_%D0%A0%D0%90%D0%91%D0%9E%D0%A7%D0%90%D0%AF_%D0%9B%D0%90%D0%A1%D0%A2-%D0%9B%D0%9E%D0%9A%D0%90%D0%9B%D0%AC%D0%9D%D0%90%D0%AF.html",
+                  "k": "app"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "misc-homework",
+          "t": "Домашние задания",
+          "kids": [
+            {
+              "id": "misc-homework-task",
+              "n": "ДЗ",
+              "t": "Дневник домашних заданий",
+              "links": [
+                {
+                  "id": "l283045246075",
+                  "t": "ДЗ ОНЛАЙН",
+                  "local": "C:\\Users\\udl\\Documents\\GitHub\\trenager_programs\\homework-diary.html",
+                  "u": "https://gannamath2026.github.io/trenager_programs/homework-diary.html",
+                  "k": "app"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "misc-other",
+          "t": "Другие инструменты",
+          "kids": [
+            {
+              "id": "misc-other-task",
+              "n": "РАЗНОЕ",
+              "t": "Дополнительные приложения",
+              "links": [
+                {
+                  "id": "l551187212494",
+                  "t": "Тренажёр №6: матстатистика",
+                  "local": "",
+                  "u": "https://claude.ai/artifact/2f1ZZK5DBUwtNw1BPe54FL",
+                  "k": "app"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}</script>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const clone=x=>JSON.parse(JSON.stringify(x));
+let DATA=JSON.parse($('embedded-data').textContent), TREE=DATA.tree||[];
+let EDIT=false, Q='', activeTop=TREE[0]?.id||'', activeSub='', DARK=false;
+const ROOT='C:\\Users\\udl\\Documents\\GitHub\\trenager_programs';
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function toast(s){$('toastHost').innerHTML='<div class="toast">'+esc(s)+'</div>';setTimeout(()=>$('toastHost').innerHTML='',2800);}
+function uid(){return 'id-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);}
+function githubFromLocal(path){
+ let p=String(path||'').trim().replace(/^file:\/\/\//i,'').replace(/\//g,'\\');
+ if(!p)return '';
+ const root=ROOT.toLowerCase();
+ if(p.toLowerCase().startsWith(root)){p=p.slice(ROOT.length).replace(/^\\+/,'');}
+ else if(/^[a-z]:\\/i.test(p)){return '';}
+ return 'https://gannamath2026.github.io/trenager_programs/'+p.split(/\\+/).filter(Boolean).map(x=>encodeURIComponent(x)).join('/');
+}
+function iconFor(n){
+ const s=(n.t+' '+(n.n||'')).toLowerCase();
+ if(/окруж|круг|треуголь|планиметр|стереометр|четырёхугол|геометр|вектор|решёт|чертеж|площад/.test(s))return ['📐','#e9f1ff','Геометрия'];
+ if(/график|функц|координат|диаграм/.test(s))return ['📈','#e9f8ef','Графики'];
+ if(/уравнен|неравен|вычисл|числ|дроб|степен|корн|алгебр|производ|первообраз|формул|последователь|прогресс/.test(s))return ['🧮','#fff4df','Вычисления'];
+ if(/вероят|статист|комбинатор|теория игр/.test(s))return ['🎲','#f5edff','Вероятность'];
+ if(/информ|кодирован|алгоритм|программ|таблиц|ip-|логичес|строк|робот|редактор|данных|файл|поиск/.test(s))return ['💻','#e9f7f7','Информатика'];
+ if(/домашн|дз|задан/.test(s))return ['📚','#fff0e8','Материалы'];
+ return ['🗂️','#f0f1f5','Разное'];
+}
+function getTop(){return TREE.find(x=>x.id===activeTop)||TREE[0];}
+function getSub(){const a=getTop();return (a?.kids||[]).find(x=>x.id===activeSub)||(a?.kids||[])[0];}
+function renderNav(){
+ $('level1').innerHTML=TREE.map(x=>`<button class="${x.id===activeTop?'active':''}" onclick="pickTop('${esc(x.id)}')">${x.t==='ЕГЭ'?'🎓':x.t==='ОГЭ'?'📝':'🗂️'} ${esc(x.t)}</button>`).join('')+(EDIT?'<button onclick="addGroup(0)" class="soft">＋ Раздел</button>':'');
+ const a=getTop();if(!a){$('level2').innerHTML='';return;}
+ $('level2').innerHTML=(a.kids||[]).map(x=>`<button class="${x.id===getSub()?.id?'active':''}" onclick="pickSub('${esc(x.id)}')">${x.t==='Математика'?'📐':x.t==='Информатика'?'💻':'🗂️'} ${esc(x.t)}</button>`).join('')+(EDIT?'<button class="soft" onclick="addGroup(1)">＋ Подраздел</button>':'');
+}
+function linkRows(n){
+ const links=n.links||[];
+ if(!links.length&&!EDIT)return '<div class="meta">Пока нет добавленных материалов</div>';
+ let h='<div class="linklist">';
+ links.forEach((l,i)=>{const href=l.u||'';h+=`<div class="linkrow"><span>${l.k==='sol'?'📘':'🧩'}</span><a ${/^https?:\/\//i.test(href)?`href="${esc(href)}" target="_blank" rel="noopener"`:''} title="${esc(href)}">${esc(l.t||'Без названия')}</a><span class="kind ${l.k==='sol'?'sol':''}">${l.k==='sol'?'Решебник':'Приложение'}</span>${EDIT?`<button class="small" onclick="editLink('${n.id}','${l.id}')">✎</button><button class="small danger" onclick="removeLink('${n.id}','${l.id}')">✕</button>`:''}</div>`;});
+ h+='</div>';
+ if(EDIT)h+=`<div class="editbar"><button onclick="addLink('${n.id}','app')">＋ Приложение</button><button onclick="addLink('${n.id}','sol')">＋ Решебник</button></div>`;
+ return h;
+}
+function card(n){
+ const [ic,tint,cat]=iconFor(n), count=(n.links||[]).length;
+ return `<article class="task ${EDIT?'editing':''}"><div class="taskhead"><div class="icon" style="--tint:${tint}">${ic}</div><div class="number">${esc(n.n||'•')}</div><div class="taskname">${esc(n.t)}<div class="meta">${cat}</div></div><span class="count">${count?count+' материал(а)':'пусто'}</span>${EDIT?`<button class="small" onclick="editTask('${n.id}')">✎</button><button class="small danger" onclick="deleteTask('${n.id}')">✕</button>`:''}</div><details class="links"><summary>Материалы и ссылки · ${count}</summary>${linkRows(n)}</details></article>`;
+}
+function allTaskNodes(){
+ let a=[];TREE.forEach(x=>(x.kids||[]).forEach(y=>(y.kids||[]).forEach(z=>a.push({node:z,top:x,sub:y}))));return a;
+}
+function matches(n,q){return (n.n+' '+n.t+' '+(n.links||[]).map(l=>l.t+' '+l.u+' '+l.local).join(' ')).toLowerCase().includes(q);}
+function render(){
+ renderNav();const a=getTop(),b=getSub(),q=$('search').value.trim().toLowerCase();$('addTask').hidden=!EDIT||!!q;
+ if(q){const found=allTaskNodes().filter(x=>matches(x.node,q));$('pathLabel').textContent='Результаты поиска: '+found.length;$('taskList').innerHTML=found.length?found.map(x=>`<div><div class="meta" style="margin:0 0 4px 4px">${esc(x.top.t+' · '+x.sub.t)}</div>${card(x.node)}</div>`).join(''):'<div class="empty">Ничего не найдено</div>';return;}
+ if(!b){$('taskList').innerHTML='<div class="empty">В этом разделе пока нет подразделов.</div>';return;}
+ $('pathLabel').textContent=a.t+'  /  '+b.t;
+ $('taskList').innerHTML=(b.kids||[]).map(card).join('')||'<div class="empty">Здесь пока нет заданий.</div>';
+}
+function pickTop(id){activeTop=id;activeSub='';render();}
+function pickSub(id){activeSub=id;render();}
+function setEdit(){EDIT=!EDIT;$('editBtn').textContent=EDIT?'✓ Завершить редактирование':'✎ Редактировать';$('addTask').hidden=!EDIT;render();}
+function findTask(id){for(const x of allTaskNodes())if(x.node.id===id)return x.node;return null;}
+function modal(title,fields,onSave){
+ const host=$('modalHost');host.innerHTML=`<div class="overlay"><div class="modal"><h2>${esc(title)}</h2>${fields.map(f=>`<label>${esc(f.label)}</label>${f.type==='select'?`<select id="f-${f.key}">${f.options.map(o=>`<option value="${esc(o[0])}" ${o[0]===f.value?'selected':''}>${esc(o[1])}</option>`).join('')}</select>`:`<input id="f-${f.key}" value="${esc(f.value||'')}" placeholder="${esc(f.placeholder||'')}" ${f.type==='url'?'type="url"':''}>`}${f.hint?`<div class="hint">${esc(f.hint)}</div>`:''}`).join('')}<div class="row"><button onclick="closeModal()">Отмена</button><button class="primary" id="modalSave">Сохранить</button></div></div></div>`;
+ host.querySelector('.overlay').onclick=e=>{if(e.target.classList.contains('overlay'))closeModal();};
+ $('modalSave').onclick=()=>{const v={};fields.forEach(f=>v[f.key]=$(('f-'+f.key)).value.trim());if(onSave(v)!==false)closeModal();};
+}
+function closeModal(){$('modalHost').innerHTML='';}
+function editTask(id){const n=findTask(id);if(!n)return;modal('Редактировать задание',[{key:'n',label:'Номер задания',value:n.n},{key:'t',label:'Название',value:n.t}],v=>{if(!v.t)return false;n.n=v.n;n.t=v.t;render();});}
+function deleteTask(id){if(!confirm('Удалить задание вместе со всеми ссылками?'))return;const b=getSub();b.kids=b.kids.filter(n=>n.id!==id);render();}
+function addTask(){const b=getSub();if(!b)return;modal('Новое задание',[{key:'n',label:'Номер задания'},{key:'t',label:'Название'}],v=>{if(!v.t)return false;b.kids.push({id:uid(),n:v.n,t:v.t,links:[]});render();});}
+function addGroup(level){
+ const parent=level===0?null:getTop();modal(level===0?'Новый раздел':'Новый подраздел',[{key:'t',label:'Название'}],v=>{if(!v.t)return false;const node={id:uid(),t:v.t,kids:[]};if(parent)parent.kids.push(node);else TREE.push(node);if(!parent)activeTop=node.id;render();});
+}
+function addLink(taskId,kind){const n=findTask(taskId);if(!n)return;editLinkForm(n,{id:uid(),t:'',local:'',u:'',k:kind},true);}
+function editLink(taskId,linkId){const n=findTask(taskId),l=n?.links.find(x=>x.id===linkId);if(n&&l)editLinkForm(n,l,false);}
+function editLinkForm(n,l,isNew){
+ modal(isNew?'Добавить материал':'Редактировать материал',[
+ {key:'t',label:'Название',value:l.t,placeholder:'Например: Тренажёр по теме'},
+ {key:'local',label:'Локальный путь к файлу',value:l.local,placeholder:'C:\\Users\\...\\мой-файл.html',hint:'Путь на компьютере. Для GitHub Pages он будет преобразован автоматически.'},
+ {key:'u',label:'Ссылка GitHub Pages / внешняя ссылка',value:l.u,placeholder:'https://gannamath2026.github.io/...',hint:'Если локальный путь относится к папке trenager_programs, ссылка пересчитывается сама. При пустом локальном пути можно указать внешнюю ссылку вручную.'},
+ {key:'k',label:'Тип материала',value:l.k||'app',type:'select',options:[['app','🧩 Приложение / тренажёр'],['sol','📘 Решебник']]}
+ ],v=>{
+   if(!v.t){toast('Укажи название материала');return false;}
+   let local=v.local.replace(/\//g,'\\');
+   let auto=githubFromLocal(local);
+   const url=auto||v.u;
+   if(!url){toast('Укажи локальный путь или веб-ссылку');return false;}
+   const obj={id:l.id||uid(),t:v.t,local,u:url,k:v.k};
+   if(isNew)n.links.push(obj);else Object.assign(l,obj);
+   render();return true;
+ });
+ const localInput=$('f-local'),urlInput=$('f-u');
+ if(localInput&&urlInput)localInput.addEventListener('input',()=>{const u=githubFromLocal(localInput.value);if(u)urlInput.value=u;});
+}
+function removeLink(taskId,linkId){const n=findTask(taskId);if(!n)return;if(!confirm('Удалить эту ссылку?'))return;n.links=n.links.filter(x=>x.id!==linkId);render();}
+function saveWhole(){
+ const payload=JSON.stringify({tree:TREE},null,2).replace(/</g,'\\u003c');
+ const original=document.documentElement.outerHTML;
+ const re=/(<script id="embedded-data" type="application\/json">)[\s\S]*?(<\/script>)/;
+ const result=original.replace(re,(_,a,b)=>a+payload+b);
+ const blob=new Blob(['<!doctype html>\n'+result],{type:'text/html;charset=utf-8'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='Мои_приложения_каталог_'+new Date().toISOString().slice(0,10)+'.html';
+ document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
+ $('status').textContent='✓ HTML сохранён вместе со всеми данными';toast('Готово! Сохранён новый HTML-файл со всеми изменениями.');
+}
+$('search').addEventListener('input',render);$('editBtn').onclick=setEdit;$('saveBtn').onclick=saveWhole;$('addTask').onclick=addTask;
+$('themeBtn').onclick=()=>{DARK=!DARK;document.documentElement.dataset.theme=DARK?'dark':'';$('themeBtn').textContent=DARK?'☀️':'🌙';};
+render();
+</script></body></html>
