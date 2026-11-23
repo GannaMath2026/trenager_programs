@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ОГЭ Информатика №1 — Кодирование текста</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#1d2640;--mut:#6b7491;--line:#e3e7f1;--pri:#4f6bff;--pri2:#7b5cff;--ok:#16a36a;--okl:#dff6ea;--warn:#f0a400;--warnl:#fff2cc;--bad:#e5484d;--badl:#ffe3e3;--sol:#f07a2a;--soll:#ffe8d6;--sh:0 6px 24px rgba(30,40,80,.08);--r:16px}
+[data-theme=dark]{--bg:#12151f;--card:#1b2030;--ink:#e8ecf7;--mut:#9aa3bd;--line:#2b3247;--okl:#173a2b;--warnl:#3d3214;--badl:#43191c;--soll:#45281a;--sh:0 6px 24px rgba(0,0,0,.35)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Nunito','Segoe UI',Roboto,Arial,sans-serif;font-size:16px;line-height:1.5}
+button{font:inherit;cursor:pointer}input{font:inherit}
+.btn{border:0;border-radius:12px;padding:10px 16px;background:var(--line);color:var(--ink);font-weight:700;display:inline-flex;align-items:center;gap:6px;transition:.15s;white-space:nowrap}
+.btn:hover{filter:brightness(.96);transform:translateY(-1px)}
+.btn.pri{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;box-shadow:0 4px 14px rgba(79,107,255,.35)}
+.btn.ok{background:var(--ok);color:#fff}.btn.ghost{background:transparent;border:1.5px solid var(--line)}
+.btn.warn{background:var(--warnl);color:var(--ink);border:1.5px solid var(--warn)}
+.btn.sm{padding:7px 11px;font-size:14px;border-radius:10px}.btn:disabled{opacity:.4;pointer-events:none}
+.top{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:10px 16px;flex-wrap:wrap}
+.ttl{font-weight:900;font-size:17px;display:flex;align-items:center;gap:8px}.ttl small{display:block;color:var(--pri);font-size:11px;letter-spacing:.12em}
+.who{background:var(--bg);border-radius:999px;padding:6px 12px;font-weight:700;font-size:14px}
+.pbar{flex:1;min-width:120px;height:10px;background:var(--line);border-radius:99px;overflow:hidden;position:relative}
+.pbar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--ok),#5ad19b);border-radius:99px;transition:width .4s}
+.ptxt{font-weight:800;font-size:14px;color:var(--mut)}.tbtns{display:flex;gap:6px;flex-wrap:wrap}
+.wrap{display:grid;grid-template-columns:310px 1fr;gap:18px;padding:18px;max-width:1400px;margin:0 auto}
+.side{position:sticky;top:78px;align-self:start;max-height:calc(100vh - 92px);overflow:auto;display:grid;gap:10px}
+.sec{background:var(--card);border:2px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.sec.act{border-color:var(--pri)}
+.sech{width:100%;border:0;background:none;color:var(--ink);text-align:left;display:flex;gap:10px;align-items:center;padding:12px}
+.sech .ic{font-size:26px;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--bg)}
+.sech b{display:block;line-height:1.2}.sech small{color:var(--mut);font-weight:700}
+.sub{padding:0 10px 12px;display:grid;gap:5px}
+.sl{font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:8px 4px 2px}
+.nb{display:flex;gap:8px;align-items:center;width:100%;text-align:left;border:1.5px solid transparent;background:var(--bg);color:var(--ink);border-radius:11px;padding:8px 10px;font-size:14px;font-weight:700}
+.nb.on{border-color:var(--pri);background:color-mix(in srgb,var(--pri) 12%,var(--card))}
+.nb .m{width:24px;text-align:center}.nb.s-done{background:var(--okl);border-color:var(--ok)}.nb.s-skip{background:var(--warnl);border-color:var(--warn)}.nb.s-err{background:var(--badl);border-color:var(--bad)}
+.nb.an{margin-left:14px;width:calc(100% - 14px);border-left:5px solid var(--sol)}
+#view{background:var(--card);border-radius:22px;box-shadow:var(--sh);padding:clamp(18px,2.4vw,34px);min-width:0;min-height:70vh}
+#view.solved{box-shadow:0 0 0 4px var(--ok),var(--sh)}
+h1.h{font-size:clamp(22px,2.6vw,30px);line-height:1.2;margin:10px 0 14px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{border-radius:999px;padding:4px 12px;font-size:13px;font-weight:900;background:var(--bg);color:var(--mut)}
+.pill.main{background:color-mix(in srgb,var(--pri) 16%,var(--card));color:var(--pri)}.pill.analog{background:var(--soll);color:var(--sol)}
+.pill.st-done{background:var(--ok);color:#fff}.pill.st-skip{background:var(--warn);color:#2b2100}.pill.st-err{background:var(--bad);color:#fff}.pill.st-prog{background:var(--pri);color:#fff}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tab{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:8px 14px;font-weight:800}.tab.on{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border-color:transparent}
+/* lecture */
+.dots{display:flex;gap:6px;margin:6px 0 14px}.dots i{flex:1;height:8px;border-radius:9px;background:var(--line)}.dots i.on{background:var(--pri)}.dots i.past{background:var(--ok)}
+.lec{border-radius:22px;padding:22px;background:linear-gradient(145deg,color-mix(in srgb,var(--pri) 12%,var(--card)),var(--card));border:2px solid color-mix(in srgb,var(--pri) 30%,transparent)}
+.lec h2{margin:0 0 12px;font-size:24px;display:flex;gap:10px;align-items:center}.lec h2 .e{font-size:34px}
+.lec .tx{font-size:18px;margin-top:14px}
+.vis{background:var(--card);border:2px dashed var(--line);border-radius:16px;padding:14px;margin:8px 0;text-align:center}
+.cap{font-weight:800;color:var(--mut);margin-top:8px}
+.bytes{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.byte{display:flex;gap:3px;background:color-mix(in srgb,var(--pri) 14%,var(--card));padding:5px;border-radius:9px;border:2px solid var(--pri)}
+.byte i{width:14px;height:20px;border-radius:4px;background:linear-gradient(135deg,var(--pri),var(--pri2))}
+.chipsr{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{background:color-mix(in srgb,var(--pri) 12%,var(--card));border:2px solid var(--pri);border-radius:12px;padding:5px 10px;font-weight:800;position:relative}
+.chip u{text-decoration:none;display:inline-block;margin-left:2px;padding:0 4px;border-radius:5px;background:var(--line);color:var(--mut)}
+.chip.del{border-color:var(--bad);background:var(--badl);box-shadow:0 0 0 3px color-mix(in srgb,var(--bad) 25%,transparent)}
+.chip.del span{text-decoration:line-through;text-decoration-thickness:3px;text-decoration-color:var(--bad)}.chip.del u{background:var(--bad);color:#fff}
+.eq{font-size:18px;font-weight:800;margin-top:12px}.eq b{border-radius:9px;padding:2px 10px;color:#fff}.c1{background:var(--pri)}.c2{background:var(--bad)}.c3{background:var(--warn);color:#2b2100!important}.c4{background:var(--ok)}
+.flow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+.flow .fs{background:color-mix(in srgb,var(--pri) 10%,var(--card));border:2px solid var(--pri);border-radius:14px;padding:8px 12px;font-weight:800;min-width:110px}
+.flow .fs:last-child{background:var(--okl);border-color:var(--ok)}.flow .ar{font-size:22px;color:var(--pri);font-weight:900}
+.pgs{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}.pg{width:70px;background:#fff;border:2px solid var(--pri);border-radius:8px;padding:8px 6px;display:grid;gap:4px;box-shadow:3px 3px 0 var(--pri)}
+.pg i{height:5px;background:#c9d3ff;border-radius:3px}.pg i:nth-child(odd){background:#9fb0ff}
+.boxes{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}.bx{min-width:28px;height:34px;border-radius:7px;display:grid;place-items:center;font-weight:900;border:2px solid;font-size:16px;padding:0 3px}
+.bx.l{background:color-mix(in srgb,var(--pri) 14%,var(--card));border-color:var(--pri)}.bx.sp{background:var(--warnl);border-color:var(--warn);color:var(--warn)}.bx.pu{background:var(--badl);border-color:var(--bad);color:var(--bad)}
+.leg{display:flex;gap:10px;justify-content:center;margin-top:8px;font-size:13px;font-weight:800;flex-wrap:wrap}
+.fmv{display:flex;gap:14px;justify-content:center;align-items:flex-end;flex-wrap:wrap;font-size:30px;font-weight:900}
+.fmv div{text-align:center}.fmv small{display:block;font-size:12px;color:var(--mut);font-weight:800}.fmv b{display:inline-block;min-width:54px;padding:2px 12px;border-radius:12px;color:#fff}
+.quick{margin-top:16px;background:var(--warnl);border:2px solid var(--warn);border-radius:16px;padding:12px}.quick .qo{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.lnav{display:flex;justify-content:space-between;gap:8px;margin-top:16px;flex-wrap:wrap}
+/* test */
+.tq{border:2px solid var(--line);border-radius:20px;padding:16px;margin:14px 0;background:linear-gradient(160deg,color-mix(in srgb,var(--pri2) 8%,var(--card)),var(--card));position:relative}
+.tq .qn{position:absolute;top:-13px;left:14px;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border-radius:999px;padding:2px 14px;font-weight:900;font-size:13px}
+.tq.ok{border-color:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 30%,transparent)}.tq.no{border-color:var(--bad)}
+.tq h3{margin:6px 0 4px;font-size:18px}
+.opt{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:10px 12px;margin:7px 0;font-weight:700;transition:.15s}
+.opt:hover{border-color:var(--pri);transform:translateX(3px)}
+.opt .lt{width:30px;height:30px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-weight:900;flex:none}
+.opt.good{background:var(--ok);border-color:var(--ok);color:#fff;box-shadow:0 0 16px rgba(22,163,106,.55)}.opt.good .lt{background:#fff;color:var(--ok)}
+.opt.bad{background:var(--bad);border-color:var(--bad);color:#fff;animation:shake .35s}.opt.bad .lt{background:#fff;color:var(--bad)}
+.opt.reveal{border:2px dashed var(--ok);background:var(--okl)}
+.expl{margin-top:6px;font-weight:700;padding:8px 12px;border-radius:12px}.expl.g{background:var(--okl);color:var(--ok)}.expl.r{background:var(--badl);color:var(--bad)}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.score{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--bg);border-radius:16px;padding:12px 16px;margin-top:10px}.score b{font-size:22px}
+/* task */
+.cond-wrap{border-radius:20px;overflow:hidden;border:2px solid var(--pri);margin:12px 0;box-shadow:0 8px 0 -3px color-mix(in srgb,var(--pri) 30%,transparent)}
+.cond-rib{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;padding:8px 16px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:900}
+.selhint{font-weight:700;font-size:13px;background:#ffffff28;border-radius:999px;padding:2px 12px}.selhint span{display:inline-block;animation:poke 1.4s infinite}
+@keyframes poke{50%{transform:translate(5px,-4px) scale(1.2)}}
+.cond{padding:18px;font-size:18px;line-height:1.8;white-space:pre-line;background:color-mix(in srgb,var(--pri) 5%,var(--card));user-select:text;cursor:text}
+.cond .n{color:#fff;background:var(--pri);border-radius:7px;padding:0 6px;font-weight:900}
+.cond .cmp{color:#fff;background:var(--pri2);border-radius:7px;padding:0 6px;font-weight:900}
+.cond .wd{background:var(--warnl);color:var(--ink);border:1.5px solid var(--warn);border-radius:7px;padding:0 5px;font-weight:900}
+.cond .qt{display:inline-block;white-space:normal;background:var(--card);border:2px dashed var(--pri);border-radius:12px;padding:6px 12px;margin:4px 0;font-weight:800;line-height:1.5}
+.cond .q{display:block;margin-top:8px;background:var(--badl);border-left:6px solid var(--bad);padding:6px 12px;border-radius:10px;font-weight:900}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.hint{border-radius:18px;padding:14px;margin:12px 0;background:var(--warnl);border:2px solid var(--warn)}
+.hint h4{margin:0 0 8px}.hs{display:flex;gap:10px;align-items:flex-start;margin:6px 0;font-weight:700}.hs i{font-style:normal;width:28px;height:28px;border-radius:50%;background:var(--warn);color:#2b2100;display:grid;place-items:center;font-weight:900;flex:none}
+.scr{border-radius:18px;padding:14px;margin:12px 0;background:var(--soll);border:2px solid var(--sol)}
+.scr h4{margin:0 0 8px}.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.scr label{font-size:12px;font-weight:800;display:block}.scr input,.crow input{width:100%;padding:9px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.crow{display:grid;grid-template-columns:1fr 150px;gap:10px;margin-top:10px;align-items:end}.res{background:var(--card);border:2px solid var(--sol);border-radius:10px;padding:8px;min-height:42px;font-weight:900;color:var(--sol)}
+.ansrow{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.ansrow input{flex:1;min-width:200px;padding:14px;border-radius:14px;border:2px solid var(--line);background:var(--bg);color:var(--ink);font-size:18px;font-weight:700}.ansrow input:focus{outline:none;border-color:var(--pri)}
+.shake{animation:shake .35s}
+.fb{font-weight:800;margin:8px 0;font-size:17px}.fb.g{color:var(--ok)}.fb.r{color:var(--bad)}
+.solv{background:linear-gradient(135deg,var(--ok),#37c98d);color:#fff;border-radius:18px;padding:14px 18px;font-weight:900;font-size:18px;margin:12px 0;box-shadow:0 6px 20px rgba(22,163,106,.4)}
+.acts{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;border-top:2px solid var(--line);padding-top:14px;margin-top:18px}
+.conf{position:fixed;pointer-events:none;font-size:16px;z-index:300;animation:fall 1s ease-in forwards}
+@keyframes fall{to{transform:translateY(35vh) rotate(180deg);opacity:0}}
+.pill.st-doneh{background:var(--warn);color:#2b2100}.nb.s-doneh{background:var(--warnl);border-color:var(--warn)}#view.solvedh{box-shadow:0 0 0 4px var(--warn),var(--sh)}
+.solv.h{background:linear-gradient(135deg,var(--warn),#f5c04a);color:#2b2100;box-shadow:0 6px 20px rgba(240,164,0,.4)}.solv small{font-weight:700;opacity:.85;margin-left:8px}
+.vbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}.rs{font-weight:800;font-size:14px;display:inline-flex;gap:6px;align-items:center}.rs select{padding:6px;border-radius:9px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:800}
+.spk{margin-top:8px;border:0;border-radius:10px;background:var(--c);color:#fff;font-weight:800;padding:5px 12px}
+.tg{display:grid;gap:6px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin:8px 0}label.tl{display:flex;gap:8px;align-items:center;border:2px solid var(--line);border-radius:10px;padding:6px 10px;font-weight:700;cursor:pointer}label.tl:has(input:checked){border-color:var(--pri);background:color-mix(in srgb,var(--pri) 10%,var(--card))}
+/* stickers */
+.stg{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px 16px;margin:18px 0}
+.st{--c:#4f6bff;position:relative;border-radius:18px;padding:20px 16px 14px;background:linear-gradient(145deg,color-mix(in srgb,var(--c) 18%,var(--card)),color-mix(in srgb,var(--c) 5%,var(--card)));border:2px solid color-mix(in srgb,var(--c) 50%,transparent);box-shadow:0 8px 0 -3px color-mix(in srgb,var(--c) 35%,transparent),var(--sh);transition:.2s}
+.st:hover{transform:rotate(-1deg) translateY(-3px)}
+.st .tag{position:absolute;top:-12px;left:14px;background:var(--c);color:#fff;border-radius:999px;padding:3px 12px;font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+.st .em{position:absolute;right:10px;top:-16px;font-size:30px;width:46px;height:46px;border-radius:50%;background:var(--card);border:3px solid var(--c);display:grid;place-items:center;box-shadow:var(--sh)}
+.st h3{margin:2px 0 8px;font-size:18px}.st p{margin:6px 0}
+.st.idea{--c:#4f6bff}.st.formula{--c:#8b5cf6}.st.example{--c:#16a36a}.st.warn{--c:#f0a400}.st.steps{--c:#0ea5c6}.st.alert{--c:#e5484d}
+.fml{display:block;text-align:center;font-size:24px;font-weight:900;background:var(--card);border:2px solid var(--c);border-radius:12px;padding:6px;margin:8px 0}
+.stp{counter-reset:s;list-style:none;padding:0;margin:0}.stp li{counter-increment:s;display:flex;gap:10px;align-items:flex-start;margin:7px 0;font-weight:700}.stp li:before{content:counter(s);background:var(--c);color:#fff;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:900;flex:none}
+/* modal */
+.ov{display:none;position:fixed;inset:0;background:rgba(10,14,30,.7);z-index:100;align-items:center;justify-content:center;padding:16px}.ov.show{display:flex}
+.modal{background:var(--card);border-radius:22px;padding:22px;max-width:960px;width:100%;max-height:92vh;overflow:auto}.modal h2{margin-top:0}
+.login{text-align:center}.login input{width:100%;padding:14px;border-radius:14px;border:2px solid var(--line);background:var(--bg);color:var(--ink);font-size:18px;text-align:center;margin:12px 0}
+/* inspector */
+#ins{position:fixed;z-index:400;left:50%;transform:translateX(-50%);bottom:16px;width:min(520px,calc(100vw - 20px));background:#172b48;color:#fff;border:2px solid #7fb4ff;border-radius:16px;padding:12px 16px;box-shadow:0 12px 40px #0006;display:none}
+#ins.show{display:block}#ins .t{font-weight:800;color:#fff4b8;overflow-wrap:anywhere;max-height:60px;overflow:auto;margin:4px 0}#ins .big{font-size:20px;font-weight:900;color:#a9f3c5}#ins .sm{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;font-size:13px}#ins .sm span{background:#ffffff22;border-radius:8px;padding:2px 9px}
+/* board */
+.board{display:none;position:fixed;inset:0;z-index:90;background:var(--bg);grid-template-rows:auto auto 1fr auto;gap:8px;padding:10px}.board.show{display:grid}
+.bt{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--card);border-radius:16px;padding:8px 12px;box-shadow:var(--sh)}.bt b{flex:1;min-width:160px}
+.bcond{max-height:30vh;overflow:auto}.bcond .cond{font-size:20px;padding:12px 16px}
+.bm{display:grid;grid-template-columns:64px 1fr;gap:8px;min-height:0}
+.btools{background:var(--card);border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:6px;align-items:center;box-shadow:var(--sh);overflow:auto}
+.btools button{width:46px;height:46px;border-radius:12px;border:2px solid var(--line);background:var(--bg);font-size:20px;color:var(--ink)}.btools button.on{border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 30%,transparent)}
+.btools .col{width:34px;height:34px;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 2px var(--line)}.btools .col.on{box-shadow:0 0 0 3px var(--pri)}
+#bwrap{background-color:var(--card);background-image:radial-gradient(circle,var(--line) 1.5px,transparent 1.5px);background-size:24px 24px;border-radius:16px;box-shadow:var(--sh);position:relative;overflow:hidden;min-height:0}
+#bc{position:absolute;inset:0;touch-action:none;cursor:crosshair}
+.bb{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);border-radius:16px;padding:8px 12px;box-shadow:var(--sh)}.bb input.a{flex:1;min-width:140px;max-width:260px;padding:10px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);font-size:18px;font-weight:700}
+.bb input.c{width:150px;padding:8px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}.bb .bfb{font-weight:900}
+/* report */
+.report h2{margin:0 0 6px}.report h3{margin:22px 0 8px;border-bottom:2px solid var(--line);padding-bottom:6px}
+.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0}.kp div{border-radius:14px;padding:10px;text-align:center;font-weight:800;border:2px solid}.kp b{display:block;font-size:26px}
+.kp .g{background:var(--okl);border-color:var(--ok);color:var(--ok)}.kp .r{background:var(--badl);border-color:var(--bad);color:var(--bad)}.kp .y{background:var(--warnl);border-color:var(--warn);color:var(--ink)}.kp .b{background:var(--bg);border-color:var(--line)}
+.rt{border:2px solid var(--line);border-left-width:8px;border-radius:14px;padding:12px;margin:10px 0;break-inside:avoid;page-break-inside:avoid}
+.rt.g{border-color:var(--ok);background:var(--okl)}.rt.r{border-color:var(--bad);background:var(--badl)}.rt.y{border-color:var(--warn);background:var(--warnl)}.rt.b{border-color:var(--mut)}
+.rt .hd{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;font-weight:900}
+.rc{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:8px 12px;margin:8px 0;white-space:pre-line}
+.rg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}.rg div{background:var(--card);border-radius:10px;padding:6px 10px;border:1px solid var(--line)}.rg small{color:var(--mut);display:block;font-weight:800}
+.rq{font-size:14px;border-top:1px solid var(--line);padding:6px 0}.rq.g b{color:var(--ok)}.rq.r b{color:var(--bad)}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}.side{position:static;max-height:none}.crow{grid-template-columns:1fr}.bm{grid-template-columns:1fr}.btools{flex-direction:row}}
+@media print{body{background:#fff!important}body *{visibility:hidden!important}.report,.report *{visibility:visible!important}.ov.show{position:static!important;display:block!important;background:none!important;padding:0!important}.modal{max-height:none!important;overflow:visible!important;padding:0!important}.report{position:absolute;left:0;top:0;width:100%;color:#000}.noprint{display:none!important}.rt,.kp div{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<div class="top">
+ <div class="ttl"><span style="font-size:30px">🔤</span><div><small>ОГЭ · ИНФОРМАТИКА · №1</small>Кодирование текста</div></div>
+ <span class="who" id="who"></span>
+ <div class="pbar"><i id="pb" style="width:0"></i></div><span class="ptxt" id="pt"></span>
+ <div class="tbtns">
+  <button class="btn pri sm" onclick="openBoard()">🖍️ Доска</button>
+  <button class="btn sm" onclick="showMemo()">📚 Памятки</button>
+  <button class="btn sm" onclick="openReport()">📊 Отчёт</button>
+  <button class="btn sm" onclick="openTeacher()">👩‍🏫 Учитель</button>
+  <button class="btn ghost sm" onclick="toggleTheme()" title="Тема">🌗</button>
+  <button class="btn ghost sm" onclick="saveApp()" title="Сохранить HTML">💾</button>
+  <button class="btn ghost sm" onclick="resetAll()" title="Сбросить">↺</button>
+ </div>
+</div>
+<div class="wrap"><aside class="side" id="side"></aside><main class="main" id="view"></main></div>
+<div class="ov" id="modal"><div class="modal" id="mc"></div></div>
+<div class="board" id="board"></div>
+<script id="preset">window.PRESET=null;</script>
+<div id="ins"><button class="btn sm" style="float:right;background:#ffffff22;color:#fff" onclick="this.parentElement.classList.remove('show')">✕</button><div style="font-size:13px">✂️ Выделенный фрагмент</div><div class="t" id="insT"></div><div class="big" id="insN"></div><div class="sm" id="insS"></div></div>
+<script>
+const PRESET=window.PRESET||null;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* ===== ЗАДАНИЯ ===== */
+const TASKS=[
+{id:1,t:"Прототип: вычёркивание (КОИ-8)",a:"Москва",x:`В кодировке КОИ-8 каждый символ кодируется 8 битами. Андрей написал текст (в нем нет лишних пробелов):
+«Обы, Лена, Волга, Москва, Макензи, Амазонка — реки».
+Ученик вычеркнул из списка название одной из рек. Заодно он вычеркнул ставшие лишними запятые и пробелы — два пробела не должны идти подряд.
+При этом размер нового предложения в данной кодировке оказался на 8 байтов меньше, чем размер исходного предложения.
+Напишите в ответе вычеркнутое название реки.`,h:"1) 8 бит = 1 байт. Уменьшилось на 8 байт = 8 символов. 2) Вычеркнуто: слово + запятая (1) + пробел (1). 3) Длина слова + 2 = 8, длина слова = 6. 4) Ищем реку из 6 букв."},
+{id:2,t:"Прототип: добавление (Windows-1251)",a:"скользя",x:`В кодировке Windows-1251 каждый символ кодируется 8 битами. Вова хотел написать текст:
+«Скользя по утреннему снегу, Друг милый, предадимся бегу Нетерпеливого коня И навестим поля пустые…»
+Одно из слов ученик написал два раза подряд, поставив между одинаковыми словами один пробел.
+При этом размер написанного предложения в данной кодировке оказался на 8 байт больше, чем размер нужного предложения.
+Напишите в ответе лишнее слово.`,h:"1) 8 бит = 1 байт. Увеличилось на 8 байт = 8 символов. 2) Добавлено: слово + 1 пробел. 3) Длина слова + 1 = 8, длина слова = 7."},
+{id:3,t:"Прототип: вычёркивание (Unicode 16 бит)",a:"тюлень",x:`В одной из кодировок Unicode каждый символ кодируется 16 битами. Вова написал текст:
+«еж, лев, слон, олень, тюлень, носорог, крокодил, аллигатор — дикие животные».
+Ученик вычеркнул из списка название одного из животных. Заодно он вычеркнул ставшие лишними запятые и пробелы.
+При этом размер нового предложения оказался на 16 байт меньше, чем размер исходного.
+Напишите в ответе вычеркнутое название животного.`,h:"1) 16 бит = 2 байта. Уменьшилось на 16 байт = 8 символов. 2) Вычеркнуто: слово + запятая + пробел. 3) Длина слова + 2 = 8, длина слова = 6."},
+{id:4,t:"Прототип: добавление с запятой (Unicode 16 бит)",a:"Ом",x:`В одной из кодировок Unicode каждый символ кодируется 16 битами. Вова написал текст:
+«Ом, Бор, Кюри, Попов, Джоуль, Рентген, Курчатов, Резерфорд — великие физики».
+Фамилию одного ученого ученик написал два раза подряд, добавив необходимые запятую и пробел.
+При этом размер написанного предложения оказался на 8 байт больше, чем размер нужного.
+Напишите в ответе слово, использованное дважды.`,h:"1) 16 бит = 2 байта. Увеличилось на 8 байт = 4 символа. 2) Добавлено: слово + запятая + пробел. 3) Длина слова + 2 = 4, длина слова = 2."},
+{id:5,t:"Прототип: вычёркивание (UTF-32)",a:"Гуарана",x:`В кодировке UTF-32 каждый символ кодируется 32 битами. Миша написал текст:
+«Айва, Алыча, Генипа, Гуарана, Курбарил, Мангостан — фрукты».
+Ученик вычеркнул название одного фрукта. Заодно вычеркнул лишние запятые и пробелы.
+Размер нового предложения оказался на 36 байтов меньше исходного.
+Напишите в ответе вычеркнутое название фрукта.`,h:"1) 32 бита = 4 байта. Уменьшилось на 36 байт = 9 символов. 2) Вычеркнуто: слово + запятая + пробел. 3) Длина слова + 2 = 9, длина слова = 7."},
+{id:6,t:"Прототип: объём рассказа (8 бит)",a:"15",x:`Рассказ, набранный на компьютере, содержит 8 страниц, на каждой странице 40 строк, в каждой строке 48 символов.
+Определите информационный объем рассказа в Кбайтах в кодировке Windows, в которой каждый символ кодируется 8 бит.`,h:"1) 8 бит = 1 байт. 2) Символов: 8 * 40 * 48 = 15360. 3) Объем в байтах: 15360 * 1 = 15360. 4) В Кбайтах: 15360 / 1024 = 15."},
+{id:7,t:"Прототип: объём статьи (2 байта)",a:"75",x:`Статья, набранная на компьютере, содержит 20 страниц, на каждой странице 40 строк, в каждой строке 48 символов.
+В одном из представлений Unicode каждый символ кодируется двумя байтами.
+Определите информационный объем статьи в Кбайтах, округлив результат до целого числа.`,h:"1) 1 символ = 2 байта. 2) Символов: 20 * 40 * 48 = 38400. 3) Объем в байтах: 38400 * 2 = 76800. 4) В Кбайтах: 76800 / 1024 = 75."},
+{id:8,t:"Прототип: объём предложения (16 бит)",a:"84",x:`В одной из кодировок Unicode каждый символ кодируется 16 битами.
+Определите размер в байтах следующего предложения:
+«Слух обо мне пройдет по всей Руси великой.»`,h:"1) 16 бит = 2 байта. 2) Считаем символы вместе с пробелами и точкой: Слух(4) обо(3) мне(3) пройдет(7) по(2) всей(4) Руси(4) великой(7) = 34 буквы + 7 пробелов + точка = 42 символа. 3) Объем: 42 * 2 = 84 байта."},
+{id:9,t:"Аналог: вычёркивание (КОИ-8)",a:"Haskell",x:`В кодировке КОИ-8 каждый символ кодируется 8 битами. Андрей написал текст:
+«C, Cg, Cat, Ruby, Swift, Delphi, Haskell — языки программирования».
+Ученик вычеркнул из списка название одного из языков. Заодно он вычеркнул ставшие лишними запятые и пробелы.
+При этом размер нового предложения в данной кодировке оказался на 9 байт меньше, чем размер исходного.
+Напишите в ответе вычеркнутое название языка программирования.`,h:"1) 8 бит = 1 байт. Уменьшилось на 9 байт = 9 символов. 2) Вычеркнуто: слово + запятая + пробел. 3) Длина слова + 2 = 9, длина слова = 7. 4) Ищем язык из 7 букв."},
+{id:10,t:"Аналог: добавление (Unicode 16 бит)",a:"пустые",x:`В одной из кодировок Unicode каждый символ кодируется 16 битами. Вова хотел написать текст:
+«Скользя по утреннему снегу, Друг милый, предадимся бегу Нетерпеливого коня И навестим поля пустые…»
+Одно из слов ученик написал два раза подряд, поставив между одинаковыми словами один пробел.
+При этом размер написанного предложения в данной кодировке оказался на 14 байт больше, чем размер нужного.
+Напишите в ответе лишнее слово.`,h:"1) 16 бит = 2 байта. Увеличилось на 14 байт = 7 символов. 2) Добавлено: слово + 1 пробел. 3) Длина слова + 1 = 7, длина слова = 6."},
+{id:11,t:"Аналог: вычёркивание (Unicode 16 бит)",a:"лиственница",x:`В одной из кодировок Unicode каждый символ кодируется 16 битами. Петя написал текст:
+«Ель, кедр, сосна, кипарис, лиственница, можжевельник — хвойные растения».
+Ученик вычеркнул из списка название одного из растений. Заодно он вычеркнул ставшие лишними запятые и пробелы.
+При этом размер нового предложения оказался на 26 байт меньше, чем размер исходного.
+Напишите в ответе вычеркнутое название хвойного растения.`,h:"1) 16 бит = 2 байта. Уменьшилось на 26 байт = 13 символов. 2) Вычеркнуто: слово + запятая + пробел. 3) Длина слова + 2 = 13, длина слова = 11."},
+{id:12,t:"Аналог: добавление с запятой (Unicode 16 бит)",a:"Ом",x:`В одной из кодировок Unicode каждый символ кодируется 16 битами. Вова написал текст:
+«Пушкин, Гоголь, Толстой, Чехов, Достоевский, Есенин, Ом — великие люди».
+Фамилию одного человека ученик написал два раза подряд, добавив необходимые запятую и пробел.
+При этом размер написанного предложения оказался на 8 байт больше, чем размер нужного.
+Напишите в ответе слово, использованное дважды.`,h:"1) 16 бит = 2 байта. Увеличилось на 8 байт = 4 символа. 2) Добавлено: слово + запятая + пробел. 3) Длина слова + 2 = 4, длина слова = 2."},
+{id:13,t:"Аналог: вычёркивание (UTF-32)",a:"койот",x:`В кодировке UTF-32 каждый символ кодируется 32 битами. Миша написал текст:
+«Волк, лиса, заяц, барсук, енот, койот, рысь, медведь — дикие животные».
+Ученик вычеркнул название одного животного. Заодно вычеркнул лишние запятые и пробелы.
+Размер нового предложения оказался на 28 байтов меньше исходного.
+Напишите в ответе вычеркнутое название животного.`,h:"1) 32 бита = 4 байта. Уменьшилось на 28 байт = 7 символов. 2) Вычеркнуто: слово + запятая + пробел. 3) Длина слова + 2 = 7, длина слова = 5."},
+{id:14,t:"Аналог: объём рассказа (16 бит)",a:"8",x:`Рассказ, набранный на компьютере, содержит 2 страницы, на каждой странице 32 строки, в каждой строке 64 символа.
+Определите информационный объем рассказа в Кбайтах в одной из кодировок Unicode, в которой каждый символ кодируется 16 бит.`,h:"1) 16 бит = 2 байта. 2) Символов: 2 * 32 * 64 = 4096. 3) Объем в байтах: 4096 * 2 = 8192. 4) В Кбайтах: 8192 / 1024 = 8."},
+{id:15,t:"Аналог: объём статьи (2 байта)",a:"44",x:`Статья, набранная на компьютере, содержит 15 страниц, на каждой странице 30 строк, в каждой строке 50 символов.
+В одном из представлений Unicode каждый символ кодируется двумя байтами.
+Определите информационный объем статьи в Кбайтах, округлив результат до целого числа.`,h:"1) 1 символ = 2 байта. 2) Символов: 15 * 30 * 50 = 22500. 3) Объем в байтах: 22500 * 2 = 45000. 4) В Кбайтах: 45000 / 1024 = 43,94 — округляем до 44."},
+{id:16,t:"Аналог: объём предложения (16 бит)",a:"104",x:`В одной из кодировок Unicode каждый символ кодируется 16 битами.
+Определите размер в байтах следующего предложения:
+«Я к вам пишу — чего же боле? Что я могу еще сказать?»`,h:"1) 16 бит = 2 байта. 2) Считаем все 52 символа, включая пробелы, знаки препинания и тире. (Выдели предложение мышкой — счётчик покажет число.) 3) Объем: 52 * 2 = 104 байта."},
+{id:17,t:"Закрепление 2: вычёркивание (КОИ-8)",a:"Delphi",x:`В кодировке КОИ-8 каждый символ кодируется 8 битами. В списке языков программирования записаны: «C, Go, Perl, Java, Delphi, Swift, Rust».
+Ученик вычеркнул один язык и ставшие лишними запятую и пробел. Размер текста уменьшился на 8 байт.
+Напишите название вычеркнутого языка.`,h:"1) 8 бит = 1 байт, значит исчезло 8 символов. 2) Удаляется слово, запятая и пробел. 3) Длина слова = 8 − 2 = 6."},
+{id:18,t:"Закрепление 2: добавление (Unicode 16 бит)",a:"утреннему",x:`В Unicode каждый символ кодируется 16 битами. В предложении «Скользя по утреннему снегу, друг милый, предадимся бегу» одно слово повторили подряд, разделив пробелом. Размер увеличился на 20 байт.
+Какое слово повторили?`,h:"1) 16 бит = 2 байта. 20 байт = 10 символов. 2) Добавлено слово и пробел. 3) Длина слова = 10 − 1 = 9."},
+{id:19,t:"Закрепление 2: вычёркивание (Unicode 16 бит)",a:"можжевельник",x:`В Unicode каждый символ кодируется 16 битами. В списке растений: «ель, кедр, сосна, кипарис, можжевельник, лиственница».
+Одно название вычеркнули вместе с лишними запятой и пробелом. Размер уменьшился на 28 байт.
+Напишите вычеркнутое растение.`,h:"1) 28 байт при 2 байтах на символ — 14 символов. 2) На запятую и пробел приходится 2 символа. 3) Длина слова = 12."},
+{id:20,t:"Закрепление 2: добавление с запятой (Unicode)",a:"Ия",x:`В Unicode каждый символ кодируется 16 битами. В списке имён «Аня, Ия, Лев, Оля, Ева» одно имя повторили как новый элемент списка, добавив запятую и пробел. Размер увеличился на 8 байт.
+Какое имя повторили?`,h:"1) 8 байт = 4 символа. 2) Добавлены слово, запятая и пробел: длина + 2. 3) Длина слова = 2."},
+{id:21,t:"Закрепление 2: вычёркивание (UTF-32)",a:"барсук",x:`В UTF-32 каждый символ кодируется 32 битами. В списке животных «волк, лиса, заяц, барсук, енот, койот» вычеркнули одно название и лишние запятую с пробелом. Размер уменьшился на 32 байта.
+Какое животное вычеркнули?`,h:"1) 32 бита = 4 байта. 2) 32 байта = 8 символов. 3) Длина слова = 8 − 2 = 6."},
+{id:22,t:"Закрепление 2: объём страниц",a:"10",x:`Документ содержит 2 страницы, на каждой 40 строк, в каждой строке 64 символа. Каждый символ кодируется 16 битами.
+Определите объём документа в Кбайтах.`,h:"1) Символов: 2 × 40 × 64 = 5120. 2) По 2 байта: 10240 байт. 3) 10240 ÷ 1024 = 10 Кбайт."},
+{id:23,t:"Закрепление 2: объём статьи",a:"30",x:`Статья содержит 10 страниц, на каждой странице 24 строки, в каждой строке 64 символа. Каждый символ занимает 2 байта.
+Определите информационный объём статьи в Кбайтах.`,h:"1) Символов: 10 × 24 × 64 = 15360. 2) Объём: 15360 × 2 = 30720 байт. 3) 30720 ÷ 1024 = 30 Кбайт."},
+{id:24,t:"Закрепление 2: объём сообщения",a:"70",x:`В Unicode каждый символ кодируется 16 битами. Определите объём сообщения в байтах. Кавычки считайте частью сообщения:
+«Ученье — свет, а неученье — тьма!»`,h:"1) Посчитайте все 35 символов, включая кавычки, пробелы, тире и знаки препинания. (Выдели сообщение мышкой — счётчик поможет.) 2) 35 × 2 = 70 байт."}
+];
+const ORIGIN={9:1,17:1,10:2,18:2,11:3,19:3,12:4,20:4,13:5,21:5,14:6,22:6,15:7,23:7,16:8,24:8};
+const task=id=>TASKS.find(t=>t.id===id);const isAn=id=>id in ORIGIN;
+/* ===== ВИЗУАЛЫ ===== */
+const V={
+ bits(n){const k=n/8;return `<div class="bytes">${'<div class="byte">'.concat('<i></i>'.repeat(8),'</div>').repeat(k)}</div><div class="cap">${n} бит = ${k} ${k==1?'байт':k<5?'байта':'байтов'} на 1 символ</div>`},
+ bitsAll(){return `<div class="vis">${V.bits(8)}</div><div class="vis">${V.bits(16)}</div><div class="vis">${V.bits(32)}</div>`},
+ chips(w,d,lab){return `<div class="vis"><div class="chipsr">${w.map((x,i)=>`<span class="chip ${i==d?'del':''}"><span>${x}</span>${i<w.length-1?'<u>,</u><u>␣</u>':''}</span>`).join('')}</div>${lab?`<div class="cap">${lab}</div>`:''}</div>`},
+ delEq(){return `<div class="eq"><b class="c1">слово</b> + <b class="c2">запятая</b> + <b class="c3">пробел</b> = <b class="c4">слово + 2</b></div>`},
+ pages(p,l,c){return `<div class="vis"><div class="pgs">${Array.from({length:p},()=>`<div class="pg">${'<i></i>'.repeat(l)}</div>`).join('')}</div><div class="cap">${p} стр. × ${l} строк × ${c} символов</div></div>`},
+ boxes(s){return `<div class="vis"><div class="boxes">${Array.from(s).map(ch=>/[\p{L}\p{N}]/u.test(ch)?`<span class="bx l">${ch}</span>`:ch==' '?`<span class="bx sp">␣</span>`:`<span class="bx pu">${ch}</span>`).join('')}</div><div class="leg"><span style="color:var(--pri)">🟦 буквы</span><span style="color:var(--warn)">🟨 пробелы</span><span style="color:var(--bad)">🟥 знаки</span></div><div class="cap">Всего символов: ${Array.from(s).length}</div></div>`},
+ fm(){return `<div class="vis"><div class="fmv"><div><b class="c1">I</b><small>объём (байт)</small></div>=<div><b class="c2">k</b><small>число символов</small></div>×<div><b class="c4">i</b><small>байт на символ</small></div></div></div>`},
+ flow(a){return `<div class="vis"><div class="flow">${a.map((x,i)=>`${i?'<span class="ar">➜</span>':''}<div class="fs">${x}</div>`).join('')}</div></div>`}
+};
+
+
+
+
+document.addEventListener('mouseup', () => {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) return;
+  const txt = sel.toString();
+  if (!txt.trim()) return;
+  const L = (txt.match(/[\p{L}\p{N}]/gu) || []).length;
+  const S = (txt.match(/ /g) || []).length;
+  const P = txt.length - L - S;
+  const cap = document.querySelector('.bxstat') || document.querySelector('.vis .cap');
+  if (cap) cap.innerHTML = `Выделено символов: <b>${txt.length}</b> — 🟦 букв: ${L} · 🟨 пробелов: ${S} · 🟥 знаков: ${P}`;
+});
+
+
+
+
+
+/* ===== РАЗДЕЛЫ ===== */
+const SECS=[
+{id:'words',ic:'✂️',title:'Добавление и удаление слов',ids:[1,2,3,4,5,9,10,11,12,13,17,18,19,20,21],
+ lec:[
+  {e:'⚖️',h:'Сколько весит один символ?',v:V.bitsAll(),x:'Делим биты на 8 — получаем <b>байты на 1 символ</b>. Это <b>i</b> в формуле.'},
+  {e:'✂️',h:'Что исчезает вместе со словом?',v:V.chips(['Обы','Лена','Волга','Москва','Макензи'],3,'Вычеркнули «Москва»')+V.delEq(),x:'Повтор через пробел добавляет только <b>слово + 1</b> (пробел).'},
+  {e:'🧮',h:'Идём по цепочке',v:V.flow(['−8 байт<br>КОИ-8: 1 байт/симв.','8 символов','8 − 2 = 6','слово из 6 букв 🔍']),x:'Байты ÷ вес символа = символы. Вычитаем запятую и пробел — получаем длину слова.',q:{q:'Убрали 16 байт, символ весит 2 байта. Сколько символов исчезло?',o:['4','8','32'],a:1}}],
+ memo:[
+  {c:'idea',e:'💡',tag:'Главное',h:'Идея',b:'<p>Размер текста = <b>символы × вес символа</b>.</p><p>Размер изменился → считаем, на сколько изменилось <b>число символов</b>.</p>'},
+  {c:'formula',e:'🧮',tag:'Формулы',h:'Вес символа',b:'<span class="fml">I = k × i</span><p>8 бит = <b>1 байт</b><br>16 бит = <b>2 байта</b><br>32 бита = <b>4 байта</b></p>'},
+  {c:'steps',e:'🪜',tag:'Алгоритм',h:'4 шага',steps:['Биты → байты на символ','Изменение (байт) ÷ вес = символов','Вычти запятую и пробел (−2 или −1)','Найди слово такой длины']},
+  {c:'example',e:'🌟',tag:'Пример',h:'КОИ-8, −8 байт',b:'<p>8 символов → 8 − 2 = <b>6 букв</b> → «Москва» ✅</p>'},
+  {c:'warn',e:'⚠️',tag:'Осторожно',h:'Удаление ≠ повтор',b:'<p>Удалили из списка: <b>слово + 2</b>.</p><p>Повтор через пробел: <b>слово + 1</b>.</p><p>Повтор как элемент списка: <b>слово + 2</b>.</p>'}],
+ tests:[
+  {q:'Что означает формула I = k × i?',v:V.fm(),o:['I — объём, k — число символов, i — байт на символ','I — число страниц, k — вес символа, i — число строк','I — число символов, k — объём, i — страницы'],a:0,e:'Объём = символы × вес одного символа.'},
+  {q:'16 бит — это сколько байт?',v:V.bits(16),o:['1 байт','2 байта','4 байта'],a:1,e:'16 ÷ 8 = 2 байта.'},
+  {q:'Исчезло 16 байт. Один символ — 2 байта. Сколько символов исчезло?',v:V.flow(['16 байт','÷ 2','? символов']),o:['8 символов','16 символов','32 символа'],a:0,e:'16 ÷ 2 = 8 символов.'},
+  {q:'При удалении слова из списка вместе с ним обычно исчезают:',v:V.chips(['еж','лев','слон','олень'],2,'Вычеркнули «слон»'),o:['запятая и пробел','только пробел','две запятые'],a:0,e:'Одна запятая и один пробел: слово + 2.'},
+  {q:'Слово повторили, поставив между копиями один пробел. Что добавилось?',v:V.chips(['снегу','снегу','друг'],-1,'снегу␣снегу'),o:['слово и пробел','слово, запятая и пробел','только слово'],a:0,e:'Слово + 1 пробел.'}]},
+{id:'pages',ic:'📄',title:'Объём страниц, строк и символов',ids:[6,7,14,15,22,23],
+ lec:[
+  {e:'📄',h:'Сколько всего символов?',v:V.pages(3,5,48),x:'<b>страницы × строки × символы в строке</b> = <b>k</b>.'},
+  {e:'⚖️',h:'Умножаем на вес символа',v:V.fm(),x:'Символы × байты на символ = <b>объём в байтах</b>.'},
+  {e:'📦',h:'Байты → Кбайты',v:V.flow(['8×40×48<br>= 15 360 симв.','× 1 байт<br>= 15 360 байт','÷ 1024<br>= 15 Кбайт']),x:'1 Кбайт = 1024 байта. Если просят — округли.',q:{q:'2048 байт — сколько Кбайт?',o:['1','2','20'],a:1}}],
+ memo:[
+  {c:'idea',e:'💡',tag:'Главное',h:'Идея',b:'<p>Сначала считаем <b>все символы</b>, потом умножаем на вес символа.</p>'},
+  {c:'formula',e:'🧮',tag:'Формулы',h:'Две формулы',b:'<span class="fml">k = стр × строк × симв.</span><span class="fml">I = k × i</span>'},
+  {c:'steps',e:'🪜',tag:'Алгоритм',h:'4 шага',steps:['Перемножь страницы × строки × символы','Найди байты на символ','Умножь: символы × байты','Раздели на 1024 → Кбайты']},
+  {c:'example',e:'🌟',tag:'Пример',h:'8 × 40 × 48',b:'<p>15 360 символов × 1 байт = 15 360 байт = <b>15 Кбайт</b> ✅</p>'},
+  {c:'warn',e:'⚠️',tag:'Осторожно',h:'Единицы',b:'<p>1 Кбайт = <b>1024</b> байта, а не 1000. Читай, куда округлять.</p>'}],
+ tests:[
+  {q:'Как найти общее число символов на нескольких страницах?',v:V.pages(2,4,48),o:['страницы × строки × символы в строке','страницы + строки + символы','страницы × байты на символ'],a:0,e:'Три множителя: страницы, строки, символы в строке.'},
+  {q:'Что означает формула I = k × i?',v:V.fm(),o:['объём = число символов × вес символа','объём = число символов ÷ вес символа','объём = сумма символов и веса'],a:0,e:'Объём = k × i.'},
+  {q:'4096 символов по 2 байта. Объём в байтах?',v:V.flow(['4096 симв.','× 2 байта','? байт']),o:['2048','4096','8192'],a:2,e:'4096 × 2 = 8192.'},
+  {q:'10 240 байт — сколько это Кбайт?',v:V.flow(['10 240 байт','÷ 1024','? Кбайт']),o:['10 Кбайт','100 Кбайт','1024 Кбайта'],a:0,e:'10 240 ÷ 1024 = 10.'},
+  {q:'Объём 8192 байта, символ — 2 байта. Сколько символов?',v:V.flow(['8192 байт','÷ 2 байта','? символов']),o:['4096','8192','16 384'],a:0,e:'8192 ÷ 2 = 4096.'}]},
+{id:'message',ic:'💬',title:'Объём сообщения',ids:[8,16,24],
+ lec:[
+  {e:'🔤',h:'Считаем ВСЁ подряд',v:V.boxes('Мир, труд!'),x:'Буквы, <b>пробелы</b>, <b>знаки</b> и тире — всё это символы.'},
+  {e:'⚖️',h:'Умножаем на вес',v:V.fm(),x:'<b>I = k × i</b>. Например, 42 символа × 2 байта = 84 байта.'},
+  {e:'🖱️',h:'Выдели и посчитай!',v:V.flow(['Выдели предложение мышкой','Увидишь число символов ✨','× вес = байты']),x:'Счётчик покажет буквы, а пробелы и знаки — отдельно: сложи всё.',q:{q:'В сообщении 35 символов по 2 байта. Объём?',o:['37','70','17,5'],a:1}}],
+ memo:[
+  {c:'idea',e:'💡',tag:'Главное',h:'Идея',b:'<p>Считаем <b>каждый символ</b> сообщения и умножаем на вес.</p>'},
+  {c:'formula',e:'🧮',tag:'Формула',h:'Объём',b:'<span class="fml">I = k × i</span>'},
+  {c:'steps',e:'🪜',tag:'Алгоритм',h:'3 шага',steps:['Выдели сообщение — узнай k','Найди байты на символ','Умножь k × i']},
+  {c:'alert',e:'🚫',tag:'Не забудь',h:'Что считать',b:'<p>🔤 буквы · ␣ пробелы · ❗ знаки · — тире. Кавычки — только если в условии сказано.</p>'},
+  {c:'example',e:'🌟',tag:'Пример',h:'42 символа',b:'<p>42 × 2 = <b>84 байта</b> ✅</p>'}],
+ tests:[
+  {q:'Что означает формула I = k × i?',v:V.fm(),o:['I — объём, k — число символов, i — байт на символ','I — число слов, k — страницы, i — строки','I — вес символа, k — объём'],a:0,e:'Объём = символы × вес.'},
+  {q:'При подсчёте символов сообщения учитываются:',v:V.boxes('Да, он!'),o:['только буквы','буквы, пробелы и знаки препинания','только буквы и пробелы'],a:1,e:'Считаем всё, что напечатано.'},
+  {q:'Исчезло 16 байт, символ — 2 байта. Сколько символов?',v:V.flow(['16 байт','÷ 2','? символов']),o:['8 символов','16 символов','32 символа'],a:0,e:'16 ÷ 2 = 8.'},
+  {q:'35 символов, каждый 2 байта. Объём?',v:V.flow(['35 симв.','× 2 байта','? байт']),o:['37 байт','70 байт','17,5 байта'],a:1,e:'35 × 2 = 70.'},
+  {q:'Объём 84 байта, символ — 2 байта. Сколько символов?',v:V.flow(['84 байта','÷ 2','? символов']),o:['42','82','168'],a:0,e:'84 ÷ 2 = 42.'}]}
+];
+const GEN_MEMO=[{c:'formula',e:'📏',tag:'Единицы',h:'Таблица',b:'<p>8 бит = 1 байт</p><p>1 Кбайт = 1024 байта</p>'}];
+const SEC_OF={};SECS.forEach(s=>s.ids.forEach(i=>SEC_OF[i]=s.id));
+const sec=id=>SECS.find(s=>s.id===(id||S.sec));
+const ORDER=SECS.flatMap(s=>s.ids);
+const inA=id=>!S.assign||S.assign.includes(id);const TV=()=>TASKS.filter(t=>inA(t.id));const vids=s=>s.ids.filter(inA);const order=()=>ORDER.filter(inA);
+/* ===== СОСТОЯНИЕ ===== */
+const KEY='oge_task1_v5';
+const fresh=()=>({name:'',theme:'light',sec:'words',view:'lecture',cur:1,step:{},tq:{},tskip:{},done:{},skipped:{},attempts:{},hintUsed:{},answers:{},scratch:{},visited:{},hintLvl:{},theoryUsed:{},assign:null,hw:'',rate:1.5,presetSig:''});
+let S=fresh();try{const o=JSON.parse(localStorage.getItem(KEY)||'null');if(o)S={...fresh(),...o}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const stat=id=>S.done[id]?(S.hintUsed[id]?'doneh':'done'):S.skipped[id]?'skip':S.attempts[id]?'err':S.visited[id]?'prog':'new';
+const STL={done:'✅ Решено',doneh:'💡 Решено с подсказкой',skip:'⏭️ Пропущено',err:'❌ Есть ошибки',prog:'🔵 В работе',new:'⚪ Не начато'};
+/* ===== РЕНДЕР ===== */
+function render(){document.documentElement.dataset.theme=S.theme;renderTop();renderSide();
+ if(S.view==='lecture')renderLec();else if(S.view==='test')renderTest();else renderTask();}
+function renderTop(){const V=TV(),d=V.filter(t=>S.done[t.id]).length;$('who').textContent='👤 '+(S.name||'Ученик')+(S.hw?' · 📌 '+S.hw:'');$('pb').style.width=100*d/(V.length||1)+'%';$('pt').textContent=`${d}/${V.length} решено`;}
+function renderSide(){
+ $('side').innerHTML=SECS.filter(s=>vids(s).length).map(s=>{const d=vids(s).filter(i=>S.done[i]).length,act=s.id===S.sec;
+  const row=id=>{const st=stat(id);const m={done:'✅',doneh:'💡',skip:'⏭️',err:'❌',prog:'🔵',new:'⚪'}[st];return `<button class="nb ${isAn(id)?'an':''} ${S.view==='task'&&S.cur===id?'on':''} ${st=='done'?'s-done':st=='doneh'?'s-doneh':st=='skip'?'s-skip':st=='err'?'s-err':''}" onclick="goTask(${id})"><span class="m">${m}</span>${esc(task(id).t.replace(/^(Прототип|Аналог|Закрепление 2): /,''))}</button>`};
+  const tq=S.tq[s.id]||{},ok=Object.values(tq).filter(x=>x.ok).length;
+  return `<div class="sec ${act?'act':''}"><button class="sech" onclick="go('lecture','${s.id}')"><span class="ic">${s.ic}</span><span><b>${s.title}</b><small>решено ${d}/${vids(s).length}</small></span></button>${act?`<div class="sub"><button class="nb ${S.view=='lecture'?'on':''}" onclick="go('lecture')"><span class="m">📖</span>Мини-лекция</button><button class="nb ${S.view=='test'?'on':''} ${S.tskip[s.id]?'s-skip':ok==5?'s-done':''}" onclick="go('test')"><span class="m">🧠</span>Тест ${S.tskip[s.id]?'(пропущен)':`${ok}/5`}</button><div class="sl">Основные</div>${vids(s).filter(i=>!isAn(i)).map(row).join('')}<div class="sl">Закрепление</div>${vids(s).filter(isAn).map(row).join('')}</div>`:''}</div>`}).join('');}
+function go(view,secId){closeModal();stopSay();if(secId)S.sec=secId;S.view=view;save();render();scrollTo(0,0)}
+function goTask(id){closeModal();S.sec=SEC_OF[id];S.cur=id;S.view='task';S.visited[id]=true;save();render();scrollTo(0,0);if($('board').classList.contains('show'))renderBoard()}
+function tabs(){return `<div class="tabs"><button class="tab ${S.view=='lecture'?'on':''}" onclick="go('lecture')">📖 Мини-лекция</button><button class="tab ${S.view=='test'?'on':''}" onclick="go('test')">🧠 Тест</button><button class="tab" onclick="goTask(${firstOpen()})">✏️ Задачи</button></div>`}
+function firstOpen(){const s=sec(),v=vids(s);return v.find(i=>!S.done[i]&&!isAn(i))||v.find(i=>!S.done[i])||v[0]||s.ids[0]}
+/* лекция */
+function renderLec(){const s=sec(),n=s.lec.length,i=Math.min(S.step[s.id]||0,n-1),st=s.lec[i];
+ $('view').className='main';$('view').innerHTML=`<div class="pills"><span class="pill main">${s.ic} ${s.title}</span></div><h1 class="h">Мини-лекция · шаг ${i+1} из ${n}</h1>${tabs()}<div class="dots">${s.lec.map((_,k)=>`<i class="${k<i?'past':k==i?'on':''}"></i>`).join('')}</div>
+ <div class="lec"><h2><span class="e">${st.e}</span>${st.h}</h2>${st.v}<div class="tx">${st.x}</div><div class="vbar"><button class="btn sm pri" onclick="sayLec()">🔊 Озвучить</button><button class="btn sm ghost" onclick="stopSay()">⏹️ Стоп</button>${rateSel()}</div>${st.q?`<div class="quick"><b>🎯 Попробуй:</b> ${st.q.q}<div class="qo">${st.q.o.map((o,j)=>`<button class="btn sm" onclick="quick(this,${j},${st.q.a})">${o}</button>`).join('')}</div><div id="qf" style="font-weight:800;margin-top:6px"></div></div>`:''}</div>
+ <div class="lnav"><button class="btn" ${i==0?'disabled':''} onclick="lstep(-1)">← Назад</button>${i<n-1?`<button class="btn pri" onclick="lstep(1)">Дальше →</button>`:`<span class="tbtns"><button class="btn" onclick="showMemo()">📚 Памятка</button><button class="btn pri" onclick="go('test')">К тесту 🧠</button><button class="btn ok" onclick="goTask(firstOpen())">К задачам ✏️</button></span>`}</div>`}
+function lstep(d){S.step[S.sec]=Math.max(0,(S.step[S.sec]||0)+d);save();renderLec();scrollTo(0,0)}
+function quick(b,j,a){const ok=j===a;b.className='btn sm '+(ok?'ok':'warn');$('qf').innerHTML=ok?'🎉 Верно!':'🤔 Подумай ещё раз'}
+/* тест */
+function perm(si,qi){let x=(si.length*7+qi*13+5)%97,a=[0,1,2];for(let i=2;i>0;i--){x=(x*31+17)%101;const j=x%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+function renderTest(){const s=sec(),T=S.tq[s.id]||{},ok=Object.values(T).filter(x=>x.ok).length,an=Object.keys(T).length;
+ $('view').className='main';$('view').innerHTML=`<div class="pills"><span class="pill main">${s.ic} ${s.title}</span></div><h1 class="h">Тест · проверь себя</h1>${tabs()}<p style="color:var(--mut);font-weight:700">Тест необязательный: можно пропустить и сразу решать задачи в любом порядке 😉</p>
+ ${s.tests.map((q,i)=>{const t=T[i],p=perm(s.id,i);return `<div class="tq ${t?(t.ok?'ok':'no'):''}"><span class="qn">Вопрос ${i+1}</span><h3>${q.q}</h3><div class="vis" style="border:0;padding:0">${q.v}</div>${p.map((j,k)=>{let c='';if(t){if(t.pick===j)c=t.ok?'good':'bad';else if(!t.ok&&j===q.a)c='reveal'}return `<button class="opt ${c}" onclick="tpick(${i},${j})"><span class="lt">${'АБВ'[k]}</span><span>${q.o[j]}</span>${c=='good'?'<span style="margin-left:auto">✅</span>':c=='bad'?'<span style="margin-left:auto">❌</span>':c=='reveal'?'<span style="margin-left:auto">✔️</span>':''}</button>`}).join('')}${t?`<div class="expl ${t.ok?'g':'r'}">${t.ok?'🎉 Верно! ':'🤔 Не совсем. '}${q.e}</div>`:''}</div>`}).join('')}
+ <div class="score"><span>Верно сразу: <b>${ok}</b> из ${s.tests.length}</span><span style="color:var(--mut)">Отвечено: ${an}/${s.tests.length}</span><span class="tbtns" style="margin-left:auto"><button class="btn" onclick="tskip()">${S.tskip[s.id]?'Тест пропущен ⏭️':'Пропустить тест ⏭️'}</button><button class="btn ok" onclick="goTask(firstOpen())">К задачам ✏️</button></span></div>`}
+function tpick(i,j){const s=sec(),q=s.tests[i];S.tq[s.id]??={};const o=S.tq[s.id][i];if(o&&o.ok)return;const first=!o;S.tq[s.id][i]={pick:j,ok:j===q.a,tries:(o?.tries||0)+1,first:o?o.first:j===q.a};if(j!==q.a)S.tq[s.id][i].ok=false;S.tskip[s.id]=false;save();const y=scrollY;renderTest();renderSide();scrollTo(0,y)}
+function tskip(){S.tskip[S.sec]=true;save();goTask(firstOpen())}
+/* задача */
+function hl(s){return s.replace(/\d+(?:[.,]\d+)?/g,'<b class="n">$&</b>').replace(/(больше|меньше|не менее|не более|увеличилось|уменьшилось)/gi,'<b class="cmp">$1</b>').replace(/(запятые|запятую|запятая|запятой|пробела|пробелы|пробелом|пробел)/gi,'<b class="wd">$1</b>').replace(/(Напишите[^.?]*[.?]|Определите[^.?]*[.?]|Какое слово[^?]*\?|Какое имя[^?]*\?|Какое животное[^?]*\?|Какое растение[^?]*\?)/g,'<span class="q">❓ $1</span>')}
+function fmt(raw){return raw.split(/(«[^»]*»)/).map(p=>p[0]==='«'?`<span class="qt">${esc(p)}</span>`:hl(esc(p))).join('')}
+function renderTask(){const t=task(S.cur),st=stat(t.id),s=sec(),an=isAn(t.id),sc=S.scratch[t.id]||{};S.visited[t.id]=true;
+ const flds=[['weight','Вес символа (байты)'],['chars','Число символов'],...(s.id==='words'?[['wl','Ищем слово длины']]:[]),...(s.id==='message'?[['bytes','Объём (байты)']]:[])];
+ $('view').className='main'+(S.done[t.id]?(S.hintUsed[t.id]?' solvedh':' solved'):'');
+ $('view').innerHTML=`<div class="pills"><span class="pill main">${s.ic} ${s.title}</span><span class="pill ${an?'analog':'main'}">${an?'🔁 Закрепление':'⭐ Основное'}</span><span class="pill st-${st}">${STL[st]}</span></div><h1 class="h">№${t.id}. ${esc(t.t)}</h1>
+ <div class="cond-wrap"><div class="cond-rib"><span>📝 Условие</span><span class="selhint"><span>🖱️</span> Выдели слово или предложение — посчитаю символы ✨</span></div><div class="cond">${fmt(t.x)}</div></div>
+ <div class="tools"><button class="btn pri" onclick="openBoard()">🖍️ Доска</button><button class="btn" onclick="showMemo()">📚 Памятка</button><button class="btn warn" onclick="showHint()">💡 Подсказка</button><button class="btn ghost" onclick="theory();go('lecture')">📖 Мини-лекция</button></div>
+ ${S.hintUsed[t.id]?hintBox(t):''}
+ <div class="scr"><h4>📒 Черновик</h4><div class="sg">${flds.map(([k,l])=>`<div><label>${l}</label><input value="${esc(sc[k]||'')}" oninput="sv('${k}',this.value)"></div>`).join('')}</div><div class="crow"><div><label>Выражение</label><input value="${esc(sc.expr||'')}" placeholder="8*40*48/1024" oninput="calc(this.value,'res')"></div><div><label>Результат</label><div class="res" id="res">${esc(sc.res||'—')}</div></div></div></div>
+ <div class="ansrow"><input id="ans" placeholder="✍️ Введи ответ" value="${esc(S.answers[t.id]||'')}" oninput="S.answers[S.cur]=this.value;save()"><button class="btn pri" onclick="check('m')">Проверить ✔️</button></div><div class="fb" id="fb"></div>
+ ${S.done[t.id]?`<div class="solv ${S.hintUsed[t.id]?'h':''}">${S.hintUsed[t.id]?'💡 Решено с подсказкой':'🎉 Верно!'} Ответ: ${esc(t.a)}<small>➡️ переходим дальше…</small></div>`:''}
+ <div class="acts"><span class="tbtns"><button class="btn" onclick="nav(-1)">← Назад</button><button class="btn ${S.done[t.id]?'ok':'pri'}" onclick="nav(1)">Дальше →</button></span><button class="btn warn" onclick="skip()" ${S.done[t.id]?'disabled':''}>Пропустить ⏭️</button></div>`;}
+function hintBoxOld(t){return `<div class="hint"><h4>💡 Подсказка</h4>${t.h.split(/\s(?=\d\)\s)/).map(x=>x.replace(/^(\d)\)\s*/,'<i>$1</i>')).map((x,i)=>`<div class="hs"><i>${i+1}</i><span>${x.replace(/^<i>\d<\/i>/,'')}</span></div>`).join('')}</div>`}
+function showHintOld(){const t=task(S.cur);S.hintUsed[t.id]=true;save();if($('board').classList.contains('show'))openModal(hintBox(t)+'<button class="btn pri" onclick="closeModal()">Понятно</button>');else{renderTask()}}
+/* подсказки по одной */
+const hsteps=t=>t.h.split(/\s(?=\d\)\s)/).map(x=>x.replace(/^\d\)\s*/,''));
+const hlv=id=>S.hintLvl[id]||(S.hintUsed[id]?1:0);
+function hintBox(t){const st=hsteps(t),n=Math.min(hlv(t.id),st.length);if(!n)return '';return `<div class="hint"><h4>💡 Подсказка · шаг ${n} из ${st.length}</h4>${st.slice(0,n).map((x,i)=>`<div class="hs"><i>${i+1}</i><span>${x}</span></div>`).join('')}${n<st.length?`<button class="btn warn sm" onclick="moreHint()">💡 Ещё подсказка (${n+1}/${st.length})</button>`:'<div style="font-weight:800">Это все шаги — дальше сам(а)! 💪</div>'}<div style="font-size:12px;color:var(--mut);margin-top:6px">Чем меньше подсказок — тем лучше результат 😉</div></div>`}
+function showHint(){const t=task(S.cur);if(!hlv(t.id)){S.hintLvl[t.id]=1;S.hintUsed[t.id]=true;save()}refreshHint()}
+function moreHint(){const t=task(S.cur);S.hintLvl[t.id]=Math.min(hlv(t.id)+1,hsteps(t).length);S.hintUsed[t.id]=true;save();refreshHint()}
+function refreshHint(){const t=task(S.cur);if($('board').classList.contains('show')){saveImg();renderBoard();render();openModal(hintBox(t)+'<p><button class="btn pri" onclick="closeModal()">Понятно</button></p>')}else{const y=scrollY;renderTask();renderSide();renderTop();scrollTo(0,y)}}
+function theory(){S.theoryUsed[S.cur]=true;save()}
+/* озвучка */
+const NL={
+words:['Давай начнём с главного: сколько места занимает один символ. В компьютере информация хранится в битах, а восемь бит — это один байт. Если кодировка восьмибитная, каждый символ весит один байт. Если шестнадцать бит — два байта. А если тридцать два бита — целых четыре байта. Просто делим биты на восемь и получаем вес символа. В формуле его обозначают буквой i.','Теперь представь, что мы вычёркиваем слово из списка. Вместе со словом пропадает и запятая, и пробел после него. Значит, исчезло слово плюс ещё два символа. А если слово просто написали два раза подряд через пробел, то добавилось слово и один пробел — то есть слово плюс один символ. Эту разницу очень важно не перепутать.','Теперь решаем цепочкой. Сначала узнаём, на сколько байтов изменился текст. Делим это число на вес одного символа и получаем, сколько символов исчезло. Из этого числа вычитаем запятую и пробел, и остаётся длина самого слова. Например, восемь байтов при одном байте на символ — это восемь символов. Минус два — шесть букв. Осталось найти в тексте слово из шести букв.'],
+pages:['Когда в задаче есть страницы, строки и символы, сначала найдём, сколько всего символов в тексте. Для этого перемножаем три числа: количество страниц, количество строк на странице и количество символов в строке. Получится общее число символов — его обозначают буквой k.','Дальше умножаем число символов на вес одного символа в байтах. Получается информационный объём в байтах. Это та самая формула: I равно k умножить на i.','Остаётся перевести байты в килобайты. В одном килобайте тысяча двадцать четыре байта, поэтому делим на тысячу двадцать четыре. Например, восемь умножить на сорок и на сорок восемь — это пятнадцать тысяч триста шестьдесят символов. При одном байте на символ столько же байтов. Делим на тысячу двадцать четыре и получаем пятнадцать килобайтов.'],
+message:['В этих задачах считаем вообще всё, что напечатано: буквы, пробелы, знаки препинания и тире. Каждый такой значок — это один символ. Кавычки считаем только тогда, когда в условии прямо сказано, что они часть сообщения.','Когда число символов известно, применяем знакомую формулу: объём равен числу символов, умноженному на вес одного символа. Например, сорок два символа по два байта дают восемьдесят четыре байта.','Чтобы не считать вручную, выдели сообщение мышкой — счётчик покажет, сколько в нём букв, а пробелы и знаки препинания посчитает отдельно. Сложи всё вместе, умножь на вес символа — и ответ готов.']};
+const NM={
+words:['Главная идея такая: размер текста равен числу символов, умноженному на вес одного символа. Поэтому если размер изменился, сначала выясняем, на сколько изменилось число символов.','Запомни формулу: I равно k умножить на i. Вес символа: восемь бит — это один байт, шестнадцать бит — два байта, тридцать два бита — четыре байта.','Алгоритм из четырёх шагов. Первый: переведи биты в байты на один символ. Второй: раздели изменение в байтах на вес символа — узнаешь, сколько символов добавилось или исчезло. Третий: вычти запятую и пробел, если они были. Четвёртый: найди в тексте слово такой длины.','Пример. Текст стал короче на восемь байтов, в кодировке один байт на символ. Значит, исчезло восемь символов. Вычитаем запятую и пробел — остаётся шесть букв. Это слово «Москва».','Осторожно, не путай случаи. Когда слово удалили из списка, исчезает слово плюс два символа — запятая и пробел. Когда слово повторили через пробел, добавляется слово плюс один пробел. А когда повторили как отдельный элемент списка, снова слово плюс два.'],
+pages:['Идея простая: сначала посчитай все символы в тексте, а потом умножь на вес одного символа.','Две формулы. Первая: число символов равно страницы умножить на строки и умножить на символы в строке. Вторая: объём равен числу символов, умноженному на вес символа.','Четыре шага. Перемножь страницы, строки и символы в строке. Найди, сколько байтов весит символ. Умножь число символов на этот вес. И раздели на тысячу двадцать четыре, чтобы получить килобайты.','Пример. Восемь страниц, сорок строк, сорок восемь символов. Получаем пятнадцать тысяч триста шестьдесят символов. Если символ весит один байт, это столько же байтов, а в килобайтах — ровно пятнадцать.','Следи за единицами измерения. В одном килобайте тысяча двадцать четыре байта, а не тысяча. И всегда читай, до чего просят округлить ответ.'],
+message:['Идея: посчитай каждый символ сообщения и умножь на вес одного символа.','Формула одна: I равно k умножить на i, где k — число символов, а i — вес одного символа в байтах.','Три шага. Сначала выдели сообщение мышкой и узнай число символов. Потом найди вес символа в байтах. И наконец умножь одно на другое.','Не забудь, что считаются буквы, пробелы, знаки препинания и тире. Кавычки считаем, только если в условии сказано, что они часть сообщения.','Пример. Сорок два символа, каждый по два байта. Умножаем и получаем восемьдесят четыре байта.'],
+gen:['Таблица единиц. Восемь бит — это один байт. Один килобайт — это тысяча двадцать четыре байта.']};
+function say(t){if(!window.speechSynthesis){alert('Озвучка не поддерживается в этом браузере');return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ru-RU';u.rate=+S.rate||1.5;const v=speechSynthesis.getVoices().find(v=>/^ru/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u)}
+function stopSay(){try{speechSynthesis.cancel()}catch(e){}}
+function sayLec(){say(NL[S.sec][Math.min(S.step[S.sec]||0,2)])}
+function sayMemo(sid,i){say(NM[sid][i])}
+function rateSel(){return `<label class="rs">⚡ Скорость <select onchange="S.rate=+this.value;save()">${[1,1.25,1.5,2,2.5,3].map(r=>`<option value="${r}" ${r==S.rate?'selected':''}>${r}×</option>`).join('')}</select></label>`}
+/* стикеры с озвучкой */
+function sticker(m,sid,i){return `<div class="st ${m.c}"><span class="tag">${m.tag}</span><span class="em">${m.e}</span><h3>${m.h}</h3>${m.steps?`<ol class="stp">${m.steps.map(x=>`<li>${x}</li>`).join('')}</ol>`:m.b}<button class="spk" onclick="sayMemo('${sid}',${i})">🔊 Озвучить</button></div>`}
+function showMemo(){const s=sec();if(S.view==='task')theory();openModal(`<h2>📚 Памятки · ${s.title}</h2><div class="vbar" style="margin:0 0 8px">${rateSel()}<button class="btn sm ghost" onclick="stopSay()">⏹️ Стоп</button></div><div class="stg">${s.memo.map((m,i)=>sticker(m,s.id,i)).join('')}${GEN_MEMO.map((m,i)=>sticker(m,'gen',i)).join('')}</div><button class="btn pri" onclick="closeModal()">Закрыть</button>`)}
+/* режим учителя */
+function openTeacher(){const p=prompt('Код учителя (по умолчанию 1234):');if(p===null)return;if(p!==(S.pin||'1234')){alert('Неверный код');return}teacherUI()}
+function teacherUI(){const A=S.assign||ORDER,nm=id=>esc(task(id).t.replace(/^(Прототип|Аналог|Закрепление 2): /,''));
+ const grp=(s,an)=>{const l=s.ids.filter(i=>isAn(i)==an);return l.length?`<div class="sl">${s.ic} ${s.title} — ${an?'закрепления (аналоги)':'основные (прототипы)'}</div><div class="tg">${l.map(i=>`<label class="tl"><input type="checkbox" class="tc" data-id="${i}" data-an="${an?1:0}" ${A.includes(i)?'checked':''}>№${i} ${nm(i)}</label>`).join('')}</div>`:''};
+ openModal(`<h2>👩‍🏫 Режим учителя</h2><p>Отметьте задания для ученика (домашнее задание). Остальные будут скрыты.</p><input id="hw" placeholder="Название, например: ДЗ на 25.11" value="${esc(S.hw||'')}" style="width:100%;padding:10px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink)"><div class="tbtns" style="margin:10px 0"><button class="btn sm" onclick="tsel('all')">Все</button><button class="btn sm" onclick="tsel('main')">Только прототипы</button><button class="btn sm" onclick="tsel('an')">Только аналоги</button><button class="btn sm" onclick="tsel('none')">Снять всё</button></div>${SECS.map(s=>grp(s,false)+grp(s,true)).join('')}<p class="tbtns"><button class="btn pri" onclick="tapply()">✅ Назначить</button><button class="btn ok" onclick="tapply(1)">💾 Назначить и сохранить файл ученику</button><button class="btn ghost" onclick="S.pin=prompt('Новый код учителя:')||S.pin;save()">🔑 Сменить код</button><button class="btn" onclick="closeModal()">Отмена</button></p>`)}
+function tsel(m){document.querySelectorAll('.tc').forEach(c=>{c.checked=m=='all'||(m=='main'&&c.dataset.an=='0')||(m=='an'&&c.dataset.an=='1')})}
+function tapply(sv_){const ids=[...document.querySelectorAll('.tc:checked')].map(c=>+c.dataset.id);if(!ids.length){alert('Выберите хотя бы одно задание');return}S.assign=ids.length==ORDER.length?null:ids;S.hw=$('hw').value.trim();save();closeModal();fixSec();render();if(sv_)saveApp()}
+function applyPreset(){if(PRESET&&JSON.stringify(PRESET)!==S.presetSig){S.assign=PRESET.assign||null;S.hw=PRESET.hw||'';S.presetSig=JSON.stringify(PRESET);save()}}
+function fixSec(){if(!vids(sec()).length){const s=SECS.find(s=>vids(s).length);if(s){S.sec=s.id;S.view='lecture'}}if(!inA(S.cur))S.cur=vids(sec())[0]||S.cur}
+function sv(k,v){S.scratch[S.cur]??={};S.scratch[S.cur][k]=v;save()}
+function calc(e,rid){S.scratch[S.cur]??={};S.scratch[S.cur].expr=e;let o='—';try{if(e.trim()&&/^[0-9+*/().\s-]+$/.test(e)){const v=Function('return ('+e+')')();if(Number.isFinite(v))o=String(Number(v.toFixed(8)))}}catch(x){}S.scratch[S.cur].res=o;$(rid).textContent=o;save()}
+const norm=s=>String(s).trim().toLocaleLowerCase('ru').replace(/ё/g,'е');
+function check(src){const t=task(S.cur),inp=$(src==='b'?'bAns':'ans');if(!inp)return;const v=inp.value.trim();if(!v)return;S.answers[t.id]=v;
+ const n=Number(v.replace(',','.')),a=Number(t.a);const ok=(!isNaN(a)&&!isNaN(n)&&Math.abs(n-a)<.01)||norm(v)===norm(t.a);
+ if(ok){S.done[t.id]=true;S.skipped[t.id]=false;save();if(!S.hintUsed[t.id])confetti();if(src==='b'){saveImg();renderBoard()}render();const id0=t.id;setTimeout(()=>{if(S.cur===id0){if($('board').classList.contains('show'))bnav(1);else nav(1)}},1800)}
+ else{S.attempts[t.id]=(S.attempts[t.id]||0)+1;save();renderSide();const f=$(src==='b'?'bFb':'fb');f.className=(src==='b'?'bfb':'fb')+' r';f.style.color='var(--bad)';f.textContent='❌ Пока неверно. Проверь расчёт и попробуй ещё раз.';inp.classList.remove('shake');void inp.offsetWidth;inp.classList.add('shake')}}
+function skip(){S.skipped[S.cur]=true;save();nav(1)}
+function nav(d){const O=order(),i=O.indexOf(S.cur),n=O[i+d];if(n!=null)goTask(n)}
+function confetti(){const e=['🎉','✨','🟢','⭐','🎈'];for(let i=0;i<9;i++){const s=document.createElement('span');s.className='conf';s.textContent=e[i%5];s.style.left=Math.random()*100+'vw';s.style.top='-30px';s.style.animationDelay=Math.random()*.5+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),2200)}}
+/* памятки */
+function sticker(m){return `<div class="st ${m.c}"><span class="tag">${m.tag}</span><span class="em">${m.e}</span><h3>${m.h}</h3>${m.steps?`<ol class="stp">${m.steps.map(x=>`<li>${x}</li>`).join('')}</ol>`:m.b}</div>`}
+function showMemo(){const s=sec();openModal(`<h2>📚 Памятки · ${s.title}</h2><div class="stg">${s.memo.map(sticker).join('')}${GEN_MEMO.map(sticker).join('')}</div><button class="btn pri" onclick="closeModal()">Закрыть</button>`)}
+function openModal(h){$('mc').innerHTML=h;$('modal').classList.add('show')}function closeModal(){stopSay();$('modal').classList.remove('show')}
+/* ===== ДОСКА ===== */
+const BD={img:{},hist:[],col:'auto',size:4,er:false};
+function openBoard(){$('board').classList.add('show');if(S.view!=='task'){S.view='task';S.cur=firstOpen();S.sec=SEC_OF[S.cur]}S.visited[S.cur]=true;renderBoard();render()}
+function closeBoard(){saveImg();$('board').classList.remove('show')}
+function saveImg(){const c=$('bc');if(c)BD.img[S.cur]=c.toDataURL()}
+function renderBoard(){const t=task(S.cur),sc=S.scratch[t.id]||{},cols=['auto','#e5484d','#4f6bff','#16a36a','#f0a400'];
+ $('board').innerHTML=`<div class="bt"><b>🖍️ Доска · №${t.id}. ${esc(t.t)} <span class="pill st-${stat(t.id)}">${STL[stat(t.id)]}</span></b><button class="btn sm" onclick="bnav(-1)">←</button><button class="btn sm" onclick="bnav(1)">→</button><button class="btn sm" onclick="showMemo()">📚 Памятки</button><button class="btn sm" onclick="showHint()">💡 Подсказка</button><button class="btn sm" onclick="closeBoard();theory();go('lecture')">📖 Лекция</button><button class="btn sm warn" onclick="closeBoard()">✕ Закрыть</button></div>
+ <div class="bcond cond-wrap" style="margin:0"><div class="cond-rib"><span>📝 Условие</span><span class="selhint"><span>🖱️</span> Выдели текст — посчитаю символы</span></div><div class="cond">${fmt(t.x)}</div></div>
+ <div class="bm"><div class="btools"><button id="bp" class="${BD.er?'':'on'}" onclick="btool(0)" title="Карандаш">✏️</button><button id="be" class="${BD.er?'on':''}" onclick="btool(1)" title="Ластик">🧽</button>${cols.map(c=>`<button class="col ${BD.col==c&&!BD.er?'on':''}" style="background:${c=='auto'?'var(--ink)':c}" onclick="bcol('${c}')"></button>`).join('')}<button onclick="bsize()" title="Толщина">〰️</button><button onclick="bundo()" title="Отменить">↩️</button><button onclick="bclear()" title="Очистить">🗑️</button></div><div id="bwrap"><canvas id="bc"></canvas></div></div>
+ <div class="bb"><input class="a" id="bAns" placeholder="Ответ" value="${esc(S.answers[t.id]||'')}" oninput="S.answers[S.cur]=this.value;save()" onkeydown="if(event.key==='Enter')check('b')"><button class="btn pri" onclick="check('b')">Проверить ✔️</button><span class="bfb" id="bFb">${S.done[t.id]?'<span style="color:var(--ok)">🎉 Верно!</span>':''}</span><input class="c" placeholder="🧮 8*40*48" value="${esc(sc.expr||'')}" oninput="calc(this.value,'bRes')"><b id="bRes" style="color:var(--sol);min-width:60px">${esc(sc.res||'')}</b><span style="margin-left:auto" class="tbtns"><button class="btn sm warn" onclick="bskip()">Пропустить ⏭️</button><button class="btn ${S.done[t.id]?'ok':'pri'}" onclick="bnav(1)">Далее →</button></span></div>`;
+ requestAnimationFrame(initCanvas)}
+function initCanvas(){const w=$('bwrap'),c=$('bc');if(!c)return;c.width=w.clientWidth;c.height=w.clientHeight;BD.hist=[];if(BD.img[S.cur])drawImg(BD.img[S.cur]);const x=c.getContext('2d');let dr=false,lx,ly;
+ const pos=e=>{const r=c.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
+ const style=()=>{x.lineCap='round';x.lineJoin='round';x.globalCompositeOperation=BD.er?'destination-out':'source-over';x.lineWidth=BD.er?BD.size*5:BD.size;x.strokeStyle=BD.col=='auto'?getComputedStyle(document.documentElement).getPropertyValue('--ink').trim():BD.col};
+ c.onpointerdown=e=>{c.setPointerCapture(e.pointerId);BD.hist.push(c.toDataURL());if(BD.hist.length>25)BD.hist.shift();dr=true;[lx,ly]=pos(e);style();x.beginPath();x.moveTo(lx,ly);x.lineTo(lx+.1,ly+.1);x.stroke()};
+ c.onpointermove=e=>{if(!dr)return;const[px,py]=pos(e);style();x.beginPath();x.moveTo(lx,ly);x.lineTo(px,py);x.stroke();lx=px;ly=py};
+ c.onpointerup=c.onpointercancel=()=>{dr=false;BD.img[S.cur]=c.toDataURL()}}
+function drawImg(u){const c=$('bc'),i=new Image();i.onload=()=>{const x=c.getContext('2d');x.globalCompositeOperation='source-over';x.clearRect(0,0,c.width,c.height);x.drawImage(i,0,0)};i.src=u}
+function btool(e){BD.er=!!e;$('bp').classList.toggle('on',!e);$('be').classList.toggle('on',!!e)}
+function bcol(c){BD.col=c;BD.er=false;saveImg();renderBoard()}
+function bsize(){BD.size=BD.size>=12?2:BD.size+3}
+function bundo(){const u=BD.hist.pop();if(u){drawImg(u);setTimeout(saveImg,50)}}
+function bclear(){const c=$('bc');BD.hist.push(c.toDataURL());c.getContext('2d').clearRect(0,0,c.width,c.height);saveImg()}
+function bnav(d){saveImg();const O=order(),i=O.indexOf(S.cur),n=O[i+d];if(n!=null){S.cur=n;S.sec=SEC_OF[n];S.visited[n]=true;S.view='task';save();renderBoard();render()}}
+function bskip(){S.skipped[S.cur]=true;save();bnav(1)}
+/* ===== ВЫДЕЛЕНИЕ ===== */
+document.addEventListener('selectionchange',()=>{const sel=getSelection(),ch=sel?sel.toString():'',n=sel&&sel.anchorNode,el=n?(n.nodeType==1?n:n.parentElement):null,box=$('ins');
+ if(!ch||!el||!el.closest('.cond')){box.classList.remove('show');return}
+ const s=ch.replace(/[\r\n]+/g,'');if(!s){box.classList.remove('show');return}const A=Array.from(s);
+ const letters=A.filter(c=>/[\p{L}\p{N}]/u.test(c)).length,sp=A.filter(c=>c===' '||c==='\u00a0').length,pu=A.length-letters-sp;
+ $('insT').textContent=s;$('insN').textContent=`Символов в слове: ${letters+sp+pu}`;$('insS').innerHTML=`<span>␣ пробелов: ${sp}</span><span>❗ знаков: ${pu}</span>`;box.classList.add('show')});
+/* ===== ОТЧЁТ ===== */
+function openReport(){const c={done:0,dh:0,err:0,skip:0,open:0};
+ const rows=TV().map(t=>{const st=stat(t.id),k=st=='done'?'g':st=='doneh'?'y':st=='err'?'r':st=='skip'?'y':'b';if(st=='done')c.done++;else if(st=='doneh')c.dh++;else if(st=='err')c.err++;else if(st=='skip')c.skip++;else c.open++;
+  const sc=S.scratch[t.id]||{};return `<div class="rt ${k}"><div class="hd"><span>№${t.id} · ${isAn(t.id)?'аналог к №'+ORIGIN[t.id]:'основное'}</span><span>${STL[st]}</span></div><b>${esc(t.t)}</b><div class="rc">${esc(t.x)}</div><div class="rg"><div><small>Ответ ученика</small>${esc(S.answers[t.id]||'не дан')}</div><div><small>Правильный ответ</small>${esc(t.a)}</div><div><small>Неверных попыток</small>${S.attempts[t.id]||0}</div><div><small>💡 Подсказка</small>${S.hintUsed[t.id]?'открывал(а): шагов '+Math.min(hlv(t.id),hsteps(t).length)+' из '+hsteps(t).length:'не открывал(а)'}</div><div><small>📚 Теория / лекция / памятка</small>${S.theoryUsed[t.id]?'открывал(а)':'не открывал(а)'}</div></div>${sc.expr||sc.weight||sc.chars?`<div class="rc">📒 Черновик: ${['weight','chars','wl','bytes','expr','res'].filter(x=>sc[x]).map(x=>x+': '+esc(sc[x])).join(' · ')}</div>`:''}</div>`}).join('');
+ const th=SECS.map(s=>{const T=S.tq[s.id]||{};return `<div class="rt b"><div class="hd"><span>${s.ic} ${s.title}</span><span>${S.tskip[s.id]?'⏭️ тест пропущен':Object.keys(T).length?'ответов: '+Object.keys(T).length+'/5':'не проходил'}</span></div>${s.tests.map((q,i)=>{const t=T[i];return `<div class="rq ${t?(t.ok?'g':'r'):''}"><b>${i+1}. ${q.q}</b> — ${t?(t.ok?'✅ верно'+(t.first?' с первого раза':' (с попытки '+t.tries+')'):'❌ ошибка'):'—'}${t&&!t.ok?'; выбрано: '+esc(q.o[t.pick]):''}</div>`}).join('')}</div>`}).join('');
+ openModal(`<div class="report"><h2>📊 Отчёт учителю</h2><div>👤 <b>${esc(S.name||'Ученик')}</b> · ${new Date().toLocaleDateString('ru-RU')}</div><div class="kp"><div class="g"><b>${c.done}</b>решено сам(а)</div><div class="y"><b>${c.dh}</b>решено с подсказкой</div><div class="r"><b>${c.err}</b>с ошибками</div><div class="y"><b>${c.skip}</b>пропущено</div><div class="b"><b>${c.open}</b>не решено</div><div class="b"><b>${Object.values(S.attempts).reduce((a,b)=>a+b,0)}</b>неверных попыток</div><div class="y"><b>${Object.values(S.hintUsed).filter(Boolean).length}</b>подсказок</div><div class="y"><b>${Object.values(S.theoryUsed).filter(Boolean).length}</b>открытий теории</div></div><h3>🧠 Тесты</h3>${th}<h3>✏️ Задания</h3>${rows}<p class="noprint"><button class="btn pri" onclick="print()">🖨️ Печать / PDF</button> <button class="btn" onclick="closeModal()">Закрыть</button></p></div>`)}
+/* ===== СЕРВИС ===== */
+function toggleTheme(){S.theme=S.theme=='dark'?'light':'dark';save();render()}
+function resetAll(){if(!confirm('Сбросить весь прогресс?'))return;const n=S.name;S={...fresh(),name:n,theme:S.theme};BD.img={};save();render();openModal('<h2>Прогресс очищен ✨</h2><button class="btn pri" onclick="closeModal()">Начать заново</button>')}
+function saveApp(){save();const d=document.documentElement.cloneNode(true);const ps=d.querySelector('#preset');if(ps)ps.textContent='window.PRESET='+JSON.stringify({assign:S.assign,hw:S.hw}).replace(/</g,'\u003c')+';';['view','side','mc','board'].forEach(i=>{const e=d.querySelector('#'+i);if(e)e.innerHTML=''});d.querySelectorAll('.show').forEach(e=>e.classList.remove('show'));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['<!doctype html>\n'+d.outerHTML],{type:'text/html'}));a.download='Тренажёр_ОГЭ_1_кодирование_текста.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('modal').classList.contains('show'))closeModal();else if($('board').classList.contains('show'))closeBoard()}if(e.key==='Enter'&&document.activeElement?.id==='ans')check('m')});
+function init(){applyPreset();fixSec();if(!S.name){openModal(`<div class="login"><div style="font-size:48px">🔤</div><h2>Привет! Как тебя зовут?</h2><input id="nm" value="Ученик 1"><button class="btn pri" onclick="S.name=($('nm').value.trim()||'Ученик 1');save();closeModal();render()">Начать 🚀</button></div>`)}render()}
+init();
+</script></body></html>

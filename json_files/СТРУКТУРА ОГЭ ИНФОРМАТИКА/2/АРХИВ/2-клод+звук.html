@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ОГЭ · Информатика · Задание 2 — шифровки</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#f3f5fb;--card:#fff;--ink:#1c2540;--mut:#667090;--line:#e2e6f2;--pri:#5b6cff;--pri2:#8a5bff;--ok:#12a36b;--okbg:#e3f8ee;--warn:#e89a0c;--warnbg:#fff3d6;--bad:#e5484d;--badbg:#ffe8e9;--info:#2f7dff;--infobg:#e6f0ff;--sh:0 6px 24px rgba(40,50,110,.10)}
+[data-theme=dark]{--bg:#11152a;--card:#1b2140;--ink:#eef1ff;--mut:#9ca6cc;--line:#2d3668;--ok:#3ddc97;--okbg:#0f3a2b;--warn:#ffc04d;--warnbg:#4a3a0e;--bad:#ff7a80;--badbg:#4a1c24;--info:#6aa5ff;--infobg:#142a52;--sh:0 6px 24px rgba(0,0,0,.35)}
+body{margin:0;font-family:system-ui,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+button{font:inherit;cursor:pointer;color:inherit}
+input{font:inherit}
+#top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(135deg,#5b6cff,#8a5bff);color:#fff}
+.logo{display:flex;gap:10px;align-items:center;font-size:26px}.logo b{display:block;font-size:17px;line-height:1.1}.logo small{display:block;font-size:12px;opacity:.9}
+.hbtns{display:flex;flex-wrap:wrap;gap:6px}
+.hb{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:10px;padding:6px 10px;font-weight:700;font-size:13px}
+.prog{height:7px;background:rgba(0,0,0,.12)}.prog i{display:block;height:100%;background:linear-gradient(90deg,#3ddc97,#ffe066);width:0;transition:width .4s}
+#nav{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:9px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
+.chip{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:6px 11px;font-weight:800;font-size:14px;min-width:38px}
+.chip.on{outline:3px solid var(--pri);outline-offset:1px}
+.chip.big{font-size:14px}.chip.ok,.chip.s-done{background:var(--okbg);border-color:var(--ok);color:var(--ok)}
+.chip.sk,.chip.s-skip{background:var(--mut);color:#fff;border-color:var(--mut);opacity:.85}
+.chip.s-doneh{background:var(--warnbg);border-color:var(--warn);color:var(--warn)}
+.chip.s-err{background:var(--badbg);border-color:var(--bad);color:var(--bad)}
+.chip.s-prog{background:var(--infobg);border-color:var(--info);color:var(--info)}
+.sep{width:2px;height:24px;background:var(--line);margin:0 4px}.leg{font-size:12px;color:var(--mut);margin-left:6px}
+main{max-width:1000px;margin:0 auto;padding:14px}
+.card{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:18px;margin-bottom:14px;border:1px solid var(--line)}
+.btn{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:8px 14px;font-weight:800}
+.btn.pri{background:linear-gradient(135deg,var(--pri),var(--pri2));border-color:transparent;color:#fff}
+.btn.good{background:var(--ok);border-color:transparent;color:#fff}
+.btn.sm{padding:5px 10px;font-size:13px}.btn[disabled]{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.pill{display:inline-block;background:var(--infobg);color:var(--info);border-radius:999px;padding:3px 12px;font-weight:800;font-size:13px}
+h2{margin:8px 0;font-size:24px}.e{font-size:34px;margin-right:8px}
+.dots{display:flex;gap:6px;margin:8px 0}.dots i{flex:1;height:7px;border-radius:5px;background:var(--line)}.dots i.d{background:var(--ok)}.dots i.c{background:var(--pri)}
+.illbox{background:linear-gradient(135deg,var(--infobg),var(--card));border:2px dashed var(--line);border-radius:16px;padding:14px;margin:10px 0;display:flex;flex-direction:column;gap:12px;align-items:center}
+.tx{font-size:18px}.tx b{color:var(--pri)}
+.vbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px}
+.spd{font-size:13px;color:var(--mut);display:flex;gap:6px;align-items:center}.spd input{width:120px}
+.say.on{background:var(--warn);color:#222}
+.skipbar{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+.skipbar button{background:none;border:1px dashed var(--mut);border-radius:10px;color:var(--mut);padding:6px 10px;font-size:13px}
+.ch{display:inline-block;border-radius:8px;padding:2px 9px;font-weight:800;background:var(--card);border:2px solid var(--line)}
+.map{display:inline-flex;gap:6px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:6px 12px;margin:3px;font-size:20px}.map i{color:var(--mut);font-style:normal}.map code{font-size:20px;letter-spacing:.15em;color:var(--pri);font-weight:800}
+.ill{display:flex;flex-wrap:wrap;justify-content:center}
+.cutrow{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:2px;max-width:100%}
+.seg{display:flex;flex-direction:column;align-items:center}
+.lt{min-width:34px;text-align:center;border-radius:9px;padding:1px 8px;font-weight:900;font-size:20px;margin-bottom:3px}
+.lt.ok{background:var(--okbg);color:var(--ok);border:2px solid var(--ok)}.lt.bad{background:var(--badbg);color:var(--bad);border:2px solid var(--bad)}.lt.open{background:var(--bg);color:var(--mut);border:2px dashed var(--line)}
+.sy{display:flex;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:10px;padding:2px 4px}
+.s{display:inline-block;min-width:20px;text-align:center;font-weight:900;font-size:22px;font-family:ui-monospace,Consolas,monospace}
+.gap{width:14px;height:36px;border:none;background:transparent;position:relative;padding:0}
+.gap::after{content:'';position:absolute;left:6px;top:3px;bottom:3px;border-left:2px dashed var(--mut);opacity:.55}
+button.gap:hover::after{border-color:var(--pri);opacity:1;border-left-style:solid}button.gap:hover{background:var(--infobg);border-radius:6px}
+.gap.off{cursor:default}.gap.off::after{opacity:.15}
+.cutbar{width:20px;height:42px;position:relative;border:none;background:transparent;padding:0;align-self:flex-end}
+.cutbar::after{content:'✂';position:absolute;top:-10px;left:3px;color:var(--bad);font-size:14px}
+.cutbar::before{content:'';position:absolute;left:9px;top:8px;bottom:0;border-left:3px solid var(--bad);border-radius:2px}
+button.cutbar:hover::before{border-color:var(--warn)}
+.wg{background:var(--bg);border:2px solid var(--line);border-radius:16px;padding:12px;margin:12px 0}
+.wtabs,.csel,.wmode{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.chip2{border:2px solid var(--line);background:var(--card);border-radius:10px;padding:4px 10px;font-weight:700;font-size:13px}.chip2.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.wsum{margin-top:8px;font-weight:700}.wsum.okx{color:var(--ok)}
+.tree{overflow-x:auto;padding:4px}.tree ul{list-style:none;margin:0;padding-left:24px;border-left:2px solid var(--line)}.tree>ul{padding-left:0;border:none}
+.tree li{margin:6px 0;position:relative}.tree li::before{content:'';position:absolute;left:-24px;top:17px;width:20px;border-top:2px solid var(--line)}.tree>ul>li::before{display:none}
+.nd{display:inline-flex;gap:8px;align-items:center;border:2px solid var(--info);background:var(--infobg);border-radius:12px;padding:4px 10px}
+.nd b{font-size:20px}.nd code{font-weight:800;color:var(--pri);letter-spacing:.1em}.nd small{color:var(--mut)}.nd em{font-style:normal;font-weight:800}
+.nd.fin{border-color:var(--ok);background:var(--okbg);color:var(--ok)}.nd.dead{border-color:var(--bad);background:var(--badbg);color:var(--bad)}.nd.root{border-style:dashed;background:var(--card)}
+.mono{font-family:ui-monospace,Consolas,monospace;font-weight:800;letter-spacing:.12em}
+.cond{border:3px solid var(--pri);border-radius:18px;overflow:hidden;margin-bottom:14px;background:var(--card)}
+.rib{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;padding:8px 14px;font-weight:800}
+.rib .tip{font-weight:600;font-size:13px;opacity:.95}
+.cb{padding:14px 16px;font-size:18px}
+.hn{background:var(--warnbg);color:var(--warn);border-radius:6px;padding:0 5px;font-weight:900}
+.hk{background:var(--badbg);color:var(--bad);border-radius:6px;padding:0 5px;font-weight:800}
+.ctw{overflow-x:auto;margin:8px 0}.ct{border-collapse:separate;border-spacing:3px;margin:3px 0}
+.ct th{font-size:12px;color:var(--mut);text-align:left;padding-right:6px}.ct td{text-align:center;padding:4px 10px;border-radius:8px;font-weight:800}
+.ct td.L{background:var(--okbg);color:var(--ok);font-size:20px}.ct td.C{background:var(--infobg);color:var(--info);font-family:ui-monospace,Consolas,monospace;letter-spacing:.1em;white-space:nowrap}
+.codeln{margin:8px 0;font-size:26px;font-weight:900;color:var(--pri);font-family:ui-monospace,Consolas,monospace;letter-spacing:.18em;word-break:break-all}.codeln small{font-size:14px;letter-spacing:0;color:var(--mut)}
+.qbox{background:var(--badbg);border-left:6px solid var(--bad);border-radius:10px;padding:10px 14px;margin-top:10px;font-weight:700}
+.ans{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ans input{flex:1;min-width:180px;border:3px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:10px 14px;font-size:20px;font-weight:800;text-transform:uppercase}
+.ans input:focus{outline:none;border-color:var(--pri)}.ans input.okk{border-color:var(--ok);background:var(--okbg)}
+.fb{margin-top:10px;border-radius:12px;padding:10px 14px;font-weight:800}.fb.ok{background:var(--okbg);color:var(--ok);border:2px solid var(--ok)}.fb.bad{background:var(--badbg);color:var(--bad);border:2px solid var(--bad)}.fb.warn{background:var(--warnbg);color:var(--warn);border:2px solid var(--warn)}
+.hint{margin-top:12px;background:var(--warnbg);border:2px solid var(--warn);border-radius:14px;padding:10px 14px}.hint h4{margin:0 0 6px}.hint small{font-weight:600;color:var(--mut)}
+.hs{display:flex;gap:10px;margin:6px 0}.hn2{background:var(--warn);color:#222;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;flex:none}
+.solvd{margin-top:10px;background:var(--okbg);border:3px solid var(--ok);color:var(--ok);border-radius:14px;padding:10px 14px;font-weight:900;font-size:18px}.solvd.h{background:var(--warnbg);border-color:var(--warn);color:var(--warn)}
+.card.sd{box-shadow:0 0 0 4px var(--ok),var(--sh)}.card.sdh{box-shadow:0 0 0 4px var(--warn),var(--sh)}
+.qh{display:flex;gap:10px;align-items:center;font-size:18px}.qn{background:var(--pri);color:#fff;border-radius:50%;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;flex:none}
+.opts{display:flex;flex-direction:column;gap:8px}.opt{text-align:left;border:3px solid var(--line);background:var(--card);border-radius:14px;padding:10px 14px;font-weight:700;font-size:16px}
+.opt:hover{border-color:var(--pri)}.opt.ok{background:var(--okbg);border-color:var(--ok);color:var(--ok)}.opt.bad{background:var(--badbg);border-color:var(--bad);color:var(--bad);animation:sh .35s}.opt.dim{opacity:.55}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.why{margin-top:8px;border-radius:12px;padding:8px 12px;font-weight:700}.why.ok{background:var(--okbg);color:var(--ok)}.why.bad{background:var(--badbg);color:var(--bad)}
+.stk{border-radius:18px;padding:0;overflow:hidden;border:3px solid var(--c);background:var(--card);box-shadow:var(--sh);margin-bottom:14px}
+.stk .sh{display:flex;align-items:center;gap:10px;background:var(--c);color:#fff;padding:8px 14px;font-weight:900}.stk .sh .ic{background:rgba(255,255,255,.25);border-radius:50%;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;font-size:20px}
+.stk .sh button{margin-left:auto}.stk .sb{padding:12px 16px;font-size:16px}.stk ol,.stk ul{margin:6px 0;padding-left:22px}
+.c-idea{--c:#5b6cff}.c-rule{--c:#e89a0c}.c-algo{--c:#12a36b}.c-tree{--c:#8a5bff}.c-warn{--c:#e5484d}.c-ex{--c:#2f9fd8}
+#modal{position:fixed;inset:0;background:rgba(10,14,40,.6);display:none;z-index:100;overflow:auto;padding:14px}#modal.show{display:block}
+.mbox{max-width:900px;margin:0 auto;background:var(--bg);border-radius:20px;padding:16px;position:relative}.mx{position:sticky;float:right;top:0;border:none;background:var(--bad);color:#fff;border-radius:50%;width:34px;height:34px;font-weight:900}
+#insp{position:fixed;right:14px;bottom:14px;z-index:200;background:#1c2540;color:#fff;border-radius:14px;padding:10px 14px;display:none;box-shadow:var(--sh);font-weight:800}#insp.on{display:block}#insp small{display:block;font-weight:500;opacity:.8}
+#board{position:fixed;inset:0;z-index:90;background:var(--bg);overflow:auto;display:none}#board.on{display:block}
+.bw{max-width:1100px;margin:0 auto;padding:10px}.btop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:18px}
+.bdraw{border:3px solid var(--pri);border-radius:16px;background:var(--card);overflow:hidden}.btools{display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:var(--infobg);align-items:center}
+.bcv{height:320px;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:28px 28px}.bcv canvas{width:100%;height:100%;touch-action:none;display:block}
+.sw{width:26px;height:26px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line);padding:0}.sw.on{box-shadow:0 0 0 3px var(--ink)}
+.cf{position:fixed;top:30%;font-size:16px;pointer-events:none;z-index:300;animation:cf 1s ease-out forwards}@keyframes cf{to{transform:translate(var(--dx),22vh) rotate(160deg);opacity:0}}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1c2540;color:#fff;padding:10px 18px;border-radius:12px;z-index:400;font-weight:700}
+.report{color:#1d2640;background:#fff;border-radius:16px;padding:16px;font-size:14px}.report.lt{--ink:#1d2640;--mut:#667090;--line:#e2e6f2;--card:#fff;--okbg:#e3f8ee;--ok:#12a36b;--warnbg:#fff3d6;--warn:#c47c00;--badbg:#ffe8e9;--bad:#e5484d;--infobg:#e6f0ff;--info:#2f7dff}
+.rhead{background:linear-gradient(135deg,#5b6cff,#8a5bff);color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:12px}.rtitle{font-size:21px;font-weight:900}.rmeta{margin-top:6px;font-size:14px;opacity:.95}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:10px 0}.tiles div{border-radius:12px;padding:8px;text-align:center;font-size:12px;font-weight:700}.tiles b{display:block;font-size:26px}
+.t-g{background:#e3f8ee;color:#0b7a50}.t-y{background:#fff3d6;color:#9a6200}.t-r{background:#ffe8e9;color:#c1272d}.t-b{background:#e6f0ff;color:#1f5fd0}.t-n{background:#eef0f6;color:#556}
+.rc{border-radius:12px;padding:8px 12px;margin:6px 0;border-left:7px solid var(--c);background:var(--b);color:#1d2640}.rc b{color:var(--c)}
+.rc.done{--c:#12a36b;--b:#e3f8ee}.rc.doneh{--c:#c47c00;--b:#fff3d6}.rc.err{--c:#e5484d;--b:#ffe8e9}.rc.skip,.rc.new{--c:#778;--b:#eef0f6}.rc.prog{--c:#2f7dff;--b:#e6f0ff}
+.report h3{margin:14px 0 4px}
+#printArea{display:none}
+@media print{body>*:not(#printArea){display:none!important}#printArea{display:block!important;background:#fff}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+@media(max-width:600px){h2{font-size:20px}.codeln{font-size:20px}.s{min-width:17px;font-size:19px}.card{padding:12px}}
+</style>
+</head>
+<body>
+<header id="top"><div class="logo">🔐<div><b>ОГЭ · Информатика</b><small>Задание 2 · Шифровки: кодирование и декодирование</small></div></div>
+<div class="hbtns"><button class="hb" onclick="setName()" id="whoBtn">👤 Имя</button><button class="hb" onclick="memoOpen()">📚 Памятки</button><button class="hb" onclick="openReport()">📊 Отчёт</button><button class="hb" onclick="openTeacher()">👩‍🏫 Учитель</button><button class="hb" onclick="toggleTheme()">🌗</button></div></header>
+<div class="prog"><i id="pb"></i></div>
+<nav id="nav"></nav>
+<main id="view"></main>
+<div id="modal"><div class="mbox"><button class="mx" onclick="closeModal()">✕</button><div id="mbody"></div></div></div>
+<div id="board"></div>
+<div id="insp"></div>
+<div id="printArea"></div>
+<script id="preset">window.PRESET=null;</script>
+<script>
+"use strict";
+/* ===== утилиты ===== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const strip=s=>String(s).replace(/\s/g,'');
+const sym=s=>Array.from(strip(s));
+const UI={w:{},img:{}};const REG={};
+const KEY='oge2_cipher_v1';
+const REP_TITLE='Задание 2 ОГЭ · Информатика: шифровки — отчёт';
+function def(){return{name:'',view:'theory',cur:null,step:0,done:{},err:{},hint:{},skip:{},tried:{},tool:{},thDone:false,thSkip:false,thSteps:{},memo:{},memoOpen:false,teSkip:false,te:{},theme:'light',rate:1.5,assign:null,hw:'',pin:'1234',sig:''}}
+function load(){let s={};try{s=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}s=Object.assign(def(),s);const P=window.PRESET;if(P&&P.sig&&s.sig!==P.sig){s.assign=P.assign||null;s.hw=P.hw||'';if(P.pin)s.pin=P.pin;s.sig=P.sig}return s}
+let S=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function toast(m){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
+
+/* ===== данные ===== */
+const ALPHA=Array.from('АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ');
+const NUMTAB=ALPHA.map((l,i)=>[l,String(i+1)]);
+const SECS=[{e:'📡',t:'Азбука Морзе'},{e:'🔣',t:'Символьные коды'},{e:'🙅',t:'Буквы не повторяются'},{e:'🔢',t:'Сколько букв в сообщении'},{e:'🔁',t:'Повторяющиеся буквы'},{e:'🎯',t:'Одна расшифровка (двоичный код)'},{e:'🔠',t:'Номера букв в алфавите'},{e:'🔑',t:'Пароль (двоичный код)'}];
+const mk=(id,sec,proto,kind,intro,table,codes,q,ans,extra,opt)=>Object.assign({id,sec,proto,kind,intro,table,codes,q,ans,extra:extra||''},opt||{});
+const MQ='Расшифруйте радиограмму. Запишите в ответе расшифрованную радиограмму.';
+const UQ='Только одна из них расшифровывается единственным способом. Найдите её и расшифруйте. То, что получилось, запишите в качестве ответа.';
+const TASKS=[
+mk('m1',1,1,'decode','От разведчика была получена шифрованная радиограмма, переданная с использованием азбуки Морзе.',[['А','• –'],['Г','– – •'],['М','– –'],['К','– • –'],['Ю','• • – –']],['––•–––––•••–––•–•–'],MQ,'МАМГЮКА'),
+mk('m2',1,0,'decode','От разведчика была получена шифрованная радиограмма, переданная с использованием азбуки Морзе.',[['Н','– •'],['К','– • –'],['И','• •'],['Л','• – • •'],['М','– –']],['–•–•–•––••–••–•–••'],MQ,'ННКНЛКИ'),
+mk('s1',2,1,'decode','Мальчики играли в шпионов и закодировали сообщение придуманным шифром.',[['К','+ _ +'],['Л','_ *'],['М','* +'],['Н','_ + +'],['О','*'],['П','_ _ +'],['Р','_ _']],['*+_++_++___*'],'Расшифруйте полученное сообщение. Запишите в ответе расшифрованное сообщение.','МННРЛ'),
+mk('s2',2,0,'decode','Агент 007, передавая важные сведения напарнику, закодировал сообщение придуманным шифром.',[['Р','? € ?'],['Ы','? ? €'],['Б','? ?'],['К','? €'],['А','€ € ?']],['????€?€'],'Определите, какое сообщение закодировано в строчке. В ответе запишите последовательность букв без запятых и других знаков препинания.','БЫК'),
+mk('n2',3,0,'decode','Вася и Петя играли в шпионов и закодировали сообщение собственным шифром.',[['К','@ +'],['Л','~ +'],['М','+ @'],['П','@ ~ +'],['О','+'],['И','~']],['@~++~+@+~'],'Расшифруйте сообщение, если известно, что буквы в нём не повторяются. Запишите в ответе расшифрованное сообщение.','ПОЛКИ',null,{nodup:1}),
+mk('n1',3,0,'decode','Вася и Петя играли в шпионов и кодировали сообщения собственным шифром.',[['Н','~'],['М','*'],['Л','* @'],['И','@ ~ *'],['Т','@ *'],['О','~ *']],['@*~*~@~*'],'Расшифруйте сообщение, если известно, что буквы в нём не повторяются. Запишите в ответе расшифрованное сообщение.','ТОНИ',null,{nodup:1}),
+mk('c4',4,1,'count','Мальчики играли в шпионов и закодировали сообщение придуманным шифром.',[['А','01'],['Б','010'],['В','011'],['Г','10'],['Д','101'],['Е','11'],['Ж','110']],['0101100111101'],'Определите, какое наименьшее количество букв может содержать сообщение.','5'),
+mk('c1',4,0,'count','Мальчики играли в шпионов и закодировали сообщение придуманным шифром. В сообщении присутствуют только буквы из приведённого фрагмента кодовой таблицы.',[['А','10'],['Б','110'],['В','12'],['Г','102'],['Д','0'],['Е','22'],['Ж','122']],['101212210102'],'Определите, сколько букв содержит сообщение.','5'),
+mk('c2',4,0,'count','Мальчики играли в шпионов и закодировали сообщение придуманным шифром. В сообщении присутствуют только буквы из приведённого фрагмента кодовой таблицы.',[['А','10'],['Б','101'],['В','12'],['Г','102'],['Д','122'],['Е','22'],['Ж','120']],['101212210102'],'Определите, сколько букв содержит сообщение.','5'),
+mk('c3',4,0,'count','Вася и Петя играли в шпионов и кодировали сообщение собственным шифром. Фрагмент кодовой таблицы приведён ниже.',[['Ж','+ #'],['З','+ ^ #'],['И','#'],['Й','^'],['К','^ #'],['Л','# +']],['#++^##^#^'],'Определите, из скольких букв состоит сообщение, если известно, что буквы в нём не повторяются.','5',null,{nodup:1}),
+mk('r1',5,1,'repeat','Сообщение было зашифровано кодом. Использовались только буквы, приведённые в таблице.',[['А','. . o . .'],['Б','. o . . o'],['В','. o o . o'],['Г','. o o o o'],['Д','. . . o .'],['Е','. o . o o']],['...o..o..o...o..oooo.o.oo'],'Определите, какие буквы в сообщении повторяются, и запишите их в ответе.','Д'),
+mk('r2',5,0,'repeat','Сообщение было зашифровано кодом. Использовались только буквы, приведённые в таблице.',[['А','. . o . .'],['Б','. o . . o'],['В','. o o . o'],['Г','. o o o o'],['Д','. . . o .'],['Е','. o . o o']],['...o..o.oo...o..oooo.o.oo'],'Определите, какие буквы в сообщении повторяются, и запишите их в ответе.','ДЕ|ЕД'),
+mk('u1',6,1,'unique','Валя шифрует русские слова (последовательности букв), записывая вместо каждой буквы её код.',[['А','01'],['В','011'],['Д','100'],['О','111'],['Р','010'],['У','001']],['0100100101','011011111100','0100110001'],'Найдите среди них ту, которая имеет только одну расшифровку, и запишите в ответе расшифрованное слово.','ВВОД','Некоторые шифровки можно расшифровать не одним способом. Например, 00101001 может означать не только УРА, но и УАУ. Даны три кодовые цепочки:'),
+mk('u2',6,0,'unique','Валя шифрует русские слова (последовательности букв), записывая вместо каждой буквы её код.',[['А','00'],['Е','001'],['И','010'],['О','011'],['Р','10'],['У','11']],['0010011010','0100111011','0010110011'],'Найдите среди них ту, которая имеет только одну расшифровку, и запишите в ответе расшифрованное слово.','ИОРУ','Некоторые шифровки можно расшифровать не одним способом. Например, 00100 может означать не только ЕА, но и ААА. Даны три кодовые цепочки:'),
+mk('a3',7,1,'unique','Вася шифрует русские слова, записывая вместо каждой буквы её номер в алфавите (без пробелов).',NUMTAB,['20335','21120','31321','51201'],UQ,'ДАТА','Некоторые шифровки можно расшифровать несколькими способами. Например, 12112 может означать «АБАК», может — «КАК», а может — «АБААБ». Даны четыре шифровки:',{num:1}),
+mk('a1',7,0,'unique','Вася шифрует русские слова, записывая вместо каждой буквы её номер в алфавите (без пробелов).',NUMTAB,['112233','135793','203014','412030'],UQ,'ГАТЬ','Некоторые шифровки можно расшифровать несколькими способами. Например, 12112 может означать «АБАК», может — «КАК», а может — «АБААБ». Даны четыре шифровки:',{num:1}),
+mk('a2',7,0,'unique','Ваня шифрует русские слова, записывая вместо каждой буквы её номер в алфавите (без пробелов).',NUMTAB,['3135420','2102030','1331320','2033510'],UQ,'БИТЬ','Некоторые шифровки можно расшифровать несколькими способами. Например, 311333 может означать «ВАЛЯ», может — «ЭЛЯ», а может — «ВААВВВ». Даны четыре шифровки:',{num:1}),
+mk('b2',8,1,'decode','Сообщение передаётся шифром.',[['Ш','01'],['К','11'],['О','100'],['Л','101'],['А','10']],['1011011'],'Определите, какое сообщение закодировано в строчке. В ответ запишите последовательность букв без запятых и других знаков препинания.','ЛАК'),
+mk('b1',8,0,'decode','От разведчика было получено сообщение. В нём зашифрован пароль — последовательность русских букв.',[['А','01'],['Б','100'],['К','101'],['Л','111'],['О','00'],['С','110']],['001001110110100'],'Расшифруйте сообщение. Запишите в ответе пароль.','ОБЛАКО')
+];
+TASKS.forEach(t=>{t.kind==='unique'&&t.num&&(t.kind='unique');REG['t_'+t.id]={table:t.table,codes:t.codes,tabs:'both'};REG['b_'+t.id]=REG['t_'+t.id]});
+const tLabel=t=>SECS[t.sec-1].t+(t.proto?' · прототип':' · аналог');
+
+/* ===== разбор цепочек ===== */
+function parsesAll(table,code){const tb=table.map(p=>[p[0],strip(p[1])]),res=[];
+ (function rec(i,acc){if(i===code.length){res.push(acc.slice());return}tb.forEach(p=>{if(p[1]&&code.startsWith(p[1],i)){acc.push(p[0]);rec(i+p[1].length,acc);acc.pop()}})})(0,[]);return res}
+function codeMap(table){const m={};table.forEach(p=>{const k=strip(p[1]);(m[k]=m[k]||[]).push(p[0])});return m}
+
+/* ===== иллюстрации ===== */
+function ilMap(pairs){return '<div class="ill">'+pairs.map(p=>`<div class="map"><b>${esc(p[0])}</b><i>→</i><code>${esc(p[1])}</code></div>`).join('')+'</div>'}
+function ilCut(code,cuts,letters){const c=Array.from(code),b=[0].concat(cuts,[c.length]);let h='<div class="cutrow">';
+ for(let k=0;k<b.length-1;k++){const l=letters[k];h+=`<div class="seg"><div class="lt ${l&&l!=='?'?'ok':'bad'}">${esc(l||'?')}</div><div class="sy">${c.slice(b[k],b[k+1]).map(x=>`<span class="s">${esc(x)}</span>`).join('')}</div></div>`;if(k<b.length-2)h+='<div class="cutbar"></div>'}
+ return h+'</div>'}
+function tblHTML(table,num){const chunk=num?11:table.length;let h='';
+ for(let i=0;i<table.length;i+=chunk){const part=table.slice(i,i+chunk);h+=`<table class="ct"><tr><th>Буква</th>${part.map(p=>`<td class="L">${esc(p[0])}</td>`).join('')}</tr><tr><th>${num?'Номер':'Код'}</th>${part.map(p=>`<td class="C">${esc(p[1])}</td>`).join('')}</tr></table>`}
+ return `<div class="ctw">${h}</div>`}
+function hl(s){const re=/(\d+|наименьш\p{L}*|скольк\p{L}*|не повторя\p{L}*|повторя\p{L}*|единственн\p{L}*|только одн\p{L}*|без запятых|без пробелов)/giu;let out='',last=0,m;
+ while((m=re.exec(s))){out+=esc(s.slice(last,m.index));out+=`<span class="${/^\d/.test(m[0])?'hn':'hk'}">${esc(m[0])}</span>`;last=m.index+m[0].length}
+ return (out+esc(s.slice(last))).replace(/\n/g,'<br>')}
+
+/* ===== лекция, памятки, тест ===== */
+REG.lec1={table:[['А','0'],['Б','10'],['В','11']],codes:['10011'],tabs:'cut'};
+REG.lec3={table:[['А','1'],['Б','10'],['В','01']],codes:['101'],tabs:'tree'};
+const LEC=[
+{e:'🔤',h:'Шифровка — это код вместо букв',draw:()=>ilMap([['А','• –'],['Б','– • • •'],['В','• – –']]),t:'Каждую букву заменили её <b>кодом</b>. Таблицу кодов дают в условии. Наша задача — прочитать цепочку обратно.',say:'Шифровка — это когда вместо каждой буквы записан её код. Например, буква А — это точка и тире. Таблицу кодов всегда дают в условии задачи. А наша работа — прочитать цепочку символов и превратить её обратно в буквы.'},
+{e:'✂️',h:'Режем цепочку на коды',demo:'lec1',t:'Цепочка идёт <b>без пробелов</b>. Разрежь её на куски так, чтобы каждый кусок был кодом из таблицы — над ним появится буква.',say:'Цепочка записана без пробелов, поэтому сначала её нужно разрезать на куски. Каждый кусок должен быть кодом из таблицы. Если кусок подходит, над ним появится буква. Попробуй сам: щёлкай между символами, и ты увидишь, как цепочка превращается в слово.'},
+{e:'🧩',h:'Бывает несколько способов',draw:()=>ilCut('101',[2],['Б','А'])+ilCut('101',[1],['А','В']),t:'Одна цепочка иногда режется <b>по-разному</b> — и слова получаются разные. Иногда проще начать <b>с конца</b>: там бывает лишь один подходящий код.',say:'Иногда одну и ту же цепочку можно разрезать по-разному, и тогда получаются разные слова. Посмотри на картинку: цепочка один ноль один читается и как Б А, и как А В. Поэтому важно проверить все варианты. А ещё бывает удобно начинать с конца: на конце часто подходит только один код, и путь получается однозначным.'},
+{e:'🌳',h:'Дерево вариантов',demo:'lec3',t:'Каждая ветка — выбор кода. <b>✖ тупик</b> — вернись назад. <b>✅</b> — слово получилось. Нажимай на ветки, они раскрываются!',say:'Чтобы не запутаться в вариантах, рисуют дерево. Каждая ветка — это выбор одного кода. Если ветка дошла до конца цепочки, слово получилось. Если дальше нет подходящих кодов, это тупик: возвращаемся назад и выбираем другую ветку. Нажимай на ветки, и они раскроются. Можно строить дерево и с начала, и с конца.'},
+{e:'🔢',h:'Когда коды — номера букв',draw:()=>ilCut('13',[1],['А','В'])+ilCut('13',[],['Л']),t:'<b>А=1 … Я=33.</b> Число 10–33 бывает одной буквой, а может быть двумя. А вот <b>0</b> и числа больше 33 буквой <b>не бывают</b>.',say:'Если вместо кодов стоят номера букв, помни: А — это один, а Я — тридцать три. Число от десяти до тридцати трёх может быть одной буквой, а может быть двумя. Например, тринадцать — это либо Л, либо А и В. А вот ноль буквой не бывает, и числа больше тридцати трёх тоже. Это очень помогает отсекать лишние варианты.'}
+];
+const MEMO=[
+{c:'idea',e:'🔑',h:'Главная идея',t:'<b>Шифровка</b> — цепочка кодов. Разрежь её на куски-коды, а по таблице найди буквы. <br>Читаем <b>слева направо</b> или <b>справа налево</b>.',say:'Главная идея такая. Шифровка — это цепочка кодов, записанных подряд. Разрежь её на куски, каждый из которых есть в таблице, и по таблице найди буквы. Читать можно слева направо, а можно справа налево — как удобнее.'},
+{c:'rule',e:'📐',h:'Правила',t:'<ul><li>Код буквы ищем <b>только в таблице</b></li><li>Номера: <b>А=1 … Я=33</b></li><li>10–33 — может быть <b>одной буквой</b></li><li><b>0</b> и числа &gt; 33 — <b>не буквы</b></li></ul>',say:'Запомни правила. Код каждой буквы ищем только в таблице условия. Если коды — это номера, то А равно единице, а Я равно тридцати трём. Число от десяти до тридцати трёх может оказаться одной буквой. Ноль и числа больше тридцати трёх буквами быть не могут.'},
+{c:'algo',e:'🧭',h:'Алгоритм по шагам',t:'<ol><li>Прочитай <b>вопрос</b>: слово? число букв? повторы? единственная расшифровка?</li><li>Посмотри на таблицу: короткие и длинные коды</li><li>Режь цепочку с <b>начала или с конца</b></li><li>Тупик? Вернись и выбери другой код</li><li>Проверь, что все куски — коды</li></ol>',say:'Действуем по шагам. Первое: внимательно читаем вопрос и понимаем, что именно спрашивают — слово, число букв, повторяющиеся буквы или единственную расшифровку. Второе: смотрим на таблицу и замечаем короткие и длинные коды. Третье: режем цепочку с начала или с конца. Четвёртое: если зашли в тупик, возвращаемся и выбираем другой код. И пятое: в конце проверяем, что все куски — это настоящие коды.'},
+{c:'tree',e:'🌳',h:'Дерево вариантов',t:'Каждая ветка — <b>выбор кода</b>. Дошли до конца — слово <b>✅</b>. Нет подходящих кодов — тупик <b>✖</b>. Так не пропустишь ни один вариант.',say:'Дерево вариантов помогает не пропустить ни одного способа расшифровки. Каждая ветка — это выбор одного кода. Если дошли до конца цепочки, значит, слово получилось. Если подходящих кодов больше нет, это тупик, и надо вернуться назад. Так мы переберём все варианты и ничего не упустим.'},
+{c:'warn',e:'⚠️',h:'Осторожно!',t:'<ul><li>Не останавливайся на <b>первом</b> разрезании — проверь остальные</li><li>Условие «буквы <b>не повторяются</b>» отсекает лишние слова</li><li>Спрашивают <b>число</b> — пиши число, а не слово</li></ul>',say:'Будь внимателен. Не останавливайся на первом удачном разрезании — проверь остальные варианты. Условие, что буквы не повторяются, помогает отбросить лишние слова. И ещё: если в вопросе спрашивают число букв, в ответе нужно написать именно число, а не слово.'},
+{c:'ex',e:'📝',h:'Пример',t:'<b>А=1, Б=10, В=01</b>, цепочка <b>101</b>:<br>10|1 → <b>БА</b><br>1|01 → <b>АВ</b><br>Значит, у цепочки <b>две</b> расшифровки.',say:'Разберём пример. Пусть А — это один, Б — это один ноль, В — это ноль один. Цепочка один ноль один режется двумя способами. Первый: один ноль и один, это Б и А. Второй: один и ноль один, это А и В. Значит, у этой цепочки две расшифровки.'}
+];
+const TEST=[
+{q:'Что значит «расшифровать» цепочку?',ill:ilMap([['• –','?'],['– • •','?']]),o:['Разрезать на коды и записать буквы','Сложить все символы','Поменять символы местами'],a:0,why:'Коды из таблицы заменяем на буквы.'},
+{q:'Н = – •, К = – • –, И = • •. Какая буква закодирована цепочкой • •?',ill:ilMap([['Н','– •'],['К','– • –'],['И','• •']]),o:['Н','К','И'],a:2,why:'Цепочка • • совпадает с кодом буквы И.'},
+{q:'А=1, Б=10, В=01. Сколько расшифровок у цепочки 101?',ill:ilCut('101',[2],['Б','А'])+ilCut('101',[1],['А','В']),o:['1','2','3'],a:1,why:'10|1 = БА и 1|01 = АВ — два способа.'},
+{q:'Цепочка из номеров букв содержит «34». Это одна буква?',ill:ilCut('34',[1],['В','Г']),o:['Да, это буква Ч','Нет: букв всего 33, читаем 3 и 4 отдельно','Да, это буква Э'],a:1,why:'Номеров больше 33 нет, значит 3 и 4 — две буквы.'},
+{q:'В номерах встретился 0 (цепочка 2030). Что это значит?',ill:ilCut('2030',[2],['Т','Ь']),o:['Это буква О','0 — вторая цифра числа 10, 20 или 30','Нуль можно пропустить'],a:1,why:'Буквы с номером 0 нет, поэтому 0 всегда «прикреплён» к цифре перед ним.'},
+{q:'Ветка дерева привела к символам, для которых нет кода (✖). Что делаем?',ill:'<div><span class="ch" style="border-color:var(--ok)">Б</span> → <span class="ch" style="border-color:var(--ok)">А</span> → <span class="ch" style="border-color:var(--bad);color:var(--bad)">✖ тупик</span></div>',o:['Возвращаемся и пробуем другую ветку','Записываем ответ как есть','Меняем таблицу'],a:0,why:'Тупик — это просто неподходящий путь. Возвращаемся назад.'},
+{q:'Почему иногда удобно резать с конца?',ill:ilMap([['…','1 0 1 1']]),o:['С конца иногда подходит только один код','С конца буквы короче','Так положено по правилам'],a:0,why:'С конца бывает единственный подходящий код — путь однозначный.'},
+{q:'Нужно найти НАИМЕНЬШЕЕ число букв. Какие коды выгодно брать?',ill:ilCut('0101',[2],['А','А'])+ilCut('0101',[],['?']),o:['Самые длинные — кусков меньше','Самые короткие','Всё равно какие'],a:0,why:'Чем длиннее коды, тем меньше кусков получится.'}
+];
+
+/* ===== состояние и навигация ===== */
+let autoT=null;
+const inA=id=>!S.assign||S.assign.indexOf(id)>=0;
+const vis=()=>TASKS.filter(t=>inA(t.id));
+const cur=()=>TASKS.find(t=>t.id===S.cur&&inA(t.id))||vis()[0];
+function st(id){if(S.done[id])return S.hint[id]?'doneh':'done';if(S.skip[id])return 'skip';if(S.err[id])return 'err';if(S.tried[id]||S.hint[id])return 'prog';return 'new'}
+const STL={done:'✅ Решено сам(а)',doneh:'💡 Решено с подсказкой',err:'❌ Не решено (были ошибки)',skip:'⏭ Пропущено',prog:'🔵 Начато',new:'⚪ Не решено'};
+function go(v,id){stopSay();clearTimeout(autoT);closeModal();closeBoard();S.view=v;if(v==='task')S.cur=id;save();render();window.scrollTo(0,0)}
+function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';save();render()}
+function setName(){const n=prompt('Как тебя зовут?',S.name||'');if(n!==null){S.name=n.trim();save();render()}}
+function renderTop(){const V=vis(),d=V.filter(t=>S.done[t.id]).length;$('pb').style.width=(V.length?d/V.length*100:0)+'%';$('whoBtn').textContent='👤 '+(S.name||'Имя')+(S.hw?' · '+S.hw:'')+' · '+d+'/'+V.length}
+function renderNav(){const V=vis();
+ let h=`<button class="chip big ${S.view==='theory'?'on':''} ${S.thDone?'ok':S.thSkip?'sk':''}" onclick="go('theory')">📖 Теория</button><button class="chip big ${S.view==='test'?'on':''} ${teDone()?'ok':S.teSkip?'sk':''}" onclick="go('test')">🧠 Тест</button><span class="sep"></span>`;
+ V.forEach((t,i)=>{h+=`<button class="chip s-${st(t.id)} ${S.view==='task'&&cur()&&cur().id===t.id?'on':''}" title="${esc(tLabel(t))} — ${STL[st(t.id)]}" onclick="go('task','${t.id}')">${i+1}${t.proto?'★':''}</button>`});
+ $('nav').innerHTML=h+'<span class="leg">★ — прототип</span>'}
+function render(){document.documentElement.dataset.theme=S.theme;renderTop();renderNav();const v=$('view');
+ if(S.view==='test')v.innerHTML=testView();else if(S.view==='task'){const t=cur();v.innerHTML=t?taskView(t):'<div class="card">Учитель пока не назначил задания.</div>'}else v.innerHTML=theoryView()}
+const teDone=()=>TEST.every((q,i)=>S.te[i]!==undefined);
+
+/* ===== озвучка ===== */
+let speaking=null;
+function stopSay(){try{speechSynthesis.cancel()}catch(e){}speaking=null;document.querySelectorAll('.say.on').forEach(b=>b.classList.remove('on'))}
+function say(key,text,btn){if(!('speechSynthesis' in window)){toast('Озвучка не поддерживается в этом браузере');return}
+ if(speaking===key){stopSay();return}stopSay();speaking=key;if(btn)btn.classList.add('on');
+ const parts=text.match(/[^.!?…]+[.!?…]*/g)||[text];let v=null;try{v=speechSynthesis.getVoices().find(x=>/^ru/i.test(x.lang))}catch(e){}
+ parts.forEach((p,i)=>{const u=new SpeechSynthesisUtterance(p.trim());u.lang='ru-RU';if(v)u.voice=v;u.rate=Number(S.rate)||1.5;if(i===parts.length-1)u.onend=()=>{if(speaking===key)stopSay()};speechSynthesis.speak(u)})}
+function sayLec(i,b){S.thSteps[i]=1;save();say('lec'+i,LEC[i].say,b)}
+function sayMemo(i,b){S.memo[i]=1;save();say('memo'+i,MEMO[i].say,b)}
+function setRate(v){S.rate=Number(v);save();document.querySelectorAll('.rv').forEach(e=>e.textContent='×'+S.rate)}
+const speedUI=()=>`<label class="spd">🔊 скорость <input type="range" min="1" max="3" step="0.25" value="${S.rate}" oninput="setRate(this.value)"><b class="rv">×${S.rate}</b></label>`;
+
+/* ===== помощники: резак и дерево ===== */
+function U(key){return UI.w[key]||(UI.w[key]={tab:REG[key].tabs==='tree'?'tree':'cut',ci:0,mode:'free',cuts:[],dir:'start',exp:{},total:false})}
+function wRedraw(key){const el=$('w_'+key);if(el)el.outerHTML=wHTML(key)}
+function markTool(key){if(/^[tb]_/.test(key)){S.tool[key.slice(2)]=1;save()}}
+function wSet(key,p,v){const w=U(key);w[p]=v;if(p==='ci'){w.cuts=[];w.exp={};w.total=false}if(p==='mode')w.cuts=[];if(p==='dir'){w.exp={};w.total=false}markTool(key);wRedraw(key)}
+function wCut(key,g){const w=U(key),i=w.cuts.indexOf(g);if(i>=0)w.cuts.splice(i,1);else w.cuts.push(g);w.cuts.sort((a,b)=>a-b);markTool(key);wRedraw(key)}
+function wExp(key,p){const w=U(key);w.exp[p]=!w.exp[p];w.total=false;markTool(key);wRedraw(key)}
+function wCollapse(key){const w=U(key);w.exp={};w.total=false;wRedraw(key)}
+function treeKids(key,n){const w=U(key),R=REG[key],code=sym(R.codes[w.ci]).join(''),rev=w.dir==='end',rem=rev?code.slice(0,code.length-n.pos):code.slice(n.pos),o=[];
+ R.table.forEach(p=>{const c=strip(p[1]);if(c&&(rev?rem.endsWith(c):rem.startsWith(c)))o.push({l:p[0],c:c,pos:n.pos+c.length,word:rev?p[0]+n.word:n.word+p[0]})});return o}
+function wAll(key){const w=U(key);w.exp={};w.total=true;(function r(n,p){const ks=treeKids(key,n);if(ks.length){w.exp[p]=true;ks.forEach((k,i)=>r(k,p+'.'+i))}})({pos:0,word:''},'r');markTool(key);wRedraw(key)}
+function cutHTML(key){const w=U(key),R=REG[key],code=sym(R.codes[w.ci]),n=code.length,cuts=w.cuts.slice().sort((a,b)=>a-b),cm=codeMap(R.table),b=[0].concat(cuts,[n]);
+ const last=cuts.length?cuts[cuts.length-1]:0,first=cuts.length?cuts[0]:n;
+ const gapOk=g=>w.mode==='free'||(w.mode==='start'&&g>last)||(w.mode==='end'&&g<first);
+ const barOk=g=>w.mode==='free'||(w.mode==='start'&&g===last)||(w.mode==='end'&&g===first);
+ let h='<div class="cutrow">',word='',all=true;
+ for(let k=0;k<b.length-1;k++){const seg=code.slice(b[k],b[k+1]).join(''),L=cm[seg],open=(w.mode==='start'&&k===b.length-2)||(w.mode==='end'&&k===0);
+  if(L)word+=L[0];else all=false;
+  h+=`<div class="seg"><div class="lt ${L?'ok':open?'open':'bad'}">${L?esc(L.join('/')):open?'…':'?'}</div><div class="sy">`;
+  for(let i=b[k];i<b[k+1];i++){h+=`<span class="s">${esc(code[i])}</span>`;if(i<b[k+1]-1)h+=gapOk(i+1)?`<button class="gap" title="Разрезать здесь" onclick="wCut('${key}',${i+1})"></button>`:'<span class="gap off"></span>'}
+  h+='</div></div>';
+  if(k<b.length-2)h+=barOk(b[k+1])?`<button class="cutbar" title="Убрать разрез" onclick="wCut('${key}',${b[k+1]})"></button>`:'<span class="cutbar"></span>'}
+ h+='</div>';
+ const sum=all?`✅ Все куски — коды! Слово: <b>${esc(word)}</b> · букв: <b>${b.length-1}</b>`:`Кусков: ${b.length-1}. Над каждым должна появиться зелёная буква.`;
+ return h+`<div class="wsum ${all?'okx':''}">${sum}</div>`}
+function treeHTML(key){const w=U(key),R=REG[key],code=sym(R.codes[w.ci]).join(''),rev=w.dir==='end';
+ function rec(n,p){const ks=treeKids(key,n),fin=n.pos===code.length,root=p==='r',open=root||w.exp[p],rem=rev?code.slice(0,code.length-n.pos):code.slice(n.pos);let label;
+  if(root)label=`<div class="nd root">🔐 <span class="mono">${esc(code)}</span><small>${rev?'← идём с конца':'идём с начала →'}</small></div>`;
+  else{const tag=fin?`<em>✅ ${esc(n.word)}</em>`:!ks.length?'<em>✖ тупик</em>':open?'':'<em>➕</em>';
+   label=`<button class="nd ${fin?'fin':ks.length?'':'dead'}" onclick="wExp('${key}','${p}')"><b>${esc(n.l)}</b><code>${esc(n.c)}</code><small>осталось: ${esc(rem)||'—'}</small>${tag}</button>`}
+  let sub='';if(open&&ks.length)sub='<ul>'+ks.map((k,i)=>rec(k,p+'.'+i)).join('')+'</ul>';return `<li>${label}${sub}</li>`}
+ let h=`<div class="wmode"><button class="chip2 ${!rev?'on':''}" onclick="wSet('${key}','dir','start')">→ С начала</button><button class="chip2 ${rev?'on':''}" onclick="wSet('${key}','dir','end')">← С конца</button><button class="chip2" onclick="wAll('${key}')">🌲 Раскрыть всё</button><button class="chip2" onclick="wCollapse('${key}')">↩︎ Свернуть</button></div><div class="tree"><ul>${rec({pos:0,word:''},'r')}</ul></div>`;
+ if(w.total){const P=parsesAll(R.table,code);h+=`<div class="wsum">Полных расшифровок: <b>${P.length}</b>${P.length?' → '+P.map(x=>esc(x.join(''))+' ('+x.length+' букв)').join(', '):''}</div>`}
+ else h+='<div class="wsum" style="color:var(--mut);font-weight:600">Нажми на ветку, чтобы раскрыть её варианты.</div>';return h}
+function wHTML(key){const w=U(key),R=REG[key];let h=`<div class="wg" id="w_${key}">`;
+ if(R.codes.length>1)h+='<div class="csel">'+R.codes.map((c,i)=>`<button class="chip2 ${i===w.ci?'on':''}" onclick="wSet('${key}','ci',${i})">${i+1}) ${esc(c)}</button>`).join('')+'</div>';
+ if(R.tabs==='both')h+=`<div class="wtabs"><button class="chip2 ${w.tab==='cut'?'on':''}" onclick="wSet('${key}','tab','cut')">✂️ Резак</button><button class="chip2 ${w.tab==='tree'?'on':''}" onclick="wSet('${key}','tab','tree')">🌳 Дерево вариантов</button></div>`;
+ if(w.tab==='cut')h+=`<div class="wmode"><button class="chip2 ${w.mode==='start'?'on':''}" onclick="wSet('${key}','mode','start')">→ С начала</button><button class="chip2 ${w.mode==='end'?'on':''}" onclick="wSet('${key}','mode','end')">← С конца</button><button class="chip2 ${w.mode==='free'?'on':''}" onclick="wSet('${key}','mode','free')">✋ Свободно</button><button class="chip2" onclick="wSet('${key}','mode','${w.mode}')">↺ Сброс</button></div>`+cutHTML(key);
+ else h+=treeHTML(key);
+ return h+'</div>'}
+
+/* ===== теория ===== */
+function theoryView(){const i=Math.min(S.step,LEC.length-1),s=LEC[i];S.thSteps[i]=1;if(Object.keys(S.thSteps).length>=LEC.length){S.thDone=true;S.thSkip=false}save();
+ return `<div class="card"><span class="pill">📖 Мини-лекция · шаг ${i+1} из ${LEC.length}</span><div class="dots">${LEC.map((x,k)=>`<i class="${S.thSteps[k]?'d':''} ${k===i?'c':''}"></i>`).join('')}</div>
+ <h2><span class="e">${s.e}</span>${s.h}</h2>${s.draw?`<div class="illbox">${s.draw()}</div>`:''}<div class="tx">${s.t}</div>
+ ${s.demo?`<div><b>🎮 Попробуй сам</b>${wHTML(s.demo)}</div>`:''}
+ <div class="vbar"><button class="btn sm pri say" onclick="sayLec(${i},this)">🔊 Послушать</button>${speedUI()}</div>
+ <div class="row"><button class="btn" ${i?'':'disabled'} onclick="lstep(-1)">← Назад</button><button class="btn pri" onclick="lstep(1)">${i<LEC.length-1?'Дальше →':'К тесту →'}</button></div>
+ <div class="skipbar"><button onclick="skipTheory()">⏭ Пропустить теорию (это отразится в отчёте)</button><button onclick="memoOpen()">📚 Памятки</button><button onclick="go('task','${(vis()[0]||{}).id}')">✏️ Сразу к задачам</button></div></div>`}
+function lstep(d){stopSay();if(S.step+d>=LEC.length){go('test');return}S.step=Math.max(0,S.step+d);save();render();window.scrollTo(0,0)}
+function skipTheory(){if(!S.thDone)S.thSkip=true;save();go('test')}
+function memoOpen(){stopSay();S.memoOpen=true;save();$('mbody').innerHTML=`<h2>📚 Памятки</h2><div class="vbar">${speedUI()}</div>`+MEMO.map((m,i)=>`<div class="stk c-${m.c}"><div class="sh"><span class="ic">${m.e}</span>${m.h}<button class="btn sm say" onclick="sayMemo(${i},this)">🔊</button></div><div class="sb">${m.t}</div></div>`).join('');$('modal').classList.add('show')}
+function closeModal(){stopSay();$('modal').classList.remove('show')}
+
+/* ===== тест ===== */
+function testView(){let a=0,ok=0;TEST.forEach((q,i)=>{if(S.te[i]!==undefined){a++;if(S.te[i]===q.a)ok++}});if(a===TEST.length){S.teSkip=false;save()}
+ let h=`<div class="card"><span class="pill">🧠 Тест</span><h2>Проверь себя${a?` · отвечено ${a}/${TEST.length}, верно ${ok}`:''}</h2><div>Можно отвечать в любом порядке или <b>пропустить</b> — это отразится в отчёте.</div><div class="row"><button class="btn pri" onclick="go('task','${(vis()[0]||{}).id}')">${a===TEST.length?'К задачам →':'⏭ Пропустить тест, к задачам →'}</button>${a?'<button class="btn" onclick="teReset()">↺ Заново</button>':''}</div></div>`;
+ TEST.forEach((q,i)=>{const an=S.te[i]!==undefined;h+=`<div class="card"><div class="qh"><span class="qn">${i+1}</span><b>${esc(q.q)}</b></div><div class="illbox">${q.ill}</div><div class="opts">${q.o.map((o,j)=>`<button class="opt ${an?(j===q.a?'ok':j===S.te[i]?'bad':'dim'):''}" ${an?'disabled':''} onclick="pick(${i},${j})">${an&&j===q.a?'✅ ':an&&j===S.te[i]?'❌ ':''}${esc(o)}</button>`).join('')}</div>${an?`<div class="why ${S.te[i]===q.a?'ok':'bad'}">${S.te[i]===q.a?'🎉 Верно! ':'🙈 Не совсем. '}${esc(q.why)}</div>`:''}</div>`});
+ return h}
+function pick(i,j){if(S.te[i]!==undefined)return;S.te[i]=j;if(j===TEST[i].a)confetti();save();const y=window.scrollY;render();window.scrollTo(0,y)}
+function teReset(){S.te={};save();render()}
+
+/* ===== задачи ===== */
+function condHTML(t,sid){return `<div class="cond selzone"><div class="rib"><span>📝 Условие · ${esc(tLabel(t))}</span><span class="tip">🖱️ Выдели слово — покажу, сколько в нём символов</span></div><div class="cb"><div>${hl(t.intro)}</div>${t.extra?`<div style="margin-top:6px">${hl(t.extra)}</div>`:''}${tblHTML(t.table,t.num)}${t.codes.map((c,i)=>`<div class="codeln">🔐 ${t.codes.length>1?`<small>${i+1})</small> `:''}${esc(c)}</div>`).join('')}<div class="qbox">❓ ${hl(t.q)}</div></div></div>`}
+function hintSteps(t){const L=t.table.map(p=>strip(p[1]).length),mx=Math.max.apply(null,L),mn=Math.min.apply(null,L),f=t.ans.split('|')[0],H=[];
+ const code0=strip(t.codes[0]);
+ if(t.kind==='decode'){H.push('📋 Посмотри на таблицу: какие коды короткие, какие длинные? Есть ли коды с одинаковым началом?');if(mx===mn)H.push(`📏 Все коды одной длины (${mx}) — режь цепочку на равные куски.`);H.push('✂️ Открой Резак и режь с начала (или с конца!) так, чтобы каждый кусок был кодом из таблицы.');if(t.nodup)H.push('🙅 Если способов несколько — оставь тот, где буквы не повторяются.');H.push('🌳 Застрял? Раскрой ветки в Дереве вариантов: ✖ — тупик, возвращайся и выбирай другой код.',`🔑 Слово начинается с буквы «${esc(f[0])}».`,`🔑 Начало слова: «${esc(f.slice(0,2))}».`)}
+ else if(t.kind==='count'){H.push('📋 Нужно только число букв: разрежь всю цепочку на коды и посчитай куски.','✂️ Режь Резаком, пока цепочка не закончится: один кусок — одна буква.');if(t.nodup)H.push('🙅 Если способов несколько — оставь тот, где буквы не повторяются.');H.push('🌳 Несколько способов? Дерево покажет все разрезания — сравни, сколько в каждом букв.',`🔑 Самый длинный код — ${mx} симв., в цепочке ${code0.length} симв. Значит, букв не меньше ${Math.ceil(code0.length/mx)}.`,`🔑 Ответ лежит между ${Number(f)-1} и ${Number(f)+1}.`)}
+ else if(t.kind==='repeat'){H.push('📋 Сначала расшифруй всё сообщение, потом ищи буквы, которые встретились больше одного раза.',`📏 Все коды длиной ${mx} — режь цепочку на равные куски!`,'✂️ Резак поможет: над каждым куском появится буква.');const P=parsesAll(t.table,code0);if(P.length===1)H.push(`🔑 В сообщении ${P[0].length} букв.`);H.push(`🔑 Одна из повторяющихся букв — «${esc(f[0])}».`)}
+ else{const idx=t.codes.findIndex(c=>parsesAll(t.table,c).length===1);H.push('📋 Для каждой цепочки узнай, сколько у неё расшифровок. Нужна та, где путь всегда один.');if(t.num)H.push('🔢 Помни: 10–33 может быть одной буквой, а 0 и числа больше 33 — нет. Нуль «прикреплён» к цифре перед ним.');H.push('✂️ Режь Резаком с начала (или с конца). Увидел два варианта — эта цепочка не подходит.','🌳 Дерево вариантов покажет число путей: нужна цепочка, где до конца доходит ровно одна ветка.',`🔑 Нужная цепочка — №${idx+1}.`,`🔑 Слово начинается с буквы «${esc(f[0])}».`)}
+ return H}
+function hintHTML(t){const n=S.hint[t.id]||0,H=hintSteps(t);if(!n)return '';
+ return `<div class="hint"><h4>💡 Подсказки ${n}/${H.length} <small>— чем меньше подсказок, тем лучше!</small></h4>${H.slice(0,n).map((x,i)=>`<div class="hs"><span class="hn2">${i+1}</span><div>${x}</div></div>`).join('')}${n<H.length?`<button class="btn sm" onclick="showHint('${t===cur()?'':'b'}')">Ещё одна подсказка →</button>`:''}</div>`}
+function showHint(src){const t=cur(),H=hintSteps(t);if((S.hint[t.id]||0)<H.length){S.hint[t.id]=(S.hint[t.id]||0)+1;save()}
+ const hb=$(src==='b'?'bhint':'hintbox');if(hb)hb.innerHTML=hintHTML(t);renderNav();renderTop();const hbt=$('hbtn');if(hbt)hbt.textContent=`💡 Подсказка (${S.hint[t.id]}/${H.length})`}
+function taskView(t){const V=vis(),i=V.indexOf(t),done=!!S.done[t.id],hs=S.hint[t.id],H=hintSteps(t);
+ return `<div class="card ${done?(hs?'sdh':'sd'):''}"><span class="pill">${t.proto?'★ Прототип':'🔁 Аналог'} · ${i+1} из ${V.length}</span><h2>${SECS[t.sec-1].e} ${esc(SECS[t.sec-1].t)}</h2>${condHTML(t)}
+ <div class="ans"><input id="ans" autocomplete="off" placeholder="Твой ответ…" ${done?`value="${esc(t.ans.split('|')[0])}" disabled class="okk"`:''} onkeydown="if(event.key==='Enter')check()"><button class="btn good" ${done?'disabled':''} onclick="check()">✅ Проверить</button><button class="btn" onclick="openBoard()">🖍️ Доска</button></div>
+ <div id="fb"></div>${done?`<div class="solvd ${hs?'h':''}">${hs?'💡 Решено с подсказкой':'🎉 Верно! Решено самостоятельно'} · ответ: ${esc(t.ans.split('|')[0])}</div>`:''}
+ <div id="hintbox">${hintHTML(t)}</div>
+ <div class="row">${done?'':`<button class="btn" id="hbtn" onclick="showHint()">💡 Подсказка (${hs||0}/${H.length})</button>`}<button class="btn" onclick="memoOpen()">📚 Памятки</button><button class="btn" onclick="go('theory')">📖 Лекция</button></div>
+ <h3 style="margin:16px 0 0">🧰 Помощники</h3>${wHTML('t_'+t.id)}
+ <div class="row"><button class="btn" ${i?'':'disabled'} onclick="nav(-1)">← Назад</button>${done?'':'<button class="btn" onclick="skipTask()">⏭ Пропустить</button>'}<button class="btn pri" onclick="nav(1)">${i<V.length-1?'Дальше →':'К отчёту →'}</button></div></div>`}
+function nav(d){const V=vis(),i=V.indexOf(cur()),n=V[i+d];if(n)go('task',n.id);else if(d>0)openReport()}
+function skipTask(){const t=cur();if(!S.done[t.id])S.skip[t.id]=1;save();nav(1)}
+const norm=s=>String(s).toUpperCase().replace(/Ё/g,'Е').replace(/[^0-9A-ZА-Я]/g,'');
+function fb(m,c,id){const e=$(id||'fb');if(e)e.innerHTML=`<div class="fb ${c}">${m}</div>`}
+function check(src){const t=cur(),inp=$(src==='b'?'bans':'ans'),fid=src==='b'?'bfb':'fb';const v=norm(inp.value);if(!v){fb('Впиши ответ 🙂','warn',fid);return}
+ S.tried[t.id]=(S.tried[t.id]||0)+1;
+ if(t.ans.split('|').some(a=>norm(a)===v)){S.done[t.id]=1;delete S.skip[t.id];save();if(!S.hint[t.id])confetti();fb(S.hint[t.id]?'💡 Верно, но с подсказкой. Следующее задание…':'🎉 Верно! Переходим дальше…','ok',fid);renderNav();renderTop();clearTimeout(autoT);autoT=setTimeout(()=>autoNext(src),1800)}
+ else{S.err[t.id]=(S.err[t.id]||0)+1;save();fb('❌ Пока не то. Проверь разрезание: каждый кусок — код из таблицы? Можно открыть Резак или Дерево.','bad',fid);renderNav()}}
+function autoNext(src){const V=vis(),i=V.indexOf(cur());const nx=V.slice(i+1).concat(V.slice(0,i)).find(t=>!S.done[t.id]);
+ if(src==='b'){if(nx){S.cur=nx.id;save();renderBoard();render()}else{closeBoard();openReport()}}else{if(nx)go('task',nx.id);else{render();openReport()}}}
+function confetti(){const em=['🎉','✨','⭐'];for(let i=0;i<9;i++){const s=document.createElement('span');s.className='cf';s.textContent=em[i%3];s.style.left=(42+Math.random()*16)+'%';s.style.setProperty('--dx',(Math.random()*160-80)+'px');document.body.appendChild(s);setTimeout(()=>s.remove(),1100)}}
+
+/* ===== доска ===== */
+const BD={color:'#5b6cff',size:3,erase:false,draw:false,lx:0,ly:0,tools:false};
+function openBoard(){BD.tools=false;$('board').classList.add('on');renderBoard()}
+function closeBoard(){if($('cv'))saveImg();$('board').classList.remove('on')}
+function saveImg(){const c=$('cv'),t=cur();if(c&&t)try{UI.img[t.id]=c.toDataURL()}catch(e){}}
+function renderBoard(){const t=cur(),V=vis(),i=V.indexOf(t),done=!!S.done[t.id],cols=['#5b6cff','#e5484d','#12a36b','#e89a0c','#1c2540'];
+ $('board').innerHTML=`<div class="bw"><div class="btop"><b>🖍️ Доска · задание ${i+1} из ${V.length}</b><button class="btn sm" onclick="closeBoard();render()">✕ Закрыть</button></div>${condHTML(t)}
+ <div class="bdraw"><div class="btools">${cols.map(c=>`<button class="sw ${BD.color===c&&!BD.erase?'on':''}" style="background:${c}" onclick="BD.color='${c}';BD.erase=false;renderBoardKeep()"></button>`).join('')}<button class="chip2 ${BD.erase?'on':''}" onclick="BD.erase=!BD.erase;renderBoardKeep()">🧽 Ластик</button><button class="chip2" onclick="BD.size=BD.size>=8?2:BD.size+2">✏️ толщина</button><button class="chip2" onclick="clearCv()">🗑️ Очистить</button></div><div class="bcv"><canvas id="cv"></canvas></div></div>
+ <div class="ans" style="margin-top:10px"><input id="bans" autocomplete="off" placeholder="Ответ…" ${done?`value="${esc(t.ans.split('|')[0])}" disabled class="okk"`:''} onkeydown="if(event.key==='Enter')check('b')"><button class="btn good" ${done?'disabled':''} onclick="check('b')">✅ Ответ</button><button class="btn pri" onclick="bnav(1)">Далее →</button></div>
+ <div id="bfb"></div><div class="row"><button class="btn" onclick="showHint('b')">💡 Подсказка</button><button class="btn" onclick="memoOpen()">📚 Памятки</button><button class="btn" onclick="closeBoard();go('theory')">📖 Лекция</button><button class="btn" onclick="BD.tools=!BD.tools;renderBoardKeep()">🧰 Помощники</button><button class="btn" onclick="bnav(-1)">← Назад</button></div><div id="bhint">${hintHTML(t)}</div>${BD.tools?wHTML('b_'+t.id):''}</div>`;
+ initCv()}
+function renderBoardKeep(){saveImg();renderBoard()}
+function bnav(d){saveImg();const V=vis(),i=V.indexOf(cur()),n=V[i+d];if(n){S.cur=n.id;save();renderBoard();render()}else if(d>0){closeBoard();openReport()}}
+function clearCv(){const c=$('cv');c.getContext('2d').clearRect(0,0,c.width,c.height);delete UI.img[cur().id]}
+function initCv(){const c=$('cv');if(!c)return;const r=c.parentElement.getBoundingClientRect();c.width=Math.max(300,r.width);c.height=320;const x=c.getContext('2d');x.lineCap='round';x.lineJoin='round';
+ const im=UI.img[cur().id];if(im){const g=new Image();g.onload=()=>x.drawImage(g,0,0);g.src=im}
+ const pos=e=>{const b=c.getBoundingClientRect();return[(e.clientX-b.left)*c.width/b.width,(e.clientY-b.top)*c.height/b.height]};
+ c.onpointerdown=e=>{BD.draw=true;[BD.lx,BD.ly]=pos(e);c.setPointerCapture(e.pointerId)};
+ c.onpointermove=e=>{if(!BD.draw)return;const p=pos(e);x.globalCompositeOperation=BD.erase?'destination-out':'source-over';x.strokeStyle=BD.color;x.lineWidth=BD.erase?BD.size*5:BD.size;x.beginPath();x.moveTo(BD.lx,BD.ly);x.lineTo(p[0],p[1]);x.stroke();BD.lx=p[0];BD.ly=p[1]};
+ c.onpointerup=c.onpointercancel=()=>{BD.draw=false;saveImg()}}
+
+/* ===== счётчик символов при выделении ===== */
+document.addEventListener('selectionchange',()=>{const sel=window.getSelection(),txt=sel?sel.toString():'',box=$('insp');
+ if(!txt||!txt.trim()){box.classList.remove('on');return}
+ const a=sel.anchorNode,el=a&&(a.nodeType===3?a.parentElement:a);if(!el||!el.closest||!el.closest('.selzone')){box.classList.remove('on');return}
+ let n=(txt.match(/[\p{L}\p{N}]/gu)||[]).length;if(!n)n=txt.replace(/\s/g,'').length;
+ box.innerHTML=`🔤 Символов: ${n}<small>без пробелов и знаков препинания</small>`;box.classList.add('on')});
+
+/* ===== учитель ===== */
+function openTeacher(){const p=prompt('Код учителя');if(p===null)return;if(p!==S.pin){toast('Неверный код');return}tModal()}
+function tModal(){const all=!S.assign;let h=`<h2>👩‍🏫 Режим учителя</h2><div class="card"><label><b>Название домашнего задания:</b></label><div class="ans"><input id="hwn" value="${esc(S.hw)}" placeholder="например: ДЗ на 25.11" style="text-transform:none" oninput="S.hw=this.value;save();renderTop()"></div>
+ <div class="row"><button class="btn sm" onclick="tSet('all')">✅ Все</button><button class="btn sm" onclick="tSet('proto')">★ Только прототипы</button><button class="btn sm" onclick="tSet('analog')">🔁 Только аналоги</button><button class="btn sm" onclick="tSet('none')">⬜ Снять всё</button><button class="btn sm" onclick="tPin()">🔑 Сменить код</button></div></div>`;
+ SECS.forEach((s,k)=>{const ts=TASKS.filter(t=>t.sec===k+1);h+=`<div class="card"><b>${s.e} ${esc(s.t)}</b>`+ts.map(t=>`<label style="display:block;margin:6px 0"><input type="checkbox" ${inA(t.id)?'checked':''} onchange="tToggle('${t.id}',this.checked)"> ${t.proto?'★ прототип':'🔁 аналог'} — ${esc(strip(t.codes[0]).slice(0,22))}… <small>(ответ: ${esc(t.ans.split('|')[0])})</small></label>`).join('')+'</div>'});
+ h+=`<div class="row"><button class="btn pri" onclick="exportFile()">💾 Сохранить файл ученику с этим заданием</button></div><div style="color:var(--mut);font-size:13px;margin-top:6px">Выбрано заданий: ${vis().length} из ${TASKS.length}. Неназначенные скрываются у ученика и в отчёте.</div>`;
+ $('mbody').innerHTML=h;$('modal').classList.add('show')}
+function tSet(m){S.assign=m==='all'?null:TASKS.filter(t=>m==='proto'?t.proto:m==='analog'?!t.proto:false).map(t=>t.id);save();render();tModal()}
+function tToggle(id,on){if(!S.assign)S.assign=TASKS.map(t=>t.id);const i=S.assign.indexOf(id);if(on&&i<0)S.assign.push(id);if(!on&&i>=0)S.assign.splice(i,1);save();render()}
+function tPin(){const p=prompt('Новый код учителя',S.pin);if(p){S.pin=p;save();toast('Код изменён')}}
+function exportFile(){const d=document.documentElement.cloneNode(true);d.querySelector('#preset').textContent='window.PRESET='+JSON.stringify({assign:S.assign,hw:S.hw,pin:S.pin,sig:String(Date.now())})+';';
+ ['view','nav','mbody','board','printArea','insp'].forEach(i=>{const e=d.querySelector('#'+i);if(e)e.innerHTML=''});const m=d.querySelector('#modal');if(m)m.className='';
+ const blob=new Blob(['<!DOCTYPE html>\n'+d.outerHTML],{type:'text/html'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ОГЭ-Информатика-2-'+(S.hw||'задание').replace(/[^\wА-Яа-я-]+/g,'_')+'.html';document.body.appendChild(a);a.click();a.remove();toast('Файл сохранён ✔')}
+
+/* ===== отчёт ===== */
+const isMobile=()=>/Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent)||(window.matchMedia&&matchMedia('(pointer:coarse)').matches&&innerWidth<900);
+function theoryTxt(){const n=Object.keys(S.thSteps).length,m=Object.keys(S.memo).length;return (S.thDone?`✅ Пройдена (шагов ${n}/${LEC.length})`:S.thSkip?`⏭ Пропущена${n?` (просмотрено шагов: ${n}/${LEC.length})`:''}`:n?`🔵 Просмотрено шагов: ${n}/${LEC.length}`:'⚪ Не открывалась')+' · памятки: '+(S.memoOpen?`открывал(а)${m?`, озвучено ${m}`:''}`:'не открывались')}
+function testTxt(){let a=0,ok=0;TEST.forEach((q,i)=>{if(S.te[i]!==undefined){a++;if(S.te[i]===q.a)ok++}});return a===TEST.length?`✅ Пройден: верно ${ok} из ${TEST.length}`:S.teSkip?`⏭ Пропущен${a?` (отвечено ${a}, верно ${ok})`:''}`:a?`🔵 Отвечено ${a}/${TEST.length}, верно ${ok}`:'⚪ Не открывался'}
+function counts(){const c={done:0,doneh:0,err:0,skip:0,rest:0,tries:0,hints:0};vis().forEach(t=>{const s=st(t.id);if(s==='done')c.done++;else if(s==='doneh')c.doneh++;else if(s==='err')c.err++;else if(s==='skip')c.skip++;else c.rest++;c.tries+=S.err[t.id]||0;c.hints+=S.hint[t.id]||0});return c}
+function repHTML(){const c=counts(),V=vis();
+ return `<div class="report lt"><div class="rhead"><div class="rtitle">📊 ${REP_TITLE}</div><div class="rmeta">👤 ${esc(S.name||'Ученик')} · 📅 ${new Date().toLocaleDateString('ru-RU')}${S.hw?' · 📚 '+esc(S.hw):''}</div></div>
+ <div class="tiles"><div class="t-g"><b>${c.done}</b>решено сам(а)</div><div class="t-y"><b>${c.doneh}</b>с подсказкой</div><div class="t-r"><b>${c.err}</b>с ошибками</div><div class="t-n"><b>${c.skip}</b>пропущено</div><div class="t-b"><b>${c.rest}</b>не решено</div><div class="t-r"><b>${c.tries}</b>неверных ответов</div><div class="t-y"><b>${c.hints}</b>открыто подсказок</div></div>
+ <h3>📚 Теория и тест</h3><div class="rc ${S.thDone?'done':S.thSkip?'skip':'new'}"><b>Теория:</b> ${theoryTxt()}</div><div class="rc ${teDone()?'done':S.teSkip?'skip':'new'}"><b>Тест:</b> ${testTxt()}</div>
+ <h3>📝 Задания (${V.length})</h3>${V.map((t,i)=>{const s=st(t.id),H=hintSteps(t).length;return `<div class="rc ${s}"><b>${i+1}. ${esc(tLabel(t))}</b> — ${STL[s]}<br><small>Ошибок: ${S.err[t.id]||0} · 💡 подсказки: ${S.hint[t.id]?`открывал(а) ${S.hint[t.id]} из ${H}`:'не открывал(а)'} · 🧰 помощники: ${S.tool[t.id]?'использовал(а)':'нет'}${S.done[t.id]?' · ответ: '+esc(t.ans.split('|')[0]):''}</small></div>`}).join('')}</div>`}
+function repText(){const c=counts(),V=vis();let t=`📊 ${REP_TITLE}\n👤 ${S.name||'Ученик'} · ${new Date().toLocaleDateString('ru-RU')}${S.hw?' · '+S.hw:''}\n\n📚 Теория: ${theoryTxt()}\n🧠 Тест: ${testTxt()}\n\n✅ Сам(а): ${c.done} · 💡 С подсказкой: ${c.doneh} · ❌ С ошибками: ${c.err} · ⏭ Пропущено: ${c.skip} · ⚪ Не решено: ${c.rest}\n\nПо заданиям:\n`;
+ V.forEach((x,i)=>{const s=st(x.id);t+=`${i+1}. ${tLabel(x)}: ${STL[s]}; ошибок ${S.err[x.id]||0}; подсказок ${S.hint[x.id]||0}\n`});return t}
+function repButtons(){return isMobile()?`<div class="row"><button class="btn pri" onclick="shareRep()">📤 Отправить…</button><button class="btn" onclick="openMsg('tg')">✈️ Telegram</button><button class="btn" onclick="openMsg('wa')">💬 WhatsApp</button><button class="btn" onclick="openMsg('vb')">📞 Viber</button><button class="btn" onclick="copyRep()">📋 Копировать</button></div>`:`<div class="row"><button class="btn pri" onclick="printRep()">📄 Сохранить в PDF (цветной)</button><button class="btn" onclick="copyRep()">📋 Копировать текст</button></div><div style="color:var(--mut);font-size:13px;margin-top:6px">В окне печати выберите «Сохранить как PDF» и включите «Фоновая графика», чтобы сохранились цвета.</div>`}
+function openReport(){closeBoard();stopSay();$('mbody').innerHTML=repHTML()+repButtons();$('modal').classList.add('show')}
+function printRep(){$('printArea').innerHTML=repHTML();const o=document.title;document.title=`Задание 2 ОГЭ Информатика — отчёт — ${S.name||'ученик'} — ${new Date().toLocaleDateString('ru-RU')}`;window.print();setTimeout(()=>{document.title=o},800)}
+function shareRep(){if(navigator.share)navigator.share({title:REP_TITLE,text:repText()}).catch(()=>{});else copyRep()}
+function openMsg(k){const t=encodeURIComponent(repText()),u={tg:'https://t.me/share/url?url=%20&text='+t,wa:'https://wa.me/?text='+t,vb:'viber://forward?text='+t}[k];window.open(u,'_blank')}
+function copyRep(){const t=repText();const fallback=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();toast('Отчёт скопирован ✔')};
+ if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>toast('Отчёт скопирован ✔'),fallback);else fallback()}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ЕГЭ 24 — способы решения: replace+split · перебор+break · префиксные суммы</title>
+<style>
+:root{--bg:#10131c;--pn:#181d2b;--pn2:#1f2536;--bd:#2d3550;--tx:#e6e9f5;--mut:#8f98b8;--ac:#6c8cff;
+--ok:#2fbf71;--fix:#2fb5bf;--hint:#e9b73c;--bad:#ef5b5b;--vio:#a678f0;}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,Segoe UI,Arial,sans-serif}
+button{font:inherit;color:var(--tx);background:var(--pn2);border:1px solid var(--bd);border-radius:8px;padding:6px 11px;cursor:pointer}
+button:hover{border-color:var(--ac)} button.pri{background:var(--ac);border-color:var(--ac);color:#fff}
+button:disabled{opacity:.4;cursor:default}
+header{height:52px;display:flex;align-items:center;gap:8px;padding:0 12px;background:var(--pn);border-bottom:1px solid var(--bd);flex-wrap:nowrap;overflow-x:auto}
+header h1{font-size:15px;margin:0 8px 0 0;white-space:nowrap}
+.app{display:grid;grid-template-columns:270px 1fr;height:calc(100% - 52px)}
+aside.side{background:var(--pn);border-right:1px solid var(--bd);overflow-y:auto;padding:8px;scrollbar-gutter:stable}
+.flt{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.flt button{padding:2px 8px;font-size:12px}.flt button.on{background:var(--ac);border-color:var(--ac)}
+.grp{margin:10px 0 4px;font-weight:700;font-size:13px;color:var(--mut)}
+.it{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;border:1px solid transparent;cursor:pointer;margin-bottom:3px;background:var(--pn2);border-left:4px solid var(--bd)}
+.it:hover{border-color:var(--ac)} .it.cur{outline:2px solid var(--ac)}
+.it.ok{border-left-color:var(--ok);background:#173125}.it.fix{border-left-color:var(--fix);background:#16302f}.it.hint{border-left-color:var(--hint);background:#38301a}
+.it .nm{flex:1;font-size:13px}
+.lv{display:inline-block;padding:0 7px;border-radius:9px;font-size:11px;font-weight:700;color:#10131c;white-space:nowrap}
+.lv1{background:#7be39b}.lv2{background:#b5e36b}.lv3{background:#f1d34f}.lv4{background:#f4a24a}.lv5{background:#f06b6b}
+.role{font-size:11px;color:var(--mut)}
+main{display:grid;grid-template-columns:1fr 340px;gap:10px;padding:10px;overflow:auto;align-content:start}
+.col1{min-width:0}
+.nav{height:44px;display:flex;align-items:center;gap:8px;background:var(--pn);border:1px solid var(--bd);border-radius:10px;padding:0 10px;margin-bottom:8px}
+.nav .ttl{flex:1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cond{height:150px;overflow:auto;background:var(--pn);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:8px;scrollbar-gutter:stable}
+.str{font:12px/1.5 Consolas,monospace;word-break:break-all;background:#0c0f17;border-radius:6px;padding:4px 8px;margin-top:6px;display:block}
+.codebox{height:370px;overflow:auto;background:#0c0f17;border:1px solid var(--bd);border-radius:10px;padding:10px 12px;font:13.5px/1.9 Consolas,Menlo,monospace;white-space:pre;scrollbar-gutter:stable}
+.codebox input{font:inherit;background:#1d2540;color:#ffe9a8;border:1px dashed var(--vio);border-radius:5px;padding:0 4px;outline:none}
+.codebox input.ok{border:1px solid var(--ok);background:#173125}.codebox input.bad{border:1px solid var(--bad);background:#3a1c1c}
+.act{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.res{height:56px;overflow:auto;margin-top:8px;padding:8px 12px;border-radius:10px;background:var(--pn);border:1px solid var(--bd)}
+.panel{height:150px;overflow:auto;background:var(--pn);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:8px;scrollbar-gutter:stable}
+.panel.tall{height:370px}
+.panel h3{margin:0 0 6px;font-size:14px}
+.hw{color:#ffb84d}
+.tg{padding:1px 7px;border-radius:8px;font-size:11px;background:#2a3358}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;z-index:50}
+.modal.on{display:block}
+.mbox{position:absolute;inset:2vh 2vw;background:var(--bg);border:1px solid var(--bd);border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+.mh{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--pn);border-bottom:1px solid var(--bd)}
+.mh h2{margin:0;font-size:16px;flex:1}
+.mb{flex:1;overflow:auto;padding:14px}
+.stk{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:14px}
+.sticker{border-radius:6px;padding:14px 16px;color:#1b1b22;box-shadow:3px 4px 0 rgba(0,0,0,.4)}
+.sticker h3{margin:0 0 8px;font-size:17px}
+.sticker .row{margin:7px 0;font-size:13.5px}
+.sticker pre{margin:6px 0;background:#fffdf4;border:1px solid #0003;border-radius:6px;padding:8px 10px;font:12.5px/1.7 Consolas,monospace;white-space:pre-wrap}
+.s1{background:#cfe0ff}.s2{background:#ffe3a8}.s3{background:#d4f2c4}
+.c1{background:#b8d4ff;border-radius:3px;padding:0 2px}.c2{background:#a8ecb5;border-radius:3px;padding:0 2px}
+.c3{background:#ffb3b3;border-radius:3px;padding:0 2px}.c4{background:#ffe27a;border-radius:3px;padding:0 2px}.c5{background:#dcc4ff;border-radius:3px;padding:0 2px}
+.leg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;color:#1b1b22;font-size:12px}
+/* visualizer */
+.tabs{display:flex;gap:6px;margin-bottom:10px}.tabs button.on{background:var(--ac);border-color:var(--ac)}
+.vctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.vctl select,.vctl input[type=text],.vctl input[type=number]{background:var(--pn2);color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:4px 6px;font:inherit}
+.cols{display:flex;flex-wrap:wrap;gap:3px;margin:10px 0}
+.cell{width:30px;text-align:center;border-radius:6px;background:var(--pn2);border:1px solid var(--bd);font:12px/1.5 Consolas,monospace;padding:2px 0}
+.cell i{display:block;color:var(--mut);font-style:normal;font-size:10px}
+.cell b{display:block;font-size:15px}
+.cell u{display:block;text-decoration:none;color:#ffe27a;height:18px}
+.cell em{display:block;font-style:normal;color:#8fd0ff;height:18px}
+.cell.done{border-color:var(--ok)}.cell.cur{outline:2px solid var(--hint)}
+.cell.neg{background:#4a2326;border-color:var(--bad)}.cell.pos{background:#173a28;border-color:var(--ok)}.cell.skip{background:#4a3a1c;border-color:var(--hint)}
+.cell.gry{opacity:.45}
+.exp{min-height:96px;background:var(--pn);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0}
+.fm{font:15px/1.6 Consolas,monospace}
+.vcode{background:#0c0f17;border:1px solid var(--bd);border-radius:10px;padding:8px 12px;font:13px/1.8 Consolas,monospace;white-space:pre}
+.vcode .ln{display:block;padding:0 6px;border-radius:4px}
+.vcode .hl{background:#2a3a7a}.vcode .hg{background:#1d5a37}.vcode .hr{background:#6a2326}.vcode .hy{background:#6b5a14}
+.stat{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0;font-weight:600}
+.pill{padding:2px 10px;border-radius:10px;background:var(--pn2);border:1px solid var(--bd)}
+</style></head>
+<body>
+<header>
+ <h1>ЕГЭ 24 · способы решения</h1>
+ <button id="bMemo">📘 Памятка</button>
+ <button id="bVis">🔬 Визуализатор префиксов</button>
+ <button id="bHw">🏠 Только ДЗ</button>
+ <button id="bT">🔑 Учитель</button>
+ <button id="bLink" style="display:none">📤 Ссылка ДЗ</button>
+ <button id="bRep">📊 Прогресс</button>
+ <button id="bRes">♻ Сброс</button>
+</header>
+<div class="app">
+ <aside class="side"><div class="flt" id="flt"></div><div id="list"></div></aside>
+ <main>
+  <div class="col1">
+   <div class="nav"><button id="pv">◀ Пред.</button><span class="ttl" id="ttl"></span><button id="nx">След. ▶</button></div>
+   <div class="cond" id="cond"></div>
+   <div class="codebox" id="code"></div>
+   <div class="act"><button class="pri" id="bChk">✔ Проверить</button><button id="bHint">💡 Подсказка</button><button id="bShow">👁 Показать ответ</button><button id="bPair">🔗 К паре</button></div>
+   <div class="res" id="res"></div>
+  </div>
+  <div>
+   <div class="panel" id="idea"></div>
+   <div class="panel tall" id="hints"></div>
+  </div>
+ </main>
+</div>
+
+<div class="modal" id="mMemo"><div class="mbox"><div class="mh"><h2>📘 Памятка по способам</h2><button data-close>✕ Закрыть</button></div><div class="mb" id="memoBody"></div></div></div>
+<div class="modal" id="mVis"><div class="mbox"><div class="mh"><h2>🔬 Визуализатор префиксных сумм</h2><button data-close>✕ Закрыть</button></div><div class="mb" id="visBody"></div></div></div>
+<div class="modal" id="mRep"><div class="mbox" style="inset:10vh 20vw"><div class="mh"><h2>📊 Прогресс</h2><button data-close>✕ Закрыть</button></div><div class="mb" id="repBody"></div></div></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const PIN='1234';           /* PIN учителя — поменяйте здесь */
+const KEY='e24_methods_v1';
+
+/* ---------- учебная строка 50 символов ---------- */
+function mkStr(){let x=2024,r='';for(let i=0;i<50;i++){x=(Math.imul(x,1103515245)+12345)&0x7fffffff;r+='ABC'[(x>>16)%3];}return r;}
+const S=mkStr();
+
+/* ---------- эталонные функции (для вычисления ответа) ---------- */
+const cnt=(x,c)=>x.split(c).length-1;
+function longest(s,f){let b=0;for(let i=0;i<s.length;i++)for(let j=i+1;j<=s.length;j++)if(j-i>b&&f(s.slice(i,j)))b=j-i;return b;}
+function howmany(s,f){let b=0;for(let i=0;i<s.length;i++)for(let j=i+1;j<=s.length;j++)if(f(s.slice(i,j)))b++;return b;}
+const chg=x=>{let c=0;for(let k=1;k<x.length;k++)if(x[k]!=x[k-1])c++;return c;};
+const wsum=x=>[...x].reduce((a,c)=>a+'ABC'.indexOf(c)+1,0);
+const allP=(x,f)=>{for(let k=0;k<x.length-1;k++)if(!f(x[k],x[k+1]))return false;return true;};
+
+const BL={
+ A:{n:'✂️ replace + split',color:'#4f6bff'},
+ B:{n:'🔁 Перебор: два цикла + break',color:'#e0a020'},
+ C:{n:'📊 Префиксные суммы',color:'#2fbf71'}
+};
+const HEAD="s=open('24.txt').read()\n";
+const T=[
+/* ===== A: replace + split ===== */
+{id:'A1',blk:'A',role:'proto',pair:'A2',lvl:1,title:'Без буквы C',
+ text:'Текстовый файл состоит из символов A, B и C. Определите длину самой длинной подстроки, <b>не содержащей букву C</b>.',
+ code:HEAD+"dl=0\nfor x in [[1]]:\n    dl=max(dl,[[2]])\nprint(dl)\n",
+ blanks:[{acc:["s.split('C')"]},{acc:['len(x)']}],
+ hints:['Буква C — «разделитель». Если разрезать строку по C, подстроки без C станут отдельными кусками.','1) s.split(...) с буквой C; 2) для каждого куска x нужна его длина.'],
+ idea:'<b>Идея.</b> Запрещённый символ — это «забор». Режем по нему: между заборами остаются куски, где его нет. Ищем самый длинный кусок.',
+ ref:s=>longest(s,x=>!x.includes('C'))},
+{id:'A2',blk:'A',role:'analog',pair:'A1',lvl:2,title:'Только из букв B',
+ text:'Определите длину самой длинной подстроки, состоящей <b>только из букв B</b>.',
+ code:HEAD+"[[1]]\ndl=0\nfor x in [[2]]:\n    dl=max(dl,len(x))\nprint(dl)\n",
+ blanks:[{acc:["s=s.replace('A','C')"]},{acc:["s.split('C')"]}],
+ hints:['«Не B» — это и A, и C. Сделайте из них один и тот же разделитель.','Замените все A на C (s=s.replace(...)), потом режьте по C.'],
+ idea:'<b>Идея.</b> Два «забора» (A и C) сводим к одному: A→C. После этого split по C даёт куски из одних B.',
+ ref:s=>longest(s,x=>/^B+$/.test(x))},
+{id:'A3',blk:'A',role:'proto',pair:'A4',lvl:3,title:'Нет соседних AB и BA',
+ text:'Определите длину самой длинной подстроки, в которой <b>нет пар соседних символов AB и BA</b>.',
+ code:HEAD+"s=s.replace('AB',[[1]])\ns=s.replace('BA',[[2]])\ndl=0\nfor x in [[3]]:\n    dl=max(dl,len(x))\nprint(dl)\n",
+ blanks:[{acc:["'A B'"]},{acc:["'B A'"]},{acc:["s.split(' ')","s.split()"]}],
+ hints:['Запрещена не буква, а ПАРА. Режем между её символами, ничего не удаляя.','AB → «A B»: пробел встаёт между A и B. Затем split по пробелу.'],
+ idea:'<b>Идея.</b> Пару нельзя удалить (потеряем символы). Вставляем разрез <i>внутрь</i> пары: «AB» → «A B». Пара распадается, куски — допустимые подстроки.',
+ ref:s=>longest(s,x=>!x.includes('AB')&&!x.includes('BA'))},
+{id:'A4',blk:'A',role:'analog',pair:'A3',lvl:3,title:'Нет соседних AC и CA',
+ text:'Определите длину самой длинной подстроки, в которой <b>нет пар соседних символов AC и CA</b>.',
+ code:HEAD+"s=s.replace('AC',[[1]])\ns=s.replace('CA',[[2]])\ndl=0\nfor x in [[3]]:\n    dl=max(dl,len(x))\nprint(dl)\n",
+ blanks:[{acc:["'A C'"]},{acc:["'C A'"]},{acc:["s.split(' ')","s.split()"]}],
+ hints:['Тот же приём, что и в предыдущей паре, но с буквами A и C.','AC → «A C», CA → «C A», затем split по пробелу.'],
+ idea:'<b>Идея.</b> Аналог предыдущей: меняются только буквы в паре. Разрез вставляем между ними.',
+ ref:s=>longest(s,x=>!x.includes('AC')&&!x.includes('CA'))},
+/* ===== B: перебор + break ===== */
+{id:'B1',blk:'B',role:'proto',pair:'B2',lvl:2,title:'Не более 3 букв A',
+ text:'Определите длину самой длинной подстроки, в которой <b>букв A не больше 3</b>.',
+ code:HEAD+"l=len(s)\ndl=0\nfor i in range(l):\n    for j in range(i+1,l+1):\n        ss=s[i:j]\n        if [[1]]:\n            break\n        dl=max(dl,[[2]])\nprint(dl)\n",
+ blanks:[{acc:["ss.count('A')>3"]},{acc:['len(ss)','j-i']}],
+ hints:['Подстрока растёт вправо (j увеличивается). Как только условие нарушено — дальше будет только хуже.','В if записываем НАРУШЕНИЕ условия: A больше 3.'],
+ idea:'<b>Идея.</b> Для каждого начала i растим конец j. Пока условие верно — обновляем ответ. Нарушилось — break: у более длинных подстрок с тем же началом условие тоже нарушено (счётчик не убывает).',
+ ref:s=>longest(s,x=>cnt(x,'A')<=3)},
+{id:'B2',blk:'B',role:'analog',pair:'B1',lvl:2,title:'A и B вместе не более 4',
+ text:'Определите длину самой длинной подстроки, в которой <b>букв A и B вместе не больше 4</b>.',
+ code:HEAD+"l=len(s)\ndl=0\nfor i in range(l):\n    for j in range(i+1,l+1):\n        ss=s[i:j]\n        if [[1]]:\n            break\n        dl=max(dl,[[2]])\nprint(dl)\n",
+ blanks:[{acc:["ss.count('A')+ss.count('B')>4"]},{acc:['len(ss)','j-i']}],
+ hints:['Количество A и B складываем.','ss.count(...)+ss.count(...) и сравниваем с 4 (нарушение — «больше»).'],
+ idea:'<b>Идея.</b> Как B1, но счётчик — сумма двух букв. Он по-прежнему не убывает при росте j, значит break применим.',
+ ref:s=>longest(s,x=>cnt(x,'A')+cnt(x,'B')<=4)},
+{id:'B3',blk:'B',role:'proto',pair:'B4',lvl:3,title:'Соседние символы различны',
+ text:'Определите длину самой длинной подстроки, в которой <b>любые два соседних символа различны</b>.',
+ code:HEAD+"l=len(s)\ndl=0\nfor i in range(l):\n    for j in range(i+1,l+1):\n        ss=s[i:j]\n        if [[1]]:\n            break\n        dl=max(dl,len(ss))\nprint(dl)\n",
+ blanks:[{acc:['not all(ss[k]!=ss[k+1] for k in range(len(ss)-1))','any(ss[k]==ss[k+1] for k in range(len(ss)-1))']}],
+ hints:['Условие «все соседи различны» — это all(...). Нам нужно его нарушение.','not all(...) или any(ss[k]==ss[k+1] ...).'],
+ idea:'<b>Идея.</b> Если в ss уже появилась пара одинаковых соседей, она останется в любой более длинной подстроке с тем же началом — можно прерывать цикл.',
+ ref:s=>longest(s,x=>allP(x,(a,b)=>a!=b))},
+{id:'B4',blk:'B',role:'analog',pair:'B3',lvl:3,title:'Буквы не убывают',
+ text:'Определите длину самой длинной подстроки, в которой <b>символы идут в алфавитном порядке (не убывают)</b>.',
+ code:HEAD+"l=len(s)\ndl=0\nfor i in range(l):\n    for j in range(i+1,l+1):\n        ss=s[i:j]\n        if [[1]]:\n            break\n        dl=max(dl,len(ss))\nprint(dl)\n",
+ blanks:[{acc:['not all(ss[k]<=ss[k+1] for k in range(len(ss)-1))','any(ss[k]>ss[k+1] for k in range(len(ss)-1))']}],
+ hints:['Нарушение порядка — когда какая-то пара «убывает».','not all(ss[k]<=ss[k+1] ...) или any(ss[k]>ss[k+1] ...).'],
+ idea:'<b>Идея.</b> Аналог B3: меняется только условие на соседей. Нарушение порядка «живёт» и в более длинных подстроках.',
+ ref:s=>longest(s,x=>allP(x,(a,b)=>a<=b))},
+/* ===== C: префиксные суммы ===== */
+{id:'C1',blk:'C',role:'proto',pair:'C2',lvl:1,title:'Ровно 5 букв A (длина)',
+ text:'Определите длину самой длинной подстроки, в которой <b>ровно 5 букв A</b>.',
+ code:HEAD+"n=len(s)\np=[0]\nfor c in s:\n    p.append(p[-1]+[[1]])\ndl=0\nfor i in range(n):\n    for j in range(i+1,n+1):\n        v=[[2]]\n        if v>5:\n            break\n        if v==5:\n            dl=max(dl,j-i)\nprint(dl)\n",
+ blanks:[{acc:["(c=='A')","int(c=='A')","1 if c=='A' else 0"]},{acc:['p[j]-p[i]']}],
+ hints:['p[k] — сколько букв A среди первых k символов. На каждом шаге к p[-1] добавляется 1, если очередной символ — A, иначе 0.','v=p[j]-p[i]: из «A в первых j» вычитаем «A в первых i».'],
+ idea:'<b>p[k]</b> = число A среди s[0..k−1] (первые k символов), p[0]=0.<br><b>Добавляем:</b> p[k+1] = p[k] + <code>(s[k]==\'A\')</code> → 1 для A, 0 для остальных.<br><b>Отрезок</b> s[i..j−1]: <code>v = p[j] − p[i]</code>. p[j] включает всё до границы j, p[i] — всё левее отрезка. Разность — только отрезок.',
+ ref:s=>longest(s,x=>cnt(x,'A')==5)},
+{id:'C2',blk:'C',role:'analog',pair:'C1',lvl:2,title:'Поровну A и B (длина)',
+ text:'Определите длину самой длинной подстроки, в которой <b>букв A и B поровну</b>.',
+ code:HEAD+"n=len(s)\np=[0]\nfor c in s:\n    p.append(p[-1]+[[1]])\ndl=0\nfor i in range(n):\n    for j in range(i+1,n+1):\n        v=[[2]]\n        if v==0:\n            dl=max(dl,j-i)\nprint(dl)\n",
+ blanks:[{acc:["(c=='A')-(c=='B')","int(c=='A')-int(c=='B')","1 if c=='A' else -1 if c=='B' else 0"]},{acc:['p[j]-p[i]']}],
+ hints:['Храним БАЛАНС: A даёт +1, B даёт −1, C — 0.','Равенство A и B ⇔ баланс отрезка равен 0. break здесь нет: баланс то растёт, то падает.'],
+ idea:'<b>p[k]</b> = (число A) − (число B) среди первых k символов.<br><b>Добавляем:</b> p[k+1] = p[k] + <code>(c==\'A\') − (c==\'B\')</code>: A → +1, B → −1, C → 0.<br><b>Отрезок:</b> <code>v = p[j] − p[i]</code>; v=0 значит A и B поровну. Баланс не монотонен — break не ставим.',
+ ref:s=>longest(s,x=>cnt(x,'A')==cnt(x,'B'))},
+{id:'C3',blk:'C',role:'proto',pair:'C4',lvl:3,title:'Не более 3 смен букв',
+ text:'«Сменой» назовём пару соседних различных символов. Определите длину самой длинной подстроки, в которой <b>не более 3 смен</b>.',
+ code:HEAD+"n=len(s)\np=[0]\nfor k in range(n):\n    p.append(p[-1]+[[1]])\ndl=0\nfor i in range(n):\n    for j in range(i+1,n+1):\n        v=[[2]]\n        if v>3:\n            break\n        dl=max(dl,j-i)\nprint(dl)\n",
+ blanks:[{acc:["(k>0 and s[k]!=s[k-1])","(s[k]!=s[k-1] and k>0)","int(k>0 and s[k]!=s[k-1])","(s[k]!=s[k-1])*(k>0)"]},{acc:['p[j]-p[i+1]']}],
+ hints:['Смена «живёт» на паре (s[k−1], s[k]) и записывается в позицию k. У k=0 левого соседа нет.','Первый символ отрезка (индекс i) образует пару с s[i−1] — она вне отрезка. Поэтому вычитаем не p[i], а p[i+1].'],
+ idea:'<b>p[k]</b> = число смен среди пар, записанных в позициях 0..k−1.<br><b>Добавляем:</b> p[k+1] = p[k] + <code>(k&gt;0 and s[k]!=s[k−1])</code>. Вклад k «принадлежит» паре (k−1,k).<br><b>Отрезок s[i..j−1]</b> содержит пары с правым концом i+1..j−1. Значит <code>v = p[j] − p[i+1]</code>: p[i+1] уже включает вклад позиции i — пару (i−1,i), которая выходит за левую границу, — и убирает её.',
+ ref:s=>longest(s,x=>chg(x)<=3)},
+{id:'C4',blk:'C',role:'analog',pair:'C3',lvl:3,title:'Ровно 2 пары AB (длина)',
+ text:'Определите длину самой длинной подстроки, в которой <b>ровно 2 раза встречается пара AB</b>.',
+ code:HEAD+"n=len(s)\np=[0]\nfor k in range(n):\n    p.append(p[-1]+[[1]])\ndl=0\nfor i in range(n):\n    for j in range(i+1,n+1):\n        v=[[2]]\n        if v>2:\n            break\n        if v==2:\n            dl=max(dl,j-i)\nprint(dl)\n",
+ blanks:[{acc:["(k>0 and s[k-1:k+1]=='AB')","(k>0 and s[k-1]+s[k]=='AB')","int(k>0 and s[k-1:k+1]=='AB')"]},{acc:['p[j]-p[i+1]']}],
+ hints:['Пара AB «записывается» в позиции своей второй буквы: s[k−1]=A, s[k]=B.','Как в C3: пара, у которой правая буква — s[i], выходит за левую границу, поэтому p[i+1].'],
+ idea:'<b>p[k]</b> = число пар AB, чья вторая буква стоит в позициях 0..k−1.<br><b>Добавляем:</b> p[k+1] = p[k] + <code>(k&gt;0 and s[k−1:k+1]==\'AB\')</code>.<br><b>Отрезок:</b> пары внутри s[i..j−1] имеют вторую букву в i+1..j−1 → <code>v = p[j] − p[i+1]</code>. Пара (i−1,i) не считается, так как s[i−1] вне отрезка.',
+ ref:s=>longest(s,x=>cnt(x,'AB')==2)},
+{id:'C5',blk:'C',role:'proto',pair:'C6',lvl:3,title:'Сколько подстрок с ровно 2 буквами C',
+ text:'Определите <b>количество</b> подстрок, в которых <b>ровно 2 буквы C</b>.',
+ code:HEAD+"n=len(s)\np=[0]\nfor c in s:\n    p.append(p[-1]+[[1]])\nkol=0\nfor i in range(n):\n    for j in range(i+1,n+1):\n        v=[[2]]\n        if v>2:\n            break\n        if v==2:\n            kol+=1\nprint(kol)\n",
+ blanks:[{acc:["(c=='C')","int(c=='C')","1 if c=='C' else 0"]},{acc:['p[j]-p[i]']}],
+ hints:['Ответ — количество, а не длина: вместо max делаем kol+=1.','p хранит число C; v=p[j]-p[i].'],
+ idea:'<b>p[k]</b> = число C среди первых k символов.<br><b>Добавляем:</b> p[k+1] = p[k] + <code>(c==\'C\')</code>.<br><b>Отрезок:</b> <code>v = p[j] − p[i]</code>. Нужно количество — поэтому не max длины, а счётчик <code>kol+=1</code> при v==2.',
+ ref:s=>howmany(s,x=>cnt(x,'C')==2)},
+{id:'C6',blk:'C',role:'analog',pair:'C5',lvl:4,title:'Вес букв A=1, B=2, C=3 → сумма 20',
+ text:'Каждой букве присвоим вес: A=1, B=2, C=3. Определите длину самой длинной подстроки, у которой <b>сумма весов равна 20</b>.',
+ code:HEAD+"n=len(s)\np=[0]\nfor c in s:\n    p.append(p[-1]+[[1]])\ndl=0\nfor i in range(n):\n    for j in range(i+1,n+1):\n        v=[[2]]\n        if v>20:\n            break\n        if v==20:\n            dl=max(dl,j-i)\nprint(dl)\n",
+ blanks:[{acc:["'ABC'.index(c)+1","ord(c)-64","ord(c)-ord('A')+1"]},{acc:['p[j]-p[i]']}],
+ hints:['Вес буквы — её номер в алфавите ABC, считая с 1.',"'ABC'.index(c)+1 или ord(c)-64."],
+ idea:'<b>p[k]</b> = сумма весов первых k символов.<br><b>Добавляем:</b> p[k+1] = p[k] + <code>вес(s[k])</code>, вес = <code>\'ABC\'.index(c)+1</code>: A→1, B→2, C→3.<br><b>Отрезок:</b> <code>v = p[j] − p[i]</code>. Веса положительные, сумма растёт с j — значит при v&gt;20 можно break.',
+ ref:s=>longest(s,x=>wsum(x)==20)}
+];
+const ORDER=[];['A','B','C'].forEach(b=>T.filter(t=>t.blk==b).sort((x,y)=>x.lvl-y.lvl||(x.role=='proto'?-1:1)).forEach(t=>ORDER.push(t)));
+ORDER.forEach((t,i)=>t.no=i+1);
+const BYID={};T.forEach(t=>BYID[t.id]=t);
+
+/* ---------- состояние ---------- */
+let ST=JSON.parse(localStorage.getItem(KEY)||'{"st":{},"hw":{},"vals":{}}');
+const save=()=>localStorage.setItem(KEY,JSON.stringify(ST));
+let teacher=sessionStorage.getItem('e24t')=='1',onlyHw=false,lvF=0,cur=ORDER[0].id,hintShown=0;
+(function(){const m=location.hash.match(/hw=([\w,]+)/);if(m){ST.hw={};m[1].split(',').forEach(x=>{if(BYID[x])ST.hw[x]=true});save();}})();
+const norm=x=>String(x).replace(/\s+/g,'').replace(/"/g,"'");
+const stOf=id=>ST.st[id]||(ST.st[id]={s:'',h:0,e:0});
+
+/* ---------- список ---------- */
+function drawFlt(){
+ $('#flt').innerHTML=['Все',1,2,3,4].map((x,i)=>`<button class="${lvF==i?'on':''}" data-l="${i}">${i?'ур. '+x:x}</button>`).join('');
+ $$('#flt button').forEach(b=>b.onclick=()=>{lvF=+b.dataset.l;drawList();drawFlt();});
+}
+function drawList(){
+ let h='';
+ ['A','B','C'].forEach(b=>{
+  const ts=ORDER.filter(t=>t.blk==b&&(!lvF||t.lvl==lvF)&&(!onlyHw||ST.hw[t.id]));
+  if(!ts.length)return;
+  h+=`<div class="grp" style="color:${BL[b].color}">${BL[b].n}</div>`;
+  ts.forEach(t=>{const s=stOf(t.id).s;
+   h+=`<div class="it ${s} ${t.id==cur?'cur':''}" data-id="${t.id}"><span class="nm">№${t.no} ${esc(t.title)}</span>${ST.hw[t.id]?'<span class="hw">🏠</span>':''}<span class="role">${t.role=='proto'?'🅿':'🅰'}</span><span class="lv lv${t.lvl}">${t.lvl}</span></div>`;});
+ });
+ $('#list').innerHTML=h||'<div class="role">Нет задач по фильтру</div>';
+ $$('.it').forEach(e=>e.onclick=()=>open(e.dataset.id));
+}
+/* ---------- задача ---------- */
+function open(id){
+ cur=id;const t=BYID[id];hintShown=0;
+ $('#ttl').innerHTML=`№${t.no} из ${ORDER.length} · ${esc(t.title)} <span class="lv lv${t.lvl}">ур. ${t.lvl}</span> <span class="tg">${t.role=='proto'?'🅿 прототип':'🅰 аналог'} ↔ №${BYID[t.pair].no}</span> ${ST.hw[id]?'<span class="hw">🏠 ДЗ</span>':''} ${teacher?`<button id="bHwT" style="padding:1px 8px">${ST.hw[id]?'снять ДЗ':'назначить ДЗ'}</button>`:''}`;
+ $('#cond').innerHTML=`<div>${t.text}</div><div class="role" style="margin-top:6px">Учебная строка (50 символов):</div><code class="str">${S}</code>`;
+ // код
+ let parts=t.code.split(/\[\[(\d)\]\]/),h='';
+ parts.forEach((p,i)=>{if(i%2==0)h+=esc(p);else{const n=+p-1,len=Math.max(...t.blanks[n].acc.map(a=>a.length))+2;h+=`<input data-n="${n}" size="${len}" autocomplete="off" spellcheck="false">`;}});
+ $('#code').innerHTML=h;
+ const sv=ST.vals[id]||[];
+ $$('#code input').forEach(inp=>{inp.value=sv[inp.dataset.n]||'';inp.oninput=()=>{const a=ST.vals[id]||(ST.vals[id]=[]);a[inp.dataset.n]=inp.value;save();inp.classList.remove('ok','bad');};});
+ $('#idea').innerHTML=`<h3>🧠 Идея</h3>${t.idea}`;
+ $('#hints').innerHTML=`<h3>💡 Подсказки</h3><div class="role">Подсказки не открыты. Решение с подсказкой отмечается жёлтым.</div>`;
+ const s=stOf(id);
+ $('#res').innerHTML=s.s?doneMsg(t,s.s):'Заполните пропуски и нажмите «Проверить».';
+ $('#pv').disabled=t.no==1;$('#nx').disabled=t.no==ORDER.length;
+ if($('#bHwT'))$('#bHwT').onclick=()=>{ST.hw[id]=!ST.hw[id];save();open(id);drawList();};
+ drawList();
+}
+function doneMsg(t,s){const L={ok:'✅ Решено сам',fix:'🟦 Решено после ошибок',hint:'🟨 Решено с подсказкой'};return `${L[s]}. Ответ на учебной строке: <b>${t.ref(S)}</b>`;}
+function check(){
+ const t=BYID[cur],st=stOf(cur);let all=true;
+ $$('#code input').forEach(inp=>{const ok=t.blanks[+inp.dataset.n].acc.some(a=>norm(a)==norm(inp.value));inp.classList.toggle('ok',ok);inp.classList.toggle('bad',!ok);if(!ok)all=false;});
+ if(all){st.s=st.h?'hint':(st.e?'fix':'ok');$('#res').innerHTML=doneMsg(t,st.s);}
+ else{st.e++;$('#res').innerHTML='❌ Есть ошибки (красные поля). Попыток с ошибкой: '+st.e;}
+ save();drawList();
+}
+function hint(){
+ const t=BYID[cur];if(hintShown>=t.hints.length)return;
+ hintShown++;stOf(cur).h=1;save();
+ $('#hints').innerHTML=`<h3>💡 Подсказки</h3>`+t.hints.slice(0,hintShown).map((x,i)=>`<p><b>${i+1}.</b> ${esc(x)}</p>`).join('');
+}
+function showAns(){
+ const t=BYID[cur],st=stOf(cur);st.h=1;
+ $$('#code input').forEach(inp=>{inp.value=t.blanks[+inp.dataset.n].acc[0];(ST.vals[cur]||(ST.vals[cur]=[]))[inp.dataset.n]=inp.value;});
+ st.s='hint';save();check();
+}
+$('#bChk').onclick=check;$('#bHint').onclick=hint;$('#bShow').onclick=showAns;
+$('#bPair').onclick=()=>open(BYID[cur].pair);
+$('#pv').onclick=()=>open(ORDER[BYID[cur].no-2].id);
+$('#nx').onclick=()=>open(ORDER[BYID[cur].no].id);
+$('#bHw').onclick=()=>{onlyHw=!onlyHw;$('#bHw').style.borderColor=onlyHw?'#ffb84d':'';drawList();};
+$('#bT').onclick=()=>{
+ if(teacher){teacher=false;sessionStorage.removeItem('e24t');}
+ else{const p=prompt('PIN учителя:');if(p===PIN){teacher=true;sessionStorage.setItem('e24t','1');}else return;}
+ $('#bT').textContent=teacher?'🔓 Учитель (вкл)':'🔑 Учитель';$('#bLink').style.display=teacher?'':'none';open(cur);
+};
+$('#bLink').onclick=()=>{const ids=Object.keys(ST.hw).filter(k=>ST.hw[k]);const u=location.href.split('#')[0]+'#hw='+ids.join(',');
+ (navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>alert('Ссылка скопирована'),()=>prompt('Скопируйте ссылку:',u));};
+$('#bRes').onclick=()=>{if(confirm('Стереть весь прогресс и ДЗ?')){ST={st:{},hw:{},vals:{}};save();open(cur);}};
+$('#bRep').onclick=()=>{
+ const c={ok:0,fix:0,hint:0};let rows='';
+ ORDER.forEach(t=>{const s=stOf(t.id);if(s.s)c[s.s]++;rows+=`<tr><td>№${t.no}</td><td>${esc(t.title)}</td><td>${{ok:'✅',fix:'🟦',hint:'🟨','':'—'}[s.s]}</td><td>${ST.hw[t.id]?'🏠':''}</td></tr>`;});
+ $('#repBody').innerHTML=`<p>✅ сам: <b>${c.ok}</b> · 🟦 после ошибок: <b>${c.fix}</b> · 🟨 с подсказкой: <b>${c.hint}</b> · всего ${ORDER.length}</p><table style="width:100%;border-collapse:collapse">${rows}</table>`;
+ $('#mRep').classList.add('on');};
+$$('[data-close]').forEach(b=>b.onclick=()=>b.closest('.modal').classList.remove('on'));
+$$('.modal').forEach(m=>m.addEventListener('mousedown',e=>{if(e.target===m)m.classList.remove('on');}));
+document.addEventListener('keydown',e=>{if(e.key=='Escape')$$('.modal.on').forEach(m=>m.classList.remove('on'));});
+
+/* ---------- ПАМЯТКА ---------- */
+$('#memoBody').innerHTML=`
+<div class="leg"><span class="c1">синий — что считаем</span><span class="c2">зелёный — условие «хорошо»</span><span class="c3">красный — стоп / нарушение</span><span class="c4">жёлтый — обновление ответа</span><span class="c5">фиолетовый — границы</span></div>
+<div class="stk">
+<div class="sticker s1"><h3>✂️ replace + split</h3>
+<div class="row"><b>🎯 Когда:</b> запрещён символ или пара символов, нужна длина/кол-во «чистых» кусков.</div>
+<pre>s=s.replace(<span class="c3">'AB'</span>,<span class="c5">'A B'</span>)   <i># разрез МЕЖДУ буквами пары</i>
+dl=0
+for x in <span class="c1">s.split(' ')</span>:
+    dl=<span class="c4">max(dl,len(x))</span></pre>
+<div class="row"><b>🪜 Шаги:</b> 1) превратили запрет в разделитель; 2) split; 3) max по кускам.</div>
+<div class="row"><b>⚠️ Ловушка:</b> не удаляйте пару — потеряете символы. Для пары одинаковых букв (AA) один replace не справится — 'AAA' даст 'A AA'.</div>
+<div class="row">🔗 Задачи: ${['A1','A2','A3','A4'].map(i=>`<a href="#" data-go="${i}">№${BYID[i].no}</a>`).join(' · ')}</div></div>
+
+<div class="sticker s2"><h3>🔁 Два цикла + break</h3>
+<div class="row"><b>🎯 Когда:</b> условие «ломается» и остаётся сломанным при росте подстроки вправо (счётчик не убывает).</div>
+<pre><span class="c5">for i in range(l):</span>
+    <span class="c5">for j in range(i+1,l+1):</span>
+        ss=s[i:j]
+        if <span class="c3">ss.count('A')>3</span>:
+            <span class="c3">break</span>
+        <span class="c4">dl=max(dl,len(ss))</span></pre>
+<div class="row"><b>🪜 Шаги:</b> фиксируем начало i → растим конец j → нарушение = break → иначе обновляем ответ.</div>
+<div class="row"><b>⚠️ Ловушка:</b> в if пишем НАРУШЕНИЕ, а не условие. Для «ровно K» break по «&gt;K», а обновление — по «==K».</div>
+<div class="row">🔗 Задачи: ${['B1','B2','B3','B4'].map(i=>`<a href="#" data-go="${i}">№${BYID[i].no}</a>`).join(' · ')}</div></div>
+
+<div class="sticker s3"><h3>📊 Префиксные суммы</h3>
+<div class="row"><b>🎯 Когда:</b> нужна сумма/счётчик по каждой подстроке — получить за O(1).</div>
+<pre>p=[0]
+for c in s:
+    p.append(p[-1]+<span class="c1">(c=='A')</span>)    <i># что ДОБАВЛЯЕМ</i>
+...
+v=<span class="c2">p[j]-p[i]</span>               <i># отрезок s[i..j-1]</i>
+<i># вклад привязан к ПАРЕ (s[k-1],s[k]):</i>
+v=<span class="c2">p[j]-p[i+1]</span></pre>
+<div class="row"><b>🧠 p[k]</b> = итог по первым k символам s[0..k−1]. p[j] — всё до правой границы, p[i] — всё левее отрезка. Вычитаем <b>левый «хвост»</b> → остаётся отрезок.</div>
+<div class="row"><b>🧠 Почему i+1?</b> Вклад позиции i зависит от s[i−1], которого в отрезке нет — его надо убрать, поэтому вычитаем p[i+1].</div>
+<div class="row"><b>⚠️ Ловушка:</b> длина p равна n+1; баланс (A−B) не монотонен — break нельзя.</div>
+<div class="row">🔗 Задачи: ${['C1','C2','C3','C4','C5','C6'].map(i=>`<a href="#" data-go="${i}">№${BYID[i].no}</a>`).join(' · ')} · <a href="#" data-vis="1">🔬 визуализатор</a></div></div>
+</div>`;
+$('#bMemo').onclick=()=>$('#mMemo').classList.add('on');
+document.addEventListener('click',e=>{const a=e.target.closest('[data-go]');if(a){e.preventDefault();$('#mMemo').classList.remove('on');open(a.dataset.go);}
+ const v=e.target.closest('[data-vis]');if(v){e.preventDefault();$('#mMemo').classList.remove('on');openVis();}});
+
+/* ---------- ВИЗУАЛИЗАТОР ---------- */
+const RULES={
+ a:{name:'Количество A',off:0,mono:true,T:5,cond:'eq',expr:"(c=='A')",
+  f:(s,k)=>s[k]=='A'?1:0,why:(s,k)=>`s[${k}]='${s[k]}' ${s[k]=='A'?'равно':'не равно'} 'A' → вклад ${s[k]=='A'?1:0}`,sub:x=>cnt(x,'A')},
+ b:{name:'Баланс A−B',off:0,mono:false,T:0,cond:'eq',expr:"(c=='A')-(c=='B')",
+  f:(s,k)=>s[k]=='A'?1:s[k]=='B'?-1:0,why:(s,k)=>`s[${k}]='${s[k]}' → A:+1, B:−1, C:0 → вклад ${s[k]=='A'?1:s[k]=='B'?-1:0}`,sub:x=>cnt(x,'A')-cnt(x,'B')},
+ c:{name:'Число смен соседних букв',off:1,mono:true,T:3,cond:'le',expr:"(k>0 and s[k]!=s[k-1])",
+  f:(s,k)=>k>0&&s[k]!=s[k-1]?1:0,why:(s,k)=>k==0?'у s[0] нет левого соседа → вклад 0':`s[${k}]='${s[k]}' ${s[k]!=s[k-1]?'≠':'='} s[${k-1}]='${s[k-1]}' → вклад ${s[k]!=s[k-1]?1:0}`,sub:chg},
+ d:{name:'Пары AB',off:1,mono:true,T:2,cond:'eq',expr:"(k>0 and s[k-1:k+1]=='AB')",
+  f:(s,k)=>k>0&&s[k-1]+s[k]=='AB'?1:0,why:(s,k)=>k==0?'у s[0] нет левого соседа → вклад 0':`пара s[${k-1}]s[${k}]='${s[k-1]+s[k]}' ${s[k-1]+s[k]=='AB'?'=':'≠'} 'AB' → вклад ${s[k-1]+s[k]=='AB'?1:0}`,sub:x=>cnt(x,'AB')},
+ e:{name:'Вес A=1, B=2, C=3',off:0,mono:true,T:20,cond:'eq',expr:"'ABC'.index(c)+1",
+  f:(s,k)=>'ABC'.indexOf(s[k])+1,why:(s,k)=>`вес('${s[k]}') = ${'ABC'.indexOf(s[k])+1}`,sub:wsum}
+};
+const V={rule:'a',s:S,tab:0,step:0,i:3,j:20,T:5,ev:[],e:-1,timer:null,speed:150};
+const PP=()=>{const R=RULES[V.rule],p=[0];for(let k=0;k<V.s.length;k++)p.push(p[k]+R.f(V.s,k));return p;};
+function openVis(){stopT();$('#mVis').classList.add('on');drawVis();}
+$('#bVis').onclick=openVis;
+function stopT(){if(V.timer){clearInterval(V.timer);V.timer=null;}}
+function drawVis(){
+ const opts=Object.keys(RULES).map(k=>`<option value="${k}" ${V.rule==k?'selected':''}>${RULES[k].name}</option>`).join('');
+ $('#visBody').innerHTML=`<div class="vctl"><b>Что считаем:</b><select id="vR">${opts}</select>
+ <b>Строка:</b><input type="text" id="vS" size="52" value="${V.s}"><button id="vSet">Применить</button><button id="vTask">↧ строка из задач</button></div>
+ <div class="tabs">${['1️⃣ Строим p','2️⃣ Отрезок и формула','3️⃣ Поиск: два цикла + break'].map((x,i)=>`<button data-t="${i}" class="${V.tab==i?'on':''}">${x}</button>`).join('')}</div><div id="vT"></div>`;
+ $('#vR').onchange=e=>{V.rule=e.target.value;V.T=RULES[V.rule].T;V.step=0;V.e=-1;stopT();drawVis();};
+ $('#vSet').onclick=()=>{const x=$('#vS').value.toUpperCase().replace(/[^ABC]/g,'');if(x.length<3)return alert('Нужна строка из букв A, B, C (минимум 3)');V.s=x;V.step=0;V.e=-1;V.i=0;V.j=Math.min(5,x.length);stopT();drawVis();};
+ $('#vTask').onclick=()=>{V.s=S;V.step=0;V.e=-1;V.i=3;V.j=20;stopT();drawVis();};
+ $$('.tabs button').forEach(b=>b.onclick=()=>{V.tab=+b.dataset.t;stopT();drawVis();});
+ [drawBuild,drawSeg,drawSearch][V.tab]();
+}
+const cellCls=(k,i,j,off)=>k<i+off?'neg':(k<j?'pos':'gry');
+function drawBuild(){
+ const R=RULES[V.rule],s=V.s,n=s.length,p=PP();let k=V.step-1,e;
+ if(V.step==0)e=`<div class="fm">p[0] = 0</div>Пустой префикс — ни одного символа. Дальше на каждом шаге <b>p[k+1] = p[k] + вклад(s[k])</b>.`;
+ else e=`<div class="fm">p[${k+1}] = p[${k}] + вклад(s[${k}]) = ${p[k]} + (${R.f(s,k)}) = <b>${p[k+1]}</b></div>
+  <div><b>Откуда вклад:</b> ${esc(R.why(s,k))}</div><div class="role">В коде: <code>p.append(p[-1]+${esc(R.expr)})</code></div>`;
+ let cols='';for(let q=0;q<n;q++){const d=q<V.step;cols+=`<div class="cell ${d?'done':''} ${q==k?'cur':''}"><i>${q}</i><b>${s[q]}</b><u>${d?(R.f(s,q)>=0?'+':'')+R.f(s,q):''}</u><em>${d?p[q+1]:''}</em></div>`;}
+ $('#vT').innerHTML=`<div class="vctl"><button id="bb">◀</button><button id="bf" class="pri">Шаг ▶</button><button id="bp">▶ Авто</button><button id="be">⏭ До конца</button><button id="b0">⟲</button><span class="pill">p[0] = 0</span></div>
+ <div class="role">В каждой колонке: индекс k · символ s[k] · <span style="color:#ffe27a">вклад (+)</span> · <span style="color:#8fd0ff">p[k+1]</span></div>
+ <div class="cols">${cols}</div><div class="exp">${e}</div>
+ <div class="exp"><b>Что хранит p[k]:</b> итог правила «${R.name}» для первых k символов (s[0..k−1]). Длина p = n+1, потому что p[0] — «ничего не взяли».</div>`;
+ $('#bf').onclick=()=>{if(V.step<n)V.step++;drawBuild();};$('#bb').onclick=()=>{if(V.step>0)V.step--;drawBuild();};
+ $('#be').onclick=()=>{V.step=n;drawBuild();};$('#b0').onclick=()=>{V.step=0;stopT();drawBuild();};
+ $('#bp').onclick=()=>{stopT();V.timer=setInterval(()=>{if(V.step>=n){stopT();return;}V.step++;drawBuild();},250);};
+}
+function drawSeg(){
+ const R=RULES[V.rule],s=V.s,n=s.length,p=PP();
+ V.i=Math.max(0,Math.min(V.i,n-1));V.j=Math.max(V.i+1,Math.min(V.j,n));
+ const i=V.i,j=V.j,off=R.off,v=p[j]-p[i+off],sub=s.slice(i,j),chk=R.sub(sub);
+ let cols='';for(let q=0;q<n;q++)cols+=`<div class="cell ${cellCls(q,i,j,off)} ${(off&&q==i)?'skip':''}"><i>${q}</i><b>${s[q]}</b><em>${p[q+1]}</em></div>`;
+ const why=off==0?
+ `<b>p[j]=p[${j}]=${p[j]}</b> — итог по символам s[0..${j-1}] (всё до правой границы).<br><b>p[i]=p[${i}]=${p[i]}</b> — итог по s[0..${i-1}]: всё, что <u>левее</u> отрезка. Вычитаем этот «левый хвост» — остаётся ровно s[${i}..${j-1}].`:
+ `<b>p[j]=p[${j}]=${p[j]}</b> — итог по вкладам позиций 0..${j-1}.<br>Вклад позиции k зависит от пары (s[k−1], s[k]). В отрезке s[${i}..${j-1}] полностью лежат пары с правой буквой в позициях ${i+1}..${j-1}. Пара (s[${i-1<0?'—':i-1}], s[${i}]) вылезает за левую границу — её <b>нельзя</b> считать.<br>Поэтому вычитаем <b>p[i+1]=p[${i+1}]=${p[i+1]}</b>: в нём уже учтены вклады 0..${i}, включая вклад позиции ${i}. 🟨 — символ, чей вклад не берём.`;
+ $('#vT').innerHTML=`<div class="vctl">i = <input type="number" id="si" min="0" max="${n-1}" value="${i}" style="width:70px"> <input type="range" id="sir" min="0" max="${n-1}" value="${i}">
+  j = <input type="number" id="sj" min="${i+1}" max="${n}" value="${j}" style="width:70px"> <input type="range" id="sjr" min="${i+1}" max="${n}" value="${j}"></div>
+ <div class="role">Отрезок s[i..j−1] = «${sub}». <span style="color:#ef5b5b">🟥 вычитаем (левее)</span> · <span style="color:#2fbf71">🟩 остаётся</span> · 🟨 вклад не берём · серое — правее j. Нижнее число — p[k+1].</div>
+ <div class="cols">${cols}</div>
+ <div class="exp"><div class="fm">v = p[j] − p[${off?'i+1':'i'}] = ${p[j]} − ${p[i+off]} = <b>${v}</b></div><div>${why}</div></div>
+ <div class="exp"><b>Проверка «в лоб»:</b> считаем правило «${R.name}» прямо по подстроке «${sub}» → <b>${chk}</b> ${chk==v?'✅ совпало':'❌ не совпало'}</div>`;
+ const up=()=>{V.i=+$('#si').value;V.j=+$('#sj').value;drawSeg();};
+ $('#si').onchange=up;$('#sj').onchange=up;$('#sir').oninput=e=>{V.i=+e.target.value;drawSeg();};$('#sjr').oninput=e=>{V.j=+e.target.value;drawSeg();};
+}
+function buildEv(){
+ const R=RULES[V.rule],n=V.s.length,p=PP(),T=V.T,ev=[];let best=0;
+ for(let i=0;i<n;i++)for(let j=i+1;j<=n;j++){
+  const v=p[j]-p[i+R.off],brk=R.mono&&v>T,good=R.cond=='eq'?v==T:v<=T;
+  const imp=!brk&&good&&j-i>best;if(imp)best=j-i;
+  ev.push({i,j,v,brk,good:!brk&&good,imp,best});
+  if(brk)break_i:{ /* остальные j для этого i пропускаем */
+   break;}
+  }
+ return ev;
+}
+function genEv(){
+ const R=RULES[V.rule],n=V.s.length,p=PP(),T=V.T,ev=[];let best=0;
+ for(let i=0;i<n;i++){
+  for(let j=i+1;j<=n;j++){
+   const v=p[j]-p[i+R.off],brk=R.mono&&v>T,good=R.cond=='eq'?v==T:v<=T;
+   const imp=!brk&&good&&j-i>best;if(imp)best=j-i;
+   ev.push({i,j,v,brk,good:!brk&&good,imp,best});
+   if(brk)break;
+  }
+ }
+ return ev;
+}
+function drawSearch(){
+ const R=RULES[V.rule],s=V.s,n=s.length;
+ if(!V.ev.length||V.evKey!=V.rule+V.s+V.T){V.ev=genEv();V.evKey=V.rule+V.s+V.T;V.e=-1;}
+ const e=V.ev[V.e],total=n*(n+1)/2,done=V.e+1,best=e?e.best:0;
+ const pi=R.off?'p[j]-p[i+1]':'p[j]-p[i]',cmp=R.cond=='eq'?`v==${V.T}`:`v<=${V.T}`;
+ const L=[
+  ['for i in range(n):',e&&V.e>=0&&0],
+  ['    for j in range(i+1,n+1):',0],
+  [`        v=${pi}`,e?'hl':''],
+  R.mono?[`        if v>${V.T}: break`,e?(e.brk?'hr':''):'']:null,
+  [`        if ${cmp}: dl=max(dl,j-i)`,e?(e.imp?'hy':e.good?'hg':''):'']
+ ].filter(Boolean);
+ let cols='';
+ for(let q=0;q<n;q++){let c='gry';if(e)c=cellCls(q,e.i,e.j,R.off);cols+=`<div class="cell ${c} ${(e&&R.off&&q==e.i)?'skip':''}"><i>${q}</i><b>${s[q]}</b></div>`;}
+ let msg='Нажмите «Шаг» или «Авто».';
+ if(e)msg=e.brk?`🟥 <b>v=${e.v} &gt; ${V.T}</b> → break: для начала i=${e.i} дальше v только растёт, остальные j пропускаем.`:
+  e.imp?`🟨 <b>v=${e.v}</b>, условие выполнено, длина ${e.j-e.i} — <b>новый рекорд</b>!`:
+  e.good?`🟩 <b>v=${e.v}</b>, условие выполнено, но длина ${e.j-e.i} ≤ рекорда ${e.best}.`:
+  `⬜ <b>v=${e.v}</b>, условие не выполнено — идём дальше.`;
+ $('#vT').innerHTML=`<div class="vctl"><button id="s1" class="pri">Шаг ▶</button><button id="s2">▶ Авто / ⏸</button><button id="s3">⏭ Следующий рекорд</button><button id="s4">⟲</button>
+  Цель T = <input type="number" id="sT" value="${V.T}" style="width:70px"> Скорость <input type="range" id="sSp" min="20" max="600" value="${620-V.speed}"></div>
+  <div class="stat"><span class="pill">i = ${e?e.i:'—'}</span><span class="pill">j = ${e?e.j:'—'}</span><span class="pill">v = ${e?e.v:'—'}</span><span class="pill">рекорд dl = ${best}</span><span class="pill">проверок: ${done} / ${total} без break</span><span class="pill">сэкономил break: ${total-V.ev.length} (всего в этом поиске ${V.ev.length})</span></div>
+  <div class="cols">${cols}</div>
+  <div class="vcode">${L.map(l=>`<span class="ln ${l[1]||''}">${esc(l[0])}</span>`).join('')}</div>
+  <div class="exp">${msg}</div>`;
+ const go=()=>{if(V.e<V.ev.length-1)V.e++;else stopT();drawSearch();};
+ $('#s1').onclick=()=>{stopT();go();};
+ $('#s2').onclick=()=>{if(V.timer){stopT();return;}V.timer=setInterval(go,V.speed);};
+ $('#s3').onclick=()=>{stopT();let q=V.e+1;while(q<V.ev.length&&!V.ev[q].imp)q++;V.e=Math.min(q,V.ev.length-1);drawSearch();};
+ $('#s4').onclick=()=>{stopT();V.e=-1;drawSearch();};
+ $('#sT').onchange=e=>{V.T=+e.target.value;stopT();drawSearch();};
+ $('#sSp').oninput=e=>{V.speed=620-+e.target.value;if(V.timer){stopT();V.timer=setInterval(go,V.speed);}};
+}
+/* ---------- старт ---------- */
+$('#bT').textContent=teacher?'🔓 Учитель (вкл)':'🔑 Учитель';$('#bLink').style.display=teacher?'':'none';
+drawFlt();open(cur);
+</script>
+</body></html>

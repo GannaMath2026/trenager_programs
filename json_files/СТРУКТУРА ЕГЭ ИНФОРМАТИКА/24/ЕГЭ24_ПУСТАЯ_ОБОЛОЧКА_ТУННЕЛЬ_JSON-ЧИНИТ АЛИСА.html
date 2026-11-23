@@ -282,7 +282,501 @@ details.fnd summary span{color:var(--mut);font-size:13px}
 details.fnd p{margin:6px 0}
 details.fnd pre{background:var(--bg);border-radius:8px;padding:8px 10px;margin:4px 0;white-space:pre-wrap}
 </style></head><body><div id="app"></div>
-<script id="rxdata" type="application/json">{"blocks": [], "tasks": [], "examples": []}</script>
+<style id="addcss">
+.lv{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:800;font-size:12px;color:#fff;white-space:nowrap}
+.lv1{background:#16a36a}.lv2{background:#7aa800}.lv3{background:#e08a00}.lv4{background:#e5484d}.lv5{background:#7b5cff}
+.it[data-d="1"]{box-shadow:inset 0 -3px 0 #16a36a}.it[data-d="2"]{box-shadow:inset 0 -3px 0 #7aa800}.it[data-d="3"]{box-shadow:inset 0 -3px 0 #e08a00}.it[data-d="4"]{box-shadow:inset 0 -3px 0 #e5484d}.it[data-d="5"]{box-shadow:inset 0 -3px 0 #7b5cff}
+.tcard .lv{margin-left:6px}
+.stkw{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:14px;margin-top:12px}
+.stk{border:2.5px solid var(--c);border-radius:14px;background:var(--card);overflow:hidden;display:flex;flex-direction:column}
+.stk h3{margin:0;padding:9px 12px;background:var(--c);color:#fff;font-size:16px;display:flex;gap:8px;align-items:center}
+.stk h3 small{margin-left:auto;font-weight:600;opacity:.9;font-size:12px}
+.stk .bd{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.stk pre{margin:0;background:var(--code);color:var(--cink);border-radius:9px;padding:9px 11px;font:12.5px/1.6 "JetBrains Mono",Consolas,monospace;white-space:pre-wrap}
+.k{border-radius:4px;padding:0 3px}
+.k1{background:#4f6bff55;box-shadow:0 0 0 1px #4f6bff}.k2{background:#16a36a66;box-shadow:0 0 0 1px #16a36a}.k3{background:#e5484d66;box-shadow:0 0 0 1px #e5484d}.k4{background:#f0a40066;box-shadow:0 0 0 1px #f0a400}.k5{background:#7b5cff66;box-shadow:0 0 0 1px #7b5cff}
+.stk .wh{font-size:13.5px}.stk .tr{margin:0;padding-left:18px;font-size:13px}.stk .tr li{margin:2px 0}
+.stk .ids{display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--mut)}
+.stk .ids button{border:0;border-radius:8px;padding:3px 8px;font-weight:800;color:#fff;cursor:pointer}
+.leg{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 10px}.leg .k{padding:3px 10px;font-size:13px;font-weight:700}
+.pick td{padding:4px 8px;border-bottom:1px solid var(--line);font-size:13.5px}
+</style>
+<script id="rxdata" type="application/json">{"blocks": [["A","✂️ replace + split","Режем строку на куски по запрещённым местам и меряем куски"],["B","🔁 Один проход со счётчиком","Идём по строке один раз и держим счётчик текущей серии"],["C","🔍 Перебор подстрок + break","Начало i, конец j, функция usl() и выход break"],["D","📊 Префиксные суммы","Накопили массив p — любой срез проверяем одним вычитанием"],["E","🪟 Два указателя (окно)","Окно [l; r]: расширяем справа, сжимаем слева"],["F","📈 ДП слева и справа","Два массива: что слева от позиции и что справа, потом сшиваем"]], "tasks": [], "examples": {"A": [{"id": "A1", "title": "Самая длинная серия без буквы A", "idea": "Буква A — «стена». Разрезаем строку по A и берём самый длинный кусок.", "note": "split('A') даёт и пустые куски — их длина 0, на максимум не влияют.", "code": "s='ABCCDABEEEFAGGA'\nl=s.split('A')\nprint(max(len(c) for c in l))"}, {"id": "A2", "title": "Нет пары AB", "idea": "Запрещён кусок «AB». Вставляем пробел между A и B: 'AB' → 'A B', дальше split и максимум.", "note": "Пробел — служебный символ: в данных его нет, поэтому он безопасен как разделитель.", "code": "s='CABBCABABCCCABCAB'\ns=s.replace('AB','A B')\nl=s.split(' ')\nprint(max(len(c) for c in l))"}]}}</script>
+
+<script id="bank" type="text/plain">
+=== A1 | A | 1 | split | 5 | Самая длинная серия без буквы A
+real:
+Текстовый файл состоит из заглавных латинских букв. Определите максимальное количество идущих подряд символов, среди которых нет буквы A.
+idea:
+Буква A — «стена». Если разрезать строку по A, между стенами останутся куски без A. Самый длинный кусок — ответ.
+note:
+split('A') даёт и пустые куски (когда A стоят рядом или на краю строки). Их длина 0, на максимум они не влияют.
+code:
+s='ABCCDABEEEFAGGA'
+l=⟦s.split('A')⟧
+print(⟦max(len(c) for c in l)⟧)
+
+=== A2 | A | 2 | split | 5 | Нет пары AB
+real:
+Текстовый файл состоит из заглавных латинских букв A, B, C. Определите максимальное количество идущих подряд символов, среди которых нет пары AB (буква A, сразу за ней буква B).
+idea:
+Запрещён кусок «AB». Разрежем строку прямо внутри него — вставим пробел между A и B. Запрещённых пар не останется, а буквы не пропадут. Дальше режем по пробелу и берём самый длинный кусок.
+note:
+Вставляй разрез, а не стирай символы: 'AB' → 'A B'. Пробел — служебный символ: в данных его нет, поэтому он безопасен как разделитель.
+code:
+s='CABBCABABCCCABCAB'
+s=⟦s.replace('AB','A B')⟧
+l=s.split(⟦' '⟧)
+print(max(len(c) for c in l))
+
+=== 18285 | A | 3 | split | 4 | Арифметическое выражение: сколько чисел
+real:
+Текстовый файл состоит из десятичных цифр и знаков «+» и «*». Рассматриваются непрерывные последовательности символов, которые являются корректными арифметическими выражениями с целыми положительными числами. Никакие два знака не стоят рядом, в записи чисел нет ведущих нулей. Определите максимальное количество чисел, входящих в одну из таких последовательностей.
+idea:
+Для подсчёта чисел «+» и «*» одинаковы — заменим «*» на «+». Плохие места: два знака подряд и число, начинающееся с 0. Заменим их пробелами и разрежем по пробелам: каждый кусок — самое длинное корректное выражение. Чисел в куске на одно больше, чем знаков.
+note:
+replace не видит наложений, поэтому повторяем замену в цикле while, пока плохое сочетание остаётся. Если файл начинается с нуля, этот способ его не отрежет — проверь s[0] отдельно.
+code:
+s='4+15*7+0+3*22++8*9+10*3'
+s=s.replace('*','+')
+while ⟦'++'⟧ in s: s=s.replace(⟦'++'⟧,' ')
+while ⟦'+0'⟧ in s: s=s.replace(⟦'+0'⟧,' ')
+s=s.split()
+ss=[len(c.strip('+').split('+')) for c in s]
+print(max(ss))
+
+=== 7998 | A | 4 | split | 13 | Цепочка чисел с палиндромом
+real:
+Текстовый файл состоит из десятичных цифр и знаков равенства «=». Определите максимальную длину последовательности вида «число1=число2=число3=...=числоN», в которой нет двух знаков «=» подряд и есть хотя бы одно трёхзначное число-палиндром. В ответе укажите количество символов.
+idea:
+Два «=» подряд обрывают цепочку — режем строку по '=='. Каждый кусок — готовая цепочка. Внутри куска разбиваем по '=' на числа и ищем трёхзначный палиндром. Если он есть — длина куска кандидат на ответ (весь кусок, а не его часть, ведь больше — лучше).
+note:
+После split('==') у куска могут остаться '=' по краям (если было '==='), поэтому strip('='). Самый длинный кусок без палиндрома в ответ не годится — на это и ловушка в строке.
+code:
+s='12=343=5=6==99=1221=7=808==4=505=13=44==70=121==1234=567=89=1000=2345'
+dl=0
+for ch in s.⟦split('==')⟧:
+    ch=ch.⟦strip('=')⟧
+    if any(len(c)==3 and ⟦c==c[::-1]⟧ for c in ch.split('=')):
+        dl=max(dl,len(ch))
+print(dl)
+
+=== B1 | B | 1 | one | 6 | Самая длинная серия одинаковых
+real:
+Текстовый файл состоит из заглавных латинских букв. Определите максимальное количество идущих подряд одинаковых символов.
+idea:
+Идём слева направо. Если символ равен предыдущему — серия растёт (k+1), иначе начинается заново (k=1). После каждого шага запоминаем максимум.
+note:
+Начальное k=1: один символ — уже серия длины 1. Максимум обновляй на каждом шаге, иначе потеряешь последнюю серию.
+code:
+s='AABBBBCDDDAAAAAAB'
+k=1
+dl=1
+for i in range(1,len(s)):
+    if s[i]==⟦s[i-1]⟧: k=⟦k+1⟧
+    else: k=⟦1⟧
+    dl=max(dl,k)
+print(dl)
+
+=== B2 | B | 2 | one | 6 | Соседние символы различны
+real:
+Текстовый файл состоит из заглавных латинских букв. Определите максимальную длину подпоследовательности идущих подряд символов, в которой никакие два соседних символа не равны.
+idea:
+Тот же проход со счётчиком, но условие продолжения обратное: следующий символ ОТЛИЧАЕТСЯ от предыдущего — k растёт; равные соседи — серия обрывается, k=1.
+note:
+Сравнивается только пара «текущий — предыдущий»; весь отрезок целиком проверять не надо.
+code:
+s='ABABBACACCADADA'
+k=1
+dl=1
+for i in range(1,len(s)):
+    if s[i]⟦!=⟧s[i-1]: ⟦k+=1⟧
+    else: k=1
+    dl=max(dl,k)
+print(dl)
+
+=== B3 | B | 3 | one | 8 | Буквы и цифры строго чередуются
+real:
+Текстовый файл состоит из заглавных латинских букв и цифр. Определите максимальную длину подпоследовательности идущих подряд символов, в которой буквы и цифры строго чередуются (две цифры или две буквы рядом стоять не могут).
+idea:
+Проход со счётчиком. Нужно сравнивать не сами символы, а их ТИП: s[i].isdigit() — это True/False. Тип изменился относительно предыдущего — серия растёт.
+note:
+isdigit() возвращает True для цифры и False для буквы, а значит два значения можно сравнивать через != — типы разные.
+code:
+s='A1B2C33D4E5F6GG7H8'
+k=1
+dl=1
+for i in range(1,len(s)):
+    if s[i].isdigit() ⟦!=⟧ s[i-1].isdigit(): k+=1
+    else: ⟦k=1⟧
+    dl=max(dl,k)
+print(dl)
+
+=== 4409 | C | 1 | loops | 4 | Комбинации CB*BC
+real:
+Текстовый файл состоит из заглавных латинских букв. Определите, сколько раз встречается комбинация вида CB*BC, где на месте «*» стоит любая буква, кроме A, B и F. В ответе укажите количество комбинаций.
+idea:
+Длина комбинации фиксирована — 5 символов. Берём срез s[i:i+5] для каждого i и проверяем: начало CB, конец BC, а средняя буква не из запрещённых.
+note:
+Последний срез начинается на 4 символа раньше конца — поэтому range(len(s)-4).
+code:
+s='CBCBCCBDBCACBEBCCBFBCCBCBC'
+k=0
+for i in range(len(s)-4):
+    ss=s[i:i+⟦5⟧]
+    if ss[:2]==⟦'CB'⟧ and ss[3:]==⟦'BC'⟧ and ss[2] ⟦not in 'ABF'⟧:
+        k+=1
+print(k)
+
+=== C2 | C | 2 | loops | 8 | Не более двух букв A
+real:
+Текстовый файл состоит из заглавных латинских букв. Определите максимальную длину подстроки, в которой не более двух букв A.
+idea:
+Перебираем начало i и растим конец j. Пока букв A не больше двух — подстрока подходит, запоминаем длину. Как только стало больше — дальше будет только хуже: break.
+note:
+j=i+l+1 — начинаем сразу с длины на 1 больше найденной: короче или равные подстроки уже не улучшат ответ.
+code:
+s='BCAADBCACCBAAEBCA'
+def usl(s): return ⟦s.count('A')<=2⟧
+l=0
+for i in range(len(s)):
+    j=i+l+1
+    while j<=len(s):
+        ss=s[i:j]
+        if usl(ss):
+            l=⟦len(ss)⟧
+        else: ⟦break⟧
+        j+=1
+print(l)
+
+=== 17563 | C | 3 | loops | 9 | Правильное выражение из -, * и цифр
+real:
+Текстовый файл состоит из знаков «–», «*» и цифр 0, 7, 8, 9. Определите максимальное количество идущих подряд символов, образующих математически правильное выражение: два знака не стоят рядом, числа записаны без незначащих нулей (число не начинается с 0), выражение начинается и заканчивается числом.
+idea:
+Запреты вида «не содержит»: два знака рядом, знак и сразу 0, начало с знака или с 0. Такое плохое сочетание не исчезает при удлинении — можно break. А вот «заканчивается цифрой» может снова стать верным при удлинении, поэтому проверяем его отдельно внутри if.
+note:
+Окончание знаком НЕ запрещает расти дальше: 'ss[-1] not in' стоит перед l=len(ss), а не внутри usl, иначе break сработает слишком рано.
+code:
+s='9*80-7--9*0-78*90-8*9'
+def usl(s): return s[0] not in '*-0' and all(c not in s for c in ⟦['**','--','*-','-*','-0','*0']⟧)
+l=1
+for i in range(len(s)):
+    j=i+l+1
+    while j<=len(s):
+        ss=s[i:j]
+        if usl(ss):
+            if ⟦ss[-1] not in '*-'⟧: l=len(ss)
+        else: break
+        j+=1
+print(l)
+
+=== 18619 | C | 4 | loops | 11 | B и выражение после неё
+real:
+Текстовый файл состоит из цифр от 1 до 6, знаков «–», «*» и заглавных букв A, B, C, D. Определите максимальное количество символов в непрерывной последовательности, состоящей из буквы B и следующего сразу за ней корректного арифметического выражения с неотрицательными числами (два знака подряд не стоят). Буква B входит в длину.
+idea:
+Подстрока обязана начинаться с B, сразу после B — не знак, дальше нет букв и нет двух знаков рядом. Все эти запреты — «не содержит», при удлинении не исчезают, значит break законен. Заканчиваться подстрока должна цифрой — это проверяем внутри if.
+note:
+l начинаем с 1, потому что в usl есть s[1]: у подстроки должно быть минимум 2 символа. Буква B допустима только на первом месте, поэтому её тоже ищем в s[1:].
+code:
+s='AB23*5-4CB6**2B-3*1B4-2*35-6*1DB5*4-A'
+def usl(s): return s[0]=='B' and s[1] ⟦not in '*-'⟧ and all(c not in s[1:] for c in ⟦['A','B','C','D','--','**','*-','-*']⟧)
+l=1
+for i in range(len(s)):
+    j=i+l+1
+    while j<=len(s):
+        ss=s[i:j]
+        if usl(ss):
+            if ss[-1] not in '*-': l=len(ss)
+        else: break
+        j+=1
+print(l)
+
+=== D1 | D | 2 | prefix | 9 | Ровно две буквы Z
+real:
+Текстовый файл состоит из заглавных латинских букв. Определите максимальную длину подстроки, содержащей ровно две буквы Z.
+idea:
+Заведём массив p: p[i] — сколько букв Z среди первых i символов. Тогда в подстроке s[i:j] их p[j]-p[i] — одно вычитание вместо подсчёта по срезу. Больше K — break, ровно K — запоминаем длину.
+note:
+Массив p на один элемент длиннее строки: p[0]=0 — «до начала ничего нет». Срезу s[i:j] соответствует p[j]-p[i].
+code:
+s='XZXXZXXXZZXXZXZXXXX'
+K=2
+p=[0]*(len(s)+1)
+for i in range(len(s)):
+    p[i+1]=p[i]+⟦(s[i]=='Z')⟧
+l=0
+for i in range(len(s)):
+    j=i+l+1
+    while j<=len(s):
+        if p[j]-⟦p[i]⟧>K: ⟦break⟧
+        if p[j]-p[i]==K: l=⟦j-i⟧
+        j+=1
+print(l)
+
+=== D2 | D | 3 | prefix | 14 | Ровно 2 смены символа
+real:
+Текстовый файл состоит из заглавных латинских букв. Определите максимальную длину подстроки, в которой соседние символы различаются ровно в двух местах (то есть подстрока состоит ровно из трёх серий одинаковых букв).
+idea:
+В pr[k] накапливаем число смен соседних символов от начала строки до позиции k. Смен внутри s[i:j] будет pr[j-1]-pr[i]: смена на самой позиции i относится к паре (i-1, i) и в подстроку не входит.
+note:
+В этом массиве нет лишнего нулевого элемента, поэтому правая граница j-1, а не j. Открой визуализатор префиксов 🔬 и выбери правило «число смен символа» — увидишь, откуда берётся сдвиг на единицу.
+code:
+s='AAABBBBBCCDDDDDDDAAA'
+K=2
+pr=[0]*len(s)
+for k in range(1,len(s)):
+    pr[k]=pr[k-1]+⟦(s[k]!=s[k-1])⟧
+l=0
+for i in range(len(s)):
+    j=i+l+1
+    while j<=len(s):
+        if pr[j-1]-pr[i]>K: break
+        if pr[j-1]-⟦pr[i]⟧==K: l=⟦j-i⟧
+        j+=1
+print(l)
+
+=== D3 | D | 4 | prefix | 12 | Букв A и B поровну
+real:
+Текстовый файл состоит только из букв A и B. Определите максимальную длину подстроки, в которой букв A и B поровну.
+idea:
+Считаем баланс b: A даёт +1, B даёт −1. Если баланс в двух позициях одинаковый — между ними букв A и B поровну. Чем раньше мы впервые увидели это значение, тем длиннее подстрока, поэтому запоминаем только ПЕРВОЕ появление каждого баланса.
+note:
+Слово first={0:0} — стартовый баланс 0 до начала строки. Позиции префиксов нумеруем с 1 (i+1), как в массиве p.
+code:
+s='AAABBABBBBAAB'
+b=0
+first={0:0}
+dl=0
+for i in range(len(s)):
+    if s[i]=='A': b+=⟦1⟧
+    else: b-=1
+    if b in first: dl=max(dl,⟦i+1-first[b]⟧)
+    else: first[b]=⟦i+1⟧
+print(dl)
+
+=== E1 | E | 2 | two | 6 | Сумма цифр не больше K
+real:
+Текстовый файл состоит из десятичных цифр. Определите максимальную длину подстроки, сумма цифр которой не превышает 6.
+idea:
+Два указателя: l и r. Двигаем r вправо и добавляем цифру в сумму. Если сумма стала больше K — двигаем l вправо и вычитаем цифры, пока не станет не больше K. Длина окна r-l+1 — кандидат на ответ.
+note:
+Этот способ работает, потому что цифры неотрицательны: при сжатии окна слева сумма не растёт.
+code:
+s='1203004120105'
+K=6
+l=0
+sm=0
+dl=0
+for r in range(len(s)):
+    sm+=⟦int(s[r])⟧
+    while ⟦sm>K⟧:
+        sm-=int(s[l])
+        l+=1
+    dl=max(dl,⟦r-l+1⟧)
+print(dl)
+
+=== E2 | E | 3 | two | 7 | Не более двух различных символов
+real:
+Текстовый файл состоит из заглавных латинских букв. Определите максимальную длину подстроки, содержащей не более двух различных символов.
+idea:
+В окне ведём словарь d: буква → сколько раз она в окне. Различных букв — len(d). Если стало больше двух — сжимаем слева: уменьшаем счётчик буквы, а когда он стал 0 — удаляем ключ.
+note:
+Ключ со счётчиком 0 обязательно удаляем (del), иначе len(d) будет считать буквы, которых в окне уже нет.
+code:
+s='AABBABCCBCBCDDCDC'
+d={}
+l=0
+dl=0
+for r in range(len(s)):
+    d[s[r]]=d.get(s[r],0)+1
+    while ⟦len(d)>2⟧:
+        d[s[l]]-=1
+        if d[s[l]]==0: ⟦del d[s[l]]⟧
+        l+=1
+    dl=max(dl,r-l+1)
+print(dl)
+
+=== E3 | E | 4 | two | 8 | Каждая буква не более двух раз
+real:
+Текстовый файл состоит из заглавных латинских букв. Определите максимальную длину подстроки, в которой каждая буква встречается не более двух раз.
+idea:
+Снова словарь счётчиков. Портить окно может только что добавленная буква — если её стало 3, сжимаем слева, пока счётчик этой буквы снова не станет 2. Остальные буквы и так были в норме.
+note:
+Условие в while проверяем только для s[r]. Сжимаем окно слева: каждый раз уменьшаем счётчик буквы s[l] и сдвигаем l.
+code:
+s='ABABCACCBBDADD'
+d={}
+l=0
+dl=0
+for r in range(len(s)):
+    d[s[r]]=d.get(s[r],0)+1
+    while ⟦d[s[r]]>2⟧:
+        d[s[l]]-=1
+        l+=1
+    dl=max(dl,r-l+1)
+print(dl)
+
+=== F1 | F | 3 | dp | 7 | Сначала A, потом B
+real:
+Текстовый файл состоит из букв A и B. Определите максимальную длину подстроки вида AA…ABB…B: сначала одна или несколько букв A, затем одна или несколько букв B.
+idea:
+Для каждой позиции считаем два числа. a[i] — сколько букв A подряд заканчивается в i. b[i] — сколько букв B подряд начинается в i. Подстрока «A…AB…B» делится на стыке между i и i+1: ответ — максимум a[i]+b[i+1], где обе части непустые.
+note:
+b считаем справа налево: значение b[i] берётся из уже готового b[i+1]. Если стык не «A→B», одно из слагаемых равно 0 и такой стык не рассматриваем.
+code:
+s='AABAAABBBBABBAAB'
+n=len(s)
+a=[0]*n
+b=[0]*n
+for i in range(n):
+    if s[i]=='A': a[i]=⟦a[i-1]+1 if i>0 else 1⟧
+for i in range(n-1,-1,-1):
+    if s[i]=='B': b[i]=⟦b[i+1]+1 if i<n-1 else 1⟧
+dl=0
+for i in range(n-1):
+    if a[i]>0 and b[i+1]>0: dl=max(dl,⟦a[i]+b[i+1]⟧)
+print(dl)
+
+=== 14704 | F | 4 | dp | 7 | Сначала по алфавиту, потом в обратном порядке
+real:
+В файле содержится строка из заглавных латинских букв. Определите максимальную длину подстроки, которая состоит из двух последовательных частей: в первой символы расположены в алфавитном порядке (каждый следующий не меньше предыдущего), во второй — в обратном алфавитном порядке (каждый следующий не больше предыдущего). Части могут быть разной длины. Например, для QTUHHMSMJFSMECQ ответ 7: HHMS + MJF.
+idea:
+lef[i] — длина неубывающей серии, которая ЗАКАНЧИВАЕТСЯ в i. rig[i] — длина невозрастающей серии, которая НАЧИНАЕТСЯ в i. Стык между i и i+1 даёт подстроку длиной lef[i]+rig[i+1]; берём максимум по всем стыкам.
+note:
+rig считаем справа налево: range(n-2,-1,-1). На стыке символы можно не сравнивать: части независимы.
+code:
+s='QTUHHMSMJFSMECQ'
+n=len(s)
+lef=[1]*n
+rig=[1]*n
+for i in range(1,n):
+    if s[i]>=s[i-1]: lef[i]=⟦lef[i-1]+1⟧
+for i in range(n-2,-1,-1):
+    if s[i]>=s[i+1]: rig[i]=⟦rig[i+1]+1⟧
+print(max(⟦lef[i]+rig[i+1]⟧ for i in range(n-1)))
+</script>
+<script id="tun2" type="text/x-tun"><!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Визуализатор префиксных сумм</title><style>
+:root{--bg:#0e1322;--card:#171e33;--line:#2a3354;--ink:#e8ecfa;--mut:#8b96ba}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,'Segoe UI',sans-serif}
+header{display:flex;gap:10px;align-items:center;padding:10px 16px;background:#18202f;flex-wrap:wrap}header b{font-size:16px}.sp{flex:1}
+button{border:0;border-radius:8px;padding:7px 12px;background:#3b6cf6;color:#fff;cursor:pointer;font:inherit;font-weight:700}
+button.g{background:#2b364d}button.on{background:#ffc94a;color:#201600}
+.ctl{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;padding:10px 16px;background:#131a2e;border-bottom:1px solid var(--line)}
+.ctl label{display:flex;flex-direction:column;font-size:11px;color:var(--mut);gap:3px}
+input,select{background:#0b0f1d;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 8px;font:14px Consolas,monospace}
+.pre{display:flex;gap:5px;flex-wrap:wrap}.pre button{background:#232c4a;padding:6px 9px;font-size:12px}
+nav{display:flex;gap:6px;padding:12px 16px 0}nav button{background:#232c4a;border-radius:10px 10px 0 0;padding:9px 16px}nav button.on{background:#3b6cf6}
+main{padding:0 16px 16px}.card{background:var(--card);border-radius:12px;padding:12px;margin-top:12px}
+nav+main .card:first-child{border-radius:0 12px 12px 12px;margin-top:0}
+#stage{overflow-x:auto}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row input[type=range]{flex:1;min-width:160px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:900px){.grid{grid-template-columns:1fr}}.grid .card{margin-top:12px}
+h3{margin:0 0 6px;font-size:16px}code{font:13.5px Consolas,monospace;background:#0b0f1d;padding:1px 6px;border-radius:5px}
+.big{font-size:16px}.mut{color:var(--mut)}.bad{color:#ff6b7a}.good{color:#2fd08a}.warn{color:#ffc94a}
+svg text{font-family:Consolas,monospace}.ch{font-size:19px;font-weight:700}.ix{font-size:11px;fill:#6f7ba0}.cv{font-size:13px;font-weight:700}.pv{font-size:14px;font-weight:700;fill:#fff}.lab{font-size:11px;fill:#6f7ba0}.arc{font-size:14px;font-weight:700}
+.pc div{padding:1px 8px;border-left:4px solid transparent;white-space:pre;font:13px/1.55 Consolas,monospace;border-radius:3px}
+.pc div.k1{border-color:#4f6bff}.pc div.k3{border-color:#e5484d}.pc div.k4{border-color:#f0a400}.pc div.k5{border-color:#7b5cff}.pc div.hl{background:#34406d}
+.bar{height:10px;border-radius:5px;background:#232c4a;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#2fd08a,#3b6cf6)}
+.imp{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.imp button{background:#1f5c44;padding:4px 9px;font-size:12px}
+</style></head><body>
+<header><b>🔬 Визуализатор префиксных сумм</b><span class="sp"></span><button id="bTask" class="g" title="Взять строку s из открытой задачи">↧ строка из задачи</button></header>
+<section class="ctl"><label>Строка s<input id="inS" style="width:min(520px,80vw)"></label>
+<label>Что накапливаем<select id="selR"><option value="cnt">количество символа X</option><option value="sum">сумма цифр</option><option value="chg">число смен символа</option><option value="bal">баланс X − Y</option></select></label>
+<label id="lX">X<input id="inX" maxlength="1" style="width:46px"></label><label id="lY">Y<input id="inY" maxlength="1" style="width:46px"></label>
+<label id="lK">K<input id="inK" type="number" style="width:64px"></label>
+<label id="lM">условие<select id="selM"><option value="eq">ровно K</option><option value="le">не более K</option></select></label>
+<label>Примеры<span id="pre" class="pre"></span></label></section>
+<nav><button data-t="1">① Строим p</button><button data-t="2">② Отрезок: p[j] − p[i]</button><button data-t="3">③ Поиск: два цикла + break</button></nav>
+<main><div class="card" id="stage"></div><div class="card" id="ctrl"></div><div class="grid"><div class="card" id="info"></div><div class="card" id="side"></div></div></main>
+<script>
+const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let S='',rule='chg',X='A',Y='B',K=2,mode='eq',tab=1,st=0,A=null,ev=[],ci=null,cj=null,timer=null,speed=550,capped=false;
+const PRE=[['Смены, ровно 2',{S:'AAABBBBBCCDDDDDDDAAA',rule:'chg',K:2,mode:'eq'}],['Букв Z ровно 2',{S:'XZXXZXXXZZXXZXZXXXX',rule:'cnt',X:'Z',K:2,mode:'eq'}],['Сумма цифр ≤ 6',{S:'1203004120105',rule:'sum',K:6,mode:'le'}],['Баланс A и B',{S:'AAABBABBBBAAB',rule:'bal',X:'A',Y:'B'}]];
+const lo=i=>rule==='chg'?i+1:i,mono=()=>rule!=='bal';
+function contrib(k){if(rule==='cnt')return S[k]===X?1:0;if(rule==='sum')return /\d/.test(S[k])?+S[k]:0;if(rule==='chg')return k>0&&S[k]!==S[k-1]?1:0;return S[k]===X?1:S[k]===Y?-1:0;}
+function build(){const n=S.length,c=[],p=[0];for(let k=0;k<n;k++){c.push(contrib(k));p.push(p[k]+c[k]);}A={n,c,p};}
+const val=(i,j)=>j<=lo(i)?0:A.p[j]-A.p[lo(i)];
+function direct(i,j){let v=0;for(let k=i;k<j;k++){if(rule==='chg'){if(k>i&&S[k]!==S[k-1])v++;}else v+=contrib(k);}return v;}
+function sim(){ev=[];capped=false;let l=0,best=null,checks=0;const n=A.n,T=rule==='bal'?0:K;
+ for(let i=0;i<n;i++){if(ev.length>4000){capped=true;break;}let j=i+l+1;ev.push({t:'start',i,j:Math.min(j,n),l,best,checks});
+  while(j<=n){if(ev.length>4000){capped=true;break;}const v=val(i,j);checks++;
+   if(mono()&&v>T){ev.push({t:'break',i,j,v,l,best,checks});break;}
+   const good=rule==='bal'?v===0:(mode==='le'?v<=T:v===T);
+   if(good){l=j-i;best=[i,j];ev.push({t:'best',i,j,v,l,best,checks});}else ev.push({t:'try',i,j,v,l,best,checks});
+   j++;}}
+ ev.push({t:'end',l,best,checks});}
+function why(k){const ch=S[k];
+ if(rule==='cnt')return `Символ <code>s[${k}] = '${esc(ch)}'</code> ${ch===X?`равен «${esc(X)}» → вклад <b class="good">+1</b>`:`не равен «${esc(X)}» → вклад <b>0</b>`}.`;
+ if(rule==='sum')return `Символ <code>s[${k}] = '${esc(ch)}'</code> ${/\d/.test(ch)?`— цифра, вклад <b class="good">+${ch}</b>`:'— не цифра, вклад <b>0</b>'}.`;
+ if(rule==='chg')return k===0?'У первого символа нет левого соседа → вклад <b>0</b>.':`Сравниваем <code>s[${k}] = '${esc(ch)}'</code> с левым соседом <code>'${esc(S[k-1])}'</code>: ${ch!==S[k-1]?'разные → смена, вклад <b class="good">+1</b>':'одинаковые → вклад <b>0</b>'}.`;
+ return `Символ <code>s[${k}] = '${esc(ch)}'</code>: ${ch===X?'это X → <b class="good">+1</b>':ch===Y?'это Y → <b class="bad">−1</b>':'ни X, ни Y → <b>0</b>'}.`;}
+function stageSvg(o){const n=A.n,W=40,L=70,{p,c}=A,up=o.up==null?n:o.up,wd=L+n*W+30;
+ let h=`<svg width="${wd}" height="250" viewBox="0 0 ${wd} 250"><text x="4" y="50" class="lab">вклад c[k]</text><text x="4" y="86" class="lab">символ s[k]</text><text x="4" y="116" class="lab">номер k</text><text x="4" y="158" class="lab">префикс p[b]</text><text x="4" y="182" class="lab">граница b</text>`;
+ if(o.seg&&o.seg[1]>o.seg[0]){const [a,b]=o.seg;h+=`<rect x="${L+a*W}" y="56" width="${(b-a)*W}" height="116" rx="9" fill="${o.col}" opacity=".16"/><rect x="${L+a*W}" y="56" width="${(b-a)*W}" height="116" rx="9" fill="none" stroke="${o.col}" stroke-width="2"/>`;}
+ for(let k=0;k<n;k++){const x=L+k*W,inS=o.seg&&k>=o.seg[0]&&k<o.seg[1],done=k<up,cur=o.cur===k;
+  h+=`<rect x="${x+2}" y="62" width="${W-4}" height="38" rx="7" fill="${cur?'#ffc94a':inS?o.col:'#232c4a'}" opacity="${done?1:.35}"/><text x="${x+W/2}" y="88" text-anchor="middle" class="ch" fill="${cur?'#201600':'#fff'}">${esc(S[k])}</text><text x="${x+W/2}" y="116" text-anchor="middle" class="ix">${k}</text>`;
+  if(done)h+=`<text x="${x+W/2}" y="50" text-anchor="middle" class="cv" fill="${c[k]>0?'#2fd08a':c[k]<0?'#ff6b7a':'#55608a'}">${c[k]>0?'+'+c[k]:c[k]<0?c[k]:'·'}</text>`;}
+ for(let b=0;b<=n;b++){if(b>up)continue;const x=L+b*W;let col='#4a557d',fill='#1a2240';
+  if(o.pi!=null&&b===o.pi){col='#ffc94a';fill='#4a3a10';}if(o.pj!=null&&b===o.pj){col='#ff6b7a';fill='#4a1a22';}if(o.up!=null&&b===up){col='#5b7cff';fill='#1c2a66';}
+  h+=`<line x1="${x}" y1="56" x2="${x}" y2="138" stroke="${col}" stroke-width="1.5" stroke-dasharray="3 3"/><rect x="${x-17}" y="140" width="34" height="26" rx="8" fill="${fill}" stroke="${col}" stroke-width="2"/><text x="${x}" y="158" text-anchor="middle" class="pv">${p[b]}</text><text x="${x}" y="182" text-anchor="middle" class="ix">${b}</text>`;
+  if(o.hit)h+=`<rect data-b="${b}" x="${x-W/2}" y="56" width="${W}" height="130" fill="transparent" style="cursor:pointer"/>`;}
+ if(o.pi!=null&&o.pj!=null&&o.pj>o.pi&&o.pj<=up){const x1=L+o.pi*W,x2=L+o.pj*W;h+=`<path d="M${x1} 168 Q${(x1+x2)/2} 236 ${x2} 168" fill="none" stroke="${o.col}" stroke-width="2.5"/><text x="${(x1+x2)/2}" y="232" text-anchor="middle" class="arc" fill="${o.col}">${o.arc||''}</text>`;}
+ if(o.best){const [a,b]=o.best;h+=`<rect x="${L+a*W+2}" y="4" width="${(b-a)*W-4}" height="10" rx="5" fill="#2fd08a"/><text x="${L+a*W}" y="28" class="lab" fill="#2fd08a">лучший на сейчас: s[${a}:${b}], длина ${b-a}</text>`;}
+ return h+'</svg>';}
+const maxStep=()=>tab===1?A.n:tab===3?ev.length-1:0;
+function ctrlHTML(){if(tab===2)return `<div class="row"><span>Границы среза:</span><label>i <input id="iI" type="number" min="0" max="${A.n}" style="width:70px" value="${ci==null?'':ci}"></label><label>j <input id="iJ" type="number" min="0" max="${A.n}" style="width:70px" value="${cj==null?'':cj}"></label><button class="g" data-a="rnd">🎲 случайный отрезок</button><button class="g" data-a="clr">сбросить</button></div>`;
+ return `<div class="row"><button class="g" data-a="first">⏮</button><button class="g" data-a="prev">◀</button><button data-a="next">▶</button><button class="g" data-a="last">⏭</button><button data-a="play" class="${timer?'on':''}">${timer?'⏸ Пауза':'⏯ Авто'}</button>${tab===3?'<button class="g" data-a="nb">⏩ к улучшению</button>':''}<input id="sl" type="range" min="0" max="${maxStep()}" value="${st}"><span id="cnt" class="mut"></span><select id="spd">${[['медленно',1100],['средне',550],['быстро',220],['турбо',60]].map(x=>`<option value="${x[1]}" ${x[1]===speed?'selected':''}>${x[0]}</option>`).join('')}</select></div>${capped&&tab===3?'<p class="warn" style="margin:6px 0 0">Строка длинная: показаны первые 4000 шагов.</p>':''}`;}
+function evInfo(e){const n=A.n,cmp=rule==='bal'?'= 0':mode==='eq'?'= K':'≤ K';
+ if(e.t==='end')return `<h3>🏁 Готово</h3><p class="big">l = <b class="good">${e.l}</b></p>`+(e.best?`<p>Лучшая подстрока: <code>s[${e.best[0]}:${e.best[1]}] = ${esc(S.slice(e.best[0],e.best[1]))}</code></p>`:'<p>Подходящих подстрок нет.</p>')+`<p class="mut">Значение проверено ${e.checks} раз. Всех подстрок ${n*(n+1)/2}: break и старт с длины l+1 позволили не смотреть большую часть из них.</p>`;
+ if(e.t==='start')return `<h3>i = ${e.i} — новое начало</h3><p>Лучшая длина сейчас <b>l = ${e.l}</b>. Подстроки такой длины и короче не улучшат ответ, поэтому конец ставим сразу на <code>j = i + l + 1 = ${e.i+e.l+1}</code>${e.i+e.l+1>n?` — это за концом строки (len(s)=${n}), цикл while не запустится`:''}.</p>`;
+ const lw=lo(e.i),f=`<p class="big"><code>v = p[${e.j}] − p[${lw}] = ${A.p[e.j]} − ${A.p[lw]} = <b>${e.v}</b></code></p><p>Подстрока <code>s[${e.i}:${e.j}] = ${esc(S.slice(e.i,e.j))}</code>, длина ${e.j-e.i}.</p>`;
+ if(e.t==='break')return `<h3 class="bad">🟥 ПЛОХО: v = ${e.v} > K = ${K}</h3>${f}<p>При удлинении значение v только растёт (вклады не отрицательны) — значит все следующие j тоже плохие. <b>break</b>: переходим к следующему i.</p>`;
+ if(e.t==='best')return `<h3 class="good">🟩 ХОРОШО: v ${cmp}</h3>${f}<p>Подходит и длиннее прежней → <b>l = ${e.l}</b>. Подстрока подсвечена зелёной полоской сверху.</p>`;
+ return `<h3>Проверяем j = ${e.j}</h3>${f}<p>${rule==='bal'?'Баланс не равен 0 — не подходит, но растить можно: следующее значение может вернуть баланс в 0.':'v меньше K — пока не подходит, но растить можно: <code>j += 1</code>.'}</p>`;}
+function pcode(){const pv=rule==='chg'?'p[j] - p[i+1]':'p[j] - p[i]',cond=rule==='bal'?'v == 0':mode==='eq'?'v == K':'v <= K';
+ return [['for i in range(len(s)):',''],['    j = i + l + 1','k5'],['    while j <= len(s):',''],['        v = '+pv,'k1'],[mono()?'        if v > K: break':'        # break нельзя: баланс не монотонен',mono()?'k3':''],['        if '+cond+': l = j - i','k4'],['        j += 1','k5']];}
+function render(skip){if(!A)return;const n=A.n,{p}=A;let stage='',info='',side='';
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',+b.dataset.t===tab));
+ $('lK').style.display=(tab===3&&rule!=='bal')?'':'none';$('lM').style.display=(tab===3&&rule!=='bal')?'':'none';$('lX').style.display=(rule==='cnt'||rule==='bal')?'':'none';$('lY').style.display=rule==='bal'?'':'none';
+ if(tab===1){const k=st;stage=stageSvg({up:k,cur:k-1,col:'#5b7cff'});
+  info=k===0?`<h3>Шаг 0 · пустой префикс</h3><p class="big"><code>p[0] = 0</code></p><p>До начала строки нет ни одного символа, поэтому сумма равна нулю. Нажми ▶ — будем добавлять по одному символу.</p>`:`<h3>Шаг ${k} · считаем p[${k}]</h3><p>${why(k-1)}</p><p class="big"><code>p[${k}] = p[${k-1}] + c[${k-1}] = ${p[k-1]} ${A.c[k-1]<0?'−':'+'} ${Math.abs(A.c[k-1])} = <b>${p[k]}</b></code></p><p class="mut">Каждое новое значение — старое плюс вклад одного символа. Вся таблица строится за один проход.</p>`;
+  side=`<h3>Код</h3><div class="pc"><div class="k1">p = [0] * (len(s) + 1)</div><div>for i in range(len(s)):</div><div class="k4">    p[i+1] = p[i] + c(i)</div></div><p class="mut">Дальше любой срез s[i:j] считается так: <code>${rule==='chg'?'p[j] − p[i+1]':'p[j] − p[i]'}</code> — одно вычитание вместо цикла по срезу.</p>${rule==='chg'?'<p class="mut">Для смен вклад символа k — «отличается ли он от соседа слева». Смена на самом первом символе среза происходит ВНЕ среза, поэтому левая граница сдвигается на 1.</p>':''}`;}
+ else if(tab===2){const hasSeg=ci!=null&&cj!=null;stage=stageSvg({seg:hasSeg?[ci,cj]:null,col:'#5b7cff',pi:ci==null?null:lo(ci),pj:cj,arc:hasSeg?`${p[cj]} − ${p[lo(ci)]} = ${val(ci,cj)}`:'',hit:true});
+  if(ci==null)info=`<h3>Выбери отрезок</h3><p>Нажми на две «стойки» с числами p[b] (под буквами). Левая — начало среза i, правая — конец j (символ с номером j в срез НЕ входит).</p>`;
+  else if(cj==null)info=`<h3>Начало выбрано: i = ${ci}</h3><p>Нажми вторую стойку справа.</p>`;
+  else{const i=ci,j=cj,l=lo(i),v=val(i,j),d=direct(i,j);info=`<h3>s[${i}:${j}] = <code>${esc(S.slice(i,j))}</code> · длина ${j-i}</h3><p class="big"><code>p[${j}] − p[${l}] = ${p[j]} − ${p[l]} = <b>${v}</b></code></p>${rule==='chg'?`<p class="mut">Для смен левая граница сдвинута на 1: смена между s[${i-1}] и s[${i}] происходит вне среза.</p>`:''}<p>Проверка «в лоб» (цикл по срезу): <b>${d}</b> ${d===v?'<b class="good">✅ совпало</b>':'<b class="bad">❌</b>'}</p>`;}
+  side=`<h3>Как это читать</h3><p>Сумма на отрезке = <b>префикс справа минус префикс слева</b>. Чем длиннее срез, тем больше экономия: вычитание всегда одно.</p><p class="mut">Попробуй выбрать i = j (пустой срез — 0) и весь отрезок от 0 до ${n} — тогда p[${n}] − p[0] даёт значение для всей строки.</p>`;}
+ else{const e=ev[Math.min(st,ev.length-1)],cols={start:'#ffc94a',try:'#7f93ff',best:'#2fd08a',break:'#ff6b7a'};
+  const seg=e.t==='end'?null:[e.i,Math.min(e.j,n)],has=e.t==='try'||e.t==='best'||e.t==='break';
+  stage=stageSvg({seg,col:cols[e.t]||'#7f93ff',pi:has?lo(e.i):null,pj:has?e.j:null,arc:has?`v = ${e.v}`:'',best:e.best,cur:e.t==='start'?e.i:null});
+  info=evInfo(e);
+  const hlmap={start:[0,1],try:[3,4,5,6],best:[3,5],break:[3,4],end:[]},hl=hlmap[e.t]||[];
+  const stats=e.checks||0,tot=n*(n+1)/2;
+  side=`<h3>Алгоритм</h3><div class="pc">${pcode().map((l,k)=>`<div class="${l[1]} ${hl.includes(k)?'hl':''}">${esc(l[0])}</div>`).join('')}</div><p style="margin:10px 0 4px">Проверок: <b>${stats}</b> из ${tot} возможных подстрок</p><div class="bar"><i style="width:${Math.min(100,stats/tot*100)}%"></i></div><p class="mut" style="margin:8px 0 2px">Улучшения ответа (клик — перейти):</p><div class="imp">${ev.map((x,k)=>x.t==='best'?`<button data-k="${k}">i=${x.i}: ${x.l}</button>`:'').join('')||'<span class="mut">пока нет</span>'}</div>`;}
+ $('stage').innerHTML=stage;$('info').innerHTML=info;$('side').innerHTML=side;
+ if(!skip)$('ctrl').innerHTML=ctrlHTML();
+ if(tab!==2){const sl=$('sl'),c=$('cnt');if(sl)sl.value=st;if(c)c.textContent=tab===1?`шаг ${st} из ${n}`:`событие ${st+1} из ${ev.length}`;}
+ bind();}
+function go(k){stop();st=Math.max(0,Math.min(maxStep(),k));render();}
+function stop(){if(timer){clearInterval(timer);timer=null;}}
+function play(){if(timer){stop();render();return;}if(st>=maxStep())st=0;timer=setInterval(()=>{if(st>=maxStep()){stop();render();return;}st++;render(true);},speed);render();}
+function nextBest(){let k=ev.findIndex((x,q)=>q>st&&x.t==='best');if(k<0)k=ev.findIndex(x=>x.t==='best');if(k>=0)go(k);}
+function pick(b){if(ci==null||cj!=null){ci=b;cj=null;}else if(b===ci){ci=null;}else{cj=b;if(cj<ci)[ci,cj]=[cj,ci];}render();}
+function bind(){document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=b.dataset.a;if(a==='first')go(0);else if(a==='prev')go(st-1);else if(a==='next')go(st+1);else if(a==='last')go(maxStep());else if(a==='play')play();else if(a==='nb')nextBest();
+  else if(a==='rnd'){const n=A.n;let x=Math.floor(Math.random()*n),y=Math.floor(Math.random()*n)+1;if(y<=x)y=Math.min(n,x+1+Math.floor(Math.random()*3));ci=x;cj=y;render();}else if(a==='clr'){ci=cj=null;render();}});
+ const sl=$('sl');if(sl)sl.oninput=()=>{stop();st=+sl.value;render(true);};const sp=$('spd');if(sp)sp.onchange=()=>{speed=+sp.value;if(timer){stop();play();}};
+ document.querySelectorAll('[data-b]').forEach(r=>r.onclick=()=>pick(+r.dataset.b));document.querySelectorAll('[data-k]').forEach(r=>r.onclick=()=>go(+r.dataset.k));
+ const ii=$('iI'),ij=$('iJ');if(ii)ii.onchange=()=>{const v=ii.value===''?null:Math.max(0,Math.min(A.n,+ii.value));ci=v;if(cj!=null&&v!=null&&cj<v)[ci,cj]=[cj,ci];render();};if(ij)ij.onchange=()=>{const v=ij.value===''?null:Math.max(0,Math.min(A.n,+ij.value));cj=v;if(ci!=null&&v!=null&&cj<ci)[ci,cj]=[cj,ci];render();};}
+function recalc(){stop();build();sim();ci=cj=null;st=0;render();}
+function fillInputs(){$('inS').value=S;$('selR').value=rule;$('inX').value=X;$('inY').value=Y;$('inK').value=K;$('selM').value=mode;}
+function apply(o){if(o.S!=null)S=o.S;if(o.rule)rule=o.rule;if(o.X)X=o.X;if(o.Y)Y=o.Y;if(o.K!=null)K=o.K;if(o.mode)mode=o.mode;fillInputs();recalc();}
+$('pre').innerHTML=PRE.map((x,i)=>`<button data-p="${i}">${x[0]}</button>`).join('');document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>apply(PRE[+b.dataset.p][1]));
+$('inS').oninput=()=>{S=$('inS').value.slice(0,120);recalc();};$('selR').onchange=()=>{rule=$('selR').value;recalc();};$('inX').oninput=()=>{X=$('inX').value||'A';recalc();};$('inY').oninput=()=>{Y=$('inY').value||'B';recalc();};
+$('inK').oninput=()=>{K=+$('inK').value||0;recalc();};$('selM').onchange=()=>{mode=$('selM').value;recalc();};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{stop();tab=+b.dataset.t;st=0;render();});
+$('bTask').onclick=()=>{try{const s=parent.taskStr&&parent.taskStr();if(s)apply({S:s.slice(0,120)});else alert('Открой задачу — тогда я возьму её строку s.');}catch(e){alert('Не удалось получить строку из задачи.');}};
+document.addEventListener('keydown',e=>{if(/INPUT|SELECT/.test((e.target||{}).tagName||''))return;if(e.key==='ArrowRight')go(st+1);if(e.key==='ArrowLeft')go(st-1);if(e.key===' '&&tab!==2){e.preventDefault();play();}});
+apply(PRE[0][1]);
+<\/script></body></html></script>
 <script id="saved-state" type="application/json">{"v": 1, "teacher": {"name": "", "email": "", "tg": "", "pin": "31415", "repAns": false, "realAns": {}, "noFillAsk": true}, "theme": "dark", "teacherUpdated": 1795026097507, "flags": {}, "students": {}, "last": ""}</script>
 <script>let CON_READY=false;
 const BLANK='          ';
@@ -500,6 +994,23 @@ function makeEditor(host,code,opt){
 }
 /* ===== Данные ===== */
 let DATA = JSON.parse(document.getElementById('rxdata').textContent);
+const LVN = {1: 'Уровень 1 · лёгкий', 2: 'Уровень 2 · базовый', 3: 'Уровень 3 · средний', 4: 'Уровень 4 · сложный', 5: 'Уровень 5 · эксперт'};
+(function () {
+  const el = document.getElementById('bank'); if (!el) return;
+  const old = {}; (DATA.tasks || []).forEach(t => old[t.id] = t.ans);
+  const out = [];
+  el.textContent.split(/^=== /m).slice(1).forEach(chunk => {
+    const nl = chunk.indexOf('\n'), h = chunk.slice(0, nl).split('|').map(z => z.trim()), body = chunk.slice(nl + 1);
+    const f = {}; let key = null;
+    body.split('\n').forEach(l => { const m = /^(real|idea|note|code):$/.exec(l); if (m) { key = m[1]; f[key] = []; } else if (key) f[key].push(l); });
+    const g = k => (f[k] || []).join('\n').replace(/\s+$/, '');
+    const code = g('code'), id = h[0];
+    out.push({id, blk: h[1], role: 'main', like: '', d: +h[2], main: h[3], title: h[5] || '', real: g('real'), idea: g('idea'), note: g('note'), tpl: code, methods: {[h[3]]: ref(code)}, ans: old[id] || '', final: '', flags: '', tree: [], groups: 0, norx: true, alias: '', realAns: '', src: '', lvl: '', file: '', alts: [], tr: '', ask: '', s: '', src2: ''});
+  });
+  DATA.tasks = out;
+})();
+async function refAns(t) { const r = await PY.run(ref(t.tpl), {}); return r && r.ok ? lastLine(r.out) : ''; }
+window.taskStr = () => { const t = TK[cur.id]; if (!t) return ''; return sOf(ED ? ED.get() : ref(t.tpl)) || ''; };
 const SOURCE = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
 const APPNAME = 'ЕГЭ 24 · Тренажёр по алгоритмам обработки строк';
 const LSKEY = 'ege24_rx_v1', LSCLR = LSKEY + '_clr';
@@ -546,7 +1057,7 @@ function loadTaskJSON(obj) {
   });
   const map=new Set(tasks.map(t=>t.id));
   tasks.forEach(t=>{ if(t.role==='hw') { const parent=tasks.find(x=>x.id===String(t.like)); if(!parent || parent.role!=='main') throw new Error('У аналога '+t.id+' поле like должно указывать на id основной задачи'); } });
-  DATA={blocks,tasks}; BLOCKS=blocks.map(b=>({id:b[0],name:b[1],desc:b[2]||''})); BK=Object.fromEntries(BLOCKS.map(b=>[b.id,b])); TASKS=tasks; TK=Object.fromEntries(tasks.map(t=>[t.id,t]));
+ DATA={blocks,tasks,examples:obj.examples||DATA.examples||{}}; BLOCKS=blocks.map(b=>({id:b[0],name:b[1],desc:b[2]||''})); BK=Object.fromEntries(BLOCKS.map(b=>[b.id,b])); TASKS=tasks; TK=Object.fromEntries(tasks.map(t=>[t.id,t]));
   cleanLegacyTaskData();
   cur.id=null; cur.view='home'; viewHome(); toast('Загружено задач: '+tasks.length+' · основных: '+tasks.filter(t=>t.role==='main').length+' · аналогов: '+tasks.filter(t=>t.role==='hw').length,4500);
 }
@@ -558,7 +1069,7 @@ const MLAB = {prefix: '📊 Префиксные суммы', two: '↔️ Дв�
 const MK = t => t.main || 'prefix';
 const mainLabel = t => (MLAB[MK(t)] || MK(t)) + ' — заготовка с полями';
 const REAL = id => ((DB.teacher.realAns || {})[id]) || (TK[id] && TK[id].realAns) || '';
-const DSTARS = t => '●'.repeat(Math.min(5, t.d || 2));
+const DSTARS = t => `<span class="lv lv${t.d || 2}">${LVN[t.d || 2]}</span>`;
 const ORDER = BLOCKS.flatMap(b => MAINS(b.id).flatMap(m => [m.id]).concat(HWS(b.id).map(t => t.id)));
 function preCode() { return ''; }
 const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -711,7 +1222,7 @@ function enter(name) {
 }
 function topbar() {
   return `<div class="top"><div class="logo" id="lg"><i>.*</i><span>ЕГЭ 24 · Алгоритмы строк</span></div><div class="sp"></div>
-  <button class="ib" id="tSand" title="Пошаговое исследование строки и алгоритмов">🧪 Тренажёр-туннель</button><button class="ib" id="tCheat" title="Памятка по алгоритмам обработки строк">📘 Памятка по алгоритмам</button><button class="ib" id="tJSON" title="Загрузить банк задач из JSON">📥 Загрузить JSON</button><input id="jsonFile" type="file" accept=".json,application/json" hidden>
+  <button class="ib" id="tSand" title="Пошаговый визуализатор префиксных сумм">🔬 Визуализатор префиксов</button><button class="ib" id="tCheat" title="Памятка по алгоритмам обработки строк">📘 Памятка по алгоритмам</button>
   <button class="ib" id="tRep">📄 Отчёт</button><button class="ib" id="tSave" title="Сохранить файл с прогрессом">💾</button><button class="ib" id="tTheme">🌓</button><button class="ib" id="tTch" title="Учитель">👩‍🏫</button>
   <span class="who">🙂 ${esc(cur.name)}</span><button class="ib" id="tOut" title="Выйти">⎋</button></div>`;
 }
@@ -737,13 +1248,13 @@ function viewHome() {
     ${hw.length ? `<button class="hmc hwc" id="hHW"><div class="big">🏠</div><h2>Домашнее задание</h2><div>Учитель отметил ${hw.length} задач. Решено ${ch.done} из ${ch.total}.</div><div class="pb"><i style="width:${ch.total ? ch.done / ch.total * 100 : 0}%"></i></div></button>` : ''}
     ${TASKS.length ? `<button class="hmc" id="hGo"><div class="big">🧩</div><h2>Продолжить</h2><div>Всего задач: ${c.total}. Решено ${c.done}.</div><div class="pb"><i style="width:${c.total ? c.done / c.total * 100 : 0}%"></i></div></button>` : ''}
     <button class="hmc" id="hMethods"><div class="big">📘</div><h2>Методы обработки строк</h2><div>Префиксные суммы, два указателя и скользящее окно: идеи, схемы и шаблоны кода.</div></button>
-    <div class="row"><button class="btn" id="hSand">🧪 Тренажёр-туннель</button><button class="btn" id="hCheat">📘 Памятка по алгоритмам</button></div>
+    <div class="row"><button class="btn" id="hSand">🔬 Визуализатор префиксов</button><button class="btn" id="hLv">🎚 Задачи по уровням</button><button class="btn" id="hCheat">📘 Памятка по алгоритмам</button></div>
    </div></div>`;
   bindTop();
   document.querySelectorAll('.bline').forEach(b => b.onclick = () => openBlock(b.dataset.b));
   if ($('#hHW')) $('#hHW').onclick = () => { cur.filter = 'hw'; const L = hwList(); openTask(L.find(id => !solved(s.tasks[id])) || L[0]); };
   if ($('#hGo')) $('#hGo').onclick = () => { cur.filter = 'all'; if (s.cur && TK[s.cur]) openTask(s.cur); else if (BLOCKS.length) openBlock(BLOCKS[0].id); };
-  $('#hMethods').onclick = () => openMethodsGuide(); $('#hSand').onclick = () => openTunnel(); $('#hCheat').onclick = () => openMethodsGuide();
+  $('#hMethods').onclick = () => openMethodsGuide(); $('#hSand').onclick = () => openTunnel(); $('#hLv').onclick = () => openLevels(); $('#hCheat').onclick = () => openMethodsGuide();
 }
 
 /* ===== Боковая панель ===== */
@@ -786,7 +1297,14 @@ function bindSide() {
 function refreshSide() { const o = $('#side'); if (!o) return; const t = o.scrollTop; o.outerHTML = sidebar(); bindSide(); $('#side').scrollTop = t; }
 
 /* ===== Теория блоков ===== */
-const BTH = {};
+const BTH = {
+  A: [['s.replace(\'AB\', \'A B\')', 'вставляем разрез внутрь запрещённой пары: буквы не пропадают, а пары больше нет'], ['s.split(\' \')', 'куски между разрезами — готовые кандидаты на ответ'], ['while \'++\' in s: s=s.replace(...)', 'replace не видит налезающих вхождений — повторяем, пока плохое место остаётся'], ['strip(\'=\')', 'после split по краям могут остаться лишние символы-разделители']],
+  B: [['k = 1', 'один символ — уже серия длины 1'], ['s[i] == s[i-1]', 'сравниваем только соседей: растёт k или начинается заново (k = 1)'], ['dl = max(dl, k)', 'максимум обновляем на каждом шаге, иначе потеряем последнюю серию'], ['s[i].isdigit() != s[i-1].isdigit()', 'сравнивать можно не символы, а их тип (True/False)']],
+  C: [['i, j', 'i — начало, j — конец среза (s[j] в срез не входит)'], ['j = i + l + 1', 'сразу смотрим на длину больше найденной — короче нет смысла'], ['break', 'выходим, когда плохое уже не исправить удлинением'], ['условие в if', 'если «хорошо» может вернуться при удлинении (оканчивается цифрой) — проверяем внутри if, а не в usl']],
+  D: [['p[i+1] = p[i] + c', 'p[i] — сколько нужного среди первых i символов'], ['p[j] − p[i]', 'значение на срезе s[i:j] за одно вычитание'], ['баланс +1 / −1', 'одинаковый баланс в двух местах — между ними поровну; храним первое появление'], ['сдвиг для смен', 'смена на первой позиции среза лежит вне среза: p[j-1] − p[i]']],
+  E: [['l, r', 'границы окна; r двигаем всегда, l — только пока окно плохое'], ['sm += int(s[r]); sm -= int(s[l])', 'сумма обновляется за O(1), без пересчёта окна'], ['d[s[r]] += 1; del d[x]', 'словарь счётчиков; ключ с нулём удаляем, иначе len(d) врёт'], ['r − l + 1', 'длина окна — кандидат на ответ']],
+  F: [['lef[i]', 'длина серии, которая ЗАКАНЧИВАЕТСЯ в i (считаем слева направо)'], ['rig[i]', 'длина серии, которая НАЧИНАЕТСЯ в i (считаем справа налево)'], ['lef[i] + rig[i+1]', 'сшиваем две части на стыке между i и i+1'], ['range(n-2, -1, -1)', 'справа налево: нужное значение справа уже посчитано']]
+};
 
 /* ===== Страница блока ===== */
 function hlText(text, spans) {
@@ -806,13 +1324,15 @@ function exCard(e) {
 }
 function openBlock(bid) {
   tickTime(); cur.view = 'block'; cur.blk = bid; cur.id = null; cur.filter = 'all';
-  const b = BK[bid], s = stu(), mains = MAINS(bid), hws = HWS(bid);
-  const tcard = t => { const x = s.tasks[t.id]; return `<button class="tcard ${stClass(x)}" data-id="${t.id}"><b>№ ${esc(t.id)}</b>${solved(x) ? ' ✅' : ''}${FL(t.id).hw ? ' <sup class="fh">Д</sup>' : ''}<span>${esc(qtext(t).slice(0, 170))}${qtext(t).length > 170 ? '…' : ''}</span></button>`; };
+  const b = BK[bid], s = stu(), mains = MAINS(bid), hws = HWS(bid), exs = (DATA.examples || {})[bid] || [];
+
+  const tcard = t => { const x = s.tasks[t.id]; return `<button class="tcard ${stClass(x)}" data-id="${t.id}"><b>№ ${esc(t.id)}</b>${solved(x) ? ' ✅' : ''} <span class="lv lv${t.d || 2}">${LVN[t.d || 2]}</span>${FL(t.id).hw ? ' <sup class="fh">Д</sup>' : ''}<span>${esc(qtext(t).slice(0, 170))}${qtext(t).length > 170 ? '…' : ''}</span></button>`; };
   app().innerHTML = topbar() + `<div class="lay">${sidebar()}<main class="main">
    <div class="card"><div class="th"><h2>${bid === 'RS' ? '★' : 'Блок ' + (BLOCKS.indexOf(b) + 1)}. ${esc(b.name)}</h2></div><p style="margin:6px 0 0">${esc(b.desc)}</p></div>
    <div class="card"><h3 style="margin:0 0 8px">📚 Что нужно знать</h3><table class="bth">${(BTH[bid] || []).map(([a, d]) => `<tr><td><code>${esc(a)}</code></td><td>${esc(d)}</td></tr>`).join('')}</table></div>
-   ${(DATA.examples[bid] || []).length ? `<div class="card"><h3 style="margin:0 0 8px">👀 Готовые примеры</h3><div class="exgrid">${DATA.examples[bid].map(exCard).join('')}</div></div>` : ''}
-   <div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0 0 8px">🧩 Основные задачи блока</h3>${mains.length ? `<button class="btn pri" id="bStart">▶ ${mains.some(t => solved(s.tasks[t.id])) ? 'Продолжить' : 'Начать'}</button>` : ''}</div><div class="tgrid">${mains.map(tcard).join('')}</div></div>
+   ${exs.length ? `<div class="card"><h3 style="margin:0 0 8px">👀 Готовые примеры</h3><div class="exgrid">${exs.map(exCard).join('')}</div></div>` : ''}
+
+<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0 0 8px">🧩 Основные задачи блока</h3>${mains.length ? `<button class="btn pri" id="bStart">▶ ${mains.some(t => solved(s.tasks[t.id])) ? 'Продолжить' : 'Начать'}</button>` : ''}</div><div class="tgrid">${mains.map(tcard).join('')}</div></div>
    ${hws.length ? `<details class="card hwd"><summary><b>🏠 Для самостоятельной работы (${hws.filter(t => solved(s.tasks[t.id])).length}/${hws.length})</b> <span class="vhint">— реальные задачи с файлами; каждую можно решить и здесь, на учебной строке</span></summary>
      ${mains.map(m => { const a = hws.filter(t => t.like === m.id); return a.length ? `<div class="hwgrp"><div class="vhint">похожие на № ${esc(m.id)}</div><div class="tgrid">${a.map(tcard).join('')}</div></div>` : ''; }).join('')}</details>` : ''}
    </main></div>`;
@@ -1011,7 +1531,67 @@ function checkAns(t) {
   }
 }
 
+const STK = [
+ {blk: 'A', c: '#4f6bff', e: '✂️', n: 'replace + split', w: 'есть «запрещённое место», и нужны куски между такими местами', code: `s=s.«3|replace('AB','A B')»   # разрез внутри пары
+l=«1|s.split(' ')»              # куски между разрезами
+print(«4|max(len(c) for c in l)»)`, st: ['найди запрещённое место', 'вставь разрез (replace), а не стирай символы', 'split по разрезу даёт куски', 'измерь куски, возьми лучший'], trap: 'Налезающие вхождения: replace за раз не заменит — повторяй в while.'},
+ {blk: 'B', c: '#16a36a', e: '🔁', n: 'один проход со счётчиком', w: 'серия «каждый соседний с предыдущим…» — условие только на пару соседей', code: `k=«5|1»; dl=1
+for i in range(1,len(s)):
+    if «1|s[i]==s[i-1]»: «2|k+=1»
+    else: «3|k=1»
+    «4|dl=max(dl,k)»
+print(dl)`, st: ['k — длина текущей серии, старт 1', 'сравни s[i] с s[i-1]', 'подходит — k+1, нет — k=1', 'на каждом шаге обнови максимум'], trap: 'Максимум обновляй на каждом шаге, а не только при разрыве.'},
+ {blk: 'C', c: '#f08c00', e: '🔍', n: 'перебор подстрок + break', w: 'сложное условие на всю подстроку; есть «плохое», которое при удлинении не исчезает', code: `l=0
+for i in range(len(s)):
+    j=«5|i+l+1»
+    while j<=len(s):
+        ss=s[i:j]
+        if «1|usl(ss)»:
+            «4|l=len(ss)»
+        else: «3|break»
+        j+=1
+print(l)`, st: ['i — начало, j — конец среза', 'j стартует с i+l+1: короче найденного не нужно', 'usl(ss) — условие «хорошо»', 'плохое необратимо — break'], trap: 'Условие «оканчивается цифрой» может вернуться — проверяй его внутри if, а не в usl.'},
+ {blk: 'D', c: '#7b5cff', e: '📊', n: 'префиксные суммы', w: 'надо быстро считать «сколько нужного» на любом срезе', code: `p=[0]*(len(s)+1)
+for i in range(len(s)):
+    p[i+1]=p[i]+«1|(s[i]=='Z')»
+...
+    if «1|p[j]-p[i]»>K: «3|break»
+    if p[j]-p[i]==K: «4|l=j-i»`, st: ['p[0]=0 — «до начала ничего нет»', 'p[i+1] = p[i] + вклад символа i', 'срез s[i:j] = p[j] − p[i]', 'для баланса: храним первое появление значения'], trap: 'Для смен символов правая граница j−1, а не j. Открой 🔬 визуализатор.'},
+ {blk: 'E', c: '#0e9aa7', e: '🪟', n: 'два указателя (окно)', w: 'окно, которое можно сжимать слева без пересчёта (неотрицательные вклады)', code: `l=0; sm=0
+for r in range(len(s)):
+    «1|sm+=int(s[r])»
+    while «3|sm>K»:
+        «1|sm-=int(s[l])»
+        «5|l+=1»
+    «4|dl=max(dl,r-l+1)»
+print(dl)`, st: ['r всегда шагает вправо', 'добавь вклад s[r]', 'пока окно плохое — убери s[l] и сдвинь l', 'длина окна r−l+1 — кандидат'], trap: 'Ключ словаря со счётчиком 0 удаляй (del), иначе len(d) считает лишнее.'},
+ {blk: 'F', c: '#d6336c', e: '📈', n: 'ДП слева и справа', w: 'ответ из двух частей, которые «стыкуются»', code: `lef=[1]*n; rig=[1]*n
+for i in range(1,n):
+    if «2|s[i]>=s[i-1]»: lef[i]=«1|lef[i-1]+1»
+for i in «5|range(n-2,-1,-1)»:
+    if s[i]>=s[i+1]: rig[i]=rig[i+1]+1
+print(max(«4|lef[i]+rig[i+1]» for i in range(n-1)))`, st: ['lef[i] — часть, которая заканчивается в i', 'rig[i] — часть, которая начинается в i', 'rig считаем справа налево', 'сшей на каждом стыке, возьми max'], trap: 'Стык между i и i+1: в range(n-1), иначе выйдешь за границу.'}
+];
+function stkCode(c) { return esc(c).replace(/«(\d)\|([^»]*)»/g, (m, k, t) => `<span class='k k${k}'>${t}</span>`); }
 function openMethodsGuide() {
+  const stk = s => { const L = TASKS.filter(t => t.blk === s.blk).sort(byD);
+    return `<div class='stk' style='--c:${s.c}'><h3>${s.e} ${esc(s.n)}<small>блок ${s.blk}</small></h3><div class='bd'>
+     <div class='wh'><b>🎯 Когда:</b> ${esc(s.w)}</div><pre>${stkCode(s.code)}</pre>
+     <ol class='tr'>${s.st.map(x => `<li>${esc(x)}</li>`).join('')}</ol>
+     <div class='wh'><b>⚠️ Ловушка:</b> ${esc(s.trap)}</div>
+     <div class='ids'>задачи: ${L.map(t => `<button style='background:${s.c}' data-go='${esc(t.id)}' title='${esc(LVN[t.d])}'>${esc(t.id)}</button>`).join('')}</div></div></div>`; };
+  modal(`<div class='mhead'><h2>📘 Памятка: способы решения</h2><span class='sp'></span><button class='btn ghost' id='mgX'>✕</button></div>
+   <div class='leg'><span class='k k1'>1 · что считаем / вклад</span><span class='k k2'>2 · условие «хорошо»</span><span class='k k3'>3 · стоп / плохо</span><span class='k k4'>4 · обновление ответа</span><span class='k k5'>5 · границы и старт</span></div>
+   <div class='stkw' style='max-height:68vh;overflow:auto'>${STK.map(stk).join('')}</div>`, 'wide');
+  $('#mgX').onclick = closeModal;
+  document.querySelectorAll('#mbg [data-go]').forEach(b => b.onclick = () => { closeModal(); openTask(b.dataset.go); });
+}
+function openLevels() {
+  modal(`<div class='mhead'><h2>🎚 Задачи по уровням сложности</h2><span class='sp'></span><button class='btn ghost' id='lvX'>✕</button></div>` + [1, 2, 3, 4, 5].map(d => { const L = TASKS.filter(t => t.d === d).sort((a, b) => a.blk < b.blk ? -1 : 1); return L.length ? `<div class='card'><span class='lv lv${d}'>${LVN[d]}</span> <span class='vhint'>${L.length} зад.</span><div class='its' style='margin-top:8px'>${L.map(t => chip(t.id)).join('')}</div></div>` : ''; }).join(''), 'wide');
+  $('#lvX').onclick = closeModal;
+  document.querySelectorAll('#mbg .it').forEach(b => b.onclick = () => { closeModal(); openTask(b.dataset.id); });
+}
+function openMethodsGuideOld() {
   modal(`<div class="mhead"><h2>📘 Памятка: алгоритмы обработки строк</h2><span class="sp"></span><button class="btn ghost" id="mgX">✕</button></div>
   <div class="cheat" style="max-height:76vh;overflow:auto">
    <div class="chg"><b>1. Префиксные суммы</b><p>Идея: заранее посчитать накопленную сумму. Тогда сумму на отрезке [l; r) можно получить за O(1): <code>p[r] - p[l]</code>.</p>
@@ -1055,7 +1635,7 @@ function ensureTunnel() {
   const host = document.createElement('div');
   host.id = 'tunnelPersistentOverlay';
   host.style.cssText = 'display:none;position:fixed;inset:0;z-index:10050;background:#070a10ee;align-items:center;justify-content:center;padding:2vh 2vw;';
-  host.innerHTML = '<div style="width:100%;height:96vh;max-width:1800px;background:#0f1420;border:1px solid #30394b;border-radius:14px;overflow:hidden;display:flex;flex-direction:column"><div style="height:48px;flex:none;display:flex;align-items:center;gap:12px;padding:0 14px;background:#18202f;color:#e6eaf3;font:600 15px system-ui"><span>🧪 Тренажёр-туннель</span><span style="opacity:.65;font-size:12px;font-weight:400">Python сохраняет состояние между открытиями</span><span style="flex:1"></span><button id="tunnelClose" style="border:0;border-radius:7px;padding:7px 13px;background:#34415a;color:white;cursor:pointer">Закрыть ✕</button></div><div id="tunnelFrameSlot" style="flex:1;min-height:0"></div></div>';
+  host.innerHTML = '<div style="width:100%;height:96vh;max-width:1800px;background:#0f1420;border:1px solid #30394b;border-radius:14px;overflow:hidden;display:flex;flex-direction:column"><div style="height:48px;flex:none;display:flex;align-items:center;gap:12px;padding:0 14px;background:#18202f;color:#e6eaf3;font:600 15px system-ui"><span>🔬 Визуализатор префиксных сумм</span><span style="opacity:.65;font-size:12px;font-weight:400">Python сохраняет состояние между открытиями</span><span style="flex:1"></span><button id="tunnelClose" style="border:0;border-radius:7px;padding:7px 13px;background:#34415a;color:white;cursor:pointer">Закрыть ✕</button></div><div id="tunnelFrameSlot" style="flex:1;min-height:0"></div></div>';
   document.body.appendChild(host);
   TUNNEL_OVERLAY = host;
   TUNNEL_FRAME = document.createElement('iframe');
@@ -1063,7 +1643,8 @@ function ensureTunnel() {
   TUNNEL_FRAME.title = 'Тренажёр-туннель';
   TUNNEL_FRAME.setAttribute('loading','eager');
   TUNNEL_FRAME.style.cssText = 'width:100%;height:100%;border:0;display:block;background:#0f1420';
-  TUNNEL_FRAME.srcdoc = TUNNEL_HTML;
+  TUNNEL_FRAME.srcdoc = document.getElementById('tun2').textContent.split('<\\/script>').join('<\/script>');
+
   host.querySelector('#tunnelFrameSlot').appendChild(TUNNEL_FRAME);
   host.querySelector('#tunnelClose').onclick = closeTunnel;
   host.addEventListener('mousedown', e => { if (e.target === host) closeTunnel(); });
@@ -1241,7 +1822,7 @@ function pdfFromJpegs(imgs, w, h) {
    ДОПОЛНЕНИЯ 19.11: разбор всех шагов, варианты регулярок, findall ⇄ finditer,
    автопроверка после запуска, сворачивание разделов, шпаргалка-гид, ИИ-помощник
    ================================================================ */
-Object.assign(MLAB, {dp: '📈 ДП / подсчёт за один проход', rx2: '🧩 Регулярка: чётность прямо в шаблоне', ev: '🧮 Через eval'});
+Object.assign(MLAB, {one: '🔁 Один проход со счётчиком', loops: '🔍 Перебор подстрок + break', two: '🪟 Два указателя (окно)', prefix: '📊 Префиксные суммы', split: '✂️ replace + split', dp: '📈 ДП слева и справа', rx2: '🧩 Регулярка: чётность прямо в шаблоне', ev: '🧮 Через eval'});
 if (DB.teacher.noMethAsk == null) DB.teacher.noMethAsk = true;
 cur.fold = {};
 const BIDX = id => { const n = BLOCKS.findIndex(b => b.id === id); return id === 'RS' ? '★' : id; };
@@ -1256,7 +1837,7 @@ function qtext(t) {
 /* ===== Боковая панель: звёздочки, сворачивание, текущая задача посередине ===== */
 function chip(id) {
   const s = stu(), x = s.tasks[id], t = TK[id], f = FL(id);
-  return `<button class="it ${stClass(x)} ${id === cur.id ? 'cur' : ''} ${t.role === 'hw' ? 'hwt' : ''} ${t.star ? 'zs' : ''}" data-id="${id}" title="${esc(qtext(t).slice(0, 160))}">${t.star ? '<b class="zst">★</b>' : ''}${esc(id)}${f.hw ? '<sup class="fh">Д</sup>' : ''}${f.fav ? '<sup class="ff">♥</sup>' : ''}</button>`;
+  return `<button class="it ${stClass(x)} ${id === cur.id ? 'cur' : ''} ${t.role === 'hw' ? 'hwt' : ''} ${t.star ? 'zs' : ''}" data-d="${t.d || 2}" data-id="${id}" title="${esc(qtext(t).slice(0, 160))}">${t.star ? '<b class="zst">★</b>' : ''}${esc(id)}${f.hw ? '<sup class="fh">Д</sup>' : ''}${f.fav ? '<sup class="ff">♥</sup>' : ''}</button>`;
 }
 function sidebar() {
   const s = stu(), c = counts(s);
@@ -1516,6 +2097,7 @@ async function runMain() {
   const ex = explainErr(r, code); if (ex) $('#exp').innerHTML += `<div class="exp">💬 ${ex}</div>`;
   CUR_RUN = {code, out: r.out || '', err: r.ok ? '' : (r.err || '') + (r.line ? ' (строка ' + r.line + ')' : '')};
   if (r.ok) {
+    if (!t.ans) t.ans = await refAns(t);
     const last = lastLine(r.out);
     if (last) {
       const ai = $('#ansIn'); ai.value = last;
@@ -1525,7 +2107,8 @@ async function runMain() {
   }
 }
 let CUR_RUN = null;
-function checkAns(t, auto) {
+async function checkAns(t, auto) {
+  if (!t.ans) t.ans = await refAns(t);
   const x = X(t.id), v = $('#ansIn').value.trim(), fb = $('#fb'); if (!v) { $('#ansIn').focus(); return; }
   x.tries++;
   if (normA(v) === normA(t.ans)) {
