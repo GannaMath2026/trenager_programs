@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Формулы стереометрии — мини-тренажёр</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+:root{--ink:#2b2440;--muted:#7a7288;--border:#e8e0d4;--purple:#8b5cf6;--sky:#0ea5e9;--orange:#f97316;--green:#10b981;--rose:#f43f5e;--ok:#16a34a;--bad:#ef4444}
+*{box-sizing:border-box}
+body{margin:0;background:#fdf6ec radial-gradient(#00000008 1.2px,transparent 1.2px);background-size:24px 24px;color:var(--ink);font:16px/1.5 'Segoe UI',system-ui,Arial,sans-serif}
+.app{max-width:1080px;margin:0 auto;padding:16px 16px 40px}
+.topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.logo{font-size:28px}
+h1{font-size:clamp(19px,2.6vw,25px);margin:0}
+.stats{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.stat{background:#fff;border:1px solid var(--border);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;white-space:nowrap}
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tab{border:2px solid var(--border);background:#fff;border-radius:999px;padding:8px 16px;font-weight:800;cursor:pointer;font:inherit;font-size:14px}
+.tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.modes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.mode{border:2px solid var(--border);background:#fff;border-radius:999px;padding:7px 14px;font-weight:700;cursor:pointer;font:inherit;font-size:14px}
+.mode.on{background:var(--rose);border-color:var(--rose);color:#fff}
+.sticker{background:#fff;border:1px solid var(--border);border-radius:18px;padding:22px 22px 18px;box-shadow:0 6px 18px rgba(60,40,10,.08);position:relative;margin-bottom:18px}
+.tape{position:absolute;top:-9px;left:20px;width:88px;height:20px;border-radius:4px;transform:rotate(-2.5deg);opacity:.92}
+.catV .tape{background:var(--purple)}.catS .tape{background:var(--sky)}.catL .tape{background:var(--orange)}.catX .tape{background:var(--green)}.catR .tape{background:var(--rose)}
+.qhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.qemoji{font-size:38px}
+.qlabel{border-radius:999px;padding:5px 14px;color:#fff;font-weight:800;font-size:13px;letter-spacing:.02em}
+.catV .qlabel{background:var(--purple)}.catS .qlabel{background:var(--sky)}.catL .qlabel{background:var(--orange)}.catX .qlabel{background:var(--green)}.catR .qlabel{background:var(--rose)}
+.qtext{font-size:clamp(23px,3.4vw,31px);font-weight:800;margin-top:10px}
+.qsub{color:var(--muted);font-size:13px;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:18px}
+@media(max-width:780px){.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.grid{grid-template-columns:1fr}}
+.opt{background:#fff;border:2px solid #ece5d8;border-radius:16px;padding:20px 12px;min-height:92px;cursor:pointer;transform:rotate(var(--r));transition:transform .15s,border-color .15s,box-shadow .15s;position:relative;font:inherit;display:flex;align-items:center;justify-content:center;gap:6px}
+.opt::before{content:'';position:absolute;top:-8px;left:14px;width:56px;height:16px;border-radius:3px;transform:rotate(-3deg);opacity:.85}
+.opt:nth-child(odd){--r:-1.1deg}.opt:nth-child(even){--r:1.3deg}
+.opt.v::before{background:#c4b5fd}.opt.s::before{background:#7dd3fc}.opt.l::before{background:#fdba74}.opt.x::before{background:#6ee7b7}
+.opt:hover{transform:rotate(var(--r)) translateY(-3px);border-color:#c9bda8;box-shadow:0 8px 16px rgba(60,40,10,.13)}
+.opt .katex{font-size:1.32em}
+.opt.ok{border-color:var(--ok);background:#f0fdf4}
+.opt.bad{border-color:var(--bad);background:#fef2f2;animation:shake .3s}
+.opt.dim{opacity:.42}
+.opt .stamp{position:absolute;top:6px;right:10px;font-size:22px;font-weight:900}
+.opt.ok .stamp{color:var(--ok)}.opt.bad .stamp{color:var(--bad)}
+@keyframes shake{25%{transform:rotate(var(--r)) translateX(-4px)}75%{transform:rotate(var(--r)) translateX(4px)}}
+.fb{border-radius:14px;padding:14px 16px;font-size:15px;margin-top:16px;display:none;line-height:1.55}
+.fb.good{background:#f0fdf4;border:1px solid #bbe7c8;display:block}
+.fb.err{background:#fef2f2;border:1px solid #f5c2c2;display:block}
+.fb .big{font-size:20px;margin-top:6px}
+.btn{border:2px solid var(--ink);background:#fff;border-radius:999px;padding:10px 22px;font-weight:800;cursor:pointer;font:inherit;font-size:15px}
+.btn.pri{background:var(--ink);color:#fff}
+.btn.hide{display:none}
+.btnrow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.simrow{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.inp{font-size:20px;padding:10px 14px;border:2px solid var(--border);border-radius:12px;width:190px;text-align:center;font:inherit;font-weight:700}
+.inp:focus{outline:none;border-color:var(--rose)}
+.hintbox{margin-top:12px;background:#fff7ed;border:1px dashed #f59e0b;border-radius:12px;padding:12px 14px;font-size:14px;display:none}
+.cheat .grp{margin-bottom:22px}
+.grp h3{margin:0 0 12px;font-size:19px}
+.chips{display:flex;gap:12px;flex-wrap:wrap}
+.fcard{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px 16px 10px;position:relative;box-shadow:0 3px 8px rgba(60,40,10,.06)}
+.fcard .chip{position:absolute;top:-9px;left:12px;border-radius:999px;padding:2px 10px;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}
+.cV{background:var(--purple)}.cS{background:var(--sky)}.cL{background:var(--orange)}.cX{background:var(--green)}
+.fcard .katex{font-size:1.12em}
+.foot{color:var(--muted);font-size:12px;margin-top:24px;text-align:center}
+.empty{color:var(--muted);text-align:center;padding:30px;border:1px dashed var(--border);border-radius:14px}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <span class="logo">🧊</span>
+  <h1>Формулы стереометрии — мини-тренажёр</h1>
+  <div class="stats">
+   <span class="stat" id="stScore">✔ 0 · ✖ 0</span>
+   <span class="stat" id="stStreak">🔥 0 · рекорд 0</span>
+   <span class="stat" id="stQueue" style="display:none"><button type="button" class="btn" id="drillBtn" style="padding:2px 10px;font-size:12px"></button></span>
+  </div>
+ </div>
+ <div class="tabs">
+  <button type="button" class="tab on" id="tabTrain">🎯 Тренажёр</button>
+  <button type="button" class="tab" id="tabCheat">📐 Шпаргалка</button>
+ </div>
+ <div id="pageTrain">
+  <div class="modes">
+   <button type="button" class="mode on" data-mode="mix">🎲 Смешанно</button>
+   <button type="button" class="mode" data-mode="f">🧮 Формулы</button>
+   <button type="button" class="mode" data-mode="s">📏 Подобие</button>
+  </div>
+  <div id="stage"></div>
+  <div class="foot">Формулы рендерятся через KaTeX (нужен интернет). Без сети формулы показываются текстом.</div>
+ </div>
+ <div id="pageCheat" class="cheat" style="display:none"></div>
+</div>
+<script>
+(function(){
+'use strict';
+var $ = function(id){ return document.getElementById(id); };
+var LABEL = {V:'Объём', S:'Площадь поверхности', L:'Боковая поверхность', X:'Элемент тела'};
+var ENTRIES = [
+ {s:'куба', full:'Куб', e:'🧊', cat:'V', tex:'V = a^{3}', mut:[
+   {t:'V = 6a^{3}', n:'6a³ — это площадь поверхности, а не объём'},
+   {t:'V = a^{2}', n:'Это площадь одной грани'},
+   {t:'V = \\dfrac{a^{3}}{3}', n:'⅓ появляется у пирамиды и конуса, не у куба'}]},
+ {s:'куба', full:'Куб', e:'🧊', cat:'S', tex:'S = 6a^{2}', mut:[
+   {t:'S = 4a^{2}', n:'4 грани — так было бы у тетраэдра, у куба их 6'},
+   {t:'S = a^{2}', n:'Это площадь только одной грани'},
+   {t:'S = 6a^{3}', n:'В площади куб не даёт a³ — это объёмная степень'}]},
+ {s:'куба', full:'Куб', e:'🧊', cat:'X', tex:'d = a\\sqrt{3}', mut:[
+   {t:'d = a\\sqrt{2}', n:'a√2 — это диагональ квадрата (грани), а не куба'},
+   {t:'d = 3a', n:'Диагональ не может быть в 3 раза больше ребра'},
+   {t:'d = a^{2}\\sqrt{3}', n:'Под корнем квадраты линейных размеров, а не их кубы'}]},
+ {s:'прямоугольного параллелепипеда', full:'Прямоугольный параллелепипед', e:'📦', cat:'V', tex:'V = abc', mut:[
+   {t:'V = 2(ab + bc + ac)', n:'Это формула площади поверхности'},
+   {t:'V = \\dfrac{abc}{3}', n:'⅓ здесь не появляется — это не пирамида'},
+   {t:'V = ab + bc + ac', n:'Сумма произведений — часть площади, не объём'}]},
+ {s:'прямоугольного параллелепипеда', full:'Прямоугольный параллелепипед', e:'📦', cat:'S', tex:'S = 2(ab + bc + ac)', mut:[
+   {t:'S = ab + bc + ac', n:'Потерян множитель 2 — граней шесть, а не три'},
+   {t:'S = abc', n:'Это объём, а не площадь'},
+   {t:'S = 4(ab + bc + ac)', n:'Слишком много: граней шесть'}]},
+ {s:'прямоугольного параллелепипеда', full:'Прямоугольный параллелепипед', e:'📦', cat:'X', tex:'d = \\sqrt{a^{2} + b^{2} + c^{2}}', mut:[
+   {t:'d = \\sqrt{a^{2} + b^{2}}', n:'Не хватает третьего измерения c'},
+   {t:'d = a + b + c', n:'Диагональ не равна сумме рёбер — там корень из суммы квадратов'},
+   {t:'d = \\sqrt{ab + bc + ac}', n:'Внутри корня должны быть квадраты рёбер'}]},
+ {s:'прямой призмы', full:'Прямая призма', e:'🏛️', cat:'V', tex:'V = S_{\\text{осн}} \\cdot h', mut:[
+   {t:'V = \\dfrac{1}{3} S_{\\text{осн}} \\cdot h', n:'⅓ — это у пирамиды, у призмы объём без дроби'},
+   {t:'V = P_{\\text{осн}} \\cdot h', n:'Периметр на высоту — это боковая поверхность'},
+   {t:'V = \\dfrac{1}{2} S_{\\text{осн}} \\cdot h', n:'½ здесь не появляется'}]},
+ {s:'прямой призмы', full:'Прямая призма', e:'🏛️', cat:'L', tex:'S_{\\text{бок}} = P_{\\text{осн}} \\cdot h', mut:[
+   {t:'S_{\\text{бок}} = \\dfrac{1}{2} P_{\\text{осн}} \\cdot h', n:'½ появляется только у пирамиды, через апофему'},
+   {t:'S_{\\text{бок}} = 2P_{\\text{осн}} \\cdot h', n:'Лишняя двойка'},
+   {t:'S_{\\text{бок}} = S_{\\text{осн}} \\cdot h', n:'Это объём призмы, а не боковая поверхность'}]},
+ {s:'прямой призмы', full:'Прямая призма', e:'🏛️', cat:'S', tex:'S = 2S_{\\text{осн}} + P_{\\text{осн}} h', mut:[
+   {t:'S = S_{\\text{осн}} + P_{\\text{осн}} h', n:'Оснований два — нужен множитель 2 перед площадью'},
+   {t:'S = 2S_{\\text{осн}} + 2P_{\\text{осн}} h', n:'Бок считается один раз: P·h, без удвоения'},
+   {t:'S = S_{\\text{осн}} \\cdot h', n:'Это объём, а не полная поверхность'}]},
+ {s:'цилиндра', full:'Цилиндр', e:'🥫', cat:'V', tex:'V = \\pi R^{2} h', mut:[
+   {t:'V = \\pi R h', n:'Потерян квадрат у R'},
+   {t:'V = \\dfrac{1}{3}\\pi R^{2} h', n:'⅓ — это у конуса'},
+   {t:'V = 2\\pi R^{2} h', n:'Лишняя двойка'}]},
+ {s:'цилиндра', full:'Цилиндр', e:'🥫', cat:'L', tex:'S_{\\text{бок}} = 2\\pi R h', mut:[
+   {t:'S_{\\text{бок}} = \\pi R h', n:'Развёртка — целый круг 2πR, а не половина'},
+   {t:'S_{\\text{бок}} = \\pi R^{2} h', n:'Это объём цилиндра'},
+   {t:'S_{\\text{бок}} = 2\\pi R^{2}', n:'Потеряна высота h'}]},
+ {s:'цилиндра', full:'Цилиндр', e:'🥫', cat:'S', tex:'S = 2\\pi R(R + h)', mut:[
+   {t:'S = \\pi R(R + h)', n:'Потеряна двойка: бок = 2πRh, а не πRh'},
+   {t:'S = 2\\pi R h', n:'Это только боковая поверхность, без двух кругов'},
+   {t:'S = 2\\pi R(R + 2h)', n:'Высота удваиваться не должна'}]},
+ {s:'правильной пирамиды', full:'Правильная пирамида', e:'🔺', cat:'V', tex:'V = \\dfrac{1}{3} S_{\\text{осн}} h', mut:[
+   {t:'V = S_{\\text{осн}} h', n:'Это объём призмы — у пирамиды есть ⅓'},
+   {t:'V = \\dfrac{1}{2} S_{\\text{осн}} h', n:'Дробь не та: ⅓, а не ½'},
+   {t:'V = \\dfrac{2}{3} S_{\\text{осн}} h', n:'⅔ в этих формулах не встречается'}]},
+ {s:'правильной пирамиды', full:'Правильная пирамида', e:'🔺', cat:'L', tex:'S_{\\text{бок}} = \\dfrac{1}{2} P_{\\text{осн}} \\ell', mut:[
+   {t:'S_{\\text{бок}} = P_{\\text{осн}} \\cdot \\ell', n:'Потеряна ½ — граней несколько треугольников'},
+   {t:'S_{\\text{бок}} = \\dfrac{1}{2} P_{\\text{осн}} h', n:'Вместо апофемы ℓ стоит высота h'},
+   {t:'S_{\\text{бок}} = \\dfrac{1}{2} S_{\\text{осн}} \\cdot \\ell', n:'Нужен периметр P, а не площадь основания'}]},
+ {s:'правильной пирамиды', full:'Правильная пирамида', e:'🔺', cat:'S', tex:'S = S_{\\text{осн}} + \\dfrac{1}{2} P_{\\text{осн}} \\ell', mut:[
+   {t:'S = S_{\\text{осн}} + P_{\\text{осн}} \\ell', n:'Потеряна ½ у боковой части'},
+   {t:'S = 2S_{\\text{осн}} + P_{\\text{осн}} \\ell', n:'Это формула призмы — у пирамиды одно основание'},
+   {t:'S = \\dfrac{1}{2} S_{\\text{осн}} + P_{\\text{осн}} \\ell', n:'½ стоит не там'}]},
+ {s:'конуса', full:'Конус', e:'🍦', cat:'V', tex:'V = \\dfrac{1}{3}\\pi R^{2} h', mut:[
+   {t:'V = \\pi R^{2} h', n:'Это объём цилиндра'},
+   {t:'V = \\dfrac{1}{2}\\pi R^{2} h', n:'Дробь не та: ⅓, а не ½'},
+   {t:'V = \\dfrac{1}{3}\\pi R h', n:'Потерян квадрат у R'}]},
+ {s:'конуса', full:'Конус', e:'🍦', cat:'L', tex:'S_{\\text{бок}} = \\pi R \\ell', mut:[
+   {t:'S_{\\text{бок}} = 2\\pi R \\ell', n:'Двойка — это у цилиндра'},
+   {t:'S_{\\text{бок}} = \\dfrac{1}{2}\\pi R \\ell', n:'Развёртка конуса — целый круг πRℓ'},
+   {t:'S_{\\text{бок}} = \\pi R^{2} h', n:'Это объём конуса без ⅓, не боковая поверхность'}]},
+ {s:'конуса', full:'Конус', e:'🍦', cat:'X', tex:'\\ell = \\sqrt{R^{2} + h^{2}}', mut:[
+   {t:'\\ell = R + h', n:'Корень не «снимается»: образующая не равна сумме'},
+   {t:'\\ell = \\sqrt{R^{2} - h^{2}}', n:'Минус не там: в прямоугольном треугольнике всё плюсуется'},
+   {t:'\\ell = R^{2} + h^{2}', n:'Потерян корень'}]},
+ {s:'конуса', full:'Конус', e:'🍦', cat:'S', tex:'S = \\pi R(R + \\ell)', mut:[
+   {t:'S = \\pi R(R + h)', n:'В скобке образующая ℓ, а не высота h'},
+   {t:'S = 2\\pi R(R + \\ell)', n:'Двойка — это у цилиндра'},
+   {t:'S = \\pi R\\ell', n:'Это только боковая поверхность'}]},
+ {s:'шара', full:'Шар (сфера)', e:'⚽', cat:'V', tex:'V = \\dfrac{4}{3}\\pi R^{3}', mut:[
+   {t:'V = 4\\pi R^{3}', n:'Потерян множитель ⅓'},
+   {t:'V = \\dfrac{4}{3}\\pi R^{2}', n:'У R куб, а не квадрат — объём «трёхмерный»'},
+   {t:'V = 4\\pi R^{2}', n:'Это площадь сферы, а не объём'}]},
+ {s:'шара', full:'Шар (сфера)', e:'⚽', cat:'S', tex:'S = 4\\pi R^{2}', mut:[
+   {t:'S = 2\\pi R^{2}', n:'Вдвое меньше, чем нужно'},
+   {t:'S = 4\\pi R^{3}', n:'Куб у R — это из объёма'},
+   {t:'S = \\dfrac{4}{3}\\pi R^{2}', n:'⅓ появляется только в объёме шара'}]},
+ {s:'усечённого конуса', full:'Усечённый конус', e:'🪣', cat:'V', tex:'V = \\dfrac{1}{3}\\pi h(R^{2} + Rr + r^{2})', mut:[
+   {t:'V = \\dfrac{1}{3}\\pi h(R^{2} + r^{2})', n:'Потеряно среднее слагаемое Rr'},
+   {t:'V = \\pi h(R^{2} + Rr + r^{2})', n:'Потеряна ⅓'},
+   {t:'V = \\dfrac{1}{3}\\pi h(R + r)^{2}', n:'(R+r)² даёт R² + 2Rr + r² — не та формула'}]},
+ {s:'усечённой пирамиды', full:'Усечённая пирамида', e:'⛺', cat:'V', tex:'V = \\dfrac{1}{3} h(S_{1} + \\sqrt{S_{1}S_{2}} + S_{2})', mut:[
+   {t:'V = \\dfrac{1}{3} h(S_{1} + S_{2})', n:'Потеряно среднее слагаемое √(S₁S₂)'},
+   {t:'V = h(S_{1} + \\sqrt{S_{1}S_{2}} + S_{2})', n:'Потеряна ⅓'},
+   {t:'V = \\dfrac{1}{3} h\\sqrt{S_{1}S_{2}}', n:'Осталось только среднее слагаемое — не вся формула'}]}
+];
+
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function plural(n, one, few, many){ var n10=n%10, n100=n%100; if(n10===1&&n100!==11)return one; if(n10>=2&&n10<=4&&(n100<12||n100>14))return few; return many; }
+
+var R = { score:0, total:0, streak:0, best:+(localStorage.getItem('stereoMiniBest')||0), mode:'mix' };
+var queue = [];      // вопросы на отработку
+var cur = null;      // текущий вопрос
+var answered = false;
+
+// ---------- Формульный вопрос ----------
+function makeFormulaQ(entry){
+  entry = entry || pick(ENTRIES);
+  var correct = { tex:entry.tex, ok:true, label:LABEL[entry.cat]+' · '+entry.full, cls:entry.cat };
+  var used = {};
+  used[entry.tex] = 1;
+  var buggy = [], diff = [];
+  var muts = shuffle(entry.mut.slice());
+  for (var i=0;i<muts.length && buggy.length<2;i++){
+    var m = muts[i];
+    if (used[m.t]) continue;
+    used[m.t] = 1;
+    buggy.push({ tex:m.t, ok:false, note:m.n, cls:entry.cat });
+  }
+  var others = shuffle(ENTRIES.filter(function(e){ return e!==entry && e.cat===entry.cat; }));
+  for (var j=0;j<others.length && diff.length<3;j++){
+    if (used[others[j].tex]) continue;
+    used[others[j].tex] = 1;
+    diff.push({ tex:others[j].tex, ok:false, real:LABEL[others[j].cat]+' · '+others[j].full, cls:others[j].cat });
+  }
+  // если не хватило «других» — доливаем из любых записей
+  for (var q=0;q<ENTRIES.length && diff.length<3;q++){
+    var e2 = ENTRIES[q];
+    if (e2===entry || used[e2.tex]) continue;
+    used[e2.tex]=1;
+    diff.push({ tex:e2.tex, ok:false, real:LABEL[e2.cat]+' · '+e2.full, cls:e2.cat });
+  }
+  // если не хватило «косяков» — берём мутантов у других тел
+  for (var w=0;w<ENTRIES.length && buggy.length<2;w++){
+    var e3 = ENTRIES[w];
+    if (e3===entry) continue;
+    for (var m2=0;m2<e3.mut.length && buggy.length<2;m2++){
+      if (used[e3.mut[m2].t]) continue;
+      used[e3.mut[m2].t]=1;
+      buggy.push({ tex:e3.mut[m2].t, ok:false, note:e3.mut[m2].n, cls:entry.cat });
+    }
+  }
+  return { type:'f', entry:entry, opts:shuffle([correct].concat(buggy).concat(diff)) };
+}
+
+// ---------- Вопрос на подобие ----------
+function makeSimQ(){
+  var k = pick([2,3,4,5]);
+  var kind = Math.floor(Math.random()*7);
+  var raz = plural(k,'раз','раза','раз');
+  var prompt, target, expl;
+  var hint = 'При подобии с коэффициентом k: длины ×k, площади ×k², объёмы ×k³.';
+  var bodies = ['куба','правильной пирамиды','прямоугольного параллелепипеда','конуса (радиус и высота)','цилиндра (радиус и высота)','шара (радиус)'];
+  switch(kind){
+    case 0:
+      prompt = 'Все рёбра ' + pick(['куба','правильной пирамиды','прямоугольного параллелепипеда','тетраэдра']) + ' увеличили в ' + k + ' ' + raz + '. Во сколько раз увеличилась площадь его поверхности?';
+      target = k*k;
+      expl = 'Площадь растёт как k²: ' + k + '² = ' + (k*k) + '.';
+      break;
+    case 1:
+      prompt = 'Все размеры ' + pick(bodies) + ' увеличили в ' + k + ' ' + raz + '. Во сколько раз увеличился объём?';
+      target = Math.pow(k,3);
+      expl = 'Объём растёт как k³: ' + k + '³ = ' + Math.pow(k,3) + '.';
+      break;
+    case 2:
+      prompt = 'Объём тела увеличился в ' + Math.pow(k,3) + ' ' + plural(Math.pow(k,3),'раз','раза','раз') + '. Во сколько раз увеличились его линейные размеры?';
+      target = k;
+      expl = 'Если объёмы отличаются в k³ раз, то размеры — в k раз: ' + Math.pow(k,3) + ' = k³, значит k = ' + k + '.';
+      break;
+    case 3:
+      prompt = 'Объёмы двух подобных тел относятся как 1 : ' + Math.pow(k,3) + '. Во сколько раз отличаются площади их поверхностей?';
+      target = k*k;
+      expl = 'Объёмы ~ k³ → 1 : ' + Math.pow(k,3) + ' даёт k = ' + k + '; площади ~ k², ответ ' + (k*k) + ' (можно писать 1 : ' + (k*k) + ').';
+      break;
+    case 4:
+      prompt = 'Площади поверхностей двух подобных конусов относятся как 1 : ' + (k*k) + '. Во сколько раз отличаются их объёмы?';
+      target = Math.pow(k,3);
+      expl = 'Площади ~ k² → k = ' + k + '; объёмы ~ k³ = ' + Math.pow(k,3) + '.';
+      break;
+    case 5:
+      prompt = 'Площадь поверхности тела увеличилась в ' + (k*k) + ' ' + plural(k*k,'раз','раза','раз') + '. Во сколько раз увеличился объём?';
+      target = Math.pow(k,3);
+      expl = 'k² = ' + (k*k) + ' → k = ' + k + '; объём × k³ = ' + Math.pow(k,3) + '.';
+      break;
+    default:
+      prompt = 'Все рёбра ' + pick(['куба','правильной пирамиды','прямоугольного параллелепипеда']) + ' увеличили в ' + k + ' ' + raz + '. Во сколько раз увеличился периметр основания?';
+      target = k;
+      expl = 'Периметр — линейная величина, растёт как k: ответ ' + k + '.';
+  }
+  return { type:'s', prompt:prompt, target:target, expl:expl, hint:hint };
+}
+
+// ---------- Рендер ----------
+function texEl(tex){
+  var span = document.createElement('span');
+  span.className = 'tex';
+  span.dataset.tex = tex;
+  return span;
+}
+function renderAll(){
+  var els = document.querySelectorAll('.tex');
+  for (var i=0;i<els.length;i++){
+    var t = els[i].dataset.tex;
+    if (window.katex){
+      try { window.katex.render(t, els[i], { throwOnError:false }); }
+      catch(e){ els[i].textContent = t; }
+    } else {
+      els[i].textContent = t;
+    }
+  }
+}
+
+// ---------- Тренажёр ----------
+function nextQuestion(){
+  answered = false;
+  if (queue.length){
+    cur = queue.shift();
+    updateDrill();
+  } else {
+    if (R.mode==='f') cur = makeFormulaQ();
+    else if (R.mode==='s') cur = makeSimQ();
+    else cur = Math.random()<0.5 ? makeFormulaQ() : makeSimQ();
+  }
+  renderQ();
+}
+function updateDrill(){
+  var btn = $('drillBtn');
+  if (queue.length){
+    btn.textContent = '🔁 Отработать (' + queue.length + ')';
+    $('stQueue').style.display = '';
+  } else {
+    $('stQueue').style.display = 'none';
+  }
+}
+function renderQ(){
+  var stage = $('stage');
+  stage.innerHTML = '';
+  if (cur.type==='f') renderFormula(stage, cur);
+  else renderSim(stage, cur);
+  renderAll();
+}
+function renderFormula(stage, q){
+  var e = q.entry;
+  var qs = document.createElement('div');
+  qs.className = 'sticker cat' + e.cat;
+  qs.innerHTML = '<div class="tape"></div><div class="qhead"><span class="qemoji">'+e.e+'</span><span class="qlabel">'+LABEL[e.cat]+'</span></div>'
+    + '<div class="qtext">' + LABEL[e.cat].toLowerCase() + ' ' + e.s + '</div>'
+    + '<div class="qsub">Шесть карточек: три — совсем из других тел, три — похожие на правду. Выбери верную.</div>';
+  var grid = document.createElement('div');
+  grid.className = 'grid';
+  q.opts.forEach(function(o, i){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'opt ' + o.cls;
+    b.appendChild(texEl(o.tex));
+    b.addEventListener('click', function(){ answerFormula(i); });
+    grid.appendChild(b);
+  });
+  var fb = document.createElement('div');
+  fb.id = 'fb';
+  fb.className = 'fb';
+  var row = document.createElement('div');
+  row.className = 'btnrow';
+  var next = document.createElement('button');
+  next.type='button'; next.className='btn pri hide'; next.id='nextBtn'; next.textContent='Далее →';
+  next.addEventListener('click', nextQuestion);
+  row.appendChild(next);
+  stage.appendChild(qs); stage.appendChild(grid); stage.appendChild(fb); stage.appendChild(row);
+  q.grid = grid; q.fb = fb; q.nextBtn = next;
+}
+function answerFormula(i){
+  if (answered) return;
+  answered = true;
+  var q = cur, opt = q.opts[i], good = opt.ok;
+  var cards = q.grid.children;
+  for (var j=0;j<cards.length;j++){
+    var o = q.opts[j];
+    if (o.ok) { cards[j].classList.add('ok'); cards[j].insertAdjacentHTML('beforeend','<span class="stamp">✓</span>'); }
+    else if (j===i) { cards[j].classList.add('bad'); cards[j].insertAdjacentHTML('beforeend','<span class="stamp">✗</span>'); }
+    else cards[j].classList.add('dim');
+  }
+  R.total++;
+  if (good){
+    R.score++; R.streak++;
+    if (R.streak>R.best){ R.best=R.streak; localStorage.setItem('stereoMiniBest', R.best); }
+    q.fb.className='fb good';
+    q.fb.innerHTML = '✅ Верно! Это ' + opt.label + '.';
+  } else {
+    R.streak=0;
+    queue.push(q);
+    updateDrill();
+    q.fb.className='fb err';
+    if (opt.note) q.fb.innerHTML = '❌ ' + opt.note + '<div class="big">Правильная: <span id="fbTex"></span></div>';
+    else q.fb.innerHTML = '❌ Это ' + opt.real + ' — не то, о чём спрашивают.<div class="big">Правильная: <span id="fbTex"></span></div>';
+  }
+  q.nextBtn.classList.remove('hide');
+  q.nextBtn.focus();
+  updateStats();
+  renderAll();
+}
+function renderSim(stage, q){
+  var qs = document.createElement('div');
+  qs.className = 'sticker catR';
+  qs.innerHTML = '<div class="tape"></div><div class="qhead"><span class="qemoji">📏</span><span class="qlabel">ПОДОБИЕ</span></div>'
+    + '<div class="qtext">' + q.prompt + '</div>';
+  var row = document.createElement('div');
+  row.className = 'simrow';
+  var inp = document.createElement('input');
+  inp.id='simInp'; inp.className='inp'; inp.type='text'; inp.placeholder='напр. 4 или 1:4'; inp.autocomplete='off';
+  inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ answered ? nextQuestion() : submitSim(); } });
+  var check = document.createElement('button');
+  check.type='button'; check.className='btn pri'; check.textContent='Проверить';
+  check.addEventListener('click', submitSim);
+  var skip = document.createElement('button');
+  skip.type='button'; skip.className='btn'; skip.textContent='Пропустить';
+  skip.addEventListener('click', function(){ R.streak=0; queue.push(q); updateDrill(); updateStats(); nextQuestion(); });
+  row.appendChild(inp); row.appendChild(check); row.appendChild(skip);
+  var hint = document.createElement('div');
+  hint.className='hintbox'; hint.id='simHint';
+  hint.textContent = q.hint;
+  var hb = document.createElement('button');
+  hb.type='button'; hb.className='btn'; hb.textContent='Подсказка';
+  hb.addEventListener('click', function(){ hint.style.display='block'; });
+  var fb = document.createElement('div'); fb.id='fb'; fb.className='fb';
+  var nxt = document.createElement('button');
+  nxt.type='button'; nxt.className='btn pri hide'; nxt.id='nextBtn'; nxt.textContent='Далее →';
+  nxt.addEventListener('click', nextQuestion);
+  stage.appendChild(qs); stage.appendChild(row); stage.appendChild(hb); stage.appendChild(hint); stage.appendChild(fb); stage.appendChild(nxt);
+  q.inp = inp; q.fb = fb; q.nextBtn = nxt;
+  inp.focus();
+}
+function parseSim(s){
+  s = s.trim().replace(',', '.').replace(/\s+/g,'').replace(/раз$/,'');
+  var m = s.match(/^(\d+(?:\.\d+)?)[::/](\d+(?:\.\d+)?)$/);
+  if (m){ var a=+m[1], b=+m[2]; return a>=b ? a/b : b/a; }
+  if (/^\d+(?:\.\d+)?$/.test(s)) return +s;
+  return null;
+}
+function submitSim(){
+  if (answered) return;
+  var q = cur, v = parseSim(q.inp.value);
+  if (v===null){ q.fb.className='fb err'; q.fb.textContent='Не понял ответ. Пиши число (9) или отношение (4:9, 4/9).'; return; }
+  answered = true;
+  var good = Math.abs(v - q.target) < 1e-9;
+  R.total++;
+  if (good){
+    R.score++; R.streak++;
+    if (R.streak>R.best){ R.best=R.streak; localStorage.setItem('stereoMiniBest', R.best); }
+    q.fb.className='fb good';
+    q.fb.innerHTML = '✅ Верно! ' + q.expl;
+  } else {
+    R.streak=0;
+    queue.push(q);
+    updateDrill();
+    q.fb.className='fb err';
+    q.fb.innerHTML = '❌ Правильный ответ: <b>' + q.target + '</b>. ' + q.expl;
+  }
+  q.nextBtn.classList.remove('hide');
+  q.nextBtn.focus();
+  updateStats();
+}
+function updateStats(){
+  $('stScore').textContent = '✔ ' + R.score + ' · ✖ ' + (R.total-R.score);
+  $('stStreak').textContent = '🔥 ' + R.streak + ' · рекорд ' + R.best;
+}
+
+// ---------- Шпаргалка ----------
+function renderCheat(){
+  var root = $('pageCheat');
+  var groups = {};
+  var order = [];
+  ENTRIES.forEach(function(e){
+    if (!groups[e.full]){ groups[e.full] = { emoji:e.e, items:[] }; order.push(e.full); }
+    groups[e.full].items.push(e);
+  });
+  var html = '';
+  order.forEach(function(name){
+    var g = groups[name];
+    html += '<div class="grp"><h3>' + g.emoji + ' ' + name + '</h3><div class="chips">';
+    g.items.forEach(function(e){
+      html += '<div class="fcard"><span class="chip c' + e.cat + '">' + LABEL[e.cat] + '</span><span class="tex" data-tex="' + e.tex.replace(/"/g,'&quot;') + '"></span></div>';
+    });
+    html += '</div></div>';
+  });
+  html += '<div class="empty" style="border-style:solid">📏 Подобие: длины ×k, площади ×k², объёмы ×k³</div>';
+  root.innerHTML = html;
+  renderAll();
+}
+
+// ---------- Переключение вкладок и режимов ----------
+$('tabTrain').addEventListener('click', function(){
+  $('tabTrain').classList.add('on'); $('tabCheat').classList.remove('on');
+  $('pageTrain').style.display=''; $('pageCheat').style.display='none';
+});
+$('tabCheat').addEventListener('click', function(){
+  $('tabCheat').classList.add('on'); $('tabTrain').classList.remove('on');
+  $('pageCheat').style.display=''; $('pageTrain').style.display='none';
+  renderCheat();
+});
+document.querySelectorAll('.mode').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.mode').forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+    R.mode = btn.dataset.mode;
+    queue = []; updateDrill();
+    nextQuestion();
+  });
+});
+$('drillBtn').addEventListener('click', function(){
+  if (queue.length) nextQuestion();
+});
+window.addEventListener('load', renderAll);
+document.addEventListener('DOMContentLoaded', function(){
+  updateStats();
+  nextQuestion();
+});
+if (document.readyState !== 'loading'){ updateStats(); nextQuestion(); }
+})();
+</script>
+</body>
+</html>

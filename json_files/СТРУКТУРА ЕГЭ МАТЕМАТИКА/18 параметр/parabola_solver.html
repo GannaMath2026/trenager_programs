@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Парабола на промежутке — пошаговый решатель</title>
+<style>
+:root{--ink:#15233c;--muted:#5d6b80;--bg:#eef1f6;--border:#d6dce6;--blue:#356aff;--purple:#6b4be8;--green:#0f9d58;--red:#ef3020;--amber:#b45309}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+.app{max-width:1400px;margin:auto;padding:16px}
+.header{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:14px}
+.header h1{margin:0 0 4px;font-size:clamp(20px,2.4vw,28px)}
+.header .sub{color:var(--muted);font-size:14px}
+.main{display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px;align-items:start}
+.panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto}
+.panel h2{margin:0 0 10px;font-size:16px}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:12px;font-weight:700;color:#53627a;margin-bottom:4px}
+.field input[type=text],.field input[type=number],.field select{width:100%;padding:8px 10px;border:1px solid #bfc9d9;border-radius:8px;font:inherit;background:#fff}
+.field .hintline{font-size:11px;color:var(--muted);margin-top:3px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.chk{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;margin-top:2px}
+.chk label{display:flex;align-items:center;gap:5px;cursor:pointer}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.btn{border:1px solid #c5cddd;border-radius:9px;background:#fff;color:var(--ink);padding:9px 13px;font-weight:700;cursor:pointer;font-size:14px}
+.btn:hover{background:#f5f6fa}
+.btn.primary{background:var(--purple);border-color:var(--purple);color:#fff}
+.btn.ghost{background:#f8f9fc}
+.steps{display:flex;flex-direction:column;gap:12px}
+.step{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px 18px}
+.step h3{margin:0 0 10px;font-size:16px;display:flex;align-items:center;gap:9px}
+.stepnum{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;border-radius:50%;background:var(--purple);color:#fff;font-size:13px;font-weight:800;padding:0 6px}
+.step .math{font-family:Georgia,'Times New Roman',serif;font-size:17px;background:#f6f8fc;border:1px solid #e4e9f2;border-radius:9px;padding:9px 12px;margin:7px 0;overflow-x:auto}
+.step .note{font-size:13px;color:var(--muted);margin:6px 0}
+.warn{border-left:3px solid var(--amber);background:#fff8ef;padding:8px 11px;border-radius:0 8px 8px 0;font-size:13px;color:#7c4a03;margin:8px 0}
+.ok{border-left:3px solid var(--green);background:#effaf3;padding:8px 11px;border-radius:0 8px 8px 0;font-size:13px;color:#14532d;margin:8px 0}
+.answer{background:#eef4ff;border:2px solid var(--blue);border-radius:12px;padding:12px 14px;font-size:17px;font-weight:700}
+.answer .fam{font-family:Georgia,serif}
+table.tbl{border-collapse:collapse;width:100%;font-size:13px;margin:8px 0}
+table.tbl th,table.tbl td{border:1px solid var(--border);padding:5px 8px;text-align:center}
+table.tbl th{background:#f4f6fb;font-weight:800}
+table.tbl td.num{font-family:Georgia,serif;font-size:14px}
+.sysbox{display:grid;grid-template-columns:22px 1fr;gap:4px;font-family:Georgia,serif;font-size:16px;line-height:1.45;background:#f8faff;border:1px solid #dfe6f5;border-radius:9px;padding:10px 12px;margin:8px 0;max-width:560px}
+.brace{font-size:40px;line-height:1;color:#2c65e8;display:flex;align-items:center;justify-content:center}
+.sysbox div div{overflow-wrap:anywhere}
+.bar{margin:10px 0}
+.bar .lbl{font-size:13px;font-weight:700;margin-bottom:3px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.bar svg{width:100%;height:46px;display:block}
+.bar.final svg{height:52px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:10px}
+.card{background:#fff;border:1px solid #cfd6e1;border-radius:12px;padding:8px;box-shadow:0 2px 5px #13233b10}
+.card svg{width:100%;height:auto;display:block}
+.card .cap{font-size:12.5px;font-weight:700;text-align:center;padding:4px 2px 2px}
+.gallery-title{font-size:15px;font-weight:800;margin:14px 0 2px}
+.stepnav{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0 2px}
+.stepnav .cnt{font-size:13px;color:var(--muted)}
+.empty{background:#fff;border:1px dashed #b9c3d4;border-radius:12px;padding:22px;text-align:center;color:var(--muted)}
+.err{border-left:3px solid var(--red);background:#fff4f2;padding:9px 12px;border-radius:0 8px 8px 0;color:#8a1d10;font-size:14px}
+@media(max-width:960px){.main{grid-template-columns:1fr}.panel{position:static;max-height:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="header">
+<h1>Парабола на промежутке — пошаговый решатель</h1>
+<div class="sub">Вводите уравнение с параметром <b>a</b>, промежуток и требование к корням. Решатель проводит все шаги метода: стандартный вид → старший коэффициент → дискриминант → корни → система условий → ответ, и рисует варианты расположения параболы относительно краёв.</div>
+</header>
+<div class="main">
+<aside class="panel">
+<h2>Условие</h2>
+<div class="field"><label>Пример</label><select id="exSel"></select></div>
+<div class="field"><label>Коэффициент при x² — функция от a</label><input type="text" id="inA" value="1"><div class="hintline">можно: 1 · a · a−3 · 2a · a(a+1)</div></div>
+<div class="field"><label>Коэффициент при x</label><input type="text" id="inB" value="-2a"></div>
+<div class="field"><label>Свободный член</label><input type="text" id="inC" value="a^2-1"></div>
+<div class="field grid2">
+<div><label>Левый край k₁</label><input type="number" id="inK1" value="1" step="any"></div>
+<div><label>Правый край k₂</label><input type="number" id="inK2" value="4" step="any"></div>
+</div>
+<div class="field chk">
+<label><input type="checkbox" id="inC1" checked> k₁ включён [</label>
+<label><input type="checkbox" id="inC2" checked> k₂ включён ]</label>
+</div>
+<div class="field"><label>Требование к корням</label>
+<select id="inCond">
+<option value="both">Оба корня в промежутке</option>
+<option value="atleast1">Хотя бы один корень в промежутке</option>
+<option value="exactly1">Ровно один корень в промежутке</option>
+<option value="none">Ни одного корня в промежутке</option>
+<option value="bothout">Корни существуют, оба вне промежутка</option>
+<option value="straddle">Корни по разные стороны промежутка</option>
+</select></div>
+<div class="field grid2">
+<div><label>Диапазон a: от</label><input type="number" id="inAmin" value="-10" step="any"></div>
+<div><label>до</label><input type="number" id="inAmax" value="10" step="any"></div>
+</div>
+<div class="btnrow"><button class="btn primary" id="solveBtn">▶ Решить по шагам</button><button class="btn ghost" id="showAllBtn">Показать всё сразу</button></div>
+<div id="formErr"></div>
+</aside>
+<section>
+<div id="steps" class="steps"></div>
+<div id="noresult" class="empty" style="display:none">Заполните условие слева и нажмите «Решить по шагам».</div>
+</section>
+</div>
+</div>
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+const EXAMPLES = [
+ {name:'Пример 1 · оба корня в (1; 4)', A:'1', B:'-2a', C:'a^2-1', k1:1, k2:4, c1:false, c2:false, cond:'both', amin:-10, amax:10},
+ {name:'Пример 2 · ровно один корень в [0; 3]', A:'1', B:'-(a+2)', C:'a+1', k1:0, k2:3, c1:true, c2:true, cond:'exactly1', amin:-10, amax:10},
+ {name:'Пример 3 · хотя бы один корень в (−1; 1)', A:'1', B:'-2(a+1)', C:'a(a+2)', k1:-1, k2:1, c1:false, c2:false, cond:'atleast1', amin:-10, amax:10},
+ {name:'Пример 4 · старший коэффициент зависит от a', A:'a-3', B:'2', C:'-1', k1:-2, k2:2, c1:true, c2:true, cond:'both', amin:-2, amax:8},
+ {name:'Пример 5 · нет корней в [0; 2]', A:'1', B:'-(a+1)', C:'a', k1:0, k2:2, c1:true, c2:true, cond:'none', amin:-10, amax:10}
+];
+
+// ---------- parsing ----------
+const FUNCS = ['sqrt','abs','exp','log','pi'];
+function parseExpr(raw){
+  let s = String(raw||'').trim();
+  if(!s) throw new Error('Пустое выражение');
+  s = s.replace(/,/g,'.').replace(/\^/g,'**');
+  s = s.replace(/([\d)])\s*(?=[(])/g,'$1*').replace(/([\d)])\s*(?=a\b)/g,'$1*').replace(/\ba\s*(?=[\d(])/g,'a*');
+  const ids = s.match(/[A-Za-z_]+/g) || [];
+  for(const id of ids){ if(id!=='a' && !FUNCS.includes(id.toLowerCase()) && id!=='e' && id!=='E') throw new Error('Недопустимое имя: '+id); }
+  s = s.replace(/\b(sqrt|abs|exp|log)\(/g,'Math.$1(').replace(/\bpi\b/g,'Math.PI').replace(/\be\b/g,'Math.E');
+  if(/[^0-9aA+\-*/().\s]|Math\s*\.\s*\./.test(s.replace(/Math\.(sqrt|abs|exp|log|PI|E)/g,''))) throw new Error('Недопустимые символы в выражении');
+  let f;
+  try { f = new Function('a','"use strict";return ('+s+');'); } catch(e){ throw new Error('Не удалось разобрать выражение: '+raw); }
+  const t = f(0.7);
+  if(typeof t !== 'number') throw new Error('Выражение должно быть числовым: '+raw);
+  return f;
+}
+function ev(f, a){ try { const v = f(a); return (typeof v === 'number' && isFinite(v)) ? v : NaN; } catch(e){ return NaN; } }
+
+// ---------- model ----------
+let cur = null;      // parsed task
+let sol = null;      // numeric solution
+let stepsShown = 1, stepsData = [];
+
+function makeCtx(fA, fB, fC, k1, k2, c1, c2){
+  return function(a){
+    const A = ev(fA,a), B = ev(fB,a), C = ev(fC,a);
+    const info = rootsAt(A,B,C);
+    const yk1 = A*k1*k1 + B*k1 + C;
+    const yk2 = A*k2*k2 + B*k2 + C;
+    const x0 = info.roots.length === 2 ? (info.roots[0]+info.roots[1])/2 : (info.roots.length === 1 ? info.roots[0] : NaN);
+    return { a, A, B, C, info, yk1, yk2, x0, k1, k2, c1, c2 };
+  };
+}
+function rootsAt(A,B,C){
+  if([A,B,C].some(v => !isFinite(v))) return {kind:'nope', roots:[], D:NaN};
+  if(Math.abs(A) < 1e-12){
+    if(Math.abs(B) < 1e-12) return { kind: Math.abs(C) < 1e-12 ? 'identity' : 'nope', roots:[], D:NaN };
+    return { kind:'line', roots:[-C/B], D:NaN };
+  }
+  const D = B*B - 4*A*C;
+  if(D < -1e-12) return { kind:'quad', roots:[], D };
+  const sq = Math.sqrt(Math.max(0,D));
+  let r1 = (-B - sq)/(2*A), r2 = (-B + sq)/(2*A);
+  if(r1 > r2){ const t=r1; r1=r2; r2=t; }
+  return { kind:'quad', roots: (D < 1e-12) ? [(r1+r2)/2] : [r1,r2], D };
+}
+function within(x, ctx){
+  const e = 1e-9;
+  if(!isFinite(x)) return false;
+  if(Math.abs(x-ctx.k1) < e) return ctx.c1;
+  if(Math.abs(x-ctx.k2) < e) return ctx.c2;
+  return x > ctx.k1 && x < ctx.k2;
+}
+function countIn(ctx){
+  if(ctx.info.kind === 'identity') return 99;
+  const rs = ctx.info.roots; let c = 0;
+  rs.forEach((r,i) => { if(i===0 || Math.abs(r-rs[i-1])>1e-9){ if(within(r,ctx)) c++; } });
+  return c;
+}
+function condFinal(cond){
+  switch(cond){
+    case 'both':     return ctx => countIn(ctx) === 2;
+    case 'atleast1': return ctx => countIn(ctx) >= 1;
+    case 'exactly1': return ctx => countIn(ctx) === 1;
+    case 'none':     return ctx => countIn(ctx) === 0;
+    case 'bothout':  return ctx => (ctx.info.kind==='quad' && ctx.info.roots.length>=1 && countIn(ctx)===0) || (ctx.info.kind==='line' && !within(ctx.info.roots[0],ctx));
+    case 'straddle': return ctx => ctx.info.kind==='quad' && ctx.info.roots.length===2 && ctx.yk1*ctx.yk2 < 0;
+  }
+}
+const COND_LABEL = {
+  both:'оба корня в промежутке', atleast1:'хотя бы один корень в промежутке',
+  exactly1:'ровно один корень в промежутке', none:'нет корней в промежутке',
+  bothout:'оба корня вне промежутка', straddle:'корни по разные стороны промежутка'
+};
+function subConds(cond){
+  switch(cond){
+    case 'both': return [
+      {label:'D ≥ 0', f:ctx => ctx.info.kind==='quad' ? ctx.info.D >= -1e-9 : true},
+      {label:'x₀ ∈ промежутка', f:ctx => ctx.info.roots.length ? within(ctx.x0,ctx) : false},
+      {label:(c)=>'a·y(k₁) '+(c.c1?'≥':'>')+' 0', f:(ctx,spec)=> ctx.info.kind==='quad' && ctx.yk1*ctx.A > (ctx.c1?-1e-9:1e-9)},
+      {label:(c)=>'a·y(k₂) '+(c.c2?'≥':'>')+' 0', f:(ctx,spec)=> ctx.info.kind==='quad' && ctx.yk2*ctx.A > (ctx.c2?-1e-9:1e-9)}
+    ];
+    case 'atleast1': return [{label:'в промежутке есть корень', f:ctx => countIn(ctx) >= 1}];
+    case 'exactly1': return [{label:'ровно один корень в промежутке', f:ctx => countIn(ctx) === 1}];
+    case 'none': return [
+      {label:'корней нет вообще или они вне промежутка', f:ctx => countIn(ctx) === 0}
+    ];
+    case 'bothout': return [
+      {label:'корни существуют', f:ctx => ctx.info.roots.length >= 1},
+      {label:'оба корня вне промежутка', f:ctx => countIn(ctx) === 0}
+    ];
+    case 'straddle': return [
+      {label:'y(k₁)·y(k₂) < 0', f:ctx => ctx.info.kind==='quad' && ctx.yk1*ctx.yk2 < 0}
+    ];
+  }
+}
+
+// ---------- numeric solve ----------
+function solveNum(task){
+  const fA = parseExpr(task.A), fB = parseExpr(task.B), fC = parseExpr(task.C);
+  const ctx = makeCtx(fA, fB, fC, task.k1, task.k2, task.c1, task.c2);
+  const amin = Math.min(task.amin, task.amax), amax = Math.max(task.amin, task.amax);
+  const N = 4801, step = (amax-amin)/(N-1);
+  const as = [], subs = subConds(task.cond).map(s => ({...s, bool:[]})), fin = [];
+  let singular = [];
+  let prevA = NaN;
+  for(let i=0;i<N;i++){
+    const a = amin + step*i;
+    const c = ctx(a);
+    as.push(a);
+    let all = true;
+    for(const s of subs){
+      let b;
+      try { b = !!s.f(c); } catch(e){ b = false; }
+      s.bool.push(b);
+      if(!b) all = false;
+    }
+    fin.push(all);
+    if(isFinite(prevA) && (prevA===0 || (Math.abs(c.A) < 1e-9 && Math.abs(prevA) >= 1e-9))) singular.push(a);
+    if(isFinite(c.A) && Math.abs(c.A) < 1e-9 && !(Math.abs(prevA) < 1e-9)) singular.push(a);
+    prevA = c.A;
+  }
+  singular = [...new Set(singular.map(v => Math.round(v*1e6)/1e6))];
+  // refine boundaries of final bool
+  const bisect = (iLo, iHi) => {
+    let lo = as[iLo], hi = as[iHi], flo = fin[iLo];
+    for(let it=0; it<42; it++){
+      const mid = (lo+hi)/2;
+      const fm = finEval(mid);
+      if(fm === flo){ lo = mid; } else { hi = mid; }
+    }
+    return (lo+hi)/2;
+  };
+  const finEval = a => {
+    const c = ctx(a); let all = true;
+    for(const s of subs){ try { if(!s.f(c)){ all=false; break; } } catch(e){ return false; } }
+    return all;
+  };
+  const bounds = [];
+  for(let i=0;i<N-1;i++){
+    if(fin[i] !== fin[i+1]) bounds.push({ i, val: bisect(i, i+1), fromTrue: fin[i] });
+  }
+  const intervals = [];
+  let startVal = null;
+  const push = (lo, hi, incLo, incHi) => {
+    if(intervals.length){
+      const last = intervals[intervals.length-1];
+      if(Math.abs(hi - last.hi) < 1e-7 || Math.abs(lo - last.hi) < Math.max(1e-7, step*1.2)){
+        last.hi = hi; last.incHi = incHi; return;
+      }
+    }
+    intervals.push({ lo, hi, incLo, incHi });
+  };
+  if(fin[0]) startVal = as[0];
+  for(const b of bounds){
+    if(b.fromTrue){ push(startVal, b.val, true, finEval(b.val)); startVal = null; }
+    else { startVal = b.val; }
+  }
+  if(startVal !== null) push(startVal, as[N-1], true, finEval(as[N-1]));
+  // clean: verify each interval has positive measure
+  const ivs = intervals.filter(iv => iv.hi - iv.lo > 1e-7 || iv.incLo || iv.incHi);
+  const singletons = intervals.filter(iv => iv.hi - iv.lo <= 1e-7);
+  // sub-condition transition points for display
+  const subBounds = subs.map(s => {
+    const pts = [];
+    for(let i=0;i<N-1;i++) if(s.bool[i] !== s.bool[i+1]) pts.push(as[i+1]);
+    return pts;
+  });
+  return { as, subs, fin, finEval, ctx, intervals: ivs, singletons, singular, amin, amax, step,
+           fA, fB, fC, task, bounds };
+}
+
+// ---------- formatting ----------
+function fmtNum(v){
+  if(!isFinite(v)) return '—';
+  let r = Math.round(v*1000)/1000;
+  if(Object.is(r,-0)) r = 0;
+  return String(r);
+}
+function fmtInterval(iv){
+  const lo = fmtNum(iv.lo), hi = fmtNum(iv.hi);
+  return (iv.incLo?'[':'(') + lo + '; ' + hi + (iv.incHi?']':')');
+}
+function fmtAnswer(res){
+  const parts = res.intervals.map(fmtInterval);
+  const singles = res.singletons.map(iv => '{' + fmtNum(iv.lo) + '}');
+  const all = parts.concat(singles);
+  if(!all.length) return null;
+  return 'a ∈ ' + all.join(' ∪ ');
+}
+
+// ---------- bars ----------
+function barSVG(boolArr, amin, amax, singular, color, h){
+  const W = 1000, HH = h || 40, pad = 6;
+  let segs = '', i = 0;
+  const N = boolArr.length;
+  const X = i => pad + (W-2*pad) * i/(N-1);
+  while(i < N){
+    if(boolArr[i]){
+      let j = i; while(j+1 < N && boolArr[j+1]) j++;
+      segs += '<rect x="'+X(i).toFixed(1)+'" y="8" width="'+(X(j)-X(i)).toFixed(1)+'" height="'+(HH-22)+'" rx="4" fill="'+color+'"/>';
+      i = j+1;
+    } else i++;
+  }
+  let ticks = '<line x1="'+pad+'" y1="'+(HH-12)+'" x2="'+(W-pad)+'" y2="'+(HH-12)+'" stroke="#8a94a6" stroke-width="1.4"/>';
+  const lab = (x,t) => '<text x="'+x+'" y="'+(HH-1)+'" font-size="12" text-anchor="middle" fill="#3c4a63">'+esc(t)+'</text>';
+  ticks += lab(pad+16, fmtNum(amin)) + lab(W-pad-16, fmtNum(amax)) + lab(W/2, fmtNum((amin+amax)/2));
+  let marks = '';
+  for(const s of singular){
+    const x = pad + (W-2*pad)*(s-amin)/(amax-amin);
+    if(x>=pad && x<=W-pad) marks += '<line x1="'+x.toFixed(1)+'" y1="6" x2="'+x.toFixed(1)+'" y2="'+(HH-16)+'" stroke="#ef3020" stroke-width="1.6" stroke-dasharray="4 3"/>';
+  }
+  return '<svg viewBox="0 0 '+W+' '+HH+'" preserveAspectRatio="none" style="height:'+(h||40)+'px">'+segs+ticks+marks+'</svg>';
+}
+
+// ---------- real chart ----------
+let svgUid = 0;
+function realChartSVG(aVal, ctxf, task){
+  const c = ctxf(aVal);
+  const W=470,H=300,ml=20,mr=20,mt=14,mb=26, iw=W-ml-mr, ih=H-mt-mb;
+  let xs = [0, task.k1, task.k2];
+  if(c.info.roots.length) xs = xs.concat(c.info.roots);
+  let xmin = Math.min(...xs)-1.3, xmax = Math.max(...xs)+1.3;
+  if(xmax-xmin < 5){ const m=(xmax+xmin)/2; xmin=m-2.5; xmax=m+2.5; }
+  // y-range via sampling
+  const pts = [];
+  for(let i=0;i<=240;i++){ const x = xmin+(xmax-xmin)*i/240; const y = c.A*x*x+c.B*x+c.C; if(isFinite(y)) pts.push(y); }
+  pts.sort((p,q)=>p-q);
+  let ymin = pts[Math.floor(pts.length*0.04)], ymax = pts[Math.floor(pts.length*0.96)];
+  ymin = Math.min(ymin, 0) - 1; ymax = Math.max(ymax, 0) + 1;
+  if(ymax-ymin < 2){ const m=(ymax+ymin)/2; ymin=m-1; ymax=m+1; }
+  const X = x => ml + (x-xmin)/(xmax-xmin)*iw;
+  const Y = y => mt + (ymax-y)/(ymax-ymin)*ih;
+  const uid = ++svgUid;
+  let s = '<svg viewBox="0 0 '+W+' '+H+'">';
+  s += '<defs><pattern id="grid'+uid+'" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="#dfe3ea" stroke-width=".7"/></pattern>';
+  s += '<pattern id="hatch'+uid+'" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#ef3020" stroke-width="1.8" opacity=".55"/></pattern></defs>';
+  s += '<rect width="'+W+'" height="'+H+'" fill="#fff"/>';
+  s += '<rect x="'+ml+'" y="'+mt+'" width="'+iw+'" height="'+ih+'" fill="url(#grid'+uid+')"/>';
+  const zeroY = Y(0);
+  const k1x = X(task.k1), k2x = X(task.k2);
+  if(k1x > ml) s += '<rect x="'+ml+'" y="'+mt+'" width="'+(k1x-ml)+'" height="'+ih+'" fill="url(#hatch'+uid+')"/>';
+  if(k2x < W-mr) s += '<rect x="'+k2x+'" y="'+mt+'" width="'+(W-mr-k2x)+'" height="'+ih+'" fill="url(#hatch'+uid+')"/>';
+  s += '<line x1="'+ml+'" y1="'+zeroY+'" x2="'+(W-mr+5)+'" y2="'+zeroY+'" stroke="#111" stroke-width="1.8"/>';
+  s += '<path d="M '+(W-mr+5)+' '+zeroY+' l -8 -4 l 0 8 z" fill="#111"/>';
+  const boundary = (xx, closed, lab) => {
+    s += '<line x1="'+xx+'" y1="'+(mt+2)+'" x2="'+xx+'" y2="'+(H-mb)+'" stroke="#ef3020" stroke-width="2"/>';
+    s += '<circle cx="'+xx+'" cy="'+zeroY+'" r="4.6" fill="'+(closed?'#ef3020':'#fff')+'" stroke="#ef3020" stroke-width="2"/>';
+    s += '<text x="'+xx+'" y="'+(zeroY+18)+'" text-anchor="middle" fill="#c82317" font-family="Georgia" font-size="13" font-style="italic">'+lab+'</text>';
+  };
+  boundary(k1x, task.c1, 'k₁'); boundary(k2x, task.c2, 'k₂');
+  let path = '';
+  for(let i=0;i<=240;i++){
+    const x = xmin+(xmax-xmin)*i/240;
+    const y = c.A*x*x+c.B*x+c.C;
+    if(!isFinite(y)){ path += ''; continue; }
+    const py = Math.max(mt-6, Math.min(H-mb+6, Y(y)));
+    path += (path ? 'L' : 'M') + ' ' + X(x).toFixed(1) + ' ' + py.toFixed(1) + ' ';
+  }
+  s += '<path d="'+path+'" fill="none" stroke="#356aff" stroke-width="3" stroke-linecap="round"/>';
+  for(const r of c.info.roots){
+    if(r>=xmin && r<=xmax) s += '<circle cx="'+X(r).toFixed(1)+'" cy="'+zeroY.toFixed(1)+'" r="4.4" fill="#356aff" stroke="#fff" stroke-width="1.3"/>';
+  }
+  if(c.info.roots.length === 2){
+    const vx = (c.info.roots[0]+c.info.roots[1])/2, vy = c.A*vx*vx+c.B*vx+c.C;
+    if(vx>=xmin && vx<=xmax && isFinite(vy)) s += '<circle cx="'+X(vx).toFixed(1)+'" cy="'+Y(vy).toFixed(1)+'" r="3" fill="#356aff" stroke="#fff" stroke-width="1"/>';
+  }
+  s += '<text x="'+(ml+4)+'" y="'+(H-6)+'" font-size="10" fill="#5d6b80">a = '+fmtNum(aVal)+' · штриховка — вне промежутка</text>';
+  s += '</svg>';
+  return s;
+}
+
+// ---------- canonical schemes ----------
+function drawScheme(o){
+  const W=470,H=290, ml=16,mr=16,mt=12,mb=26, iw=W-ml-mr;
+  const zeroY = mt + (H-mt-mb)*0.52;
+  const k1px = ml + iw*0.30, k2px = ml + iw*0.70;
+  const uid = ++svgUid;
+  let s = '<svg viewBox="0 0 '+W+' '+H+'">';
+  s += '<defs><pattern id="h'+uid+'" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#ef3020" stroke-width="1.8" opacity=".55"/></pattern></defs>';
+  s += '<rect width="'+W+'" height="'+H+'" fill="#fff"/>';
+  s += '<rect x="'+ml+'" y="'+mt+'" width="'+(k1px-ml)+'" height="'+(H-mt-mb)+'" fill="url(#h'+uid+')"/>';
+  s += '<rect x="'+k2px+'" y="'+mt+'" width="'+(W-mr-k2px)+'" height="'+(H-mt-mb)+'" fill="url(#h'+uid+')"/>';
+  s += '<line x1="'+ml+'" y1="'+zeroY+'" x2="'+(W-mr+5)+'" y2="'+zeroY+'" stroke="#111" stroke-width="1.8"/>';
+  s += '<path d="M '+(W-mr+5)+' '+zeroY+' l -8 -4 l 0 8 z" fill="#111"/>';
+  s += '<text x="'+(W-mr-2)+'" y="'+(zeroY-8)+'" font-size="12" font-style="italic" fill="#111">x</text>';
+  const bd = (xx, closed, lab) => {
+    s += '<line x1="'+xx+'" y1="'+(mt+2)+'" x2="'+xx+'" y2="'+(H-mb)+'" stroke="#ef3020" stroke-width="2"/>';
+    s += '<circle cx="'+xx+'" cy="'+zeroY+'" r="5" fill="'+(closed?'#ef3020':'#fff')+'" stroke="#ef3020" stroke-width="2"/>';
+    s += '<text x="'+xx+'" y="'+(zeroY+20)+'" text-anchor="middle" fill="#c82317" font-family="Georgia" font-size="14" font-style="italic">'+lab+'</text>';
+  };
+  bd(k1px, cur ? cur.c1 : true, 'k₁'); bd(k2px, cur ? cur.c2 : true, 'k₂');
+  let path = '';
+  const P = px => px;
+  if(o.roots && o.roots.length === 2){
+    const r1 = ml + iw*o.roots[0], r2 = ml + iw*o.roots[1];
+    const gap = Math.abs(r2-r1), vx = (r1+r2)/2;
+    const depth = Math.min(105, 52 + gap*0.4);
+    const k = 4*depth/(gap*gap);
+    for(let i=0;i<=200;i++){
+      const px = ml + iw*i/200;
+      const y = zeroY - o.a*k*(px-r1)*(px-r2);
+      path += (path?'L':'M')+' '+px.toFixed(1)+' '+Math.max(mt-6,Math.min(H-mb+6,y)).toFixed(1)+' ';
+    }
+  } else if(o.roots && o.roots.length === 1){
+    const r = ml + iw*o.roots[0], k = 105/8100;
+    for(let i=0;i<=200;i++){
+      const px = ml + iw*i/200;
+      const y = zeroY - o.a*k*(px-r)*(px-r);
+      path += (path?'L':'M')+' '+px.toFixed(1)+' '+Math.max(mt-6,Math.min(H-mb+6,y)).toFixed(1)+' ';
+    }
+  } else {
+    const vx = (k1px+k2px)/2, k = 95/(260*260);
+    for(let i=0;i<=200;i++){
+      const px = ml + iw*i/200;
+      const y = zeroY - o.a*95 + o.a*k*(px-vx)*(px-vx);
+      path += (path?'L':'M')+' '+px.toFixed(1)+' '+Math.max(mt-6,Math.min(H-mb+6,y)).toFixed(1)+' ';
+    }
+  }
+  s += '<path d="'+path+'" fill="none" stroke="#356aff" stroke-width="3.2" stroke-linecap="round"/>';
+  const rpx = (o.roots||[]).map(f => ml+iw*f);
+  for(const r of rpx) s += '<circle cx="'+r.toFixed(1)+'" cy="'+zeroY+'" r="4.6" fill="#356aff" stroke="#fff" stroke-width="1.3"/>';
+  s += '</svg>';
+  return s;
+}
+function canonical(cond){
+  switch(cond){
+    case 'both': return [
+      {t:'оба корня внутри · a>0', o:{a:1, roots:[.38,.62]}},
+      {t:'оба корня внутри · a<0', o:{a:-1, roots:[.38,.62]}},
+      {t:'корень на границе k₁', o:{a:1, roots:[.30,.62]}},
+      {t:'двойной корень внутри (D=0)', o:{a:1, roots:[.5]}}
+    ];
+    case 'atleast1': return [
+      {t:'один внутри, второй левее', o:{a:1, roots:[.16,.45]}},
+      {t:'один внутри, второй правее', o:{a:1, roots:[.55,.84]}},
+      {t:'оба внутри', o:{a:1, roots:[.38,.62]}},
+      {t:'корень на границе', o:{a:1, roots:[.30,.6]}},
+      {t:'двойной корень внутри', o:{a:1, roots:[.5]}}
+    ];
+    case 'exactly1': return [
+      {t:'один внутри, второй левее', o:{a:1, roots:[.16,.45]}},
+      {t:'один внутри, второй правее', o:{a:1, roots:[.55,.84]}},
+      {t:'корень на границе, второй вне', o:{a:1, roots:[.30,.15]}},
+      {t:'двойной корень внутри', o:{a:1, roots:[.5]}}
+    ];
+    case 'none': return [
+      {t:'оба корня левее', o:{a:1, roots:[.10,.24]}},
+      {t:'оба корня правее', o:{a:1, roots:[.76,.90]}},
+      {t:'промежуток между корнями', o:{a:1, roots:[.18,.82]}},
+      {t:'корней нет (D<0) · a>0', o:{a:1, roots:null}},
+      {t:'корней нет (D<0) · a<0', o:{a:-1, roots:null}},
+      {t:'двойной корень вне', o:{a:1, roots:[.85]}}
+    ];
+    case 'bothout': return [
+      {t:'оба корня левее', o:{a:1, roots:[.10,.24]}},
+      {t:'оба корня правее', o:{a:1, roots:[.76,.90]}},
+      {t:'промежуток между корнями', o:{a:1, roots:[.18,.82]}},
+      {t:'двойной корень левее', o:{a:1, roots:[.18]}},
+      {t:'двойной корень правее', o:{a:1, roots:[.82]}}
+    ];
+    case 'straddle': return [
+      {t:'корни по разные стороны · a>0', o:{a:1, roots:[.22,.78]}},
+      {t:'корни по разные стороны · a<0', o:{a:-1, roots:[.22,.78]}}
+    ];
+  }
+  return [];
+}
+
+// ---------- classical system text ----------
+function systemHTML(cond, task){
+  const o1 = task.c1, o2 = task.c2;
+  const g1 = o1 ? '≥' : '>', g2 = o2 ? '≥' : '>';
+  switch(cond){
+    case 'both': return '<div class="sysbox"><div class="brace">{</div><div>'
+      + '<div>D ≥ 0</div><div>k₁ '+(o1?'≤':'<')+' x₀ '+(o2?'≤':'<')+' k₂</div>'
+      + '<div>a·y(k₁) '+g1+' 0</div><div>a·y(k₂) '+g2+' 0</div></div></div>'
+      + '<div class="note">Смысл: корни существуют, вершина между краями, а на обоих концах промежутка функция имеет тот же знак, что и ветви (или ноль на включённой границе).</div>';
+    case 'atleast1': return '<div class="sysbox"><div class="brace">{</div><div>'
+      + '<div>Случай 1: y(k₁)·y(k₂) ≤ 0 — корни по разные стороны или на границе;</div>'
+      + '<div>Случай 2: оба корня внутри (система как для «оба корня»).</div></div></div>'
+      + '<div class="note">Ответ — объединение обоих случаев. Ниже решаем численно: промежуток параметра, где хотя бы один корень попадает в промежуток.</div>';
+    case 'exactly1': return '<div class="sysbox"><div class="brace">{</div><div>'
+      + '<div>Случай 1: y(k₁)·y(k₂) < 0 — корни по разные стороны (ровно один внутри);</div>'
+      + '<div>Случай 2: корень на границе, второй вне;</div>'
+      + '<div>Случай 3: двойной корень (D=0) внутри.</div></div></div>'
+      + '<div class="note">Учитываем кратность: двойной корень — это один корень.</div>';
+    case 'none': return '<div class="sysbox"><div class="brace">{</div><div>'
+      + '<div>D &lt; 0 — корней нет вовсе;</div>'
+      + '<div>D = 0 — двойной корень вне промежутка;</div>'
+      + '<div>D &gt; 0 и оба корня левее k₁ или оба правее k₂;</div>'
+      + '<div>D &gt; 0 и промежуток целиком между корнями.</div></div></div>'
+      + '<div class="note">Проще считать от противного: «нет корней в промежутке» = неверно, что «есть хотя бы один».</div>';
+    case 'bothout': return '<div class="sysbox"><div class="brace">{</div><div>'
+      + '<div>D ≥ 0 — корни существуют;</div>'
+      + '<div>и при этом ни один корень не попал в промежуток.</div></div></div>';
+    case 'straddle': return '<div class="sysbox"><div class="brace">{</div><div>'
+      + '<div>a ≠ 0;</div><div>D &gt; 0;</div><div>y(k₁)·y(k₂) &lt; 0</div></div></div>'
+      + '<div class="note">Разные знаки на концах — по теореме о промежуточном значении между ними лежит корень; два корня — значит, по одному с каждой стороны.</div>';
+  }
+  return '';
+}
+
+// ---------- steps ----------
+function buildSteps(task, res){
+  const ctxf = res.ctx;
+  const steps = [];
+  steps.push({ title:'Шаг 1 · Приводим к стандартному виду', html:
+    '<div class="math">'+esc(task.A)+'·x² + ('+esc(task.B)+')·x + ('+esc(task.C)+') = 0</div>'
+    + '<div class="note">A(a)·x² + B(a)·x + C(a) = 0, где A = '+esc(task.A)+', B = '+esc(task.B)+', C = '+esc(task.C)+'. Промежуток: '+(task.c1?'[':'(')+fmtNum(task.k1)+'; '+fmtNum(task.k2)+(task.c2?']':')')+'. Требование: <b>'+COND_LABEL[task.cond]+'</b>.</div>'
+  });
+  const singTxt = res.singular.length ? 'при a = '+res.singular.map(fmtNum).join(', ') : 'старший коэффициент нигде не обращается в 0 на рассмотренном диапазоне';
+  let singDetail = '';
+  for(const sv of res.singular.slice(0,4)){
+    const c = ctxf(sv);
+    if(c.info.kind === 'line') singDetail += '<div class="note">При a = '+fmtNum(sv)+': линейное уравнение, корень x = '+fmtNum(c.info.roots[0])+(within(c.info.roots[0],c)?' — в промежутке':' — вне промежутка')+'.</div>';
+    else if(c.info.kind === 'identity') singDetail += '<div class="note">При a = '+fmtNum(sv)+': тождество 0 = 0 — подходит любое x.</div>';
+    else if(c.info.kind === 'nope') singDetail += '<div class="note">При a = '+fmtNum(sv)+': уравнение не имеет решений (0 = '+fmtNum(c.C)+').</div>';
+  }
+  steps.push({ title:'Шаг 2 · Старший коэффициент', html:
+    '<div class="note">Проверяем, где A(a) = 0 — там уравнение вырождается в линейное, этот случай разбираем отдельно.</div>'
+    + '<div class="ok">'+singTxt+'.</div>' + singDetail
+  });
+  const Dexpr = '(' + task.B + ')² − 4·(' + task.A + ')·(' + task.C + ')';
+  const dCond = res.subs.find(s => typeof s.label === 'string' && s.label.startsWith('D'));
+  let dbar = '';
+  if(dCond) dbar = '<div class="bar"><div class="lbl"><span>Где выполняется D ≥ 0</span><span>— ось параметра a —</span></div>'+barSVG(dCond.bool, res.amin, res.amax, res.singular, '#9db9f7', 40)+'</div>';
+  steps.push({ title:'Шаг 3 · Дискриминант', html:
+    '<div class="math">D(a) = '+esc(Dexpr)+'</div>'
+    + dbar + '<div class="note">Красные штрихи — особые точки (A(a) = 0).</div>'
+  });
+  const samples = [res.amin, res.amin+(res.amax-res.amin)*0.25, (res.amin+res.amax)/2, res.amin+(res.amax-res.amin)*0.75, res.amax].concat(res.singular).slice(0,7);
+  let rows = '';
+  for(const sa of samples.sort((p,q)=>p-q)){
+    const c = ctxf(sa);
+    const rtxt = c.info.kind==='quad' ? (c.info.roots.length===2 ? fmtNum(c.info.roots[0])+' , '+fmtNum(c.info.roots[1]) : c.info.roots.length===1 ? fmtNum(c.info.roots[0])+' (двойной)' : 'нет') 
+               : c.info.kind==='line' ? fmtNum(c.info.roots[0]) : c.info.kind==='identity' ? 'любое x' : 'нет';
+    rows += '<tr><td>'+fmtNum(sa)+'</td><td class="num">'+fmtNum(c.A)+'</td><td class="num">'+(isFinite(c.info.D)?fmtNum(c.info.D):'—')+'</td><td class="num">'+rtxt+'</td></tr>';
+  }
+  steps.push({ title:'Шаг 4 · Корни уравнения', html:
+    '<div class="math">x₁,₂ = (−B(a) ± √D) / (2A(a))</div>'
+    + '<table class="tbl"><tr><th>a</th><th>A(a)</th><th>D(a)</th><th>корни</th></tr>'+rows+'</table>'
+    + '<div class="note">Таблица — поведение корней при характерных значениях параметра. Корни — функции от a: двигаются по оси x при изменении a.</div>'
+  });
+  steps.push({ title:'Шаг 5 · Требование → система условий', html:
+    '<div class="note">Требование: <b>'+COND_LABEL[task.cond]+'</b>.</div>' + systemHTML(task.cond, task)
+  });
+  let bars = '';
+  res.subs.forEach((s,i) => {
+    const lbl = typeof s.label === 'function' ? s.label(task) : s.label;
+    bars += '<div class="bar"><div class="lbl"><span>'+esc(lbl)+'</span><span>ось a</span></div>'+barSVG(s.bool, res.amin, res.amax, res.singular, '#9db9f7', 40)+'</div>';
+  });
+  const ansTxt = fmtAnswer(res);
+  const ansHTML = ansTxt
+    ? '<div class="answer">Ответ: <span class="fam">'+esc(ansTxt)+'</span></div>'
+    + (res.intervals.some(iv => Math.abs(iv.hi-res.amax)<1e-7 || Math.abs(iv.lo-res.amin)<1e-7)
+        ? '<div class="warn">Ответ упирается в границу диапазона ['+fmtNum(res.amin)+'; '+fmtNum(res.amax)+'] — возможно, продолжается дальше. Расширьте диапазон и пересчитайте.</div>'
+        : '')
+    : '<div class="err">На рассмотренном диапазоне a подходящих значений не нашлось. Расширьте диапазон или проверьте условие.</div>';
+  steps.push({ title:'Шаг 6 · Решаем систему по параметру', html:
+    bars + '<div class="bar final"><div class="lbl"><span>Пересечение всех условий = ответ</span><span>ось a</span></div>'
+    + barSVG(res.fin, res.amin, res.amax, res.singular, '#6b4be8', 46) + '</div>' + ansHTML
+  });
+  let checks = '<table class="tbl"><tr><th>a</th><th>корни</th><th>в промежутке</th><th>вывод</th></tr>';
+  const testPts = [];
+  res.intervals.forEach(iv => testPts.push((iv.lo+iv.hi)/2));
+  if(res.intervals.length) testPts.push(res.amin + (res.amax-res.amin)*0.02);
+  let shown = 0;
+  for(const tp of [...new Set(testPts.map(v=>Math.round(v*1000)/1000))]){
+    if(shown++ > 5) break;
+    const c = ctxf(tp);
+    const n = c.info.kind==='identity' ? '∞' : countIn(c);
+    const ok = res.finEval(tp);
+    checks += '<tr><td>'+fmtNum(tp)+'</td><td class="num">'+(c.info.roots.length?c.info.roots.map(fmtNum).join(' , '):'—')+'</td><td>'+(n==='∞'?'∞ (любое x)':n)+'</td><td>'+(ok?'✓ входит в ответ':'✗ не входит')+'</td></tr>';
+  }
+  checks += '</table>';
+  let gal = '<div class="gallery">';
+  for(const sch of canonical(task.cond)) gal += '<div class="card">'+drawScheme(sch.o)+'<div class="cap">'+esc(sch.t)+'</div></div>';
+  gal += '</div>';
+  let real = '<div class="gallery">';
+  let cnt = 0;
+  for(const iv of res.intervals){
+    if(cnt >= 3) break;
+    real += '<div class="card">'+realChartSVG((iv.lo+iv.hi)/2, ctxf, task)+'<div class="cap">реальный график при a = '+fmtNum((iv.lo+iv.hi)/2)+'</div></div>';
+    cnt++;
+  }
+  for(const iv of res.singletons){
+    if(cnt >= 4) break;
+    real += '<div class="card">'+realChartSVG(iv.lo, ctxf, task)+'<div class="cap">особая точка a = '+fmtNum(iv.lo)+'</div></div>';
+    cnt++;
+  }
+  real += '</div>';
+  steps.push({ title:'Шаг 7 · Проверка и картина расположений', html:
+    '<div class="note">Подставляем контрольные значения параметра и считаем корни напрямую — они должны совпасть с ответом.</div>'
+    + checks
+    + '<div class="gallery-title">Канонические схемы: '+COND_LABEL[task.cond]+'</div>' + gal
+    + (cnt ? '<div class="gallery-title">Реальные графики из ответа</div>' + real : '')
+  });
+  return steps;
+}
+
+// ---------- UI ----------
+function readTask(){
+  const t = {
+    A: $('inA').value, B: $('inB').value, C: $('inC').value,
+    k1: parseFloat($('inK1').value), k2: parseFloat($('inK2').value),
+    c1: $('inC1').checked, c2: $('inC2').checked,
+    cond: $('inCond').value,
+    amin: parseFloat($('inAmin').value), amax: parseFloat($('inAmax').value)
+  };
+  if(!isFinite(t.k1) || !isFinite(t.k2)) throw new Error('Задайте числовые края промежутка k₁ и k₂');
+  if(!isFinite(t.amin) || !isFinite(t.amax) || t.amin === t.amax) throw new Error('Задайте диапазон параметра a (два разных числа)');
+  return t;
+}
+function fillExample(i){
+  const e = EXAMPLES[i];
+  $('inA').value = e.A; $('inB').value = e.B; $('inC').value = e.C;
+  $('inK1').value = e.k1; $('inK2').value = e.k2;
+  $('inC1').checked = e.c1; $('inC2').checked = e.c2;
+  $('inCond').value = e.cond;
+  $('inAmin').value = e.amin; $('inAmax').value = e.amax;
+}
+function renderSteps(all){
+  const box = $('steps');
+  let html = '';
+  const n = all ? stepsData.length : stepsShown;
+  for(let i=0;i<n && i<stepsData.length;i++) html += '<div class="step"><h3><span class="stepnum">'+(i+1)+'</span>'+esc(stepsData[i].title)+'</h3>'+stepsData[i].html+'</div>';
+  if(!all && stepsShown < stepsData.length){
+    html += '<div class="stepnav"><button class="btn primary" id="nextStepBtn">Следующий шаг →</button><button class="btn ghost" id="allBtn">Показать всё сразу</button><span class="cnt">шаг '+stepsShown+' из '+stepsData.length+'</span></div>';
+  } else if(stepsData.length){
+    html += '<div class="stepnav"><span class="cnt">Все '+stepsData.length+' шагов показаны. Измените условие и нажмите «Решить по шагам» заново.</span></div>';
+  }
+  box.innerHTML = html;
+  const nb = $('nextStepBtn');
+  if(nb) nb.addEventListener('click', () => { stepsShown++; renderSteps(false); window.scrollBy({top:260, behavior:'smooth'}); });
+  const ab = $('allBtn');
+  if(ab) ab.addEventListener('click', () => { stepsShown = stepsData.length; renderSteps(false); });
+}
+function run(all){
+  $('formErr').innerHTML = '';
+  let task;
+  try { task = readTask(); } catch(e){ $('formErr').innerHTML = '<div class="err">'+esc(e.message)+'</div>'; return; }
+  let res;
+  try { res = solveNum(task); } catch(e){ $('formErr').innerHTML = '<div class="err">'+esc(e.message)+'</div>'; return; }
+  cur = task; sol = res;
+  stepsData = buildSteps(task, res);
+  stepsShown = all ? stepsData.length : 1;
+  $('noresult').style.display = 'none';
+  renderSteps(all);
+  window.scrollTo({top: $('steps').offsetTop - 20, behavior:'smooth'});
+}
+EXAMPLES.forEach((e,i) => {
+  const o = document.createElement('option');
+  o.value = i; o.textContent = e.name;
+  $('exSel').appendChild(o);
+});
+$('exSel').addEventListener('change', e => { fillExample(+e.target.value); run(false); });
+$('solveBtn').addEventListener('click', () => run(false));
+$('showAllBtn').addEventListener('click', () => run(true));
+['inA','inB','inC','inK1','inK2','inC1','inC2','inCond','inAmin','inAmax'].forEach(id => {
+  $(id).addEventListener('change', () => { try { run(false); } catch(e){} });
+});
+fillExample(0);
+run(true);
+})();
+</script>
+</body>
+</html>

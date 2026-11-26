@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Стереометрия · Формулы по темам</title>
+<style>
+:root{
+  --ink:#2b2440; --muted:#7a7288; --border:#e8e0d4;
+  --purple:#8b5cf6; --sky:#0ea5e9; --orange:#f97316; --green:#10b981; --rose:#f43f5e;
+  --ok:#16a34a; --bad:#ef4444; --warn:#f59e0b;
+  --bg:#fdf6ec;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; color:var(--ink); font:16px/1.55 'Segoe UI',system-ui,Arial,sans-serif;
+  background:
+    radial-gradient(#00000008 1.2px, transparent 1.2px) 0 0/24px 24px,
+    var(--bg);
+}
+.app{max-width:1120px; margin:0 auto; padding:16px 16px 40px}
+.topbar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+.logo{font-size:28px}
+h1{font-size:clamp(19px,2.6vw,25px); margin:0}
+.stats{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap}
+.stat{background:#fff; border:1px solid var(--border); border-radius:999px; padding:6px 12px; font-size:13px; font-weight:700; white-space:nowrap}
+.stat.warn{border-color:#f59e0b55; background:#fff7ed; color:#b45309}
+.stat.ok{border-color:#16a34a44; background:#f0fdf4; color:#166534}
+
+/* Темы */
+.topics{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px}
+.topic{
+  border:2px solid var(--border); background:#fff; border-radius:999px;
+  padding:8px 14px; font:inherit; font-size:13px; font-weight:800; cursor:pointer;
+  transition:.15s;
+}
+.topic:hover{border-color:#c9bda8}
+.topic.on{background:var(--ink); color:#fff; border-color:var(--ink)}
+.topic .dot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle}
+
+.tabs{display:flex; gap:8px; margin-bottom:14px}
+.tab{border:2px solid var(--border); background:#fff; border-radius:999px; padding:8px 16px; font:inherit; font-size:14px; font-weight:800; cursor:pointer}
+.tab.on{background:var(--ink); color:#fff; border-color:var(--ink)}
+
+/* Карточка вопроса */
+.sticker{
+  background:#fff; border:1px solid var(--border); border-radius:18px;
+  padding:22px 22px 18px; box-shadow:0 6px 18px rgba(60,40,10,.08);
+  position:relative; margin-bottom:16px;
+}
+.tape{position:absolute; top:-9px; left:20px; width:88px; height:20px; border-radius:4px; transform:rotate(-2.5deg); opacity:.92}
+.cV .tape{background:var(--purple)}.cS .tape{background:var(--sky)}.cL .tape{background:var(--orange)}.cX .tape{background:var(--green)}.cR .tape{background:var(--rose)}
+.qhead{display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+.qemoji{font-size:34px}
+.qlabel{border-radius:999px; padding:5px 14px; color:#fff; font-weight:800; font-size:12px; letter-spacing:.02em}
+.cV .qlabel{background:var(--purple)}.cS .qlabel{background:var(--sky)}.cL .qlabel{background:var(--orange)}.cX .qlabel{background:var(--green)}.cR .qlabel{background:var(--rose)}
+.qtext{font-size:clamp(20px,3vw,27px); font-weight:800; margin-top:10px}
+.qsub{color:var(--muted); font-size:13px; margin-top:6px}
+
+/* Варианты */
+.grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:18px}
+@media(max-width:780px){.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.grid{grid-template-columns:1fr}}
+.opt{
+  background:#fff; border:2px solid #ece5d8; border-radius:16px; padding:22px 12px; min-height:92px;
+  cursor:pointer; transition:.15s; font:inherit; display:flex; align-items:center; justify-content:center;
+  transform:rotate(var(--r)); position:relative;
+}
+.opt:nth-child(odd){--r:-1.1deg}.opt:nth-child(even){--r:1.3deg}
+.opt::before{content:''; position:absolute; top:-8px; left:14px; width:56px; height:16px; border-radius:3px; transform:rotate(-3deg); opacity:.85}
+.opt.v::before{background:#c4b5fd}.opt.s::before{background:#7dd3fc}.opt.l::before{background:#fdba74}.opt.x::before{background:#6ee7b7}
+.opt:hover{transform:rotate(var(--r)) translateY(-3px); border-color:#c9bda8; box-shadow:0 8px 16px rgba(60,40,10,.13)}
+.opt .f{font-family:"Cambria Math","Times New Roman",Georgia,serif; font-size:20px; font-weight:700}
+.opt.ok{border-color:var(--ok); background:#f0fdf4}
+.opt.bad{border-color:var(--bad); background:#fef2f2; animation:shake .3s}
+.opt.dim{opacity:.42}
+.opt .stamp{position:absolute; top:6px; right:10px; font-size:22px; font-weight:900}
+.opt.ok .stamp{color:var(--ok)}.opt.bad .stamp{color:var(--bad)}
+@keyframes shake{25%{transform:rotate(var(--r)) translateX(-4px)}75%{transform:rotate(var(--r)) translateX(4px)}}
+
+/* Фидбек */
+.fb{border-radius:14px; padding:14px 16px; font-size:15px; margin-top:16px; display:none; line-height:1.55}
+.fb.good{background:#f0fdf4; border:1px solid #bbe7c8; display:block}
+.fb.err{background:#fef2f2; border:1px solid #f5c2c2; display:block}
+.btnrow{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap}
+.btn{border:2px solid var(--ink); background:#fff; border-radius:999px; padding:10px 22px; font:inherit; font-size:15px; font-weight:800; cursor:pointer}
+.btn.pri{background:var(--ink); color:#fff}
+.btn.hide{display:none}
+
+/* Модальная памятка */
+.overlay{
+  position:fixed; inset:0; z-index:90; background:#11151fa8; backdrop-filter:blur(4px);
+  display:flex; align-items:center; justify-content:center; padding:20px; overflow:auto;
+}
+.overlay.hidden{display:none}
+.memo{
+  background:#fff; border-radius:22px; max-width:560px; width:100%;
+  box-shadow:0 20px 60px #0008; position:relative; padding:26px 26px 22px;
+  animation:pop .25s;
+}
+@keyframes pop{from{transform:scale(.92); opacity:0}}
+.memo .tape{position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(-1.5deg); width:110px; height:22px; background:#fbbf24; border-radius:4px; opacity:.92}
+.memo h3{margin:8px 0 2px; font-size:22px; text-align:center}
+.memo .sub{text-align:center; color:var(--muted); font-size:13px; margin-bottom:12px}
+.memo .body{display:grid; grid-template-columns:150px 1fr; gap:14px; align-items:center; margin:12px 0}
+@media(max-width:480px){.memo .body{grid-template-columns:1fr}}
+.memo .fig{background:#f8f7f3; border:1px solid var(--border); border-radius:14px; padding:8px}
+.memo .fig svg{width:100%; height:auto; max-height:150px; display:block}
+.memo .formula{font-family:"Cambria Math","Times New Roman",Georgia,serif; font-size:26px; font-weight:800; text-align:center; background:#fff7ed; border:1px dashed #f59e0b; border-radius:14px; padding:14px}
+.memo .expl{font-size:14px; color:var(--muted); margin-top:10px; text-align:center}
+.memo .close{display:block; margin:16px auto 0}
+.memo .frac{display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; margin:0 2px; line-height:1.1}
+.memo .frac>span:first-child{border-bottom:2px solid currentColor; padding:0 4px}
+.memo .frac>span:last-child{padding:0 4px}
+
+/* Шпаргалка */
+.cheat .grp{margin-bottom:22px}
+.grp h3{margin:0 0 12px; font-size:19px; display:flex; align-items:center; gap:8px}
+.chips{display:flex; gap:12px; flex-wrap:wrap}
+.fcard{background:#fff; border:1px solid var(--border); border-radius:14px; padding:16px 16px 12px; position:relative; box-shadow:0 3px 8px rgba(60,40,10,.06)}
+.fcard .chip{position:absolute; top:-9px; left:12px; border-radius:999px; padding:2px 10px; color:#fff; font-size:11px; font-weight:800; white-space:nowrap}
+.cV{background:var(--purple)}.cS{background:var(--sky)}.cL{background:var(--orange)}.cX{background:var(--green)}
+.fcard .formula{font-family:"Cambria Math","Times New Roman",Georgia,serif; font-size:19px; font-weight:700}
+.fcard .frac{display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; margin:0 2px; line-height:1.1}
+.fcard .frac>span:first-child{border-bottom:1.6px solid currentColor; padding:0 3px}
+.fcard .frac>span:last-child{padding:0 3px}
+.foot{color:var(--muted); font-size:12px; margin-top:24px; text-align:center}
+.empty{color:var(--muted); text-align:center; padding:24px; border:1px dashed var(--border); border-radius:14px}
+.hintbox{margin-top:12px; background:#fff7ed; border:1px dashed #f59e0b; border-radius:12px; padding:12px 14px; font-size:14px; display:none}
+.simrow{display:flex; gap:10px; align-items:center; margin-top:14px; flex-wrap:wrap}
+.inp{font-size:20px; padding:10px 14px; border:2px solid var(--border); border-radius:12px; width:200px; text-align:center; font:inherit; font-weight:700}
+.inp:focus{outline:none; border-color:var(--rose)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <span class="logo">🧊</span>
+    <h1>Стереометрия · формулы по темам</h1>
+    <div class="stats">
+      <span class="stat ok" id="stScore">✔ 0 из 0</span>
+      <span class="stat warn" id="stQueue">🔁 в отработке: 0</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button type="button" class="tab on" id="tabTrain">🎯 Тренажёр</button>
+    <button type="button" class="tab" id="tabCheat">📐 Шпаргалка</button>
+  </div>
+
+  <div id="pageTrain">
+    <div class="topics" id="topics"></div>
+    <div id="stage"></div>
+    <div class="foot">Каждая формула выдаётся ровно один раз. При ошибке она уходит в конец очереди на отработку и показывает памятку с телом.</div>
+  </div>
+
+  <div id="pageCheat" class="cheat" style="display:none"></div>
+</div>
+
+<!-- Модальная памятка -->
+<div class="overlay hidden" id="memoOverlay">
+  <div class="memo" id="memoBox"></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ========= SVG-рисунки тел ========= */
+const FIGS = {
+  cube: `<svg viewBox="0 0 200 150"><g stroke="#1b2233" stroke-width="1.8" fill="none" stroke-linejoin="round">
+    <polygon points="40,120 120,120 150,95 70,95" fill="#8b5cf614"/>
+    <polygon points="70,95 150,95 150,30 70,30" fill="#8b5cf610"/>
+    <line x1="40" y1="120" x2="70" y2="95"/><line x1="120" y1="120" x2="150" y2="95"/>
+    <line x1="70" y1="95" x2="70" y2="30" stroke-dasharray="5 4"/>
+    <line x1="40" y1="120" x2="40" y2="55" stroke-dasharray="5 4"/>
+    <line x1="40" y1="55" x2="70" y2="30" stroke-dasharray="5 4"/>
+    <line x1="40" y1="55" x2="120" y2="55" stroke-dasharray="5 4"/>
+    <line x1="120" y1="55" x2="150" y2="30" stroke-dasharray="5 4"/>
+  </g></svg>`,
+  box: `<svg viewBox="0 0 200 150"><g stroke="#1b2233" stroke-width="1.8" fill="none" stroke-linejoin="round">
+    <polygon points="35,120 130,120 160,92 65,92" fill="#0ea5e914"/>
+    <polygon points="65,92 160,92 160,35 65,35" fill="#0ea5e910"/>
+    <line x1="35" y1="120" x2="65" y2="92"/><line x1="130" y1="120" x2="160" y2="92"/>
+    <line x1="65" y1="92" x2="65" y2="35" stroke-dasharray="5 4"/>
+    <line x1="35" y1="120" x2="35" y2="63" stroke-dasharray="5 4"/>
+    <line x1="35" y1="63" x2="65" y2="35" stroke-dasharray="5 4"/>
+    <line x1="35" y1="63" x2="130" y2="63" stroke-dasharray="5 4"/>
+    <line x1="130" y1="63" x2="160" y2="35" stroke-dasharray="5 4"/>
+  </g></svg>`,
+  prism: `<svg viewBox="0 0 200 150"><g stroke="#1b2233" stroke-width="1.8" fill="none" stroke-linejoin="round">
+    <polygon points="55,125 105,125 135,100 85,100" fill="#10b98114"/>
+    <polygon points="85,100 135,100 135,35 85,35" fill="#10b98110"/>
+    <line x1="55" y1="125" x2="85" y2="100"/><line x1="105" y1="125" x2="135" y2="100"/>
+    <line x1="85" y1="100" x2="85" y2="35" stroke-dasharray="5 4"/>
+    <line x1="55" y1="125" x2="55" y2="60" stroke-dasharray="5 4"/>
+    <line x1="55" y1="60" x2="85" y2="35" stroke-dasharray="5 4"/>
+    <line x1="55" y1="60" x2="105" y2="60" stroke-dasharray="5 4"/>
+    <line x1="105" y1="60" x2="135" y2="35" stroke-dasharray="5 4"/>
+    <line x1="85" y1="35" x2="135" y2="35" stroke-dasharray="5 4"/>
+    <line x1="85" y1="100" x2="135" y2="100"/>
+  </g></svg>`,
+  cyl: `<svg viewBox="0 0 200 150"><g stroke="#1b2233" stroke-width="1.8" fill="none">
+    <ellipse cx="100" cy="118" rx="58" ry="17" fill="#0ea5e914"/>
+    <ellipse cx="100" cy="40" rx="58" ry="17" fill="#0ea5e910"/>
+    <line x1="42" y1="40" x2="42" y2="118"/><line x1="158" y1="40" x2="158" y2="118"/>
+    <line x1="42" y1="40" x2="100" y2="40" stroke-dasharray="5 4"/>
+    <line x1="100" y1="40" x2="158" y2="40" stroke-dasharray="5 4"/>
+  </g><text x="100" y="146" font-size="11" fill="#7a7288" text-anchor="middle">R</text></svg>`,
+  pyr: `<svg viewBox="0 0 200 150"><g stroke="#1b2233" stroke-width="1.8" fill="none" stroke-linejoin="round">
+    <polygon points="40,125 160,125 130,100 70,100" fill="#8b5cf614"/>
+    <line x1="40" y1="125" x2="100" y2="30"/><line x1="160" y1="125" x2="100" y2="30"/>
+    <line x1="130" y1="100" x2="100" y2="30"/>
+    <line x1="70" y1="100" x2="100" y2="30" stroke-dasharray="5 4"/>
+    <line x1="70" y1="100" x2="130" y2="100" stroke-dasharray="5 4"/>
+    <circle cx="100" cy="30" r="2.5" fill="#1b2233"/>
+  </g><text x="100" y="22" font-size="11" fill="#7a7288" text-anchor="middle">S</text></svg>`,
+  cone: `<svg viewBox="0 0 200 150"><g stroke="#1b2233" stroke-width="1.8" fill="none">
+    <ellipse cx="100" cy="118" rx="58" ry="17" fill="#f9731614"/>
+    <line x1="42" y1="118" x2="100" y2="30"/><line x1="158" y1="118" x2="100" y2="30"/>
+    <line x1="100" y1="30" x2="100" y2="118" stroke-dasharray="5 4"/>
+    <line x1="42" y1="118" x2="100" y2="118" stroke-dasharray="5 4"/>
+  </g><text x="100" y="22" font-size="11" fill="#7a7288" text-anchor="middle">S</text></svg>`,
+  sph: `<svg viewBox="0 0 200 150"><g stroke="#1b2233" stroke-width="1.8" fill="none">
+    <circle cx="100" cy="80" r="55" fill="#f43f5e14"/>
+    <ellipse cx="100" cy="80" rx="55" ry="17" stroke-dasharray="5 4"/>
+    <line x1="100" y1="80" x2="155" y2="80" stroke-dasharray="5 4"/>
+    <circle cx="100" cy="80" r="2.5" fill="#1b2233"/>
+  </g><text x="138" y="74" font-size="11" fill="#7a7288">R</text></svg>`,
+  frust: `<svg viewBox="0 0 200 150"><g stroke="#1b2233" stroke-width="1.8" fill="none">
+    <ellipse cx="100" cy="120" rx="58" ry="16" fill="#f43f5e14"/>
+    <ellipse cx="100" cy="45" rx="32" ry="10" fill="#f43f5e10"/>
+    <line x1="42" y1="120" x2="68" y2="45"/><line x1="158" y1="120" x2="132" y2="45"/>
+    <line x1="68" y1="45" x2="132" y2="45" stroke-dasharray="5 4"/>
+  </g><text x="100" y="144" font-size="11" fill="#7a7288" text-anchor="middle">R, r</text></svg>`
+};
+
+/* ========= Данные: темы, формулы ========= */
+// cat: V (объём), S (площадь), L (боковая), X (элемент)
+const TOPICS = [
+  { id:"cube", name:"Куб", emoji:"🧊", color:"#8b5cf6", fig:"cube",
+    items:[
+      { cat:"V", name:"Объём куба", f:'V = a³', hint:'a — ребро куба.', expl:'Ребро возводим в куб.' },
+      { cat:"S", name:"Площадь поверхности", f:'S = 6a²', hint:'6 граней, каждая — квадрат a×a.', expl:'S = 6 · a².' },
+      { cat:"X", name:"Диагональ куба", f:'d = a√3', hint:'d² = a² + a² + a² = 3a².', expl:'Диагональ куба — это корень из трёх квадратов ребра.' }
+    ]},
+  { id:"box", name:"Параллелепипед", emoji:"📦", color:"#0ea5e9", fig:"box",
+    items:[
+      { cat:"V", name:"Объём", f:'V = abc', hint:'a, b, c — три измерения.', expl:'Произведение трёх измерений.' },
+      { cat:"S", name:"Площадь поверхности", f:'S = 2(ab + bc + ac)', hint:'Три пары равных граней.', expl:'Каждая грань встречается дважды.' },
+      { cat:"X", name:"Диагональ", f:'d = √(a² + b² + c²)', hint:'Три ребра под корнем.', expl:'d² = a² + b² + c².' }
+    ]},
+  { id:"prism", name:"Прямая призма", emoji:"🏛️", color:"#10b981", fig:"prism",
+    items:[
+      { cat:"V", name:"Объём", f:'V = S<sub>осн</sub> · h', hint:'Площадь основания умножить на высоту.', expl:'У призмы нет дроби ⅓ — это не пирамида.' },
+      { cat:"L", name:"Боковая поверхность", f:'S<sub>бок</sub> = P<sub>осн</sub> · h', hint:'Периметр основания на высоту.', expl:'Боковые грани — прямоугольники.' },
+      { cat:"S", name:"Полная поверхность", f:'S = 2S<sub>осн</sub> + P<sub>осн</sub>·h', hint:'Два основания + боковая.', expl:'Оснований два, бок — P·h.' }
+    ]},
+  { id:"cyl", name:"Цилиндр", emoji:"🥫", color:"#0ea5e9", fig:"cyl",
+    items:[
+      { cat:"V", name:"Объём", f:'V = πR²h', hint:'Площадь круга на высоту.', expl:'πR² — площадь основания.' },
+      { cat:"L", name:"Боковая поверхность", f:'S<sub>бок</sub> = 2πRh', hint:'Развёртка — прямоугольник 2πR × h.', expl:'Длина окружности 2πR.' },
+      { cat:"S", name:"Полная поверхность", f:'S = 2πR(R + h)', hint:'Два круга + бок.', expl:'2πR² + 2πRh.' }
+    ]},
+  { id:"pyr", name:"Правильная пирамида", emoji:"🔺", color:"#8b5cf6", fig:"pyr",
+    items:[
+      { cat:"V", name:"Объём", f:'V = ⅓ S<sub>осн</sub> · h', hint:'Всегда ⅓ у пирамиды.', expl:'⅓ — отличительный множитель пирамиды.' },
+      { cat:"L", name:"Боковая поверхность", f:'S<sub>бок</sub> = ½ P<sub>осн</sub> · ℓ', hint:'ℓ — апофема (высота боковой грани).', expl:'Сумма площадей треугольников = ½ P·ℓ.' },
+      { cat:"S", name:"Полная поверхность", f:'S = S<sub>осн</sub> + ½ P<sub>осн</sub>·ℓ', hint:'Одно основание + бок.', expl:'У пирамиды одно основание.' }
+    ]},
+  { id:"cone", name:"Конус", emoji:"🍦", color:"#f97316", fig:"cone",
+    items:[
+      { cat:"V", name:"Объём", f:'V = ⅓ πR²h', hint:'⅓ · площадь круга · высота.', expl:'Аналог пирамиды.' },
+      { cat:"L", name:"Боковая поверхность", f:'S<sub>бок</sub> = πRℓ', hint:'ℓ — образующая.', expl:'Развёртка — сектор радиуса ℓ.' },
+      { cat:"X", name:"Образующая", f:'ℓ = √(R² + h²)', hint:'Теорема Пифагора в осевом сечении.', expl:'Прямоугольный треугольник R, h, ℓ.' },
+      { cat:"S", name:"Полная поверхность", f:'S = πR(R + ℓ)', hint:'Круг + бок.', expl:'πR² + πRℓ.' }
+    ]},
+  { id:"sph", name:"Шар и сфера", emoji:"⚽", color:"#f43f5e", fig:"sph",
+    items:[
+      { cat:"V", name:"Объём шара", f:'V = <span class="frac"><span>4</span><span>3</span></span> πR³', hint:'Куб у радиуса.', expl:'Объём «трёхмерный» — R³.' },
+      { cat:"S", name:"Площадь сферы", f:'S = 4πR²', hint:'Квадрат у радиуса.', expl:'Площадь — «двумерная» — R².' }
+    ]},
+  { id:"frust", name:"Усечённые тела", emoji:"🪣", color:"#f43f5e", fig:"frust",
+    items:[
+      { cat:"V", name:"Усечённый конус", f:'V = ⅓ πh(R² + Rr + r²)', hint:'Три слагаемых в скобке.', expl:'Среднее слагаемое Rr обязательно.' },
+      { cat:"V", name:"Усечённая пирамида", f:'V = ⅓ h(S₁ + √(S₁S₂) + S₂)', hint:'Среднее слагаемое — корень.', expl:'√(S₁S₂) — «среднее геометрическое».' }
+    ]}
+];
+const CAT_LABEL = {V:"объём", S:"площадь", L:"боковая", X:"элемент"};
+const CAT_CLS   = {V:"cV", S:"cS", L:"cL", X:"cX"};
+
+/* Неверные варианты — по теме и категории */
+const WRONG = {
+  cube:  { V:['V = 6a²','V = a²','V = ⅓a³'],
+           S:['S = 4a²','S = a²','S = 6a³'],
+           X:['d = a√2','d = 3a','d = a²√3'] },
+  box:   { V:['V = 2(ab+bc+ac)','V = ⅓abc','V = ab+bc+ac'],
+           S:['S = ab+bc+ac','S = abc','S = 4(ab+bc+ac)'],
+           X:['d = √(a²+b²)','d = a+b+c','d = √(ab+bc+ac)'] },
+  prism: { V:['V = ⅓S·h','V = P·h','V = ½S·h'],
+           L:['S = ½P·h','S = 2P·h','S = S·h'],
+           S:['S = S + P·h','S = 2S + 2P·h','S = S·h'] },
+  cyl:   { V:['V = πRh','V = ⅓πR²h','V = 2πR²h'],
+           L:['S = πRh','S = πR²h','S = 2πR²'],
+           S:['S = πR(R+h)','S = 2πRh','S = 2πR(R+2h)'] },
+  pyr:   { V:['V = S·h','V = ½S·h','V = ⅔S·h'],
+           L:['S = P·ℓ','S = ½P·h','S = ½S·ℓ'],
+           S:['S = S + P·ℓ','S = 2S + P·ℓ','S = ½S + P·ℓ'] },
+  cone:  { V:['V = πR²h','V = ½πR²h','V = ⅓πRh'],
+           L:['S = 2πRℓ','S = ½πRℓ','S = πR²h'],
+           X:['ℓ = R + h','ℓ = √(R²−h²)','ℓ = R²+h²'],
+           S:['S = πR(R+h)','S = 2πR(R+ℓ)','S = πRℓ'] },
+  sph:   { V:['V = 4πR³','V = ⅓πR²','V = 4πR²'],
+           S:['S = 2πR²','S = 4πR³','S = ⅓πR²'] },
+  frust: { V:['V = ⅓πh(R²+r²)','V = πh(R²+Rr+r²)','V = ⅓πh(R+r)²'] }
+};
+
+/* ========= Состояние ========= */
+const LS = "stereo_topics_v1";
+let state = {
+  topic:"cube",
+  queue:{},        // id темы -> [индексы формул на отработку]
+  solved:{},       // id темы -> {idx:true}
+  wrongCount:{},   // id темы -> число ошибок
+  current:null,    // индекс текущей формулы
+  answered:false
+};
+function load(){
+  try{ const raw = localStorage.getItem(LS); if(raw) state = Object.assign(state, JSON.parse(raw)); }catch(e){}
+  TOPICS.forEach(t=>{
+    if(!state.queue[t.id]) state.queue[t.id] = [];
+    if(!state.solved[t.id]) state.solved[t.id] = {};
+    if(!state.wrongCount[t.id]) state.wrongCount[t.id] = 0;
+  });
+}
+function save(){ localStorage.setItem(LS, JSON.stringify(state)); }
+
+/* ========= Утилиты ========= */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function esc(s){ return s.replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ========= Темы ========= */
+function renderTopics(){
+  const box = $("#topics");
+  box.innerHTML = TOPICS.map(t=>{
+    const total = t.items.length;
+    const done = Object.keys(state.solved[t.id]).length;
+    const q = state.queue[t.id].length;
+    return `<button type="button" class="topic ${state.topic===t.id?'on':''}" data-id="${t.id}">
+      <span class="dot" style="background:${t.color}"></span>${t.emoji} ${esc(t.name)}
+      <small style="opacity:.7; margin-left:6px">${done}/${total}${q?` · 🔁${q}`:''}</small>
+    </button>`;
+  }).join("");
+  box.querySelectorAll(".topic").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      state.topic = b.dataset.id;
+      state.current = null;
+      save();
+      renderTopics();
+      nextQuestion();
+    });
+  });
+}
+
+/* ========= Текущая тема ========= */
+function currentTopic(){ return TOPICS.find(t=>t.id===state.topic) || TOPICS[0]; }
+
+/* ========= Выбор вопроса ========= */
+function nextQuestion(){
+  const t = currentTopic();
+  // 1) очередь отработки
+  if(state.queue[t.id].length){
+    state.current = state.queue[t.id].shift();
+    state.answered = false;
+    save();
+    renderTopics();
+    renderQuestion();
+    return;
+  }
+  // 2) ещё не решённые
+  const remaining = [];
+  t.items.forEach((it,i)=>{ if(!state.solved[t.id][i]) remaining.push(i); });
+  if(remaining.length){
+    state.current = remaining[0];
+    state.answered = false;
+    renderQuestion();
+    return;
+  }
+  // 3) всё решено
+  state.current = null;
+  renderQuestion();
+}
+
+/* ========= Рендер вопроса ========= */
+function renderQuestion(){
+  const stage = $("#stage");
+  const t = currentTopic();
+  const total = t.items.length;
+  const done = Object.keys(state.solved[t.id]).length;
+  const qlen = state.queue[t.id].length;
+  $("#stScore").textContent = `✔ ${done} из ${total}`;
+  $("#stQueue").textContent = `🔁 в отработке: ${qlen}`;
+
+  if(state.current === null){
+    stage.innerHTML = `<div class="sticker cV" style="text-align:center">
+      <div class="tape"></div>
+      <div style="font-size:40px">🎉</div>
+      <h2 style="margin:6px 0">Тема «${esc(t.name)}» пройдена!</h2>
+      <p style="color:var(--muted)">Формул в теме: ${total}, все решены верно.</p>
+      <button type="button" class="btn pri" id="restartTopic">Пройти ещё раз</button>
+    </div>`;
+    $("#restartTopic").addEventListener("click", ()=>{
+      state.solved[t.id] = {};
+      state.queue[t.id] = [];
+      state.wrongCount[t.id] = 0;
+      save(); renderTopics(); nextQuestion();
+    });
+    return;
+  }
+
+  const idx = state.current;
+  const item = t.items[idx];
+  const correct = item.f;
+  const wrong = shuffle((WRONG[t.id] && WRONG[t.id][item.cat] ? WRONG[t.id][item.cat] : []).slice());
+  const options = shuffle([{ok:true, f:correct}].concat(wrong.slice(0,3).map(f=>({ok:false, f}))));
+
+  const head = `<div class="tape"></div>
+    <div class="qhead">
+      <span class="qemoji">${t.emoji}</span>
+      <span class="qlabel">${CAT_LABEL[item.cat]}</span>
+      <span style="margin-left:auto; font-size:13px; color:var(--muted)">${esc(t.name)} · ${CAT_LABEL[item.cat]}</span>
+    </div>
+    <div class="qtext">${esc(item.name)}: выбери верную формулу</div>
+    <div class="qsub">Формула №${idx+1} из ${total} · решено ${done}</div>`;
+
+  stage.innerHTML = `<div class="sticker ${CAT_CLS[item.cat]}">
+      ${head}
+      <div class="grid" id="opts"></div>
+      <div class="fb" id="fb"></div>
+      <div class="btnrow"><button type="button" class="btn pri hide" id="nextBtn">Далее →</button></div>
+    </div>`;
+
+  const grid = $("#opts");
+  options.forEach((o,i)=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "opt " + item.cat.toLowerCase();
+    b.innerHTML = `<span class="f">${o.f}</span>`;
+    b.addEventListener("click", ()=>answer(i, options));
+    grid.appendChild(b);
+  });
+  state.answered = false;
+
+  $("#nextBtn").addEventListener("click", nextQuestion);
+}
+
+/* ========= Ответ ========= */
+function answer(picked, options){
+  if(state.answered) return;
+  state.answered = true;
+  const t = currentTopic();
+  const idx = state.current;
+  const item = t.items[idx];
+  const chosen = options[picked];
+  const cards = $$("#opts .opt");
+  cards.forEach((c,i)=>{
+    const o = options[i];
+    if(o.ok){ c.classList.add("ok"); c.insertAdjacentHTML("beforeend",'<span class="stamp">✓</span>'); }
+    else if(i===picked){ c.classList.add("bad"); c.insertAdjacentHTML("beforeend",'<span class="stamp">✗</span>'); }
+    else c.classList.add("dim");
+  });
+
+  const fb = $("#fb");
+  if(chosen.ok){
+    state.solved[t.id][idx] = true;
+    fb.className = "fb good";
+    fb.innerHTML = `✅ Верно! <b>${item.f}</b> — это ${esc(item.name.toLowerCase())}.`;
+    save();
+    renderTopics();
+    // обновить счётчики
+    const total = t.items.length;
+    const done = Object.keys(state.solved[t.id]).length;
+    $("#stScore").textContent = `✔ ${done} из ${total}`;
+  } else {
+    state.wrongCount[t.id]++;
+    // в конец очереди отработки
+    if(!state.queue[t.id].includes(idx)) state.queue[t.id].push(idx);
+    save();
+    renderTopics();
+    fb.className = "fb err";
+    fb.innerHTML = `❌ Неверно. Формула добавлена в отработку.<br>Правильный ответ: <b>${item.f}</b>.`;
+    showMemo(t, item);
+  }
+  $("#nextBtn").classList.remove("hide");
+  $("#nextBtn").focus();
+  $("#stQueue").textContent = `🔁 в отработке: ${state.queue[t.id].length}`;
+}
+
+/* ========= Памятка ========= */
+function showMemo(t, item){
+  const ov = $("#memoOverlay");
+  const box = $("#memoBox");
+  box.innerHTML = `
+    <div class="tape"></div>
+    <h3>${t.emoji} ${esc(t.name)}</h3>
+    <div class="sub">${CAT_LABEL[item.cat]} · ${esc(item.name)}</div>
+    <div class="body">
+      <div class="fig">${FIGS[t.fig] || ""}</div>
+      <div class="formula">${item.f}</div>
+    </div>
+    <div class="expl">${esc(item.hint)}<br>${esc(item.expl)}</div>
+    <button type="button" class="btn pri close" id="memoClose">Понятно</button>
+  `;
+  ov.classList.remove("hidden");
+  $("#memoClose").addEventListener("click", ()=>ov.classList.add("hidden"));
+  ov.addEventListener("click", e=>{ if(e.target === ov) ov.classList.add("hidden"); });
+}
+
+/* ========= Шпаргалка ========= */
+function renderCheat(){
+  const root = $("#pageCheat");
+  root.innerHTML = TOPICS.map(t=>`
+    <div class="grp">
+      <h3>${t.emoji} ${esc(t.name)}</h3>
+      <div class="chips">
+        ${t.items.map(it=>`
+          <div class="fcard">
+            <span class="chip ${CAT_CLS[it.cat]}">${CAT_LABEL[it.cat]}</span>
+            <div class="formula">${it.f}</div>
+          </div>`).join("")}
+      </div>
+    </div>
+  `).join("") + `<div class="empty">Подобие тел: длины ×k, площади ×k², объёмы ×k³</div>`;
+}
+
+/* ========= Вкладки ========= */
+function switchTab(name){
+  $("#tabTrain").classList.toggle("on", name==="train");
+  $("#tabCheat").classList.toggle("on", name==="cheat");
+  $("#pageTrain").style.display = name==="train" ? "" : "none";
+  $("#pageCheat").style.display = name==="cheat" ? "" : "none";
+  if(name==="cheat") renderCheat();
+}
+
+/* ========= Инициализация ========= */
+document.addEventListener("DOMContentLoaded", ()=>{
+  load();
+  renderTopics();
+  nextQuestion();
+  $("#tabTrain").addEventListener("click", ()=>switchTab("train"));
+  $("#tabCheat").addEventListener("click", ()=>switchTab("cheat"));
+});
+})();
+</script>
+</body>
+</html>

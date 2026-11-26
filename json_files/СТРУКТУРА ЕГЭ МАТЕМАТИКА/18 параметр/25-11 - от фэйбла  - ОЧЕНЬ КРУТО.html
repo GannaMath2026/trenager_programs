@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Парабола на промежутке</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,"Segoe UI",system-ui,sans-serif;background:#f1f3fb;color:#1e293b;line-height:1.55}
+header{background:linear-gradient(120deg,#4338ca,#7c3aed 55%,#db2777);color:#fff;padding:22px 16px 0}
+header h1{margin:0 auto;max-width:980px;font-size:26px}
+header p{margin:4px auto 14px;max-width:980px;opacity:.9;font-size:14px}
+nav{max-width:980px;margin:0 auto;display:flex;gap:6px;flex-wrap:wrap}
+nav button{border:0;padding:10px 18px;border-radius:12px 12px 0 0;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;font-weight:600}
+nav button.on{background:#f1f3fb;color:#4338ca}
+main{max-width:980px;margin:0 auto;padding:18px 14px 60px}
+.card{background:#fff;border-radius:16px;padding:18px 20px;margin:14px 0;box-shadow:0 2px 10px rgba(30,41,59,.07);position:relative}
+h2{margin:22px 0 6px;font-size:20px}
+h3{margin:0 0 8px;font-size:17px}
+.b{border:0;background:#4f46e5;color:#fff;padding:10px 16px;border-radius:10px;font-size:15px;cursor:pointer;font-weight:600}
+.b:hover{filter:brightness(1.08)}
+.b:disabled{opacity:.4;cursor:default}
+.b.alt{background:#e7e9f7;color:#3730a3}
+.b.warn{background:#fde8e8;color:#b91c1c}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.mut{color:#64748b;font-size:14px}
+.chip{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;color:#fff;margin-right:6px}
+.l1{background:#10b981}.l2{background:#0ea5e9}.l3{background:#8b5cf6}.l4{background:#f59e0b}.l5{background:#ef4444}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.pc{cursor:pointer;margin:0;transition:.15s;border:2px solid transparent}
+.pc:hover{border-color:#6366f1;transform:translateY(-2px)}
+.st{margin-top:10px;font-size:16px}
+.step{padding-left:62px}
+.sn{position:absolute;left:16px;top:16px;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
+.ans{background:linear-gradient(120deg,#ecfdf5,#d1fae5);border:2px solid #10b981;font-size:18px;font-weight:600}
+.memo{margin-top:12px;background:#fffbeb;border:1px dashed #f59e0b;border-radius:12px;padding:10px 14px}
+.memo summary{cursor:pointer;font-weight:700;color:#b45309}
+.sks{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
+figure{margin:0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:8px 10px;flex:1 1 220px;max-width:330px}
+figcaption{font-size:14px}
+.sk{width:180px;display:block;margin:0 auto}
+.ax{stroke:#64748b;stroke-width:1.2}
+.seg{stroke:#4f46e5;stroke-width:5;stroke-linecap:round}
+.cv{fill:none;stroke:#e11d48;stroke-width:2.4}
+.lb{font-size:12px;fill:#3730a3;text-anchor:middle;font-weight:700}
+.plot{width:100%;max-width:580px;background:#fff;border-radius:12px;border:1px solid #e2e8f0;display:block}
+.band{fill:#6366f1;opacity:.09}
+.gr{stroke:#eceef6;stroke-width:1}
+.tk{font-size:11px;fill:#64748b;text-anchor:middle}
+.dg{display:flex;gap:16px;flex-wrap:wrap}
+.hold{flex:1 1 380px;max-width:580px;touch-action:none;cursor:grab;user-select:none}
+.side{flex:1 1 260px}
+.good{color:#047857;font-weight:700}.bad{color:#b91c1c;font-weight:700}
+.mono{font-family:ui-monospace,Consolas,monospace;font-size:14px;color:#334155}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px;border-radius:12px;border:2px solid #e2e8f0;background:#fff;font-size:16px;cursor:pointer}
+.opt:hover{border-color:#a5b4fc}
+.opt.sel{border-color:#6366f1;background:#eef2ff}
+.opt.ok{border-color:#10b981;background:#ecfdf5}
+.opt.no{border-color:#ef4444;background:#fef2f2}
+.exp{background:#eef2ff;border-left:4px solid #6366f1;border-radius:8px;padding:10px 14px;margin-top:10px}
+.dots{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 2px}
+.dots i{width:22px;height:8px;border-radius:5px;background:#dbe0f0}
+.dots i.ok{background:#10b981}.dots i.skip{background:#f59e0b}.dots i.cur{background:#6366f1}
+input[type=range]{width:100%;max-width:580px;accent-color:#6366f1}
+table{border-collapse:collapse;width:100%;font-size:15px}
+td,th{border:1px solid #e2e8f0;padding:8px 10px;vertical-align:top;text-align:left}
+th{background:#eef2ff}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px}
+.mc{border-radius:14px;padding:14px 16px;color:#1e293b}
+.mc h3{font-size:16px}
+.c1{background:#eef2ff}.c2{background:#ecfdf5}.c3{background:#fff7ed}.c4{background:#fdf2f8}.c5{background:#f0f9ff}.c6{background:#fefce8}
+ol,ul{margin:6px 0;padding-left:22px}
+</style>
+</head>
+<body>
+<header>
+<h1>Парабола на промежутке</h1>
+<p>Задачи с параметром: замена → ограничение → квадратный трёхчлен → эскизы → система</p>
+<nav>
+<button data-v="test">🧠 Разминка</button>
+<button data-v="list">📚 Задачи</button>
+<button data-v="memo">📌 Памятки</button>
+</nav>
+</header>
+<main id="app"></main>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+const R=String.raw;
+const $=(s,e=document)=>e.querySelector(s);
+const $$=(s,e=document)=>[...e.querySelectorAll(s)];
+function rm(el){if(window.renderMathInElement)renderMathInElement(el,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})}
+const fmt=n=>(Math.round(n*100)/100).toString().replace('-','−');
+const sg=x=>(x<0?' − ':' + ')+fmt(Math.abs(x));
+const poly=(c,v)=>fmt(c[0])+v+'²'+sg(c[1])+v+sg(c[2]);
+const cs=(...a)=>R`\begin{cases}`+a.join(R`\\`)+R`\end{cases}`;
+const un=(...a)=>R`\left[\begin{array}{l}`+a.join(R`\\`)+R`\end{array}\right.`;
+
+/* ---------- математика ---------- */
+function roots(A,B,C){
+  if(Math.abs(A)<1e-12)return Math.abs(B)<1e-12?[]:[-C/B];
+  const D=B*B-4*A*C;
+  if(D<-1e-9)return[];
+  if(D<1e-9)return[-B/(2*A)];
+  const s=Math.sqrt(D),r=[(-B-s)/(2*A),(-B+s)/(2*A)];
+  return r.sort((x,y)=>x-y);
+}
+function inI(t,iv,ex){
+  const l=iv[0],r=iv[1],lc=iv[2]===undefined?1:iv[2],rc=iv[3]===undefined?1:iv[3],e=1e-9;
+  if(ex&&ex.some(z=>Math.abs(z-t)<1e-7))return false;
+  return (lc?t>=l-e:t>l+e)&&(rc?t<=r+e:t<r-e);
+}
+const cn=(rs,g)=>rs.filter(t=>inI(t,g.iv,g.ex)).length;
+function samp(f,iv){const v=[];for(let i=0;i<=200;i++)v.push(f(iv[0]+(iv[1]-iv[0])*i/200));return v}
+function okf(g,a,rs,f,n){
+  switch(g.ok){
+    case'ge1':return n>=1;
+    case'eq1':return n===1;
+    case'eq2':return n===2;
+    case'neg':return samp(f,g.iv).every(v=>v<0);
+    case'pos':return samp(f,g.iv).every(v=>v>0);
+    default:return g.ok(a,rs,f,n);
+  }
+}
+
+/* ---------- графика ---------- */
+function nice(r){for(const s of[.25,.5,1,2,5,10,20,50])if(r/s<=12)return s;return 100}
+function plot(f,c){
+  const W=580,H=380,x0=c.vx[0],x1=c.vx[1],y0=c.vy[0],y1=c.vy[1];
+  const X=x=>(x-x0)/(x1-x0)*W,Y=y=>H-(y-y0)/(y1-y0)*H;
+  const l=c.iv[0],r=c.iv[1],lc=c.iv[2]===undefined?1:c.iv[2],rc=c.iv[3]===undefined?1:c.iv[3];
+  const L=Math.max(l,x0),Rr=Math.min(r,x1);
+  let s=`<svg viewBox="0 0 ${W} ${H}" class="plot"><rect x="${X(L)}" y="0" width="${X(Rr)-X(L)}" height="${H}" class="band"/>`;
+  const sx=nice(x1-x0),sy=nice(y1-y0);
+  for(let x=Math.ceil(x0/sx)*sx;x<=x1+1e-9;x+=sx){
+    s+=`<line x1="${X(x)}" y1="0" x2="${X(x)}" y2="${H}" class="gr"/>`;
+    if(Math.abs(x)>1e-9)s+=`<text x="${X(x)}" y="${Y(0)+14}" class="tk">${fmt(x)}</text>`;
+  }
+  for(let y=Math.ceil(y0/sy)*sy;y<=y1+1e-9;y+=sy){
+    s+=`<line x1="0" y1="${Y(y)}" x2="${W}" y2="${Y(y)}" class="gr"/>`;
+    if(Math.abs(y)>1e-9)s+=`<text x="${X(0)-14}" y="${Y(y)+4}" class="tk">${fmt(y)}</text>`;
+  }
+  s+=`<line x1="0" y1="${Y(0)}" x2="${W}" y2="${Y(0)}" class="ax"/><line x1="${X(0)}" y1="0" x2="${X(0)}" y2="${H}" class="ax"/>`;
+  s+=`<text x="${W-12}" y="${Y(0)-8}" class="lb">${c.v||'t'}</text>`;
+  s+=`<line x1="${X(L)}" y1="${Y(0)}" x2="${X(Rr)}" y2="${Y(0)}" class="seg"/>`;
+  let d='',pen=0;const hy=y1-y0;
+  for(let i=0;i<=400;i++){
+    const x=x0+(x1-x0)*i/400,y=f(x);
+    if(!isFinite(y)||y<y0-hy||y>y1+hy){pen=0;continue}
+    d+=(pen?'L':'M')+X(x).toFixed(1)+' '+Y(y).toFixed(1);pen=1;
+  }
+  s+=`<path d="${d}" class="cv"/>`;
+  const dot=(x,fill,col)=>`<circle cx="${X(x)}" cy="${Y(0)}" r="6" fill="${fill}" stroke="${col}" stroke-width="2.5"/>`;
+  if(l>=x0)s+=dot(l,lc?'#4f46e5':'#fff','#4f46e5');
+  if(r<=x1)s+=dot(r,rc?'#4f46e5':'#fff','#4f46e5');
+  (c.rs||[]).forEach(q=>{s+=`<circle cx="${X(q[0])}" cy="${Y(0)}" r="5" fill="${q[1]?'#10b981':'#94a3b8'}" stroke="#fff" stroke-width="1.5"/>`});
+  (c.ex||[]).forEach(x=>{s+=dot(x,'#fff','#ef4444')});
+  if(c.vert)s+=`<circle cx="${X(c.vert[0])}" cy="${Y(c.vert[1])}" r="7" fill="#e11d48" stroke="#fff" stroke-width="2"/>`;
+  return s+'</svg>';
+}
+function sk(o){
+  const W=180,H=120,k=.7*o.d,iv=o.iv||[-1.5,1.5],lab=o.lab||['m','n'];
+  const X=x=>(x+4)/8*W,Y=y=>H/2-y*H/6.4;
+  let d='',pen=0;
+  for(let x=-4;x<=4.001;x+=.1){
+    const y=k*(x-o.p)*(x-o.p)+o.q;
+    if(Math.abs(y)>3.1){pen=0;continue}
+    d+=(pen?'L':'M')+X(x).toFixed(1)+' '+Y(y).toFixed(1);pen=1;
+  }
+  const r=Math.min(iv[1],4);
+  let s=`<svg viewBox="0 0 ${W} ${H}" class="sk"><line x1="0" y1="${H/2}" x2="${W}" y2="${H/2}" class="ax"/><line x1="${X(iv[0])}" y1="${H/2}" x2="${X(r)}" y2="${H/2}" class="seg"/><path d="${d}" class="cv"/>`;
+  s+=`<circle cx="${X(iv[0])}" cy="${H/2}" r="4" fill="#4f46e5"/><text x="${X(iv[0])}" y="${H/2+17}" class="lb">${lab[0]}</text>`;
+  if(iv[1]<4)s+=`<circle cx="${X(r)}" cy="${H/2}" r="4" fill="#4f46e5"/><text x="${X(r)}" y="${H/2+17}" class="lb">${lab[1]}</text>`;
+  return s+'</svg>';
+}
+const K=(d,p,q,cap,sys,lab,iv)=>({d,p,q,cap,sys,lab,iv});
+
+/* ---------- РАЗМИНКА ---------- */
+const DS={
+'U:LI':{n:'Левый корень левее отрезка, правый — на отрезке',s:cs('f(m)<0',R`f(n)\ge 0`),k:[1,-1.2,-2]},
+'U:IR':{n:'Левый корень на отрезке, правый — правее',s:cs(R`f(m)\ge 0`,'f(n)<0'),k:[1,1.2,-2]},
+'U:TI':{n:'Касание: один корень-вершина на отрезке',s:cs('D=0',R`m\le t_0\le n`),k:[1,0,0]},
+'U:II':{n:'Ветви вверх, оба корня на отрезке',s:cs('D>0','m<t_0<n',R`f(m)\ge 0`,R`f(n)\ge 0`),k:[1,0,-1]},
+'D:II':{n:'Ветви вниз, оба корня на отрезке',s:cs('D>0','m<t_0<n',R`f(m)\le 0`,R`f(n)\le 0`),k:[-1,0,1]},
+'U:none':{n:'Корней нет вообще',s:'D<0',k:[1,0,1]},
+'U:LL':{n:'Оба корня левее отрезка',s:cs(R`D\ge 0`,'t_0<m','f(m)>0'),k:[1,-2.7,-.5]},
+'U:RR':{n:'Оба корня правее отрезка',s:cs(R`D\ge 0`,'t_0>n','f(n)>0'),k:[1,2.7,-.5]},
+'U:LR':{n:'Отрезок целиком между корнями',s:cs('f(m)<0','f(n)<0'),k:[1,0,-2.6]},
+'D:LR':{n:'Ветви вниз, отрезок между корнями',s:cs('f(m)>0','f(n)>0'),k:[-1,0,2.6]}
+};
+const TESTS=[
+{q:R`Замена \(t=\sin x\), \(x\) — любое число. Какие значения принимает \(t\)?`,o:[R`\(t\in\mathbb R\)`,R`\(t\in[-1;1]\)`,R`\(t\in[0;1]\)`,R`\(t\in(-1;1)\)`],c:1,e:R`После замены новая переменная почти всегда живёт на <b>промежутке</b>. Забыл ограничить — задача превратилась в другую.`},
+{q:R`\(t=\sin x\), но теперь \(x\in\left[0;\frac{3\pi}{4}\right]\). Какие значения принимает \(t\)?`,o:[R`\(\left[0;\frac{\sqrt2}{2}\right]\)`,R`\([0;1]\)`,R`\([-1;1]\)`,R`\(\left[\frac{\sqrt2}{2};1\right]\)`],c:1,e:R`Нельзя просто подставить концы! Внутри отрезка лежит \(x=\frac{\pi}{2}\), там синус равен 1. Синус идёт \(0\to1\to\frac{\sqrt2}{2}\), значит \(t\in[0;1]\).`},
+{q:R`Замена \(t=2^{-x^2}\). Множество значений \(t\)?`,o:[R`\((0;+\infty)\)`,R`\([1;+\infty)\)`,R`\((0;1]\)`,R`\([0;1]\)`],c:2,e:R`\(-x^2\le 0\), поэтому \(2^{-x^2}\le 2^0=1\). А показательная функция всегда положительна: \(t\in(0;1]\). Ноль не входит!`},
+{q:R`Замена \(t=\sqrt{4x-x^2}\). Множество значений \(t\)?`,o:[R`\([0;+\infty)\)`,R`\([0;4]\)`,R`\([0;2]\)`,R`\((0;2)\)`],c:2,e:R`\(4x-x^2=4-(x-2)^2\in[0;4]\) (под корнем не может быть отрицательное). Значит \(t\in[0;2]\).`},
+{q:R`Замена \(t=7^{|x|}\). Сколько значений \(x\) соответствует \(t=1\) и сколько — каждому \(t>1\)?`,o:['По одному','Одно и два','Два и два','Ни одного и два'],c:1,e:R`\(t=1\Rightarrow |x|=0\Rightarrow x=0\) — один. \(t>1\Rightarrow |x|=\log_7 t>0\) — два противоположных \(x\). Число корней по \(x\) и по \(t\) — разные вещи!`},
+{q:R`Неравенство \((a+1)t^2+5t+2>0\). Что происходит при \(a=-1\)?`,o:['Парабола ветвями вверх','Парабола ветвями вниз',R`Это уже не парабола, а прямая \(5t+2\)`,'Выражение не определено'],c:2,e:R`Если коэффициент при \(t^2\) содержит параметр — <b>первым делом</b> проверяем, когда он равен нулю. Это отдельный случай, который разбирается подстановкой.`},
+{q:R`\(f(t)=(a-3)t^2-2(a-3)t+1\). Отметь <b>все</b> верные утверждения.`,o:[R`При \(a>3\) ветви вверх`,R`При \(a<3\) ветви вниз`,R`При \(a=3\) получаем \(1=0\) — решений нет`,R`При \(a=3\) это парабола с вершиной в нуле`],c:[0,1,2],e:R`Знак старшего коэффициента решает, куда смотрят ветви. При нулевом коэффициенте параболы нет — проверяем отдельно.`},
+{q:R`После замены получилось \(t^4-32t=a^2-14a\). Это задача на параболу по \(t\)?`,o:['Да, раскрываем по формуле дискриминанта',R`Нет: степень четвёртая. Исследуем \(g(t)=t^4-32t\) на промежутке (производная, монотонность)`,'Да, если поделить на t'],c:1,e:R`Всегда спрашивай себя: «точно ли это парабола?» Если нет — ищем множество значений левой части. Зато по \(a\) правая часть — парабола!`},
+{q:R`\(f(t)=t^2+(a+3)t-4\). Что можно сказать о корнях, <b>ничего не считая</b>?`,o:['Корней может не быть','Оба корня положительны','Корни всегда есть и они разных знаков','Оба корня отрицательны'],c:2,e:R`Ветви вверх, а \(f(0)=-4<0\): точка 0 лежит под осью, значит между корнями. Свободный член — это \(f(0)\), место пересечения оси ординат.`},
+{q:R`Ветви вверх. Известно: \(D\ge 0\), произведение корней \(\frac{C}{A}>0\), сумма \(-\frac{B}{A}>0\). Тогда…`,o:['Корни разных знаков','Оба корня положительны','Оба корня отрицательны','Ничего сказать нельзя'],c:1,e:R`Произведение \(>0\) — знаки одинаковые; сумма \(>0\) — оба положительные. Теорема Виета отвечает на вопрос о знаках корней.`},
+{q:R`\(f(t)=t^2-t+a\). Что <b>не зависит</b> от параметра?`,o:['Значение в вершине','Дискриминант',R`Абсцисса вершины \(t_0=\frac12\)`,'Корни'],c:2,e:R`\(t_0=-\frac{B}{2A}=\frac12\). Парабола ездит только вверх-вниз, а корни симметричны относительно \(\frac12\). Это резко уменьшает число эскизов.`},
+{t:'drag',q:R`Ветви вверх, отрезок \([m;n]=[-2;2]\). Двигай параболу (тяни за вершину) так, чтобы на отрезке был <b>ровно один корень</b>. Найди все 3 принципиально разных расположения.`,iv:[-2,2],req:['U:LI','U:IR','U:TI']},
+{q:R`Ветви вверх. Когда \(f(t)<0\) на <b>всём</b> отрезке \([0;1]\)?`,o:[R`\(D>0\)`,R`\(f(0)<0\) и \(f(1)<0\)`,R`\(f(0)\cdot f(1)<0\)`,R`\(f(t_0)<0\)`],c:1,e:R`Парабола ветвями вверх отрицательна только между корнями. Отрезок должен целиком попасть между ними — достаточно проверить два конца. Ни вершина, ни дискриминант не нужны.`},
+{t:'drag',both:1,q:R`Нужно, чтобы \(f(t)>0\) на <b>всём</b> отрезке \([-2;2]\). Найди все 4 расположения: три при ветвях вверх и одно при ветвях вниз (кнопка «Перевернуть ветви»).`,iv:[-2,2],req:['U:none','U:LL','U:RR','D:LR']},
+{q:R`Ветви вверх, \(f(m)<0\), \(f(n)>0\). Сколько корней на интервале \((m;n)\)?`,o:['Ни одного','Ровно один','Два','Зависит от дискриминанта'],c:1,e:R`\(f(m)<0\) — точка \(m\) между корнями. \(f(n)>0\) — точка \(n\) снаружи, правее большего корня. Значит на \((m;n)\) только больший корень.`},
+{t:'drag',both:1,q:R`Сделай так, чтобы на отрезке \([-2;2]\) было <b>ровно два корня</b>. Найди оба расположения — ветвями вверх и вниз.`,iv:[-2,2],req:['U:II','D:II']},
+{t:'drag',q:R`Ветви вверх. Сделай так, чтобы на отрезке \([-2;2]\) <b>не было корней</b>. Найди все 4 расположения.`,iv:[-2,2],req:['U:none','U:LL','U:RR','U:LR']},
+{q:R`Ветви вверх, вершина \(t_0\) не зависит от \(a\) и лежит внутри отрезка. Как проще всего записать «корни есть»?`,o:[R`Решать \(D\ge 0\)`,R`\(f(t_0)\le 0\)`,R`\(f(m)\cdot f(n)<0\)`,'Найти корни по формуле'],c:1,e:R`\(f(t_0)\le 0\) и \(D\ge 0\) — одно и то же условие, но значение в известной точке считается подстановкой. Всегда выбирай более лёгкий вариант.`}
+];
+let T={i:0,res:[]};
+function vTest(){
+  const el=$('#app');
+  if(T.i>=TESTS.length){
+    const ok=T.res.filter(x=>x==='ok').length,skp=T.res.filter(x=>x==='skip').length;
+    el.innerHTML=`<div class="card"><h3>Разминка пройдена 🎉</h3><p>Выполнено: <b>${ok}</b> из ${TESTS.length}, пропущено: ${skp}.</p><div class="btns"><button class="b" id="go">К задачам →</button><button class="b alt" id="again">Пройти заново</button></div></div>`;
+    $('#go').onclick=()=>show('list');
+    $('#again').onclick=()=>{T={i:0,res:[]};vTest()};
+    return;
+  }
+  const t=TESTS[T.i];
+  el.innerHTML=`<div class="card"><div class="mut">Разминка: факты, без которых метод не работает. Задание ${T.i+1} из ${TESTS.length}</div>
+  <div class="dots">${TESTS.map((x,j)=>`<i class="${j===T.i?'cur':(T.res[j]||'')}"></i>`).join('')}</div>
+  <div class="st">${t.q}</div><div id="qb"></div><div id="ex"></div>
+  <div class="btns"><button class="b" id="nx" disabled>Дальше →</button><button class="b alt" id="sk1">Пропустить задание</button><button class="b warn" id="skA">Пропустить весь тест</button></div></div>`;
+  const qb=$('#qb'),ex=$('#ex'),nx=$('#nx');
+  const done=()=>{T.res[T.i]='ok';nx.disabled=false;if(t.e){ex.innerHTML=`<div class="exp">✅ ${t.e}</div>`;rm(ex)}else ex.innerHTML='<div class="exp">✅ Все расположения найдены. Посмотри, какой системой описывается каждое.</div>'};
+  nx.onclick=()=>{T.i++;vTest()};
+  $('#sk1').onclick=()=>{if(T.res[T.i]!=='ok')T.res[T.i]='skip';T.i++;vTest()};
+  $('#skA').onclick=()=>show('list');
+  if(t.t==='drag'){dragUI(t,qb,done)}
+  else{
+    const multi=Array.isArray(t.c);
+    qb.innerHTML=t.o.map((o,j)=>`<button class="opt" data-j="${j}">${o}</button>`).join('')+(multi?'<button class="b" id="chk">Проверить</button>':'');
+    const os=$$('.opt',qb);
+    os.forEach(b=>b.onclick=()=>{
+      const j=+b.dataset.j;
+      if(multi){b.classList.toggle('sel');return}
+      if(j===t.c){os.forEach(x=>x.classList.remove('no'));b.classList.add('ok');done()}
+      else{b.classList.add('no');ex.innerHTML='<div class="exp">Не так. Подумай ещё и выбери другой вариант.</div>'}
+    });
+    if(multi)$('#chk').onclick=()=>{
+      const s=os.filter(b=>b.classList.contains('sel')).map(b=>+b.dataset.j);
+      if(s.length===t.c.length&&t.c.every(x=>s.includes(x))){os.forEach(b=>{if(b.classList.contains('sel'))b.classList.add('ok')});done()}
+      else ex.innerHTML='<div class="exp">Набор пока неверный: проверь каждое утверждение отдельно.</div>';
+    };
+  }
+  rm(el);
+}
+function dragUI(t,box,done){
+  let d=1,p=.6,q=1.4;const k=.5,l=t.iv[0],r=t.iv[1],found=[];
+  box.innerHTML=`<div class="dg"><div class="hold"></div><div class="side"><div class="stt"></div><div class="btns"><button class="b fix">Зафиксировать вариант</button>${t.both?'<button class="b alt flip">Перевернуть ветви</button>':''}</div><div class="cnt mut"></div><div class="fl sks"></div></div></div>`;
+  const hold=$('.hold',box),stt=$('.stt',box),fix=$('.fix',box),cnt=$('.cnt',box),fl=$('.fl',box);
+  const pos=z=>z<l?'L':z>r?'R':'I';
+  function sig(){
+    const u=d>0?'U:':'D:';
+    if(q===0){const s=pos(p);return u+(s==='I'?'TI':s+s)}
+    const v=-q/(k*d);
+    if(v<0)return u+'none';
+    const s=Math.sqrt(v);return u+pos(p-s)+pos(p+s);
+  }
+  function draw(){
+    const f=x=>k*d*(x-p)*(x-p)+q,v=-q/(k*d);
+    const rs=q===0?[p]:v>0?[p-Math.sqrt(v),p+Math.sqrt(v)]:[];
+    hold.innerHTML=plot(f,{vx:[-6,6],vy:[-5,5],iv:[l,r,1,1],rs:rs.map(z=>[z,z>=l&&z<=r]),v:'t',vert:[p,q]});
+    const s=sig(),n=rs.filter(z=>z>=l&&z<=r).length,good=t.req.includes(s),has=found.includes(s);
+    stt.innerHTML=good?(has?'<span class="mut">Этот вариант уже найден — ищи другое расположение.</span>':'<span class="good">✓ Подходит! Зафиксируй этот вариант.</span>'):`<span class="bad">Пока не подходит.</span> Корней на отрезке: ${n}.`;
+    fix.disabled=!(good&&!has);
+    cnt.textContent=`Найдено расположений: ${found.length} из ${t.req.length}`;
+  }
+  const mv=e=>{
+    const b=hold.firstChild.getBoundingClientRect();
+    p=Math.round((-6+(e.clientX-b.left)/b.width*12)*10)/10;
+    q=Math.round((5-(e.clientY-b.top)/b.height*10)*10)/10;
+    if(Math.abs(q)<.25)q=0;
+    draw();
+  };
+  hold.onpointerdown=e=>{try{hold.setPointerCapture(e.pointerId)}catch(_){}mv(e)};
+  hold.onpointermove=e=>{if(e.buttons)mv(e)};
+  fix.onclick=()=>{
+    const s=sig();if(!t.req.includes(s)||found.includes(s))return;
+    found.push(s);
+    const o=DS[s];
+    fl.insertAdjacentHTML('beforeend',`<figure>${sk({d:o.k[0],p:o.k[1],q:o.k[2]})}<figcaption><b>${o.n}</b>\\[${o.s}\\]</figcaption></figure>`);
+    rm(fl);draw();
+    if(found.length===t.req.length)done();
+  };
+  const fb=$('.flip',box);if(fb)fb.onclick=()=>{d=-d;q=-q;draw()};
+  draw();
+}
+
+/* ---------- ЗАДАЧИ ---------- */
+const LV=['','Разгон: неравенство на всём отрезке','Знаки корней и вырождение','А это точно парабола?','Сколько корней на промежутке','Сложные: луч, выколотые точки, модули'];
+const ineq57=[
+['Считаем значения на концах',R`\[f(0)=-a^2+a+2<0\iff a^2-a-2>0\iff a<-1\ \text{или}\ a>2\]\[f(1)=1-(a^2-2a-3)-a^2+a+2=-2a^2+3a+6<0\iff 2a^2-3a-6>0\]Корни: \(a=\frac{3\pm\sqrt{57}}{4}\), то есть \(a<\frac{3-\sqrt{57}}{4}\) или \(a>\frac{3+\sqrt{57}}{4}\).`],
+['Пересекаем',R`\(\frac{3-\sqrt{57}}{4}\approx-1{,}14<-1\) и \(\frac{3+\sqrt{57}}{4}\approx2{,}64>2\). Поэтому второе условие сильнее первого и остаётся только оно.`]
+];
+const skNeg=(a,b)=>[K(1,0,-2.6,'Отрезок между корнями',cs(`f(${a})<0`,`f(${b})<0`),[a,b])];
+const P=[
+{id:519639,lv:1,tag:'cos 2x, неравенство на отрезке',
+st:R`Найдите все значения \(a\), при каждом из которых множество решений неравенства \[\frac{a-(a^2-2a)\cos 2x+2}{3-\cos 4x+a^2}<1\] содержит отрезок \(\left[-2\pi;-\frac{7\pi}{6}\right]\).`,
+memo:R`Ветви вверх и нужно \(f<0\) на всём отрезке — проверяем только два конца. Диапазон \(t\) ищем по <b>двойному</b> углу.`,
+steps:[
+['Замена',R`\(t=\cos 2x\). Тогда \(\cos 4x=2t^2-1\), знаменатель: \(3-(2t^2-1)+a^2=4-2t^2+a^2\ge 2+a^2>0\). Знаменатель положителен — на него можно умножить, знак неравенства не меняется.`],
+['Ограничиваем замену',R`\(x\in\left[-2\pi;-\frac{7\pi}{6}\right]\Rightarrow 2x\in\left[-4\pi;-\frac{7\pi}{3}\right]\). На этом пути косинус равен \(1\) (в точке \(-4\pi\)) и \(-1\) (в точке \(-3\pi\)), то есть пробегает всё: \[t\in[-1;1].\]`],
+['Получаем квадратное неравенство',R`\[a-(a^2-2a)t+2<4-2t^2+a^2\iff f(t)=2t^2-(a^2-2a)t-a^2+a-2<0.\] Коэффициент при \(t^2\) равен \(2\ne0\): это <b>всегда парабола</b>, ветви <b>вверх</b>. Вырожденного случая нет.`],
+['Эскиз и система',R`Парабола ветвями вверх отрицательна только между корнями. Значит весь отрезок \([-1;1]\) должен лежать между корнями. Вариантов «влево-вправо» нет: достаточно, чтобы оба конца были под осью. Вершина и дискриминант не нужны.`,skNeg('-1','1')],
+['Считаем',R`\[f(-1)=2+(a^2-2a)-a^2+a-2=-a<0\iff a>0\]\[f(1)=2-(a^2-2a)-a^2+a-2=-2a^2+3a<0\iff a<0\ \text{или}\ a>\tfrac32\]Пересечение: \(a>\frac32\).`]
+],ans:R`a>\dfrac32`,
+g:{v:'t',iv:[-1,1],vx:[-2,2.5],vy:[-10,10],ar:[-2,4,2],c:a=>[2,-(a*a-2*a),-a*a+a-2],ok:'neg'}},
+
+{id:507235,lv:1,tag:'sin x, неравенство на отрезке',
+st:R`Найдите все значения параметра \(a\), при каждом из которых множество решений неравенства \[\frac{a-(a^2-2a-3)\sin x+4}{1{,}5+0{,}5\cos 2x+a^2}<1\] содержит отрезок \(\left[-2\pi;-\frac{7\pi}{6}\right]\).`,
+memo:R`\(1{,}5+0{,}5\cos2x=2-\sin^2x\). Синус на отрезке проходит через максимум — диапазон \([0;1]\), а не «от конца до конца».`,
+steps:[
+['Замена',R`\(t=\sin x\). \(\cos 2x=1-2t^2\Rightarrow 1{,}5+0{,}5\cos 2x=2-t^2\). Знаменатель \(2-t^2+a^2\ge 1+a^2>0\).`],
+['Ограничиваем замену',R`На \(\left[-2\pi;-\frac{7\pi}{6}\right]\): \(\sin(-2\pi)=0\), растёт до \(1\) в точке \(-\frac{3\pi}{2}\), затем убывает до \(\sin\left(-\frac{7\pi}{6}\right)=\frac12\). Итого \(t\in[0;1]\).`],
+['Квадратное неравенство',R`\[a-(a^2-2a-3)t+4<2-t^2+a^2\iff f(t)=t^2-(a^2-2a-3)t-a^2+a+2<0.\]Старший коэффициент \(1\): парабола, ветви вверх.`],
+['Эскиз и система',R`Отрезок \([0;1]\) должен лежать между корнями.`,skNeg('0','1')],
+...ineq57
+],ans:R`a<\dfrac{3-\sqrt{57}}{4}\ \text{или}\ a>\dfrac{3+\sqrt{57}}{4}`,
+g:{v:'t',iv:[0,1],vx:[-1,2],vy:[-8,8],ar:[-3,4,3],c:a=>[1,-(a*a-2*a-3),-a*a+a+2],ok:'neg'}},
+
+{id:515748,lv:1,tag:'cos x, неравенство на отрезке',
+st:R`Найдите все значения \(a\), при каждом из которых множество решений неравенства \[\frac{a-(a^2-2a-3)\cos x+4}{\sin^2x+a^2+1}<1\] содержит отрезок \(\left[-\frac{\pi}{3};\frac{\pi}{2}\right]\).`,
+memo:R`Та же парабола, что в № 507235, но замена \(t=\cos x\). Косинус на отрезке проходит через \(x=0\), где он равен 1.`,
+steps:[
+['Замена',R`\(t=\cos x\), \(\sin^2x=1-t^2\). Знаменатель \(2-t^2+a^2\ge 1+a^2>0\).`],
+['Ограничиваем замену',R`На \(\left[-\frac{\pi}{3};\frac{\pi}{2}\right]\): \(\cos\left(-\frac\pi3\right)=\frac12\), растёт до \(1\) при \(x=0\), убывает до \(0\). Итого \(t\in[0;1]\).`],
+['Квадратное неравенство',R`\[f(t)=t^2-(a^2-2a-3)t-a^2+a+2<0.\]Парабола, ветви вверх.`],
+['Эскиз и система',R`Отрезок \([0;1]\) должен лежать между корнями.`,skNeg('0','1')],
+...ineq57
+],ans:R`a<\dfrac{3-\sqrt{57}}{4}\ \text{или}\ a>\dfrac{3+\sqrt{57}}{4}`,
+g:{v:'t',iv:[0,1],vx:[-1,2],vy:[-8,8],ar:[-3,4,3],c:a=>[1,-(a*a-2*a-3),-a*a+a+2],ok:'neg'}},
+
+{id:561734,lv:1,tag:'sin x, умножаем на 3',
+st:R`Найдите все значения параметра \(a\), при каждом из которых множество решений неравенства \[\frac{11a-(a^2-7a+17)\sin x+9}{3\cos^2x+a^2+2}<3\] содержит отрезок \(\left[0;\frac{3\pi}{4}\right]\).`,
+memo:R`Не забудь умножить на 3 весь знаменатель. Диапазон синуса на \(\left[0;\frac{3\pi}{4}\right]\) — это \([0;1]\).`,
+steps:[
+['Замена',R`\(t=\sin x\), \(\cos^2x=1-t^2\). Знаменатель \(3(1-t^2)+a^2+2>0\).`],
+['Ограничиваем замену',R`На \(\left[0;\frac{3\pi}{4}\right]\) синус идёт \(0\to1\to\frac{\sqrt2}{2}\). Значит \(t\in[0;1]\).`],
+['Квадратное неравенство',R`\[11a-(a^2-7a+17)t+9<9-9t^2+3a^2+6\]\[f(t)=9t^2-(a^2-7a+17)t-3a^2+11a-6<0.\]Старший коэффициент \(9\): парабола, ветви вверх.`],
+['Эскиз и система',R`Отрезок \([0;1]\) между корнями.`,skNeg('0','1')],
+['Считаем',R`\[f(0)=-3a^2+11a-6<0\iff 3a^2-11a+6>0\iff a<\tfrac23\ \text{или}\ a>3\]\[f(1)=-4a^2+18a-14<0\iff 2a^2-9a+7>0\iff a<1\ \text{или}\ a>3{,}5\]Пересечение: \(a<\frac23\) или \(a>3{,}5\).`]
+],ans:R`a\in\left(-\infty;\dfrac23\right)\cup(3{,}5;+\infty)`,
+g:{v:'t',iv:[0,1],vx:[-.5,1.5],vy:[-20,20],ar:[-2,6,4],c:a=>[9,-(a*a-7*a+17),-3*a*a+11*a-6],ok:'neg'}},
+
+{id:505874,lv:2,tag:'корень, вырождение, ветви в обе стороны',
+st:R`Найдите все значения параметра \(a\), при каждом из которых неравенство \[a+2x+5\sqrt{2x+1}>-(2ax+3)\] верно для всех \(x\) из отрезка \([0;1{,}5]\).`,
+memo:R`Старший коэффициент \(a+1\) зависит от параметра: три случая — прямая, ветви вверх, ветви вниз.`,
+steps:[
+['Замена',R`\(t=\sqrt{2x+1}\), тогда \(2x=t^2-1\).`],
+['Ограничиваем замену',R`\(x\in[0;1{,}5]\Rightarrow 2x+1\in[1;4]\Rightarrow t\in[1;2]\).`],
+['Квадратное неравенство',R`\[a+t^2-1+5t+a(t^2-1)+3>0\iff f(t)=(a+1)t^2+5t+2>0.\]Коэффициент при \(t^2\) может обнулиться!`],
+['Вырожденный случай',R`\(a=-1\): получаем \(5t+2>0\) — прямая, на \([1;2]\) верно. Значит \(a=-1\) подходит.`],
+['Ветви вверх: a > −1',R`При \(t>0\) все три слагаемых положительны — неравенство верно без вычислений. (Вершина \(t_0=-\frac{5}{2(a+1)}<0\) левее отрезка, оба корня, если они есть, отрицательны.)`,[K(1,-2.7,-.5,'Оба корня левее отрезка','f(t)>0',['1','2'])]],
+['Ветви вниз: a < −1',R`Парабола положительна только между корнями: отрезок \([1;2]\) должен лежать между ними. \[f(1)=a+8>0,\qquad f(2)=4a+16>0\iff a>-4.\]Получаем \(-4<a<-1\).`,[K(-1,0,2.6,'Отрезок между корнями',cs('f(1)>0','f(2)>0'),['1','2'])]],
+['Объединяем',R`\((-4;-1)\cup\{-1\}\cup(-1;+\infty)\).`]
+],ans:R`a>-4`,
+g:{v:'t',iv:[1,2],vx:[-1,3.5],vy:[-8,25],ar:[-7,3,0],c:a=>[a+1,5,2],ok:'pos'}},
+
+{id:503256,lv:2,tag:'свободный член −4: корни разных знаков',
+st:R`Найдите все значения \(a\), при каждом из которых уравнение \[(4\cos x-3-a)\cos x-2{,}5\cos 2x+1{,}5=0\] имеет хотя бы один корень.`,
+memo:R`\(f(0)=-4<0\) — корни разных знаков, дискриминант не нужен. Произведение корней \(-4\): оба в \([-1;1]\) не поместятся.`,
+steps:[
+['Замена',R`\(t=\cos x\), \(\cos 2x=2t^2-1\): \[4t^2-(3+a)t-5t^2+2{,}5+1{,}5=0\iff f(t)=t^2+(a+3)t-4=0.\]`],
+['Ограничиваем замену',R`\(x\) любое, поэтому \(t\in[-1;1]\). Нужен хотя бы один корень на этом отрезке.`],
+['Что известно без счёта',R`Ветви вверх. \(f(0)=-4<0\): ноль лежит между корнями. Корни есть всегда и они <b>разных знаков</b>. Произведение корней равно \(-4\), значит \(|t_1|\cdot|t_2|=4\) — оба сразу в \([-1;1]\) попасть не могут.`],
+['Эскизы и совокупность',R`Либо положительный корень не больше 1, либо отрицательный не меньше \(-1\).`,[K(1,-1.2,-2,'Положительный корень на отрезке',R`f(1)\ge 0`,['-1','1']),K(1,1.2,-2,'Отрицательный корень на отрезке',R`f(-1)\ge 0`,['-1','1'])]],
+['Считаем',R`\[f(1)=1+a+3-4=a\ge 0\qquad\text{или}\qquad f(-1)=1-a-3-4=-a-6\ge 0\iff a\le -6.\]`]
+],ans:R`a\in(-\infty;-6]\cup[0;+\infty)`,
+g:{v:'t',iv:[-1,1],vx:[-6,6],vy:[-8,8],ar:[-9,3,-3],c:a=>[1,a+3,-4],ok:'ge1'}},
+
+{id:523999,lv:2,tag:'два корня на [−1; 1), знаки корней известны',
+st:R`Найдите все значения \(a\), при каждом из которых уравнение \[4(ax-x^2)+\frac{1}{ax-x^2}+4=0\] имеет ровно два различных корня на промежутке \([-1;1)\).`,
+memo:R`Сначала решаем уравнение относительно блока \(u=ax-x^2\). Потом \(f(0)=-\frac12<0\): два корня разных знаков есть всегда.`,
+steps:[
+['Замена',R`\(u=ax-x^2\ne 0\): \[4u+\frac1u+4=0\iff 4u^2+4u+1=0\iff(2u+1)^2=0\iff u=-\tfrac12.\]`],
+['Квадратное уравнение',R`\(ax-x^2=-\frac12\iff f(x)=x^2-ax-\frac12=0\). Здесь ограничение задано в условии: \(x\in[-1;1)\).`],
+['Что известно без счёта',R`Ветви вверх, \(f(0)=-\frac12<0\). Корней всегда два, они разных знаков. Дискриминант и вершина не нужны.`],
+['Эскиз и система',R`Оба корня должны попасть в \([-1;1)\): отрицательный не левее \(-1\), положительный строго левее \(1\).`,[K(1,0,-1,'Оба корня на промежутке',cs(R`f(-1)\ge 0`,'f(1)>0'),['-1','1'])]],
+['Считаем',R`\[f(-1)=1+a-\tfrac12\ge 0\iff a\ge-\tfrac12;\qquad f(1)=1-a-\tfrac12>0\iff a<\tfrac12.\]`]
+],ans:R`-0{,}5\le a<0{,}5`,
+g:{v:'x',iv:[-1,1,1,0],vx:[-3,3],vy:[-2,3],ar:[-2,2,0],c:a=>[1,-a,-.5],ok:'eq2'}},
+
+{id:529583,lv:2,tag:'вершина на конце отрезка',
+st:R`Найдите все значения параметра \(a\), при которых уравнение \[4x+7-4\sqrt{4x-x^2}=x^2+a^2+2a\] имеет хотя бы одно решение.`,
+memo:R`Вершина \(t_0=2\) совпадает с правым концом отрезка — на \([0;2]\) функция монотонна, хватает двух значений на концах.`,
+steps:[
+['Замена',R`\(t=\sqrt{4x-x^2}\), тогда \(4x-x^2=t^2\). Уравнение: \(4x-x^2+7-4t=a^2+2a\), то есть \[f(t)=t^2-4t+7-a^2-2a=0.\]`],
+['Ограничиваем замену',R`\(4x-x^2=4-(x-2)^2\in[0;4]\Rightarrow t\in[0;2]\).`],
+['Что известно без счёта',R`Ветви вверх, вершина \(t_0=2\) — <b>правый конец отрезка</b>, от \(a\) не зависит. Значит на \([0;2]\) парабола убывает, корень на отрезке максимум один.`],
+['Эскиз и система',R`Слева значение неотрицательно, в вершине неположительно.`,[K(1,1.5,-1.2,'Убывает на отрезке',cs(R`f(0)\ge 0`,R`f(2)\le 0`),['0','2'])]],
+['Считаем',R`\[f(0)=7-a^2-2a\ge 0\iff -1-2\sqrt2\le a\le -1+2\sqrt2\]\[f(2)=3-a^2-2a\le 0\iff a\le -3\ \text{или}\ a\ge 1\]`]
+],ans:R`a\in[-1-2\sqrt2;-3]\cup[1;-1+2\sqrt2]`,
+g:{v:'t',iv:[0,2],vx:[-1,5],vy:[-6,9],ar:[-4.5,2.5,0],c:a=>[1,-4,7-a*a-2*a],ok:'ge1'}},
+
+{id:508237,lv:3,tag:'ловушка: четвёртая степень',
+st:R`Найдите все такие значения параметра \(a\), при каждом из которых уравнение \[(4x-x^2)^2-32\sqrt{4x-x^2}=a^2-14a\] имеет хотя бы одно решение.`,
+memo:R`По \(t\) это не парабола (четвёртая степень) — ищем множество значений через производную. Парабола появляется по \(a\).`,
+steps:[
+['Замена',R`\(t=\sqrt{4x-x^2}\), \(4x-x^2=t^2\): \[t^4-32t=a^2-14a.\]`],
+['Ограничиваем замену',R`\(4x-x^2=4-(x-2)^2\in[0;4]\Rightarrow t\in[0;2]\).`],
+['Точно ли это парабола?',R`<b>Нет.</b> Слева \(g(t)=t^4-32t\) — четвёртая степень. Метод расположения корней не применить. Зато параметр уже отделён: уравнение имеет решение, когда число \(a^2-14a\) попадает в множество значений \(g\) на \([0;2]\).`],
+['Множество значений',R`\(g'(t)=4t^3-32=4(t^3-8)\le 0\) на \([0;2]\): функция убывает. \(g(0)=0\), \(g(2)=16-64=-48\). Значит \(g(t)\in[-48;0]\).`],
+['А вот по a — парабола',R`\[-48\le a^2-14a\le 0\iff\begin{cases}a(a-14)\le 0\\(a-6)(a-8)\ge 0\end{cases}\iff\begin{cases}0\le a\le 14\\a\le 6\ \text{или}\ a\ge 8\end{cases}\]`]
+],ans:R`0\le a\le 6,\quad 8\le a\le 14`,
+g:{v:'t',iv:[0,2],vx:[-.5,2.5],vy:[-60,60],ar:[-2,16,3],f:a=>t=>t**4-32*t-a*a+14*a,ok:(a,rs,f)=>f(0)*f(2)<=1e-9}},
+
+{id:508258,lv:3,tag:'ловушка: нет решений',
+st:R`Найдите все такие значения параметра \(a\), при каждом из которых уравнение \[(1+\sin x)^4-4\sin x=7-a-a^2\] не имеет решений.`,
+memo:R`Замена \(t=1+\sin x\in[0;2]\). Снова не парабола: минимум внутри отрезка, значения на концах сравниваем.`,
+steps:[
+['Замена',R`\(t=1+\sin x\), \(\sin x=t-1\): \[t^4-4(t-1)=7-a-a^2\iff t^4-4t+4=7-a-a^2.\]`],
+['Ограничиваем замену',R`\(\sin x\in[-1;1]\Rightarrow t\in[0;2]\).`],
+['Точно ли это парабола?',R`Нет, четвёртая степень. Исследуем \(g(t)=t^4-4t+4\): \(g'(t)=4(t^3-1)\), минимум при \(t=1\): \(g(1)=1\). На концах \(g(0)=4\), \(g(2)=12\). Множество значений: \([1;12]\).`],
+['Условие «нет решений»',R`Правая часть должна быть вне \([1;12]\): \[7-a-a^2<1\quad\text{или}\quad 7-a-a^2>12.\]`],
+['Считаем',R`Второе: \(a^2+a+5<0\) — дискриминант отрицателен, решений нет. Первое: \(a^2+a-6>0\iff a<-3\) или \(a>2\).`]
+],ans:R`a<-3\ \text{или}\ a>2`,
+g:{v:'t',iv:[0,2],vx:[-.5,2.5],vy:[-12,25],ar:[-5,4,0],f:a=>t=>t**4-4*t+4-7+a+a*a,ok:(a,rs,f)=>{const v=samp(f,[0,2]);return v.every(x=>x>1e-9)||v.every(x=>x<-1e-9)}}},
+
+{id:544254,lv:4,tag:'куб разности, вершина фиксирована',
+st:R`Найти все значения параметра \(a\), при которых уравнение \[\frac{(x^2-4x+a)^3}{2}=(a-4x)\left(3x^4+(a-4x)^2\right)\] имеет единственное решение на промежутке \((-2-\sqrt2;0]\).`,
+memo:R`\(u=x^2\), \(v=a-4x\) — уравнение сворачивается в \((u-v)^3=0\). Вершина \(x_0=-2\) фиксирована: корни симметричны, сравниваем расстояния до концов.`,
+steps:[
+['Замена',R`\(u=x^2\), \(v=a-4x\). Тогда слева \(\frac{(u+v)^3}{2}\), справа \(v(3u^2+v^2)\): \[(u+v)^3=6u^2v+2v^3\iff u^3-3u^2v+3uv^2-v^3=0\iff(u-v)^3=0.\]Значит \(u=v\): \(f(x)=x^2+4x-a=0\).`],
+['Что известно без счёта',R`Ветви вверх. Вершина \(x_0=-2\) не зависит от \(a\) и лежит внутри \((-2-\sqrt2;0]\). Корни симметричны относительно \(-2\). До левого конца от вершины \(\sqrt2\), до правого \(2\) — правый конец <b>дальше</b>.`],
+['Эскизы',R`Единственный корень на промежутке — это либо касание в вершине, либо правый корень внутри, а левый уже вышел за левый конец. Наоборот быть не может: левый конец ближе.`,[K(1,0,0,'Касание',R`f(-2)=0`,[R`−2−√2`,'0'],[-1.2,2.4]),K(1,0,-2.2,'Левый корень вышел, правый внутри',cs(R`f(-2-\sqrt2)\le 0`,R`f(0)\ge 0`),[R`−2−√2`,'0'],[-1.2,2.4])]],
+['Лёгкий путь',R`Вершина известна, поэтому вместо дискриминанта берём значение в вершине: \(f(-2)=-4-a\). Значения на концах: \[f(0)=-a,\qquad f(-2-\sqrt2)=6+4\sqrt2-8-4\sqrt2-a=-2-a.\]`],
+['Считаем',R`Касание: \(a=-4\). Второй случай: \(-2-a\le 0\) и \(-a\ge 0\), то есть \(-2\le a\le 0\). Проверка конца: при \(a=-2\) левый корень равен \(-2-\sqrt2\) — точка выколота, остаётся один корень. Подходит.`]
+],ans:R`a\in\{-4\}\cup[-2;0]`,
+g:{v:'x',iv:[-2-Math.SQRT2,0,0,1],vx:[-5.5,1.5],vy:[-4,6],ar:[-6,3,-3],c:a=>[1,4,-a],ok:'eq1'}},
+
+{id:525412,lv:4,tag:'тангенс, единственное решение',
+st:R`Найдите все значения \(a\), при каждом из которых уравнение \[(a+1)\,\mathrm{tg}^2x-\frac{\mathrm{tg}\,x}{\cos x}+a=0\] имеет единственное решение на \(\left[-\frac{\pi}{6};\frac{\pi}{2}\right]\).`,
+memo:R`ОДЗ выкалывает \(x=\frac\pi2\), то есть \(t=1\). Вершина \(t_0=\frac12\) фиксирована, левый конец дальше правого.`,
+steps:[
+['Замена',R`ОДЗ: \(\cos x\ne 0\), то есть \(x\ne\frac{\pi}{2}\). Умножаем на \(\cos^2x\): \[(a+1)\sin^2x-\sin x+a\cos^2x=0\iff \sin^2x-\sin x+a=0.\]\(t=\sin x\): \(f(t)=t^2-t+a=0\).`],
+['Ограничиваем замену',R`На \(\left[-\frac\pi6;\frac\pi2\right)\) синус возрастает: \(t\in\left[-\frac12;1\right)\). Каждому \(t\) соответствует ровно один \(x\) — «единственное решение» значит «один корень \(t\) на промежутке».`],
+['Что известно без счёта',R`Ветви вверх, вершина \(t_0=\frac12\) внутри промежутка. До левого конца \(1\), до правого \(\frac12\) — левый конец <b>дальше</b>.`],
+['Эскизы',R`Либо касание, либо левый корень внутри, а правый уже вышел.`,[K(1,0,0,'Касание',R`f\left(\tfrac12\right)=0`,['−½','1'],[-2.4,1.2]),K(1,0,-2.2,'Левый корень внутри, правый вышел',cs(R`f\left(-\tfrac12\right)\ge 0`,R`f(1)\le 0`),['−½','1'],[-2.4,1.2])]],
+['Считаем',R`\(f\left(\frac12\right)=a-\frac14=0\Rightarrow a=\frac14\). Второй случай: \(f\left(-\frac12\right)=a+\frac34\ge 0\), \(f(1)=a\le 0\). При \(a=0\) корни \(0\) и \(1\); \(t=1\) выколот — остаётся один. Подходит.`]
+],ans:R`-\dfrac34\le a\le 0\ \text{или}\ a=\dfrac14`,
+g:{v:'t',iv:[-.5,1,1,0],vx:[-1.5,2.5],vy:[-2,3],ar:[-1.5,1,.5],c:a=>[1,-1,a],ok:'eq1'}},
+
+{id:505039,lv:4,tag:'логарифм, выколотая точка',
+st:R`Найдите все значения \(a\), для каждого из которых уравнение \[\log_{1-x}(a-x+2)=2\] имеет хотя бы один корень, принадлежащий промежутку \([-1;1)\).`,
+memo:R`Основание логарифма выкалывает \(x=0\). Корень в выколотой точке даёт значение параметра, которое проверяем отдельно.`,
+steps:[
+['Переход к квадратному',R`ОДЗ: \(1-x>0\), \(1-x\ne 1\), \(a-x+2>0\). Уравнение: \(a-x+2=(1-x)^2\). Правая часть положительна при \(x\ne1\), так что третье условие выполнится само. \[f(x)=x^2-x-1-a=0,\qquad x\in[-1;1),\ x\ne 0.\]`],
+['Что известно без счёта',R`Ветви вверх, вершина \(x_0=\frac12\) внутри промежутка. До левого конца \(1{,}5\), до правого \(0{,}5\).`],
+['Эскизы',R`Хотя бы один корень: корни существуют и хотя бы один конец «держит» свой корень внутри.`,[K(1,0,-.6,'Оба корня внутри',cs(R`f\left(\tfrac12\right)\le 0`,'f(1)>0'),['-1','1'],[-2.4,1.2]),K(1,0,-2.2,'Левый внутри, правый вышел',cs(R`f(-1)\ge 0`,R`f(1)\le 0`),['-1','1'],[-2.4,1.2])]],
+['Система',R`\[\begin{cases}f\left(\tfrac12\right)\le 0\\ f(-1)\ge 0\ \text{или}\ f(1)>0\end{cases}\iff\begin{cases}a\ge-\tfrac54\\ a\le 1\ \text{или}\ a<-1\end{cases}\iff -\tfrac54\le a\le 1.\]`],
+['Выколотая точка',R`\(x=0\) — корень при \(f(0)=-1-a=0\), то есть при \(a=-1\). Тогда второй корень \(x=1\) — он не входит в промежуток. Значит при \(a=-1\) подходящих корней нет, это значение исключаем.`]
+],ans:R`a\in\left[-\dfrac54;-1\right)\cup(-1;1]`,
+g:{v:'x',iv:[-1,1,1,0],ex:[0],vx:[-2.5,2.5],vy:[-3,4],ar:[-3,3,0],c:a=>[1,-1,-1-a],ok:'ge1'}},
+
+{id:501048,lv:4,tag:'показательная замена, вершина ездит',
+st:R`Найдите все значения \(a\), при каждом из которых уравнение \[\frac{4^{-x^2}-a\cdot2^{1-x^2}+a}{2^{1-x^2}-1}=3\] имеет хотя бы одно решение.`,
+memo:R`\(t=2^{-x^2}\in(0;1]\), запрет \(t\ne\frac12\). Вершина \(t_0=a+3\) двигается — перебираем все расположения.`,
+steps:[
+['Замена',R`\(t=2^{-x^2}\): \(\dfrac{t^2-2at+a}{2t-1}=3\), \(t\ne\frac12\). \[f(t)=t^2-2(a+3)t+a+3=0.\]`],
+['Ограничиваем замену',R`\(-x^2\le 0\Rightarrow t\in(0;1]\). Проверяем запрет: \(f\left(\frac12\right)=\frac14-(a+3)+a+3=\frac14\ne 0\) — число \(\frac12\) никогда не корень.`],
+['Что известно',R`Ветви вверх. \(f(0)=a+3\), \(f(1)=-a-2\), \(t_0=a+3\), \(\frac D4=(a+3)(a+2)\). Вершина зависит от \(a\) — нужны все варианты.`],
+['Эскизы',R`Один корень на \((0;1]\) — двумя способами, либо оба корня внутри.`,[K(1,1.2,-2,'Меньший корень внутри',cs('f(0)>0',R`f(1)\le 0`),['0','1']),K(1,-1.2,-2,'Больший корень внутри',cs('f(0)<0',R`f(1)\ge 0`),['0','1']),K(1,0,-1,'Оба внутри',cs(R`D\ge 0`,'0<t_0<1','f(0)>0',R`f(1)\ge 0`),['0','1'])]],
+['Считаем',R`1) \(a>-3\) и \(a\ge-2\): \(a\ge -2\).<br>2) \(a<-3\) и \(a\le-2\): \(a<-3\).<br>3) \(0<a+3<1\) даёт \(-3<a<-2\), но там \(D<0\) — пусто.<br>Граница \(a=-3\): \(t^2=0\), \(t=0\) не входит.`]
+],ans:R`a<-3\ \text{или}\ a\ge -2`,
+g:{v:'t',iv:[0,1,0,1],ex:[.5],vx:[-1,2],vy:[-3,4],ar:[-5,1,-1],c:a=>[1,-(2*a+6),a+3],ok:'ge1'}},
+
+{id:501050,lv:5,tag:'луч, вершина на его начале',
+st:R`Найдите все значения \(a\), при каждом из которых уравнение \[\frac{1-2a\sqrt{1+x^2}+a(1+x^2)}{(1+x^2)-2\sqrt{1+x^2}}=3\] имеет хотя бы одно решение.`,
+memo:R`\(t=\sqrt{1+x^2}\ge1\), \(t\ne2\). Вершина \(t_0=1\) при любом \(a\) — ровно начало луча. Ветви в обе стороны + вырождение.`,
+steps:[
+['Замена',R`\(t=\sqrt{1+x^2}\): \(\dfrac{1-2at+at^2}{t^2-2t}=3\), откуда \[f(t)=(a-3)t^2-2(a-3)t+1=0.\]`],
+['Ограничиваем замену',R`\(t\ge 1\) (луч), знаменатель: \(t\ne 2\). Проверка: \(f(2)=4(a-3)-4(a-3)+1=1\ne0\) — двойка никогда не корень.`],
+['Вырожденный случай',R`\(a=3\): \(1=0\) — решений нет.`],
+['Что известно без счёта',R`Вершина \(t_0=\frac{2(a-3)}{2(a-3)}=1\) — всегда на начале луча. \(f(1)=4-a\).`],
+['Эскизы',R`Ветви вверх (\(a>3\)): в вершине минимум, корень на луче есть, когда минимум не выше оси. Ветви вниз (\(a<3\)): в вершине максимум \(f(1)=4-a>1>0\), а дальше парабола уходит вниз — корень есть всегда.`,[K(1,-1.5,-1.2,'a > 3: минимум в начале луча',R`f(1)\le 0`,['1',''],[-1.5,4.5]),K(-1,-1.5,1.5,'a < 3: корень есть всегда','f(1)>0',['1',''],[-1.5,4.5])]],
+['Считаем',R`\(a>3\): \(4-a\le 0\iff a\ge 4\). \(a<3\): подходит всё.`]
+],ans:R`a<3\ \text{или}\ a\ge 4`,
+g:{v:'t',iv:[1,Infinity,1,0],ex:[2],vx:[-1,4.5],vy:[-4,5],ar:[0,7,5],c:a=>[a-3,-2*(a-3),1],ok:'ge1'}},
+
+{id:512886,lv:5,tag:'ровно два корня x: считаем корни t',
+st:R`Найдите все значения \(a\), при которых уравнение \[\frac{5a}{a-3}\cdot7^{|x|}=49^{|x|}+\frac{6a+7}{a-3}\] имеет ровно два различных корня.`,
+memo:R`\(t=7^{|x|}\ge1\): \(t=1\) даёт один \(x\), \(t>1\) — два. Нужен ровно один корень \(t>1\), а \(t=1\) корнем быть не должен.`,
+steps:[
+['Замена',R`\(a\ne 3\). \(t=7^{|x|}\): \[f(t)=t^2-\frac{5a}{a-3}\,t+\frac{6a+7}{a-3}=0.\]`],
+['Ограничиваем замену и пересчитываем корни',R`\(|x|\ge 0\Rightarrow t\ge 1\). При \(t=1\) один корень \(x=0\); при \(t>1\) два корня \(x=\pm\log_7t\). Два корня по \(x\) получаются, только если есть <b>ровно один корень \(t>1\)</b> и \(t=1\) не является корнем.`],
+['Эскизы',R`Ветви вверх. Ровно один корень правее 1: единица между корнями либо касание правее единицы.`,[K(1,-1,-2,'1 между корнями','f(1)<0',['1',''],[-1,4.5]),K(1,1.5,0,'Касание правее 1',cs('D=0','t_0>1'),['1',''],[-1,4.5])]],
+['Случай f(1) < 0',R`\[f(1)=1+\frac{-5a+6a+7}{a-3}=\frac{2a+4}{a-3}<0\iff -2<a<3.\]`],
+['Случай касания',R`\(D=0\iff 25a^2-4(6a+7)(a-3)=0\iff a^2+44a+84=0\iff a=-2\) или \(a=-42\). Вершина \(t_0=\frac{5a}{2(a-3)}\): при \(a=-42\) получаем \(\frac73>1\) — подходит; при \(a=-2\) получаем \(t_0=1\), то есть единственный \(x=0\) — не подходит.`]
+],ans:R`a=-42,\quad -2<a<3`,
+g:{v:'t',iv:[1,Infinity,0,0],vx:[-1,6],vy:[-6,8],ar:[-45,5,0],c:a=>Math.abs(a-3)<1e-9?null:[1,-5*a/(a-3),(6*a+7)/(a-3)],ok:(a,rs,f,n)=>n===1&&Math.abs(f(1))>1e-9}},
+
+{id:561180,lv:5,tag:'делим на степень, выколотая t = 2',
+st:R`Найдите все значения параметра \(a\), при каждом из которых уравнение \[\frac{a\cdot25^{x^2-1}+15^{x^2}}{2\cdot9^{x^2}-15^{x^2}}=1\] имеет хотя бы одно решение.`,
+memo:R`Делим на \(9^{x^2}\), \(t=\left(\frac53\right)^{x^2}\ge1\), \(t\ne2\). Старший коэффициент — сам параметр: три случая. \(f(0)=-50\) известно.`,
+steps:[
+['Замена',R`Делим числитель и знаменатель на \(9^{x^2}\), \(t=\left(\frac53\right)^{x^2}\): \[\frac{\frac{a}{25}t^2+t}{2-t}=1\iff f(t)=at^2+50t-50=0,\quad t\ne2.\]`],
+['Ограничиваем замену',R`\(x^2\ge0\Rightarrow t\ge 1\). Нужен хотя бы один корень на луче \([1;+\infty)\), не равный 2.`],
+['Вырожденный случай',R`\(a=0\): \(50t-50=0\), \(t=1\) — подходит (\(x=0\)).`],
+['Ветви вверх: a > 0',R`\(f(0)=-50<0\), \(f(1)=a>0\). Положительный корень сидит в \((0;1)\), второй отрицателен. На луче корней нет.`,[K(1,-2.5,-1,'Оба корня левее 1','f(1)>0',['1',''],[-1,4.5])]],
+['Ветви вниз: a < 0',R`\(f(1)=a<0\), вершина \(t_0=-\frac{25}{a}>0\). Корни есть при \(D=2500+200a\ge0\iff a\ge-12{,}5\); тогда \(t_0\ge 2>1\), и оба корня правее 1.`,[K(-1,1.5,1.5,'Оба корня правее 1',cs(R`D\ge0`,'t_0>1','f(1)<0'),['1',''],[-1,4.5])]],
+['Выколотая точка',R`\(f(2)=4a+50=0\iff a=-12{,}5\). При этом \(D=0\) и \(t=2\) — единственный корень. Исключаем. При \(-12{,}5<a<0\) имеем \(f(2)>0\), двойка не корень.`]
+],ans:R`-12{,}5<a\le 0`,
+g:{v:'t',iv:[1,Infinity,1,0],ex:[2],vx:[-1,8],vy:[-60,80],ar:[-15,3,-8],c:a=>[a,50,-50],ok:'ge1'}},
+
+{id:563900,lv:5,tag:'биквадратное с модулями, теорема Виета',
+st:R`Найдите все значения параметра \(a\), при каждом из которых уравнение \[|a-2|\,x^4-2ax^2+|a-12|=0\] имеет хотя бы два различных корня.`,
+memo:R`\(t=x^2\): нужен хотя бы один <b>положительный</b> корень \(t\). Знаки корней — по теореме Виета, модули в дискриминанте снимаем двойным неравенством.`,
+steps:[
+['Замена',R`\(t=x^2\ge 0\): \(f(t)=|a-2|\,t^2-2at+|a-12|=0\). При \(t>0\) два корня \(x=\pm\sqrt t\), при \(t=0\) один. Нужен хотя бы один корень \(t>0\).`],
+['Вырожденный случай',R`\(a=2\): \(-4t+10=0\), \(t=2{,}5>0\) — подходит.`],
+['Знаки коэффициентов',R`При \(a\ne2\): старший коэффициент \(|a-2|>0\) — ветви вверх. Свободный член \(|a-12|\ge0\). Если \(a=12\): \(10t^2-24t=0\), \(t=2{,}4\) — подходит. Иначе произведение корней \(\frac{|a-12|}{|a-2|}>0\): корни <b>одного знака</b>.`],
+['Эскиз и система',R`Нужны положительные корни: сумма положительна и корни существуют.`,[K(1,1.5,-1.2,'Оба корня положительны',cs(R`D\ge 0`,R`t_1+t_2=\dfrac{2a}{|a-2|}>0`),['0',''],[-1.5,4.5])]],
+['Считаем',R`\(\frac D4=a^2-|a-2||a-12|\ge 0\iff|a^2-14a+24|\le a^2\iff-a^2\le a^2-14a+24\le a^2\): \[\begin{cases}14a\ge 24\\ a^2-7a+12\ge 0\end{cases}\iff\begin{cases}a\ge\frac{12}{7}\\ a\le 3\ \text{или}\ a\ge 4\end{cases}\]Условие \(a>0\) выполнено. Значения \(a=2\) и \(a=12\) сюда входят.`]
+],ans:R`a\in\left[\dfrac{12}{7};3\right]\cup[4;+\infty)`,
+g:{v:'t',iv:[0,Infinity,0,0],vx:[-2,8],vy:[-12,14],ar:[-2,14,2.5],c:a=>[Math.abs(a-2),-2*a,Math.abs(a-12)],ok:'ge1'}}
+];
+
+function vList(){
+  const el=$('#app');let h='<p class="mut">18 задач из сборника, от простых к сложным. В каждой — шаги, эскизы с системами и живой график.</p>';
+  for(let lv=1;lv<=5;lv++){
+    h+=`<h2><span class="chip l${lv}">Уровень ${lv}</span>${LV[lv]}</h2><div class="grid">`;
+    P.forEach((p,i)=>{if(p.lv===lv)h+=`<div class="card pc" data-i="${i}"><b>Задача ${i+1}</b> <span class="mut">№ ${p.id}</span><div class="mut">${p.tag}</div></div>`});
+    h+='</div>';
+  }
+  el.innerHTML=h;
+  $$('.pc',el).forEach(c=>c.onclick=()=>vProb(+c.dataset.i));
+}
+function vProb(i){
+  const p=P[i],g=p.g,el=$('#app');let st=1;
+  el.innerHTML=`<div class="btns"><button class="b alt" id="bk">← К списку</button>${i>0?'<button class="b alt" id="pv">‹ Предыдущая</button>':''}${i<P.length-1?'<button class="b alt" id="nt">Следующая ›</button>':''}</div>
+  <div class="card"><span class="chip l${p.lv}">Уровень ${p.lv}</span><b>Задача ${i+1}</b> <span class="mut">№ ${p.id}</span><div class="st">${p.st}</div>
+  <details class="memo"><summary>📌 Памятка к задаче</summary><div>${p.memo}</div></details></div>
+  <div id="steps"></div>
+  <div class="btns"><button class="b" id="nx">Следующий шаг →</button><button class="b alt" id="all">Показать всё</button><button class="b alt" id="rs">Сначала</button></div>
+  <div class="card"><h3>🎛 Живой график: двигай параметр</h3><div class="mut">Закрашена полоса — промежуток для \\(${g.v}\\). Зелёные точки — корни на промежутке, серые — вне его, красные кружки — выколотые точки.</div>
+  <p>\\(a=\\) <b id="av"></b></p><input type="range" id="sl" min="${g.ar[0]}" max="${g.ar[1]}" step="0.05" value="${g.ar[2]}"><div id="gh"></div><div id="gs"></div></div>`;
+  const S=$('#steps'),nx=$('#nx');
+  function draw(){
+    S.innerHTML=p.steps.slice(0,st).map((x,j)=>`<div class="card step"><div class="sn">${j+1}</div><h3>${x[0]}</h3><div>${x[1]}</div>${x[2]?`<div class="sks">${x[2].map(o=>`<figure>${sk(o)}<figcaption><b>${o.cap}</b>${o.sys?`\\[${o.sys}\\]`:''}</figcaption></figure>`).join('')}</div>`:''}</div>`).join('')+(st>=p.steps.length?`<div class="card ans">Ответ: \\(${p.ans}\\)</div>`:'');
+    rm(S);nx.disabled=st>=p.steps.length;
+  }
+  nx.onclick=()=>{st++;draw();S.lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'})};
+  $('#all').onclick=()=>{st=p.steps.length;draw()};
+  $('#rs').onclick=()=>{st=1;draw()};
+  $('#bk').onclick=()=>show('list');
+  if($('#pv'))$('#pv').onclick=()=>vProb(i-1);
+  if($('#nt'))$('#nt').onclick=()=>vProb(i+1);
+  const sl=$('#sl'),gh=$('#gh'),gs=$('#gs'),av=$('#av');
+  function gU(){
+    const a=+sl.value,co=g.c?g.c(a):null,f=g.f?g.f(a):(co?(t=>co[0]*t*t+co[1]*t+co[2]):null);
+    av.textContent=fmt(a);
+    if(!f){gh.innerHTML='';gs.innerHTML='<span class="bad">При этом значении a уравнение не определено.</span>';return}
+    const rs=co?roots(co[0],co[1],co[2]):[],n=cn(rs,g),ok=okf(g,a,rs,f,n);
+    gh.innerHTML=plot(f,{vx:g.vx,vy:g.vy,iv:g.iv,ex:g.ex,rs:rs.map(t=>[t,inI(t,g.iv,g.ex)]),v:g.v});
+    gs.innerHTML=(co?`<div class="mono">f(${g.v}) = ${poly(co,g.v)}</div><div>Корней на промежутке: <b>${n}</b></div>`:'')+`<div class="${ok?'good':'bad'}">${ok?'✓ Условие задачи выполнено':'✗ Условие задачи не выполнено'}</div>`;
+  }
+  sl.oninput=gU;
+  draw();gU();rm(el);window.scrollTo(0,0);
+}
+
+/* ---------- ПАМЯТКИ ---------- */
+function vMemo(){
+  const el=$('#app');
+  el.innerHTML=R`<h2>Общая памятка: метод «парабола на промежутке»</h2>
+<div class="mg">
+<div class="mc c1"><h3>① Замена</h3>Ищи повторяющийся блок: \(\sin x\), \(2^{-x^2}\), \(\sqrt{\dots}\), \(x^2\). Обозначь его \(t\). Запиши ОДЗ и запреты (знаменатель, основание логарифма).</div>
+<div class="mc c2"><h3>② Ограничь замену</h3>Найди, какие значения принимает \(t\). На отрезке проверяй экстремумы <b>внутри</b>, а не только концы. Запиши, сколько \(x\) даёт каждое \(t\).</div>
+<div class="mc c3"><h3>③ Точно парабола?</h3>Приведи к \(f(t)=At^2+Bt+C\). Степень выше второй — ищи множество значений через производную. Если \(A\) содержит параметр — случай \(A=0\) разбери отдельно.</div>
+<div class="mc c4"><h3>④ Что известно без счёта</h3>Ветви: знак \(A\). Вершина: \(t_0=-\frac{B}{2A}\) — зависит ли от \(a\)? Свободный член: \(C=f(0)\). Знаки корней: \(\frac CA\) и \(-\frac BA\).</div>
+<div class="mc c5"><h3>⑤ Эскизы</h3>Нарисуй все расположения: ветви вверх и вниз, вершина левее, внутри, правее. Невозможные варианты вычеркни и объясни почему. К каждому эскизу — система.</div>
+<div class="mc c6"><h3>⑥ Лёгкий путь и проверка</h3>Вершина известна — бери \(f(t_0)\) вместо \(D\). Параметр отделился — ищи множество значений. В конце проверь концы промежутка и выколотые точки.</div>
+</div>
+<div class="card"><h3>Что требуется → какая система (ветви вверх, промежуток от \(m\) до \(n\))</h3>
+<table>
+<tr><th>Требование</th><th>Условия</th></tr>
+<tr><td>\(f<0\) на всём \([m;n]\)</td><td>\(f(m)<0,\ f(n)<0\)</td></tr>
+<tr><td>\(f>0\) на всём \([m;n]\)</td><td>\(D<0\) &nbsp;или&nbsp; \(\begin{cases}D\ge0\\t_0<m\\f(m)>0\end{cases}\) &nbsp;или&nbsp; \(\begin{cases}D\ge0\\t_0>n\\f(n)>0\end{cases}\)</td></tr>
+<tr><td>Число \(m\) между корнями</td><td>\(f(m)<0\)</td></tr>
+<tr><td>Ровно один корень на \((m;n)\)</td><td>\(f(m)\cdot f(n)<0\) &nbsp;или&nbsp; \(\begin{cases}D=0\\m<t_0<n\end{cases}\); случаи \(f(m)=0\), \(f(n)=0\) проверить подстановкой</td></tr>
+<tr><td>Два корня на \([m;n]\)</td><td>\(\begin{cases}D>0\\m<t_0<n\\f(m)\ge0\\f(n)\ge0\end{cases}\)</td></tr>
+<tr><td>Оба корня больше \(m\)</td><td>\(\begin{cases}D\ge0\\t_0>m\\f(m)>0\end{cases}\)</td></tr>
+<tr><td>Корни разных знаков</td><td>\(f(0)<0\), то есть \(C<0\)</td></tr>
+<tr><td>Оба корня положительны</td><td>\(\begin{cases}D\ge0\\ \frac CA>0\\ -\frac BA>0\end{cases}\)</td></tr>
+</table>
+<p class="mut">Ветви вниз: все знаки у значений \(f\) меняются на противоположные. Универсальная запись — через \(A\cdot f(m)\).</p></div>
+<div class="card"><h3>⚠️ Ловушки</h3><ul>
+<li>Диапазон \(t\) взят по концам отрезка, а максимум был внутри.</li>
+<li>Забыт случай \(A=0\).</li>
+<li>Корни по \(t\) посчитаны, а вопрос был про корни по \(x\).</li>
+<li>Не проверены концы: закрытый конец — нестрогий знак, открытый — строгий, а равенство проверяем подстановкой.</li>
+<li>Выколотая точка оказалась корнем — это значение параметра разбирается отдельно.</li>
+<li>Четвёртую степень приняли за параболу.</li></ul></div>
+<h2>Памятки к задачам</h2>`+P.map((p,i)=>`<div class="card"><span class="chip l${p.lv}">Ур. ${p.lv}</span><b>Задача ${i+1}</b> <span class="mut">№ ${p.id} · ${p.tag}</span><div style="margin-top:6px">${p.memo}</div><div class="mut" style="margin-top:6px">Ответ: \(${p.ans}\)</div></div>`).join('');
+  rm(el);
+}
+
+/* ---------- навигация ---------- */
+function show(v){
+  $$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  if(v==='test')vTest();else if(v==='list')vList();else vMemo();
+  window.scrollTo(0,0);
+}
+$$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
+show('test');
+</script>
+</body>
+</html>

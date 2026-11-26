@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Два графика — тренажёр</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,"Segoe UI",system-ui,sans-serif;background:#f1f3fb;color:#1e293b;line-height:1.55}
+header{background:linear-gradient(120deg,#0f766e,#2563eb 55%,#7c3aed);color:#fff;padding:20px 14px 0}
+header h1{margin:0 auto;max-width:1000px;font-size:26px}header p{margin:4px auto 12px;max-width:1000px;opacity:.92;font-size:14px}
+nav{max-width:1000px;margin:0 auto;display:flex;gap:6px;flex-wrap:wrap}
+nav button{border:0;padding:10px 14px;border-radius:12px 12px 0 0;background:rgba(255,255,255,.2);color:#fff;font-size:14px;cursor:pointer;font-weight:600}
+nav button.on{background:#f1f3fb;color:#1d4ed8}
+main{max-width:1000px;margin:0 auto;padding:16px 12px 60px}
+.card{background:#fff;border-radius:16px;padding:16px 18px;margin:12px 0;box-shadow:0 2px 10px rgba(30,41,59,.07)}
+h2{margin:18px 0 6px;font-size:20px}h3{margin:0 0 8px;font-size:17px}
+.b{border:0;background:#2563eb;color:#fff;padding:9px 15px;border-radius:10px;font-size:14px;cursor:pointer;font-weight:600}
+.b:hover{filter:brightness(1.1)}.b:disabled{opacity:.4;cursor:default}.b.alt{background:#e0e7ff;color:#1e3a8a}.b.warn{background:#fee2e2;color:#b91c1c}.b.ok{background:#059669}
+.btns{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0;align-items:center}
+.mut{color:#64748b;font-size:14px}
+.chip{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;color:#fff;margin-right:6px}
+.l1{background:#10b981}.l2{background:#0ea5e9}.l3{background:#8b5cf6}.l4{background:#f59e0b}.l5{background:#ef4444}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.pc{cursor:pointer;margin:0;border:2px solid transparent;transition:.15s}.pc:hover{border-color:#3b82f6;transform:translateY(-2px)}
+.cvs{width:100%;display:block;border:1px solid #e2e8f0;border-radius:12px;touch-action:none;cursor:grab;background:#fff}
+.ctl{display:flex;gap:12px;align-items:center;margin:8px 0;font-size:16px}.ctl input{flex:1;accent-color:#2563eb;height:28px}
+.rd{font-size:17px;font-weight:700;padding:8px 12px;border-radius:10px;background:#eff6ff;margin:6px 0}
+.exp{background:#eef2ff;border-left:4px solid #6366f1;border-radius:8px;padding:10px 14px;margin-top:10px}
+.opt{display:block;width:100%;text-align:left;margin:7px 0;padding:11px 14px;border-radius:12px;border:2px solid #e2e8f0;background:#fff;font-size:16px;cursor:pointer}
+.opt:hover{border-color:#93c5fd}.opt.ok{border-color:#10b981;background:#ecfdf5}.opt.no{border-color:#ef4444;background:#fef2f2}
+.dots{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}.dots i{width:14px;height:8px;border-radius:5px;background:#dbe0f0}
+.dots i.ok{background:#10b981}.dots i.no{background:#ef4444}.dots i.skip{background:#f59e0b}.dots i.cur{background:#2563eb}
+.good{color:#047857;font-weight:700}.bad{color:#b91c1c;font-weight:700}
+.step{border-left:4px solid #2563eb;background:#f8fafc;padding:8px 12px;margin:8px 0;border-radius:0 10px 10px 0}
+.ans{background:linear-gradient(120deg,#ecfdf5,#d1fae5);border:2px solid #10b981;font-size:18px;font-weight:700;border-radius:12px;padding:10px 14px}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.mc{border-radius:14px;padding:12px 16px}.c1{background:#eef2ff}.c2{background:#ecfdf5}.c3{background:#fff7ed}.c4{background:#fdf2f8}.c5{background:#f0f9ff}.c6{background:#fefce8}
+input[type=number]{width:70px;padding:5px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px}
+.mono{font-family:ui-monospace,Consolas,monospace;font-size:14px}
+.leg i{display:inline-block;width:22px;height:4px;vertical-align:middle;margin:0 4px 0 10px;border-radius:2px}
+.katex{font-size:1.12em}.ctl input.av{flex:none;width:92px;height:auto;padding:5px 8px;border:2px solid #93c5fd;border-radius:8px;font-size:16px;font-weight:700;text-align:center}.ctl .b{padding:6px 11px}
+</style></head><body>
+<header><h1>Два графика</h1><p>Левая часть — один график, правая — другой. Корни = точки пересечения. Строим, двигаем, приближаем, касаемся.</p><nav id="nav"></nav></header>
+<main id="app"></main>
+<script>
+const $=(s,e=document)=>e.querySelector(s),abs=Math.abs,sq=Math.sqrt;
+const F=n=>(Math.round(n*1000)/1000+'').replace('-','−');
+const sg=n=>n<0?'− '+F(-n):'+ '+F(n);
+const pl=n=>n+(n%10==1&&n%100!=11?' корень':(n%10>1&&n%10<5&&(n%100<10||n%100>20)?' корня':' корней'));
+function rnd(s){let t=s+0x6D2B79F5;return()=>{t+=0x6D2B79F5;let r=Math.imul(t^t>>>15,1|t);r^=r+Math.imul(r^r>>>7,61|r);return((r^r>>>14)>>>0)/4294967296}}
+
+/* ============ АНАЛИЗ: корни, касание, множества ============ */
+function analyze(sc,a){
+ const[lo,hi]=sc.scan,N=4000;let xs=[];for(let i=0;i<=N;i++)xs.push(lo+(hi-lo)*i/N);
+ if(sc.pts)xs=xs.concat(sc.pts(a)).sort((p,q)=>p-q);
+ const ok=x=>!sc.dom||sc.dom(x),L=x=>sc.L(x,a),R=x=>sc.R(x,a);
+ if(sc.ineq){const segs=[];let s=null,p=null;
+  for(const x of xs){let t=false;if(ok(x)){const l=L(x),r=R(x);t=isFinite(l)&&isFinite(r)&&(sc.ineq==='le'?l<=r+1e-9:l>r+1e-9)}
+   if(t){if(s===null)s=x;p=x}else if(s!==null){segs.push([s,p]);s=null}}
+  if(s!==null)segs.push([s,p]);
+  return{segs,len:segs.reduce((u,g)=>u+g[1]-g[0],0),n:segs.length,roots:[],touch:[]}}
+ const ds=xs.map(x=>ok(x)?L(x)-R(x):NaN),roots=[],touch=[],kink=[],n=xs.length,g=x=>abs(L(x)-R(x));
+ for(let i=0;i<n;i++){const d=ds[i];if(!isFinite(d))continue;
+  if(abs(d)<1e-9){roots.push(xs[i]);continue}
+  const p=ds[i-1],q=ds[i+1];
+  if(i>0&&isFinite(p)&&abs(p)>=1e-9&&p*d<0&&abs(p-d)<50){roots.push(xs[i]-d*(xs[i]-xs[i-1])/(d-p));continue}
+  if(i>0&&i<n-1&&isFinite(p)&&isFinite(q)&&p*d>0&&q*d>0&&abs(d)<=abs(p)&&abs(d)<=abs(q)&&abs(d)<.05){
+   let l=xs[i-1],r=xs[i+1];for(let k=0;k<70;k++){const m1=l+(r-l)/3,m2=r-(r-l)/3;g(m1)<g(m2)?r=m2:l=m1}
+   const xm=(l+r)/2;if(g(xm)<1e-7){(g(xm-1e-3)+g(xm+1e-3)<2e-4?touch:kink).push(xm);roots.push(xm)}}}
+ return{roots,touch,kink,n:roots.length}}
+function nearPt(sc,a){const r=analyze(sc,a);if(r.touch&&r.touch.length)return r.touch[0];
+ if(r.roots&&r.roots.length)return r.roots[r.roots.length-1];
+ const[lo,hi]=sc.scan;let bx=lo,bd=1e9;for(let i=0;i<=2000;i++){const x=lo+(hi-lo)*i/2000;if(sc.dom&&!sc.dom(x))continue;const d=abs(sc.L(x,a)-sc.R(x,a));if(isFinite(d)&&d<bd){bd=d;bx=x}}return bx}
+function ach(sc,pred,steps=500){const[a0,a1]=sc.arange,out=[];let s=null;
+ for(let i=0;i<=steps;i++){const a=a0+(a1-a0)*i/steps,t=pred(analyze(sc,a));if(t&&s===null)s=a;if(!t&&s!==null){out.push([s,a-(a1-a0)/steps]);s=null}}
+ if(s!==null)out.push([s,a1]);return out.length?out.map(g=>'['+F(g[0])+'; '+F(g[1])+']').join(' ∪ ')+' (приблизительно)':'таких значений нет'}
+
+/* ============ ГРАФИЧЕСКОЕ ПОЛЕ (зум, перетаскивание) ============ */
+class Plot{
+ constructor(box,view,hr){this.v0=view.slice();this.v=view.slice();this.hr=hr||.62;
+  const c=this.c=document.createElement('canvas');c.className='cvs';box.appendChild(c);let dr=null;
+  c.onwheel=e=>{e.preventDefault();const r=c.getBoundingClientRect();this.zoom(e.deltaY<0?.8:1.25,this.ux(e.clientX-r.left),this.uy(e.clientY-r.top))};
+  c.onpointerdown=e=>{dr={x:e.clientX,y:e.clientY};c.setPointerCapture(e.pointerId);c.style.cursor='grabbing'};
+  c.onpointermove=e=>{if(!dr)return;const v=this.v,dx=(e.clientX-dr.x)/c.clientWidth*(v[1]-v[0]),dy=(e.clientY-dr.y)/c.clientHeight*(v[3]-v[2]);v[0]-=dx;v[1]-=dx;v[2]+=dy;v[3]+=dy;dr={x:e.clientX,y:e.clientY};this.draw()};
+  c.onpointerup=()=>{dr=null;c.style.cursor='grab'};c.ondblclick=()=>this.reset();
+  new ResizeObserver(()=>this.draw()).observe(c)}
+ ux(px){return this.v[0]+px/this.c.clientWidth*(this.v[1]-this.v[0])}
+ uy(py){return this.v[3]-py/this.c.clientHeight*(this.v[3]-this.v[2])}
+ zoom(f,cx,cy){const v=this.v;cx=cx??(v[0]+v[1])/2;cy=cy??(v[2]+v[3])/2;this.v=[cx+(v[0]-cx)*f,cx+(v[1]-cx)*f,cy+(v[2]-cy)*f,cy+(v[3]-cy)*f];this.draw()}
+ focus(x,y,f){const v=this.v,w=(v[1]-v[0])*f,h=(v[3]-v[2])*f;this.v=[x-w/2,x+w/2,y-h/2,y+h/2];this.draw()}
+ reset(){this.v=this.v0.slice();this.draw()}
+ render(fn){this.fn=fn;this.draw()}
+ draw(){const c=this.c,w=c.clientWidth;if(!w)return;const h=Math.round(w*this.hr),d=devicePixelRatio||1;
+  c.style.height=h+'px';c.width=w*d;c.height=h*d;const g=c.getContext('2d');g.scale(d,d);
+  const[x0,x1,y0,y1]=this.v,X=x=>(x-x0)/(x1-x0)*w,Y=y=>h-(y-y0)/(y1-y0)*h;this.X=X;this.Y=Y;this.g=g;
+  g.fillStyle='#fff';g.fillRect(0,0,w,h);
+  const st=r=>{const p=Math.pow(10,Math.floor(Math.log10(r/8)));for(const m of[1,2,5,10])if(r/(p*m)<=10)return p*m};
+  const sx=st(x1-x0),sy=st(y1-y0);g.font='11px sans-serif';g.fillStyle='#64748b';g.strokeStyle='#eceef6';g.lineWidth=1;g.textAlign='center';
+  for(let x=Math.ceil(x0/sx)*sx;x<=x1;x+=sx){g.beginPath();g.moveTo(X(x),0);g.lineTo(X(x),h);g.stroke();if(abs(x)>sx/2)g.fillText(F(+x.toFixed(6)),X(x),Math.min(h-3,Math.max(12,Y(0)+13)))}
+  g.textAlign='right';for(let y=Math.ceil(y0/sy)*sy;y<=y1;y+=sy){g.beginPath();g.moveTo(0,Y(y));g.lineTo(w,Y(y));g.stroke();if(abs(y)>sy/2)g.fillText(F(+y.toFixed(6)),Math.min(w-3,Math.max(30,X(0)-4)),Y(y)-3)}
+  g.strokeStyle='#475569';g.lineWidth=1.5;g.beginPath();g.moveTo(0,Y(0));g.lineTo(w,Y(0));g.moveTo(X(0),0);g.lineTo(X(0),h);g.stroke();
+  if(this.fn)this.fn(g,X,Y,this)}
+}
+function curve(P,f,col,wd,dash,dom){const g=P.g,[x0,x1,y0,y1]=P.v,N=1400,hh=y1-y0;g.beginPath();g.strokeStyle=col;g.lineWidth=wd;g.setLineDash(dash||[]);let pen=false,py=0;
+ for(let i=0;i<=N;i++){const x=x0+(x1-x0)*i/N,y=(dom&&!dom(x))?NaN:f(x);if(!isFinite(y)){pen=false;continue}
+  if(pen&&abs(y-py)>hh*.7)pen=false;pen?g.lineTo(P.X(x),P.Y(y)):g.moveTo(P.X(x),P.Y(y));pen=true;py=y}
+ g.stroke();g.setLineDash([])}
+function dot(P,x,y,col,r,ring){const g=P.g;g.beginPath();g.arc(P.X(x),P.Y(y),r,0,7);g.fillStyle=ring?'#fff':col;g.fill();g.lineWidth=2.5;g.strokeStyle=col;g.stroke()}
+function dl(P,v,hor,col){const g=P.g,c=P.c;g.save();g.setLineDash([8,6]);g.strokeStyle=col;g.lineWidth=2;g.beginPath();if(hor){g.moveTo(0,P.Y(v));g.lineTo(c.clientWidth,P.Y(v))}else{g.moveTo(P.X(v),0);g.lineTo(P.X(v),c.clientHeight)}g.stroke();g.restore()}
+function piv(P,x,y){const g=P.g;dot(P,x,y,'#7c3aed',13,true);dot(P,x,y,'#7c3aed',7);g.font='bold 13px sans-serif';g.fillStyle='#6d28d9';g.textAlign='left';g.fillText('центр пучка',P.X(x)+18,P.Y(y)+19)}
+
+/* ============ СЦЕНА: два графика + ползунок ============ */
+function mountScene(box,sc,o={}){
+ box.innerHTML=`<div class="pb"></div>${o.fixed?'':`<div class="ctl"><b style="white-space:nowrap">${sc.pn||'a'} =</b><input type="text" class="av" inputmode="decimal" title="Введи значение вручную: 1.25 или 5/4, затем Enter"><button class="b alt nd" data-n="-1">◀</button><input type="range" class="sl"><button class="b alt nd" data-n="1">▶</button></div>`}<div class="rd" ${o.hideRd?'style="display:none"':''}></div><div class="btns tb"></div>${sc.asym!==undefined||sc.hasym!==undefined||sc.bnd?'<div class="mut leg"><i style="background:#0d9488"></i>пунктир — асимптоты<i style="background:#dc2626"></i>пунктир — границы промежутка</div>':''}`;
+ const P=new Plot($('.pb',box),sc.view,sc.hr),[a0,a1]=sc.arange,sl=$('.sl',box),rd=$('.rd',box),tb=$('.tb',box);let a=o.a??sc.a0??(a0+a1)/2,res;
+ if(sl){sl.min=a0;sl.max=a1;sl.step=(a1-a0)/2000}
+ const upd=()=>{res=analyze(sc,a);if(sl){sl.value=a;const av=$('.av',box);if(document.activeElement!==av)av.value=+a.toFixed(4)}
+  const n=res.n;let col=sc.ineq?'#7c3aed':n===0?'#ef4444':(res.touch.length||n===1)?'#f59e0b':n===2?'#16a34a':'#2563eb';
+  P.render((g,X,Y)=>{
+   if(sc.ineq){g.fillStyle='rgba(16,185,129,.18)';res.segs.forEach(s=>g.fillRect(X(s[0]),0,Math.max(2,X(s[1])-X(s[0])),P.c.clientHeight));
+    g.strokeStyle='#059669';g.lineWidth=7;res.segs.forEach(s=>{g.beginPath();g.moveTo(X(s[0]),Y(0));g.lineTo(X(Math.max(s[1],s[0]+1e-9)),Y(0));g.stroke()})}
+   if(sc.asym!==undefined)dl(P,sc.asym,0,'#0d9488');if(sc.hasym!==undefined)dl(P,sc.hasym,1,'#0d9488');(sc.bnd||[]).forEach(x=>dl(P,x,0,'#dc2626'));
+   curve(P,x=>sc.L(x,a),'#2563eb',3,0,sc.dom);curve(P,x=>sc.R(x,a),col,3,0,sc.rdom);
+   if(sc.pivot)piv(P,sc.pivot[0],sc.pivot[1]);
+   res.roots.forEach(x=>{const y=sc.L(x,a);isFinite(y)&&dot(P,x,y,res.touch.some(t=>abs(t-x)<1e-6)?'#f59e0b':'#059669',6,res.touch.some(t=>abs(t-x)<1e-6))})});
+  rd.innerHTML=sc.ineq?`Решения: ${res.segs.length?res.segs.map(s=>abs(s[1]-s[0])<1e-6?'{'+F(s[0])+'}':'['+F(s[0])+'; '+F(s[1])+']').join(' ∪ '):'нет'} · длина ${F(res.len)}`+(sc.ok?(sc.ok(res,a)?' <span class="good">✅ условие выполнено</span>':' <span class="bad">✖ не выполнено</span>'):'')
+   :`<span style="color:${col}">Корней: ${n}</span>${res.touch.length?' (есть касание — оранжевое кольцо)':''}${res.kink.length?' (график проходит через угловую точку)':''}`+(sc.ok?(sc.ok(res,a)?' <span class="good">✅ условие «'+sc.okTxt+'» выполнено</span>':' <span class="bad">✖ «'+sc.okTxt+'» не выполнено</span>'):'')};
+ if(sl){const cs=sc.crit||[],mw=Math.max((a1-a0)*.002,Math.min((a1-a0)*.012,cs.length>1?Math.min(...cs.slice(1).map((c,i)=>abs(c-cs[i])))*.3:1e9));
+  sl.oninput=()=>{let v=+sl.value,b=null;cs.forEach(c=>{if(abs(v-c)<mw&&(b===null||abs(v-c)<abs(v-b)))b=c});a=b===null?v:b;upd()};
+  const av=$('.av',box);av.onchange=()=>{const s=av.value.replace(/,/g,'.').replace(/−/g,'-').split('/'),v=s.length===2?parseFloat(s[0])/parseFloat(s[1]):parseFloat(s[0]);if(isFinite(v))a=v;av.blur();upd()};
+  box.querySelectorAll('.nd').forEach(b=>b.onclick=()=>{let v=Math.max(a0,Math.min(a1,a+b.dataset.n*(a1-a0)/400));cs.forEach(c=>{if((c-a)*(c-v)<0)v=c});a=v;upd()})}
+ let h='';if(!o.fixed&&!o.noCrit)(sc.crit||[]).forEach((c,i)=>h+=`<button class="b alt" data-c="${i}">${sc.pn||'a'} = ${sc.critL?sc.critL[i]:F(c)}</button>`);
+ h+=`<button class="b alt" data-z="0.5">🔍+</button><button class="b alt" data-z="2">🔍−</button><button class="b alt" data-z="r">⟲ вид</button><button class="b" data-z="t">🔍 к касанию</button>`;
+ tb.innerHTML=h;tb.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.c!==undefined){a=sc.crit[+b.dataset.c];upd()}
+  else if(b.dataset.z==='r')P.reset();else if(b.dataset.z==='t'){const x=nearPt(sc,a);let y=sc.R(x,a);if(!isFinite(y))y=sc.L(x,a);P.reset();P.focus(x,y,.08)}else P.zoom(+b.dataset.z)};
+ upd();return{P,get a(){return a},set a(v){a=v;upd()},res:()=>res}}
+
+/* ============ ЗАДАЧИ ============ */
+const T=[
+{id:'t6',no:'№ 500216',lv:1,sec:0,txt:'Найдите все значения a, при каждом из которых уравнение √(1−2x) = a − 3|x| имеет более двух корней.',
+ L:x=>sq(1-2*x),R:(x,a)=>a-3*abs(x),scan:[-4,.5],view:[-1.5,1.2,-1,2.6],arange:[0,2.2],crit:[1,1.5,5/3],critL:['1','3/2','5/3'],a0:1,ok:r=>r.n>2,okTxt:'более двух корней',ans:'a ∈ [3/2; 5/3)',
+ steps:['Два графика: синий y=√(1−2x) (ветвь корня, x≤½) и «галка» y=a−3|x| ветвями вниз с вершиной (0; a). Параметр a двигает галку вверх — это <b>каскад</b>.','a = 1: вершина галки лежит на кривой — корень один. Ниже — корней 1 или 0, поднимаем выше.','a = 3/2: правая ветвь галки проходит через конец корня (½; 0) — появляется третий корень (левая ветвь, правая ветвь и конец). Это включаем.','a = 5/3: правая ветвь галки <b>касается</b> корня: два правых пересечения слились в одно — корней уже 2. Это не включаем.','Между 3/2 и 5/3 — три корня. Ответ: [3/2; 5/3).']},
+{id:'t3',no:'№ 501070',lv:2,sec:0,txt:'Найдите все значения a, при каждом из которых уравнение |5/(x+1) − 3| = ax + a − 2 на промежутке (−1; +∞) имеет больше двух корней.',
+ L:x=>abs(5/(x+1)-3),R:(x,a)=>a*(x+1)-2,dom:x=>x>-1,scan:[-1,12],view:[-1.8,7,-4,8],asym:-1,hasym:3,pivot:[-1,-2],arange:[0,3],crit:[6/5,5/4],critL:['6/5','5/4'],a0:1,ok:r=>r.n>2,okTxt:'больше двух корней',ans:'a ∈ (6/5; 5/4)',
+ steps:['Левая часть — |5/(x+1) − 3| (построили на вкладке «Построение»). Правая: ax + a − 2 = a(x+1) − 2 — <b>пучок</b> прямых через точку (−1; −2) (фиолетовая).','Угловая точка графика — (2/3; 0). Прямая через неё: a·(5/3) − 2 = 0 ⇒ a = 6/5.','Касание правой, отражённой ветви: 3 − 5/(x+1) = a(x+1) − 2. Пусть u = x+1: au² − 5u + 5 = 0, D = 25 − 20a = 0 ⇒ a = 5/4.','Сравни: при 0 &lt; a &lt; 6/5 корень один, при a = 6/5 — два, при 6/5 &lt; a &lt; 5/4 — три, при a = 5/4 — два (касание), при a &gt; 5/4 — один. Проверь ползунком.','Ответ: 6/5 < a < 5/4 (на границах корней ровно 2).']},
+{id:'t10',no:'№ 500370',lv:2,sec:0,txt:'Найдите все значения a, при каждом из которых уравнение |5/x − 4| = ax − 1 на промежутке (0; +∞) имеет более двух корней.',
+ L:x=>abs(5/x-4),R:(x,a)=>a*x-1,dom:x=>x>0,scan:[0,12],view:[-1,7,-3,9],asym:0,hasym:4,pivot:[0,-1],arange:[0,2],crit:[4/5,5/4],critL:['4/5','5/4'],a0:1,ok:r=>r.n>2,okTxt:'более двух корней',ans:'a ∈ (4/5; 5/4)',
+ steps:['Пучок y = ax − 1 крутится вокруг точки (0; −1). График |5/x − 4| — гипербола, у которой нижняя часть отражена; угол в точке (5/4; 0).','Через угол: a·(5/4) − 1 = 0 ⇒ a = 4/5.','Касание отражённой части: 4 − 5/x = ax − 1 ⇒ ax² − 5x + 5 = 0, D = 25 − 20a = 0 ⇒ a = 5/4.','Между ними три пересечения. Ответ: (4/5; 5/4).']},
+{id:'t9',no:'№ 500350',lv:3,sec:0,txt:'Найдите все значения a, при которых уравнение a|x − 4| = 5/(x+1) на промежутке [0; +∞) имеет ровно два корня.',
+ L:x=>5/(x+1),R:(x,a)=>a*abs(x-4),dom:x=>x>=-1e-12,scan:[0,14],view:[-1,10,-1,8],bnd:[0],asym:-1,hasym:0,pivot:[4,0],arange:[0,3],crit:[4/5,5/4],critL:['4/5','5/4'],a0:1,ok:r=>r.n===2,okTxt:'ровно два корня',ans:'a = 4/5 или a > 5/4',
+ steps:['Здесь вращается «галка» a|x−4| вокруг вершины (4; 0): пучок. Гипербола 5/(x+1) — один график, не меняется.','Через левый конец ветви: x=0, 5/(0+1)=5 ⇒ a·4 = 5 ⇒ a = 5/4. Точка x=0 входит в промежуток [0; +∞).','Касание левой ветви галки: a(4−x)(x+1) = 5 ⇒ ax² − 3ax + 5 − 4a = 0, D = 25a² − 20a = 0 ⇒ a = 4/5. При касании корней ровно 2 (касание + пересечение справа) — подходит!','При 4/5 &lt; a &lt; 5/4 — три корня, при a &gt; 5/4 — два.','Ответ: a = 4/5 и a > 5/4.']},
+{id:'t29',no:'№ 562041',lv:3,sec:1,txt:'Найдите значения a, при каждом из которых среди корней уравнения 3x² − 24x + 64 = a|x − 3| будет ровно три положительных.',
+ L:x=>3*x*x-24*x+64,R:(x,a)=>a*abs(x-3),dom:x=>x>1e-9,scan:[0,12],view:[-1,10,-5,80],bnd:[0],pivot:[3,0],arange:[0,40],crit:[6+2*sq(57),64/3],critL:['6+2√57','64/3'],a0:10,ok:r=>r.n===3,okTxt:'ровно 3 положительных корня',ans:'a = 6 + 2√57 или a ≥ 64/3',
+ steps:['Парабола и галка a|x−3| с вершиной (3; 0) — пучок. Считаем только x > 0 (x = 0 не входит!).','Слева от 3: 3x² − 24x + 64 = a(3 − x), D = a² − 12a − 192 = 0 ⇒ a = 6 ± 2√57. Касание при a = 6 + 2√57 ≈ 21,1: слева один корень, справа два — всего три.','Через точку (0; 64): 3a = 64 ⇒ a = 64/3 ≈ 21,33. Корень x = 0 не положительный, но при a ≥ 64/3 слева остаётся один положительный корень, справа два.','Проверь значения между 21,1 и 21,33 — там два положительных корня.','Ответ: {6 + 2√57} ∪ [64/3; +∞).']},
+{id:'t241',no:'№ 500965',lv:3,sec:2,txt:'Найдите все значения a, при каждом из которых на интервале (1; 2) существует хотя бы одно число x, не удовлетворяющее неравенству a + √(a² − 2ax + x²) ≤ 3x − x².',
+ L:(x,a)=>a+abs(x-a),R:x=>3*x-x*x,ineq:'gt',dom:x=>x>1&&x<2,scan:[.9,2.1],bnd:[1,2],view:[0,3,-1,6],arange:[0,3],crit:[1.5],critL:['3/2'],a0:1,ok:r=>r.n>0,okTxt:'такой x существует',ans:'a > 3/2',
+ steps:['√(a² − 2ax + x²) = |x − a|. Левая часть: a + |x − a| (синяя, «галка» с вершиной (a; a)), правая: 3x − x² (парабола).','Зелёное — те x ∈ (1; 2), где НЕравенство нарушено (синий выше параболы). Нужно, чтобы такие x были.','Критично: a = 3/2: синяя ломаная только касается параболы — нарушений нет.','При a > 3/2 нарушение есть.','Ответ: a > 3/2.']},
+{id:'t39',no:'№ 507589',lv:4,sec:2,txt:'Найдите все значения a, при каждом из которых решения неравенства |2x − a| + 1 ≤ |x + 3| образуют отрезок длины 1.',
+ L:(x,a)=>abs(2*x-a),R:x=>abs(x+3)-1,ineq:'le',scan:[-32,22],view:[-26,12,-4,26],arange:[-12,6],crit:[-9.5,-2.5],critL:['−19/2','−5/2'],a0:0,ok:r=>r.n===1&&abs(r.len-1)<.04,okTxt:'отрезок длины 1',ans:'a = −5/2 или a = −19/2',
+ steps:['Перепишем: |2x − a| ≤ |x + 3| − 1. Синий — «галка» с вершиной (a/2; 0) и наклоном 2, фиолетовый — «галка» |x+3|−1 с вершиной (−3; −1).','Решения — те x, где синий не выше фиолетового: это промежуток между двумя точками пересечения.','Пусть p = a/2 — абсцисса вершины синей галки. Вершина правее −2: левое пересечение x = (2p−2)/3, правое x = 2p+2. Длина (4p+8)/3 = 1 ⇒ p = −5/4 ⇒ a = −5/2.','Вершина левее −4: x₁ = 2p+4, x₂ = (2p−4)/3, длина (−4p−16)/3 = 1 ⇒ p = −19/4 ⇒ a = −19/2.','Ответ: a = −5/2, a = −19/2.']},
+{id:'t40',no:'№ 507594',lv:4,sec:2,txt:'Найдите все значения a, при каждом из которых решения неравенства |3x − a| + 2 ≤ |x − 4| образуют отрезок длины 1.',
+ L:(x,a)=>abs(3*x-a),R:x=>abs(x-4)-2,ineq:'le',scan:[-20,40],view:[-12,36,-4,36],arange:[-4,26],crit:[2,22],a0:10,ok:r=>r.n===1&&abs(r.len-1)<.05,okTxt:'отрезок длины 1',ans:'a = 2 или a = 22',
+ steps:['|3x − a| ≤ |x − 4| − 2: синяя галка с вершиной (a/3; 0) и наклоном 3 должна «сидеть» внутри фиолетовой галки с вершиной (4; −2).','Решения образуют промежуток между пересечениями; ищем a, при которых его длина равна 1. Двигай ползунок и следи за «длиной».','Два положения: вершина слева от 4 (a = 2) и справа (a = 22).','Ответ: a = 2, a = 22.']},
+{id:'t41',no:'№ 510547',lv:5,sec:2,txt:'Найдите все значения a, при каждом из которых множеством решений неравенства √(3 − x) + |x − a| ≤ 2 является отрезок.',
+ L:x=>sq(3-x),R:(x,a)=>2-abs(x-a),ineq:'le',pts:()=>[3],scan:[-5,3.2],view:[-4,6,-1,3.5],arange:[-3,6],crit:[-1,1,5/4,5],critL:['−1','1','5/4','5'],a0:2,ok:r=>r.n===1&&r.len>.02,okTxt:'отрезок',ans:'a ∈ (−1; 1) ∪ [5/4; 5)',
+ steps:['Переносим: √(3−x) ≤ 2 − |x − a|. Синий — корень (x≤3), фиолетовый — «галка» ветвями вниз с вершиной (a; 2). Галка едет вправо при росте a — это каскад.','a = −1: вершина галки лежит на корне — решение одна точка (не отрезок). a = 1: помимо отрезка остаётся изолированная точка x = 3 — не отрезок.','a = 5/4: правая ветвь галки касается корня; при 5/4 ≤ a < 5 решение — один отрезок. a = 5: левая сторона уходит на конец корня — решение точка.','Между 1 и 5/4 решение распадается на отрезок и точку/две части.','Ответ: (−1; 1) ∪ [5/4; 5).']},
+{id:'t42',no:'№ 484643',lv:5,sec:2,txt:'Найдите все значения a, при каждом из которых множеством решений неравенства √(5 − x) + |x + a| ≤ 3 является отрезок.',
+ L:x=>sq(5-x),R:(x,a)=>3-abs(x+a),ineq:'le',pts:()=>[5],scan:[-12,5.2],view:[-11,9,-1,4],arange:[-10,6],crit:[-8,-9/4,-2,4],critL:['−8','−9/4','−2','4'],a0:0,ok:r=>r.n===1&&r.len>.02,okTxt:'отрезок',ans:'a ∈ (−8; −9/4] ∪ (−2; 4)',
+ steps:['√(5−x) ≤ 3 − |x + a|. Фиолетовая «галка» ветвями вниз с вершиной (−a; 3) едет по оси x, синий корень стоит на месте.','Особые положения: a=−8 (вершина на конце корня справа в x=5, решение — точка), a=−9/4 (касание), a=−2 (в решении появляется лишняя точка), a=4 (вершина на корне слева).','Посмотри на каждый интервал между особыми a: решение — один отрезок или распадается.','Ответ: (−8; −9/4] ∪ (−2; 4).']},
+{id:'t35',no:'№ 628139',lv:5,sec:3,txt:'Найдите все значения a, при каждом из которых уравнение √(x − 2a) + √(x² + 4ax + 4a²) = 2 имеет хотя бы одно решение.',
+ L:(x,a)=>sq(x-2*a),R:(x,a)=>2-abs(x+2*a),pts:a=>[2*a],scan:[-8,14],view:[-7,9,-4,4],arange:[-2,1.5],crit:[-1,.5],critL:['−1','1/2'],a0:0,ok:r=>r.n>=1,okTxt:'хотя бы один корень',ans:'a ∈ [−1; 1/2]',
+ steps:['√(x²+4ax+4a²) = |x + 2a|. Уравнение: √(x − 2a) = 2 − |x + 2a|. Синий — корень, начинается в x = 2a; второй график — «галка» ветвями вниз с вершиной (−2a; 2).','Корень и галка движутся в разные стороны, когда меняется a: при росте a корень уезжает вправо, галка — влево.','a = 1/2: корень начинается в точке (1; 0), а галка как раз проходит через неё — последний корень. a = −1: корень начинается в (−2; 0), галка пересекает его в точке (2; 0).','Ответ: [−1; 1/2].']}
+];
+const SEC=['Корни: пучок и каскад','Парабола с модулем','Неравенства: множество решений','Иррациональное уравнение'];
+T.forEach(t=>t.sc=t);
+const S6={L:x=>abs(x*x-2*x-3),R:(x,a)=>a,scan:[-6,8],view:[-4,6,-2,10],arange:[-1,9],crit:[0,4],a0:3};
+const getT=id=>T.find(t=>t.id===id);
+
+/* ============ ВКЛАДКА: ПОСТРОЕНИЕ ============ */
+const HY=(x,P)=>{const u=P.k/(x+P.m)+P.n;return u<0?u*(1-2*P.r):u},SQ=(x,P)=>sq(P.s*(x-P.h)),VV=(x,P)=>P.A*abs(x)+P.c;
+const EXS=[
+{name:'№ 3: |5/(x+1) − 3|',view:[-6,8,-8,10],L:{f:HY,P:{k:1,m:0,n:0,r:0}},task:'t3',steps:[
+ {w:'L',to:{},t:'<b>Шаг 1. База.</b> Гипербола y = 1/x: две ветви в I и III четвертях, оси — асимптоты.'},
+ {w:'L',to:{k:5},t:'<b>Шаг 2. Коэффициент k = 5.</b> График растягивается от осей: ветви отъезжают. Если k&lt;0 — ветви во II и IV четвертях.'},
+ {w:'L',to:{m:1},t:'<b>Шаг 3. Сдвиг по x.</b> (x + 1) в знаменателе — сдвиг ВЛЕВО на 1. Вертикальная асимптота x = −1. Нас интересует правее неё (x &gt; −1).'},
+ {w:'L',to:{n:-3},t:'<b>Шаг 4. Сдвиг по y.</b> «−3» — вниз на 3, горизонтальная асимптота y = −3. Часть ветви теперь под осью Ox.'},
+ {w:'L',to:{r:1},t:'<b>Шаг 5. МОДУЛЬ — отражение.</b> Сначала график БЕЗ отражения (ползунок на 0), потом тяни вправо: всё, что ниже оси Ox, переворачивается вверх. Появился угол в точке (2/3; 0).'}]},
+{name:'№ 10: |5/x − 4|',view:[-4,9,-3,10],L:{f:HY,P:{k:1,m:0,n:0,r:0}},task:'t10',steps:[
+ {w:'L',to:{},t:'<b>Шаг 1. База.</b> y = 1/x.'},{w:'L',to:{k:5},t:'<b>Шаг 2.</b> k = 5: y = 5/x — ветви дальше от осей.'},
+ {w:'L',to:{n:-4},t:'<b>Шаг 3.</b> Вниз на 4: y = 5/x − 4. Нуль функции x = 5/4.'},
+ {w:'L',to:{r:1},t:'<b>Шаг 4. Отражение.</b> Часть ниже оси Ox (при x &gt; 5/4) переворачивается вверх. Теперь график правее нуля поднимается к y = 4.'}]},
+{name:'№ 6: √(1−2x) и a − 3|x|',view:[-3,3,-3,3],L:{f:SQ,P:{s:1,h:0}},R:{f:VV,P:{A:1,c:0}},task:'t6',steps:[
+ {w:'L',to:{},t:'<b>Шаг 1. База.</b> y = √x.'},{w:'L',to:{s:-1},t:'<b>Шаг 2. Отражение</b> относительно оси Oy: √(−x). Ветвь смотрит влево.'},
+ {w:'L',to:{s:-2},t:'<b>Шаг 3. Сжатие</b> к оси Oy в 2 раза: √(−2x) — круче.'},
+ {w:'L',to:{h:.5},t:'<b>Шаг 4. Сдвиг вправо на ½:</b> √(−2(x − ½)) = √(1 − 2x). Определён при x ≤ ½.'},
+ {w:'R',to:{},t:'<b>Шаг 5. Второй график.</b> Базовая «галка» y = |x| (вершина в нуле).'},
+ {w:'R',to:{A:-1},t:'<b>Шаг 6. Отражение</b> вниз: y = −|x| — галка ветвями вниз.'},
+ {w:'R',to:{A:-3},t:'<b>Шаг 7. Крутизна 3:</b> y = −3|x|.'},
+ {w:'R',to:{c:1},t:'<b>Шаг 8. Каскад.</b> «+ a» поднимает галку: сейчас a = 1. Дальше вы сами двигаете a.'}]}];
+function vBuild(el){
+ let ei=0,st=0,tv=1,raf=0;
+ const lerp=(A,B,t)=>{const o={};for(const k in A)o[k]=A[k]+((B[k]??A[k])-A[k])*t;return o};
+ function apply(ex,n){let PL={...ex.L.P},PR=ex.R?{...ex.R.P}:null,showR=false;for(let i=0;i<n;i++){const s=ex.steps[i];if(s.w==='L')PL={...PL,...s.to};else{PR={...PR,...s.to};showR=true}}return{PL,PR,showR}}
+ function draw(){const ex=EXS[ei];
+  el.innerHTML=`<div class="card"><h3>🏗 Строим график шаг за шагом</h3><div class="btns">${EXS.map((e,i)=>`<button class="b ${i===ei?'':'alt'}" data-e="${i}">${e.name}</button>`).join('')}</div>
+  <div class="dots">${ex.steps.map((s,i)=>`<i class="${i<st?'ok':i===st?'cur':''}"></i>`).join('')}<i class="${st===ex.steps.length?'cur':''}"></i></div><div id="bx"></div>
+  <div class="btns"><button class="b alt" id="pv" ${st?'':'disabled'}>← Назад</button><button class="b" id="nx">${st<ex.steps.length?'Дальше →':'К задаче →'}</button></div></div>`;
+  $('#bx',el).innerHTML='';
+  el.onclick=e=>{const b=e.target.closest('[data-e]');if(b){ei=+b.dataset.e;st=0;tv=1;draw()}};
+  $('#pv',el).onclick=()=>{cancelAnimationFrame(raf);st--;tv=1;draw()};
+  $('#nx',el).onclick=()=>{cancelAnimationFrame(raf);if(st>=ex.steps.length){go('tasks',ex.task);return}st++;tv=1;draw()};
+  if(st<ex.steps.length)stepView(ex);else finalView(ex)}
+ function stepView(ex){const s=ex.steps[st],base=apply(ex,st),bx=$('#bx',el);
+  bx.innerHTML=`<div class="step">${s.t}</div><div class="pb"></div><div class="ctl"><b>Преобразование</b><input type="range" id="tr" min="0" max="1" step=".005" value="${tv}"><button class="b alt" id="pl">▶</button></div>
+  <div class="mut leg"><i style="background:#2563eb"></i>левая часть <i style="background:#16a34a"></i>правая часть <i style="background:#94a3b8"></i>прошлый шаг <i style="background:#0d9488"></i>асимптоты (пунктир)</div>`;
+  const P=new Plot($('.pb',bx),ex.view);
+  const hasT=Object.keys(s.to).length>0,tr=$('#tr',bx);if(!hasT){tr.disabled=true;$('#pl',bx).disabled=true}
+  const rr=()=>{const t=hasT?tv:1,PL=s.w==='L'?lerp(base.PL,{...base.PL,...s.to},t):base.PL,PR=base.PR?(s.w==='R'?lerp(base.PR,{...base.PR,...s.to},t):base.PR):null,showR=base.showR||s.w==='R';
+   P.render(()=>{if(hasT){if(s.w==='L')curve(P,x=>ex.L.f(x,base.PL),'#94a3b8',2.5,[6,5]);else curve(P,x=>ex.R.f(x,base.PR),'#94a3b8',2.5,[6,5])}
+    if(ex.L.f===HY){dl(P,-PL.m,0,'#0d9488');dl(P,PL.n<0?PL.n*(1-2*PL.r):PL.n,1,'#0d9488')}curve(P,x=>ex.L.f(x,PL),'#2563eb',3.2);if(showR&&ex.R)curve(P,x=>ex.R.f(x,PR),'#16a34a',3.2)})};
+  tr.oninput=()=>{tv=+tr.value;rr()};
+  $('#pl',bx).onclick=()=>{cancelAnimationFrame(raf);const t0=performance.now();const f=n=>{const k=Math.min(1,(n-t0)/2200);tv=k;tr.value=k;rr();if(k<1)raf=requestAnimationFrame(f)};raf=requestAnimationFrame(f)};
+  rr()}
+ function finalView(ex){const t=getT(ex.task);$('#bx',el).innerHTML=`<div class="step"><b>Финал.</b> Теперь оба графика готовы: ${ex.task==='t6'?'галка скользит вверх при росте a (каскад)':'прямая вращается вокруг фиксированной точки (пучок)'}. Двигай ползунок — считай точки пересечения. Оранжевое кольцо — касание, <b>🔍 к касанию</b> приближает его.</div><div id="fs"></div><div class="exp">Условие задачи: ${t.txt}</div>`;mountScene($('#fs',el),t)}
+ draw()}
+
+/* ============ ВКЛАДКА: КАСАНИЕ · ПУЧОК · КАСКАД ============ */
+const CUR=[
+ {n:'парабола y = x²',L:x=>x*x,abc:(s,t)=>[1,-s,-t],view:[-5,5,-3,10],pv:[0,-1],k:1},
+ {n:'гипербола y = 4/x',L:x=>4/x,abc:(s,t)=>[s,t,-4],view:[-6,6,-8,8],pv:[1,-2],k:-1,asym:0,hasym:0},
+ {n:'гипербола y = 5/(x+1) − 3',L:x=>5/(x+1)-3,abc:(s,t)=>[s,s+t+3,t-2],view:[-7,7,-9,7],pv:[1,0],k:1,asym:-1,hasym:-3}];
+function vTan(el){
+ let ci=0,mode='p',px=0,py=-1,kk=1;
+ function draw(){const C=CUR[ci];
+  const sOf=a=>mode==='p'?a:kk,tOf=a=>mode==='p'?py-a*px:a;
+  const D=a=>{const[A,B,Cc]=C.abc(sOf(a),tOf(a));return B*B-4*A*Cc},d0=D(0),c2=(D(1)+D(-1))/2-d0,c1=(D(1)-D(-1))/2;
+  let cr=[];if(abs(c2)>1e-9){const q=c1*c1-4*c2*d0;if(q>=0)cr=[(-c1-sq(q))/(2*c2),(-c1+sq(q))/(2*c2)].sort((u,v)=>u-v)}else if(abs(c1)>1e-9)cr=[-d0/c1];
+  const nm=mode==='p'?'a':'b';
+  el.innerHTML=`<div class="card"><h3>Пучок и каскад — два способа двигать прямую</h3><div class="mg">
+  <div class="mc c1"><b>Пучок</b> — прямые через одну точку: y = a(x − p) + q. Параметр a <b>вращает</b> прямую вокруг точки (p; q). Пример: y = ax + a − 2 = a(x+1) − 2 → точка (−1; −2).</div>
+  <div class="mc c2"><b>Каскад</b> — параллельные прямые: y = kx + b. Параметр b <b>сдвигает</b> прямую вверх-вниз, наклон k не меняется. Пример: y = a, или «галка» y = a − 3|x|.</div></div></div>
+  <div class="card"><h3>Самый простой способ найти касание — три шага</h3>
+  <div class="step"><b>1.</b> Приравняй: кривая = прямая.</div><div class="step"><b>2.</b> Приведи к квадратному уравнению <span class="mono">A x² + B x + C = 0</span> (умножь на знаменатель, если дробь).</div>
+  <div class="step"><b>3.</b> Касание ⇔ ровно один корень ⇔ <b>D = 0</b> — получится уравнение на параметр.</div>
+  <div class="mut">Запасной способ: производная. Касание в точке x₀: наклон прямой = f′(x₀) и прямая проходит через точку (x₀; f(x₀)).</div></div>
+  <div class="card"><div class="btns">${CUR.map((c,i)=>`<button class="b ${i===ci?'':'alt'}" data-cu="${i}">${c.n}</button>`).join('')}</div>
+  <div class="btns"><button class="b ${mode==='p'?'':'alt'}" data-m="p">🔄 Пучок</button><button class="b ${mode==='c'?'':'alt'}" data-m="c">↕ Каскад</button>
+  ${mode==='p'?`Точка (p; q): <input type="number" id="px" value="${px}" step=".5"> ; <input type="number" id="py" value="${py}" step=".5">`:`Наклон k: <input type="number" id="kk" value="${kk}" step=".5">`}</div>
+  <div class="exp">Для выбранной кривой и прямой ${mode==='p'?`y = a(x − ${F(px)}) ${sg(py)}`:`y = ${F(kk)}x + b`} дискриминант оказывается многочленом по ${nm}:<br><b class="mono">D(${nm}) = ${F(c2)}·${nm}² ${sg(c1)}·${nm} ${sg(d0)}</b><br>D = 0 ⇒ ${cr.length?cr.map(v=>nm+' = '+F(v)).join(' или '):'касаний нет'}. Нажми кнопку с этим значением и проверь «🔍 к касанию».<br>D&gt;0 — два пересечения, D=0 — касание, D&lt;0 — нет общих точек.</div><div id="sc"></div></div>`;
+  el.onclick=e=>{const b=e.target.closest('button');if(!b||!b.dataset)return;if(b.dataset.cu!==undefined){ci=+b.dataset.cu;px=CUR[ci].pv[0];py=CUR[ci].pv[1];draw()}else if(b.dataset.m){mode=b.dataset.m;draw()}};
+  ['px','py','kk'].forEach(id=>{const i=$('#'+id,el);if(i)i.onchange=()=>{px=+($('#px',el)?.value??px);py=+($('#py',el)?.value??py);kk=+($('#kk',el)?.value??kk);draw()}});
+  const sc={L:C.L,R:(x,a)=>sOf(a)*x+tOf(a),scan:[-14,14],view:C.view,arange:mode==='p'?[-8,8]:[-12,12],crit:cr,critL:cr.map(F),pn:nm,a0:0,pivot:mode==='p'?[px,py]:null,asym:C.asym,hasym:C.hasym};
+  mountScene($('#sc',el),sc)}
+ draw()}
+
+/* ============ ТЕСТЫ ============ */
+const HB=[
+['Как из графика y = f(x) получить график y = |f(x)|?',['Часть графика ниже оси Ox отразить симметрично вверх, остальное оставить','Часть графика левее оси Oy отразить вправо','Весь график сдвинуть вверх','Часть ниже оси Ox стереть'],0,'Модуль делает все значения неотрицательными: что было под осью — зеркально переходит наверх; верхняя часть не меняется.'],
+['График y = 5/x расположен в…',['I и III четвертях','II и IV четвертях','I и II четвертях','III и IV четвертях'],0,'k = 5 &gt; 0: x и y одного знака. При k &lt; 0 — II и IV.'],
+['Как получить y = 5/(x+1) из y = 5/x?',['Сдвинуть влево на 1','Сдвинуть вправо на 1','Сдвинуть вверх на 1','Сдвинуть вниз на 1'],0,'«x + 1» внутри функции — сдвиг по x в противоположную сторону: влево. Вертикальная асимптота x = −1.'],
+['Какая горизонтальная асимптота у y = 5/x − 3?',['y = −3','y = 3','y = 5','y = 0'],0,'«−3» снаружи — сдвиг вниз на 3.'],
+['Все прямые y = a(x+1) − 2 при разных a — это…',['Пучок прямых через точку (−1; −2)','Параллельные прямые','Прямые через начало координат','Прямые через (1; −2)'],0,'При x = −1 значение не зависит от a: y = −2. Меняя a, вращаем прямую вокруг (−1; −2).'],
+['Прямые y = 2x + b при разных b — это…',['Параллельные прямые (каскад)','Пучок через одну точку','Перпендикулярные прямые','Одна и та же прямая'],0,'Наклон фиксирован, b сдвигает прямую вверх-вниз.'],
+['Число корней уравнения f(x) = g(x) равно…',['числу точек пересечения графиков','числу точек графика f','числу точек на оси Ox','числу асимптот'],0,'Корень — это x, при котором значения совпали, то есть графики встретились.'],
+['Прямая касается кривой. Сколько у них общих точек в месте касания?',['Одна — это один корень','Две','Ни одной','Бесконечно много'],0,'Касание — один (двойной) корень, D = 0.'],
+['«На промежутке (−1; +∞)» означает…',['Берём только часть графика правее x = −1; сама точка −1 не входит','Берём весь график','Берём график левее −1','Берём только x = −1'],0,'Всё, что левее и в самой границе, не рассматриваем — даже если там есть пересечения.'],
+['У «галки» y = a|x − 4| число a отвечает за…',['Крутизну веток (вершина остаётся в (4; 0))','Сдвиг вершины по x','Сдвиг вершины по y','Ничего'],0,'Вершина всегда (4; 0); a — наклон. Это пучок через (4; 0).'],
+['Где определена функция y = √(1 − 2x)?',['x ≤ 1/2','x ≥ 1/2','x ≥ −1/2','x ≤ −1/2'],0,'1 − 2x ≥ 0 ⇒ x ≤ 1/2. Правее графика нет.'],
+['Как проверить касание алгебраически?',['Приравнять, получить квадратное уравнение и взять D = 0','Подставить x = 0','Найти асимптоты','Взять D &gt; 0'],0,'Касание ⇔ один (двойной) корень ⇔ D = 0 — самый простой способ.']];
+const HA=[
+['Прямая проходит через угловую точку графика y = |f(x)|. Что делать?',['Отдельно подставить этот случай и посчитать корни','Ничего, угол не влияет','Взять D = 0','Всегда исключать это a'],0,'Именно в углу число корней меняется скачком. Включать ли это a — решает подсчёт корней при самом a.'],
+['На промежутке [0; +∞) есть корень x = 0. Он…',['Учитывается, граница включена','Не учитывается','Учитывается дважды','Зависит от a'],0,'Квадратная скобка: x = 0 допустим. При (0; +∞) его бы не считали.'],
+['f(x) = |5/(x+1) − 3| на (−1; +∞). Что происходит при x → −1⁺?',['f → +∞','f → 0','f → −3','f → 3'],0,'5/(x+1) → +∞, модуль не мешает. Любая прямая пересечёт эту ветвь хотя бы раз.'],
+['«Более двух корней» — это…',['3 и больше','Ровно 2','2 и больше','Ровно 3'],0,'Строго больше двух. «Не менее двух» — 2 и больше. Читай условие!'],
+['Сколько корней «стоит» касание?',['Один (одна общая точка)','Два','Ноль','Три'],0,'Считаем разные x. Но рядом по a бывает 0 или 2 пересечения — поэтому касание часто граничный случай.'],
+['Граничное a (касание). Входит ли оно в ответ?',['Подставь и посчитай корни именно при этом a','Всегда входит','Никогда не входит','Решает знак a'],0,'Скобка в ответе зависит от числа корней при самом граничном a.'],
+['Когда у подвижной прямой меняется число корней?',['Только в особых положениях: касание, угол, конец/граница промежутка, асимптота','При любом сдвиге','Только при касании','Никогда'],0,'Между особыми положениями число корней постоянно — достаточно проверить по одному a в каждом промежутке.'],
+['Что считать «особым положением» для пучка через (−1; −2) и графика |5/(x+1) − 3|?',['Проход через угол (2/3; 0) и касание','Проход через (0; 0)','Только a = 0','Только a &gt; 0'],0,'Угол + касание отражённой ветви = a = 6/5 и a = 5/4.'],
+['Решение неравенства f(x) ≤ g(x) на графиках — это…',['Те x, где график f не выше графика g','Те x, где графики пересекаются','Те x, где f выше g','Точки на оси Oy'],0,'Смотрим на ось x: где «синий не выше красного».'],
+['Решения неравенства образуют отрезок длины 1. Что это значит?',['Одна связная часть; расстояние между крайними точками пересечения равно 1','Ровно одна точка пересечения','Две части по 1','Касание'],0,'Крайние точки — абсциссы пересечений; их разность = 1. Это обычно линейное уравнение на a.'],
+['|2x − a| = 2|x − a/2|. Где вершина графика y = |2x − a|?',['(a/2; 0)','(a; 0)','(2a; 0)','(0; a)'],0,'Вынеси коэффициент при x — сразу видно, где выражение внутри модуля равно 0.'],
+['Что делает параметр в y = a − 3|x|?',['Двигает «галку» вверх-вниз (каскад), форма не меняется','Меняет крутизну','Сдвигает вправо','Отражает'],0,'a — свободный член: вертикальный сдвиг.']];
+function gen(fam,s){const r=rnd(s*97+fam*13),ri=(a,b)=>a+Math.floor(r()*(b-a+1)),pk=A=>A[ri(0,A.length-1)],sgn=()=>r()<.5?-1:1;
+ const mk=(q,right,wrong,e)=>{const o=[right,...wrong],k=ri(0,3);o.splice(k,0,o.shift());return{t:'mc',q,o,c:k,e}};
+ const cnt=(right,e,q)=>{const w=[0,1,2,3,4].filter(v=>v!==right).sort(()=>r()-.5).slice(0,3);return mk(q,''+right,w.map(String),e)};
+ if(fam===0){const x0=ri(1,5)*sgn(),v=-ri(1,6);return mk(`Точка (${F(x0)}; ${F(v)}) лежит на графике y = f(x). Какая точка с тем же x лежит на графике y = |f(x)|?`,`(${F(x0)}; ${F(-v)})`,[`(${F(x0)}; ${F(v)})`,`(${F(-x0)}; ${F(-v)})`,`(${F(-x0)}; ${F(v)})`],'Модуль отражает отрицательную ординату вверх, абсцисса остаётся.')}
+ if(fam===1){const p=ri(1,4)*sgn(),q=ri(1,5)*sgn();return mk(`Через какую точку проходят все прямые y = a(x ${sg(p)}) ${sg(q)}?`,`(${F(-p)}; ${F(q)})`,[`(${F(p)}; ${F(q)})`,`(${F(-p)}; ${F(-q)})`,`(${F(q)}; ${F(-p)})`],`При x = ${F(-p)} скобка обнуляется, остаётся y = ${F(q)}: это центр пучка.`)}
+ if(fam===2){const k=ri(2,7),m=ri(1,4)*sgn(),n=ri(1,5)*sgn();return mk(`Найди асимптоты y = ${k}/(x ${sg(m)}) ${sg(n)}.`,`x = ${F(-m)}; y = ${F(n)}`,[`x = ${F(m)}; y = ${F(n)}`,`x = ${F(-m)}; y = ${F(-n)}`,`x = ${F(m)}; y = ${F(-n)}`],'Знаменатель обнуляется при x = −m (вертикальная), добавка n — горизонтальная асимптота.')}
+ if(fam===3){const sv=ri(2,9),c=s%5,a=[-1,0,ri(1,sv-1),sv,sv+ri(1,4)][c],right=[0,2,4,3,2][c];return cnt(right,`График y = |x² − ${sv}|: «ёлочка» с вершинами-корнями ±√${sv} и «горбом» высоты ${sv} в нуле. Горизонталь y = a: ниже 0 — нет; 0 — 2 касания; (0; ${sv}) — 4; ровно ${sv} — 3; выше — 2.`,`Сколько корней у уравнения |x² − ${sv}| = ${a}?`)}
+ if(fam===4){const m=ri(1,4),c=pk([-3,-2,-1,1,2,3]);return mk(`Прямая y = ax ${sg(c)} касается параболы y = x² ${sg(c+m*m)}. Найди положительное a.`,''+2*m,[''+m,''+4*m,''+(2*m+1)],`x² ${sg(c+m*m)} = ax ${sg(c)} ⇒ x² − ax + ${m*m} = 0. D = a² − ${4*m*m} = 0 ⇒ a = ±${2*m}.`)}
+ if(fam===5){const m=pk([-3,-2,-1,1,2,3]),dx=ri(1,3),x1=ri(-3,2),y1=ri(-4,4);return mk(`Угловой коэффициент прямой через точки (${x1}; ${y1}) и (${x1+dx}; ${y1+m*dx}):`,''+m,[''+-m,''+(m+1),''+(m-1)],`Δy/Δx = ${m*dx}/${dx} = ${m}.`)}
+ if(fam===6){const aa=ri(1,4),c=pk([-3,-2,-1,1,2,3]),d=pk([-3,-2,-1,1,2,3]);return mk(`График y = a|x ${sg(-c)}| проходит через точку (${c+d}; ${aa*abs(d)}). Найди a.`,''+aa,[''+(aa+1),''+(aa+2),''+(aa+3)],`|${c+d} ${sg(-c)}| = ${abs(d)}, поэтому a = ${aa*abs(d)}/${abs(d)} = ${aa}.`)}
+ {const k=ri(2,9),n=ri(2,6),c=s%5,a=[-1,0,ri(1,n-1),n,n+ri(1,3)][c],right=[0,1,2,1,1][c];return cnt(right,`При x &gt; 0 график |${k}/x − ${n}| убывает от +∞ до 0 (при x = ${F(k/n)}), затем растёт к ${n}, не достигая. Горизонталь: a&lt;0 — 0; a=0 — 1; 0&lt;a&lt;${n} — 2; a=${n} — 1; a&gt;${n} — 1.`,`Сколько корней при x &gt; 0 у уравнения |${k}/x − ${n}| = ${a}?`)}}
+function sceneQs(scs,kinds,seed){const r=rnd(seed),out=[];
+ scs.forEach((sc,j)=>{let cn=null;const get=()=>{if(!cn){const[a0,a1]=sc.arange,s=new Set();for(let i=0;i<=120;i++)s.add(analyze(sc,a0+(a1-a0)*i/120).n);cn=[...s].filter(n=>n<=4).sort()}return cn};
+  let used=[];kinds.forEach(k=>{
+   if(k==='cnt'){const c=get().filter(n=>!used.includes(n));const N=c[Math.floor(r()*c.length)]??get()[0];used.push(N);out.push({t:'sc',sc,kind:'cnt',N,q:`Подвинь ползунок так, чтобы корней было ровно <b>${N}</b>. Если такое число бывает только в особом положении (касание, угол) — лови его магнитом ползунка, кнопками ◀ ▶ или введи значение параметра вручную.`})}
+   if(k==='tch')out.push({t:'sc',sc,kind:'tch',q:'Найди положение, при котором графики <b>касаются</b> (оранжевое кольцо). Помогут магнит ползунка, кнопки ◀ ▶ (они не проскакивают особые положения) и ручной ввод значения; лупа 🔍 покажет, что касание честное.'});
+   if(k==='zoom'){const cr=sc.crit[j%sc.crit.length],off=[0,-1,1][(j+seed)%3]*(sc.arange[1]-sc.arange[0])/4000;out.push({t:'zoom',sc,a:cr+off,q:'Приблизь график лупой 🔍 (колесо мыши, кнопки или «к касанию») и ответь: <b>сколько корней</b> у уравнения при этом значении параметра? Число не показано!'})}})});return out}
+function merge(a,b){const o=[];let i=0,j=0;while(i<a.length||j<b.length){if(j>=b.length||(i<a.length&&i/a.length<=j/b.length))o.push(a[i++]);else o.push(b[j++])}return o}
+const TQ={};
+function getQ(k){if(TQ[k])return TQ[k];
+ const mcs=A=>A.map(x=>({t:'mc',q:x[0],o:x[1].slice(),c:0,e:x[3]})).map(q=>{const r=rnd(q.q.length),k2=Math.floor(r()*4),o=q.o;o.splice(k2,0,o.shift());q.c=k2;return q});
+ if(k==='t1'){const m=[...mcs(HB),gen(0,1),gen(1,1),gen(2,1),gen(5,1),gen(6,1),gen(0,2),gen(1,2),gen(2,2)];
+  const sc=sceneQs([S6,getT('t6'),getT('t3'),getT('t10'),getT('t9')],['cnt','tch'],3);return TQ[k]=merge(m,sc)}
+ const m=[...mcs(HA),...[1,2,3,4,5,6].map(s=>gen(3,s)),...[1,2,3,4,5].map(s=>gen(4,s)),...[1,2,3,4,5,6].map(s=>gen(7,s)),gen(6,3),gen(6,4),gen(1,3)];
+ const sc=sceneQs([S6,getT('t6'),getT('t3'),getT('t10'),getT('t9'),getT('t29')],['cnt','cnt','tch','zoom'],11).slice(0,26);return TQ[k]=merge(m,sc)}
+function vQuiz(el,key){const Q=getQ(key);let st={i:0,res:[]};
+ const title=key==='t1'?'Базовый тест (30)':'Продвинутый тест (60)';
+ function draw(){if(st.i>=Q.length){const ok=st.res.filter(x=>x==='ok').length,bad=st.res.map((x,i)=>x==='no'?i+1:0).filter(Boolean),sk=st.res.map((x,i)=>x==='skip'?i+1:0).filter(Boolean);
+  el.innerHTML=`<div class="card"><h3>${title}: итог</h3><p style="font-size:20px"><b class="good">${ok}</b> из ${Q.length} верно</p><p>Ошибки в заданиях: ${bad.join(', ')||'нет 🎉'}<br>Пропущено: ${sk.join(', ')||'нет'}</p><div class="btns"><button class="b" id="again">Пройти заново</button><button class="b alt" id="tk">К задачам →</button></div></div>`;
+  $('#again',el).onclick=()=>{st={i:0,res:[]};draw()};$('#tk',el).onclick=()=>go('tasks');return}
+  const q=Q[st.i];
+  el.innerHTML=`<div class="card"><div class="mut">${title} · задание ${st.i+1} из ${Q.length}</div><div class="dots">${Q.map((x,j)=>`<i class="${j===st.i?'cur':st.res[j]||''}"></i>`).join('')}</div>
+  <div style="font-size:17px;margin:8px 0">${q.q}</div><div id="qb"></div><div id="ex"></div>
+  <div class="btns"><button class="b" id="nx" disabled>Дальше →</button><button class="b alt" id="sk">Пропустить</button></div></div>`;
+  const qb=$('#qb',el),ex=$('#ex',el),nx=$('#nx',el);let done=false;
+  const fin=(ok,txt)=>{if(done)return;done=true;st.res[st.i]=ok?'ok':'no';nx.disabled=false;ex.innerHTML=`<div class="exp">${ok?'✅':'❌'} ${txt}</div>`;$('.dots i.cur',el).className=ok?'ok':'no'};
+  nx.onclick=()=>{st.i++;draw()};$('#sk',el).onclick=()=>{if(!st.res[st.i])st.res[st.i]='skip';st.i++;draw()};
+  const opts=(O,c,e)=>{qb.innerHTML=O.map((t,i)=>`<button class="opt" data-i="${i}">${t}</button>`).join('');qb.onclick=ev=>{const b=ev.target.closest('.opt');if(!b||done)return;const i=+b.dataset.i;b.classList.add(i===c?'ok':'no');if(i!==c)qb.children[c].classList.add('ok');fin(i===c,e)}};
+  if(q.t==='mc')opts(q.o,q.c,q.e);
+  else if(q.t==='zoom'){const sc=Object.assign({},q.sc);const ob=mountScene(qb.appendChild(document.createElement('div')),sc,{fixed:true,a:q.a,hideRd:true});
+   const n=Math.min(analyze(sc,q.a).n,4),t=analyze(sc,q.a),h=document.createElement('div');qb.appendChild(h);
+   h.innerHTML=[0,1,2,3,4].map(i=>`<button class="opt" style="display:inline-block;width:auto;min-width:70px" data-i="${i}">${i}</button>`).join('');
+   h.onclick=ev=>{const b=ev.target.closest('.opt');if(!b||done)return;const i=+b.dataset.i;b.classList.add(i===n?'ok':'no');fin(i===n,`Верно: ${pl(n)}${t.touch.length?' — это касание (одна общая точка)':''}. Два близких корня и касание невооружённым глазом не различить — приближай!`)}}
+  else{const o=mountScene(qb,q.sc,{noCrit:true});const b=document.createElement('button');b.className='b ok';b.textContent='Проверить';qb.appendChild(b);
+   b.onclick=()=>{if(done)return;const r=o.res(),ok=q.kind==='cnt'?r.n===q.N:r.touch.length>0;
+    if(ok)fin(true,q.kind==='cnt'?`Да, при a = ${F(o.a)} корней ${r.n}. Подходящие значения: ${ach(q.sc,x=>x.n===q.N)}.`:`Касание при a = ${F(o.a)}. Ищи его через D = 0 — как на вкладке «Касание».`);
+    else{ex.innerHTML=`<div class="exp">❌ Пока ${q.kind==='cnt'?'корней '+r.n:'касания нет'}. Двигай дальше (можно проверять снова).</div>`;if(!st.fl){st.fl={}}if(!st.fl[st.i]){st.fl[st.i]=1;st.res[st.i]='no';$('.dots i.cur',el).className='no'}}}}}
+ draw()}
+
+/* ============ ЗАДАЧИ ============ */
+function vTasks(el,id){
+ if(id){const t=getT(id),i=T.indexOf(t);let k=1;
+  el.innerHTML=`<div class="card"><button class="b alt" id="bk">← К списку</button> <span class="chip l${t.lv}">Уровень ${t.lv}</span><span class="mut">${SEC[t.sec]} · ${t.no}</span>
+  <div style="font-size:18px;margin:10px 0">${t.txt}</div><div id="sc"></div></div>
+  <div class="card"><h3>Разбор по шагам</h3><div id="st"></div><div class="btns"><button class="b" id="mr">Показать шаг</button><button class="b ok" id="an">Показать ответ</button></div><div id="aa"></div></div>
+  <div class="btns">${i>0?`<button class="b alt" data-g="${T[i-1].id}">← ${T[i-1].no}</button>`:''}${i<T.length-1?`<button class="b alt" data-g="${T[i+1].id}">${T[i+1].no} →</button>`:''}</div>`;
+  mountScene($('#sc',el),t);$('#bk',el).onclick=()=>vTasks(el);
+  const sh=()=>{$('#st',el).innerHTML=t.steps.slice(0,k).map((s,j)=>`<div class="step"><b>${j+1}.</b> ${s}</div>`).join('');if(k>=t.steps.length)$('#mr',el).disabled=true};
+  $('#mr',el).onclick=()=>{k++;sh()};$('#an',el).onclick=()=>{$('#aa',el).innerHTML=`<div class="ans">Ответ: ${t.ans}</div>`};sh();
+  el.onclick=e=>{const b=e.target.closest('[data-g]');if(b)vTasks(el,b.dataset.g)};return}
+ el.innerHTML=`<div class="card mut">Задачи отсортированы по разделам и по возрастанию сложности. Перед ними пройди тесты — они отрабатывают все тонкие места.</div>`+SEC.map((s,si)=>`<h2>${s}</h2><div class="grid">${T.filter(t=>t.sec===si).sort((a,b)=>a.lv-b.lv).map(t=>`<div class="card pc" data-t="${t.id}"><span class="chip l${t.lv}">Ур. ${t.lv}</span><b>${t.no}</b><div class="mut" style="margin-top:6px">${t.txt.slice(0,90)}…</div></div>`).join('')}</div>`).join('');
+ el.onclick=e=>{const c=e.target.closest('[data-t]');if(c)vTasks(el,c.dataset.t)}}
+
+/* ============ ПАМЯТКА ============ */
+function vMemo(el){el.innerHTML=`<h2>Памятка «Два графика»</h2><div class="mg">
+<div class="mc c1"><h3>1. Алгоритм</h3><ol><li>Раздели уравнение на «левую» и «правую» части — по параметру a должна меняться <b>простая</b> часть (прямая, галка).</li><li>Построй обе части.</li><li>Найди <b>особые положения</b> подвижного графика.</li><li>Между ними число корней постоянно — посчитай в одной точке.</li><li>Сами особые a проверь подстановкой.</li></ol></div>
+<div class="mc c2"><h3>2. Построение с модулем</h3><ul><li>Сначала график <b>без</b> модуля: база → k → сдвиг по x → сдвиг по y.</li><li>Потом отразить всё, что ниже Ox, вверх.</li><li>Появляются <b>углы</b> в нулях функции.</li><li>y = k/(x+m) + n: асимптоты x = −m, y = n.</li></ul></div>
+<div class="mc c3"><h3>3. Пучок и каскад</h3><ul><li><b>Пучок</b> y = a(x−p)+q — вращение вокруг (p; q).</li><li><b>Каскад</b> y = kx + a — параллельный сдвиг.</li><li>Галка a|x−c| — пучок через (c; 0); a − k|x| — каскад.</li></ul></div>
+<div class="mc c4"><h3>4. Касание за три шага</h3><ol><li>Приравняй.</li><li>Приведи к A x² + B x + C = 0.</li><li>D = 0 ⇒ значение параметра.</li></ol>Запасной способ: производная.</div>
+<div class="mc c5"><h3>5. Особые положения</h3><ul><li>Касание (D = 0)</li><li>Проход через угол графика с модулем</li><li>Проход через конец кривой (корень, граница промежутка)</li><li>Асимптота — в корень не превращается</li></ul></div>
+<div class="mc c6"><h3>6. Тонкие места</h3><ul><li>Строгое/нестрогое неравенство на границе промежутка.</li><li>«Более двух» — это ≥ 3; «ровно два» — 2.</li><li>Граничное a — подставь и посчитай.</li><li>Касание считается одним корнем.</li><li>Неравенство: смотри на оси x, где один график не выше другого.</li></ul></div></div>`}
+
+/* ============ ФОРМУЛЫ: автоматический LaTeX через KaTeX ============ */
+const B=String.fromCharCode(92),SYM={'≤':'le','≥':'ge','∈':'in','∪':'cup','·':'cdot','⇒':'Rightarrow','⇔':'Leftrightarrow','±':'pm','∞':'infty','→':'to','…':'dots','≈':'approx','<':'lt','>':'gt'},SUP={'²':'^2','³':'^3','₀':'_0','₁':'_1','₂':'_2','′':"'",'⁺':'^{+}'};
+const FR=/(\d+(?:[.,]\d+)?[a-z]?|[a-zΔ]{1,2}|\((?:[^()]|\([^()]*\))*\))\/(\d+(?:[.,]\d+)?[a-z]?|[a-zΔ]{1,2}|\((?:[^()]|\([^()]*\))*\))/g;
+const TOK=/^[0-9A-Za-zΔ+\-−=<>≤≥()\[\]{}|;,.:!?√∞∈∪·⇒⇔±²³₀₁₂′⁺½\/→…«»≈]+$/;
+function toTex(s){const un=p=>p[0]==='('?p.slice(1,-1):p;
+ return s.replace(/−/g,'-').replace(/½/g,'1/2').replace(/[«»]/g,'').replace(/[{}]/g,m=>B+m)
+  .replace(/√\(((?:[^()]|\([^()]*\))*)\)/g,(m,p)=>B+'sqrt{'+p+'}').replace(/√(\d+|[a-z])/g,(m,p)=>B+'sqrt{'+p+'}')
+  .replace(FR,(m,p,q)=>B+'frac{'+un(p)+'}{'+un(q)+'}').replace(/(\d),(\d)/g,'$1{,}$2')
+  .replace(/[²³₀₁₂′⁺]/g,m=>SUP[m]).replace(/[≤≥∈∪·⇒⇔±∞→…≈<>]/g,m=>B+SYM[m]+' ')}
+function splitRuns(s){const tk=s.split(/(\s+)/),out=[];let run='';
+ const txt=t=>{if(!t)return;const l=out[out.length-1];if(l&&!l.m)l.t+=t;else out.push({t})};
+ const flush=()=>{if(!run)return;const m=run.match(/^([«\s:;,.!?…→]*)([\s\S]*?)([»\s:;,.!?…→]*)$/),c=m[2];
+  if(c&&(c==='D'||(/[a-z√∞=−\-\/≤≥<>∈½²]/.test(c)&&/[0-9A-Za-z√∞½]/.test(c)&&!/^[\d\s.,;:()\[\]]+$/.test(c)))){txt(m[1]);out.push({t:c,m:1});txt(m[3])}else txt(run);run=''};
+ for(const t of tk){if(/^\s*$/.test(t)){if(run)run+=t;else txt(t)}else if(TOK.test(t)&&t!=='·')run+=t;else{flush();txt(t)}}
+ flush();return out}
+function mathify(root){if(!window.katex||!root)return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),L=[];let n;
+ while(n=w.nextNode()){const p=n.parentElement;if(p&&!p.closest('.mx,.katex,.nomath,script,style')&&/[0-9a-zD√∞½]/.test(n.nodeValue))L.push(n)}
+ L.forEach(n=>{const ps=splitRuns(n.nodeValue);if(!ps.some(p=>p.m))return;const f=document.createDocumentFragment();
+  ps.forEach(p=>{if(!p.m){f.appendChild(document.createTextNode(p.t));return}const e=document.createElement('span');e.className='mx';
+   try{e.innerHTML=katex.renderToString(toTex(p.t),{throwOnError:false,strict:false})}catch(x){e.textContent=p.t}f.appendChild(e)});n.replaceWith(f)})}
+
+/* ============ НАВИГАЦИЯ ============ */
+const TABS=[['build','🏗 Построение'],['tan','🎯 Касание · пучок · каскад'],['t1','🧠 Тест 30'],['t2','🔥 Тест 60'],['tasks','📚 Задачи'],['memo','📌 Памятка']];
+function go(tab,arg){$('#nav').innerHTML=TABS.map(t=>`<button data-t="${t[0]}" class="${t[0]===tab?'on':''}">${t[1]}</button>`).join('');
+ const el=$('#app');el.onclick=null;el.innerHTML='';
+ ({build:()=>vBuild(el),tan:()=>vTan(el),t1:()=>vQuiz(el,'t1'),t2:()=>vQuiz(el,'t2'),tasks:()=>vTasks(el,arg),memo:()=>vMemo(el)})[tab]();window.scrollTo(0,0)}
+$('#nav').onclick=e=>{const b=e.target.closest('button');if(b)go(b.dataset.t)};
+new MutationObserver(ms=>{const s=new Set();ms.forEach(m=>{if(m.addedNodes.length)s.add(m.target)});s.forEach(t=>{if(t.isConnected)mathify(t)})}).observe($('#app'),{childList:true,subtree:true});
+addEventListener('load',()=>mathify($('#app')));
+go('build');
+</script></body></html>
