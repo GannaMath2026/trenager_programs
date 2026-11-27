@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#172e22"><meta name="description" content="Интерактивный тренажёр по графикам функций"><title>Лаборатория графиков</title>
+<style>
+:root{--bg:#f6f8f2;--paper:#fff;--ink:#192e23;--muted:#4e6357;--green:#176747;--lime:#d6f488;--line:#dbe5db;--blue:#5947b5;--red:#a53535;--radius:24px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,sans-serif}button,input{font:inherit}button{cursor:pointer}a{color:var(--green)}:focus-visible{outline:3px solid var(--blue);outline-offset:3px}button,a,input{touch-action:manipulation}h1,h2,h3,p{margin:0}h1,h2,h3{line-height:1.1;letter-spacing:-.035em}h1{font-size:clamp(2.8rem,7vw,5.8rem)}h2{font-size:clamp(1.7rem,4vw,2.65rem)}h3{font-size:1.3rem}p+p{margin-top:.7rem}.shell{width:min(1260px,calc(100% - 44px));margin:auto}.top{border-bottom:1px solid var(--line);background:var(--paper)}.top .shell{min-height:68px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-weight:800}.logo{display:grid;place-items:center;background:var(--ink);color:var(--lime);border-radius:11px;width:35px;height:35px;font-size:1.3rem}.progress{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.875rem;font-weight:650}.progress progress{width:85px;accent-color:var(--green)}.hero{position:relative;isolation:isolate;overflow:hidden;background:var(--ink);color:white;border-radius:30px;margin:24px auto 28px;display:grid;grid-template-columns:1.3fr .85fr;align-items:center;min-height:292px}.hero-copy{padding:32px clamp(23px,5vw,56px);z-index:1}.hero h1 span{color:var(--lime)}.hero p{margin-top:17px;color:#dfebdd;max-width:37ch}.hero canvas{width:100%;height:100%;min-height:275px;display:block;position:absolute;right:0;top:0;width:47%;opacity:.92}.layout{display:grid;grid-template-columns:235px minmax(0,1fr);gap:26px;padding-bottom:48px}.route{align-self:start;position:sticky;top:15px;padding:18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper)}.route h2{font-size:1.13rem;margin-bottom:12px}.route nav{display:grid;gap:5px}.topic{width:100%;display:flex;align-items:center;text-align:left;gap:9px;padding:9px 10px;background:transparent;border:0;border-radius:10px;color:var(--ink);font-size:.9rem;font-weight:650}.topic:hover{background:#eef4eb}.topic.active{background:#e4f1dc;color:#134b36}.mark{width:18px;color:var(--green);font-size:.8rem;text-align:center}.section-head{margin:4px 0 17px;display:flex;align-items:end;justify-content:space-between;gap:14px}.eyebrow{color:var(--green);font-size:.84rem;text-transform:uppercase;font-weight:800;letter-spacing:.09em;margin-bottom:8px}.section-head>span{color:var(--muted);font-weight:650;white-space:nowrap;font-size:.875rem}.panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,3vw,27px);margin-bottom:17px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}.panel-head span{font-size:.85rem;color:var(--muted)}.lab,.task-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:22px;align-items:start}.plot{display:block;width:100%;height:auto;background:#f8fbf6;border:1px solid var(--line);border-radius:16px;aspect-ratio:420/330}.formula{background:#eef5e8;color:#214834;border-radius:12px;padding:10px 12px;font:600 clamp(1.04rem,2.5vw,1.38rem)/1.3 Georgia,serif;min-height:47px;margin-bottom:10px}.symbol{display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:750}.symbol output{color:var(--green);font-variant-numeric:tabular-nums}.slider{margin-top:8px}.slider input{margin:2px 0 0;width:100%;accent-color:var(--green);cursor:ew-resize}.slider small{display:block;color:var(--muted);font-size:.86rem;line-height:1.25}.actions{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:13px}.btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 13px;min-height:42px;border:1px solid var(--line);border-radius:11px;background:var(--paper);color:var(--ink);font-weight:700;text-decoration:none;font-size:.92rem}.btn:hover{background:#edf3e9}.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}.btn.primary:hover{background:var(--green)}.btn.bright{background:var(--lime);border-color:#b6d96b}.btn[aria-pressed=true]{background:#e4f1dc;border-color:#97bd9b}.legend{display:flex;flex-wrap:wrap;gap:14px;color:var(--muted);font-size:.85rem;margin-top:8px}.guide{color:var(--muted);margin-bottom:12px}.quiz-list{display:grid;gap:12px}.question{max-width:100%;border:1px solid var(--line);border-radius:13px;margin:0;padding:10px 12px}.question legend{font-weight:700;padding:0 5px}.options{display:flex;flex-wrap:wrap;gap:6px 17px}.options label{display:flex;align-items:baseline;gap:6px;cursor:pointer}.options input{accent-color:var(--green)}.feedback{font-weight:650;min-height:1.5em;margin-top:8px}.feedback:empty{display:none}.good{color:var(--green)}.bad{color:var(--red)}.task-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.prompt{font-weight:650;margin-bottom:12px}.answer-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.answer-row input{width:132px;min-height:42px;border-radius:10px;border:1px solid #8da99a;padding:7px 10px;color:var(--ink);background:white}.hints{margin-top:14px;display:grid;gap:7px}.hints details{border:1px solid var(--line);border-radius:10px;padding:8px 10px}.hints summary{cursor:pointer;font-weight:700;color:var(--green);font-size:.9rem}.hints p{margin-top:6px;color:var(--muted);font-size:.9rem}.hints ol{margin:.45em 0 .15em;padding-left:22px}.hints li+li{margin-top:4px}.anim-link{display:inline-block;margin-top:8px;font-weight:700;text-underline-offset:3px}.end{display:flex;justify-content:flex-end}dialog{width:min(730px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;border:1px solid var(--line);border-radius:22px;padding:clamp(14px,3vw,25px);color:var(--ink)}dialog::backdrop{background:#14251cc0}dialog .plot{max-height:56vh;object-fit:contain}.modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.modal-head button{flex:none}.modal-copy{margin:8px 0 13px}.key{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green);margin-right:4px}.key.blue{background:var(--blue)}.key.red{background:var(--red)}.key.orange{background:#a26417}.notice{padding:8px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:#fbfcf7;color:var(--muted)}[hidden]{display:none!important}@media(max-width:950px){.layout{grid-template-columns:190px minmax(0,1fr);gap:16px}.route{padding:11px}.lab,.task-grid{gap:14px}}@media(max-width:760px){.layout{display:block}.route{position:static;margin-bottom:17px}.route nav{display:flex;overflow:auto;gap:4px;padding-bottom:5px}.topic{width:auto;white-space:nowrap;min-height:42px}.hero{min-height:238px}.hero canvas{width:55%;opacity:.37}.hero{display:block}.hero-copy{padding-block:29px}}@media(max-width:520px){.shell{width:calc(100% - 24px)}.lab,.task-grid{grid-template-columns:1fr}.hero{border-radius:22px;margin-top:14px}.top .shell{min-height:59px}.progress progress{display:none}.section-head{align-items:start}.panel-head{align-items:start}.top .progress{font-size:.78rem}}
+</style></head>
+<body><header class="top"><div class="shell"><a class="brand" href="#top"><span class="logo" aria-hidden="true">∿</span> Лаборатория графиков</a><div class="progress"><progress id="progress" value="0" max="1" aria-label="Решено задач"></progress><span id="progress-text"></span></div></div></header>
+<section class="hero shell" id="top"><div class="hero-copy"><h1>Приручи<br><span>графики.</span></h1><p>Подвигай коэффициенты, проверь себя и дострой кривую до искомой точки.</p></div><canvas id="hero-art" aria-hidden="true"></canvas></section>
+<div class="shell layout"><aside class="route"><h2>Темы</h2><nav id="topics" aria-label="Темы"></nav></aside><main id="lesson"></main></div>
+<dialog id="modal" aria-labelledby="modal-title"><div class="modal-head"><h2 id="modal-title"></h2><form method="dialog"><button class="btn" aria-label="Закрыть окно">Закрыть</button></form></div><div id="modal-content"></div></dialog>
+<script>
+"use strict";
+const byId=id=>document.getElementById(id);
+const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+const approx=(a,b)=>Math.abs(a-b)<1e-7*Math.max(1,Math.abs(b));
+const fmt=n=>Number.isFinite(n)?(Math.round(n*1000)/1000).toLocaleString('ru-RU',{maximumFractionDigits:3}).replace(/-/g,'−'):'—';
+const signed=n=>(n<0?' − ':' + ')+fmt(Math.abs(n));
+const scale=(a,s)=>a===1?s:a===-1?'−'+s:fmt(a)+'·'+s;
+const shift=h=>h===0?'x':'(x'+signed(-h)+')';
+const tail=k=>k===0?'':signed(k);
+const coefficient=(name,min,max,step,desc,from,to)=>({name,min,max,step,desc,from,to});
+const item=(p,points,x,pointSteps,coefSteps,view={},span=null)=>({p,points,x,pointSteps,coefSteps,view,span});
+const quiz=(q,a,w,e)=>({q,a,w,e});
+const curveA=coefficient('a',-3,3,.5,'Меняет вертикальный масштаб. Отрицательный знак отражает график по вертикали.',1,-2);
+const horizontal=coefficient('h',-3,3,.5,'Сдвигает график вправо при h > 0 и влево при h < 0.',-2,2);
+const vertical=coefficient('k',-4,4,.5,'Сдвигает весь график вверх или вниз.',-2,2);
+const topics=[
+{id:'line',name:'Прямая',symbol:'╱',template:'y = kx + b',initial:[1,1],params:[coefficient('k',-3,3,.25,'При шаге на 1 вправо y меняется на k.',-2,2),coefficient('b',-4,4,.5,'Высота пересечения с осью y.',-2,3)],f:(x,[k,b])=>k*x+b,formula:([k,b])=>scale(k,'x')+tail(b),anchors:([k,b])=>[[0,b],[1,b+k]],intro:'Две разные точки задают прямую. На сетке удобно искать повторяющийся шаг.',quiz:[
+quiz('При k = −2 и шаге на 1 вправо как меняется y?','Уменьшается на 2',['Растёт на 2','Уменьшается на 1'],'Изменение y равно k·Δx.'),
+quiz('Где видно b?','В точке (0; b)',['В точке (b; 0)','На любой точке с x = 1'],'Подставь x = 0 в y = kx + b.')],tasks:[
+item([1.5,1],[[0,1],[2,4]],4,['От A до B сделай 2 клетки вправо и 3 вверх.','Повтори тот же шаг из B.'],['Найди k = (4 − 1)/(2 − 0).','Подставь b = 1, затем x = 4.']),
+item([-.5,2],[[-2,3],[2,1]],6,['Из A в B получилось 4 вправо и 2 вниз.','Повтори этот шаг от B до x = 6.'],['Посчитай k = (1 − 3)/(2 − (−2)).','Подставь B в y = kx + b и найди b.']),
+item([2,-3],[[0,-3],[2,1]],5,['Поделив шаг A → B пополам, получишь 1 вправо и 2 вверх.','Повтори малый шаг три раза из B.'],['Прочитай b по A. Найди k как отношение прироста y к приросту x.','Подставь x = 5.'])]},
+{id:'parabola',name:'Парабола',symbol:'∪',template:'y = a(x − h)² + k',initial:[1,0,0],params:[curveA,horizontal,vertical],f:(x,[a,h,k])=>a*(x-h)**2+k,formula:([a,h,k])=>scale(a,shift(h)+'²')+tail(k),anchors:([a,h,k])=>[[h,k],[h+1,k+a]],intro:'Вершина — (h; k), ось симметрии — x = h. При a < 0 ветви направлены вниз.',quiz:[
+quiz('Где вершина y = −2(x − 3)² + 1?','(3; 1)',['(−3; 1)','(3; −1)'],'Квадрат равен нулю при x = 3.'),
+quiz('У вершины (2; 1). Точка (4; 5) на графике. Где её отражение?','(0; 5)',['(−4; 5)','(0; −5)'],'Отложи те же 2 клетки влево от оси x = 2.')],tasks:[
+item([1,2,-2],[[2,-2],[3,-1]],0,['Сначала представь точку на x = 4. Она вдвое дальше от вершины, чем B.','Высота над вершиной вырастет в 4 раза. Отрази точку относительно x = 2.'],['По вершине возьми h = 2 и k = −2.','Подставь (3; −1) для нахождения a, затем x = 0.']),
+item([-1,-1,4],[[-1,4],[1,0]],-3,['B находится на 2 клетки правее вершины.','Найди точку на таком же расстоянии слева. На одной горизонтали высоты равны.'],['Возьми h = −1 и k = 4.','Из 0 = a·2² + 4 найди a и вычисли f(−3).'],{},[-1,2.3]),
+item([.5,1,1],[[1,1],[3,3]],5,['x = 5 вдвое дальше от вершины, чем B.','При удвоении расстояния высота над вершиной умножается на 4.'],['Подставь B в 3 = a(3 − 1)² + 1.','Подставь найденное a и x = 5.'])]},
+{id:'cubic',name:'Кубическая',symbol:'∿',template:'y = a(x − h)³ + k',initial:[1,0,0],params:[curveA,horizontal,vertical],f:(x,[a,h,k])=>a*(x-h)**3+k,formula:([a,h,k])=>scale(a,shift(h)+'³')+tail(k),anchors:([a,h,k])=>[[h,k],[h+1,k+a]],intro:'Точка (h; k) — центр симметрии. При удвоении расстояния до центра по x отклонение по y умножается на 8.',quiz:[
+quiz('На графике с центром (1; 2) есть точка (2; 5). Где симметричная точка?','(0; −1)',['(0; 5)','(−2; −5)'],'Отними от центра вектор (+1; +3).'),
+quiz('Отклонение по y при удвоении отклонения по x…','Умножается на 8',['Умножается на 4','Удваивается'],'В формуле стоит куб. 2³ = 8.')],tasks:[
+item([.5,1,1],[[1,1],[2,1.5]],3,['От центра до B смещение вправо 1, вверх 0,5.','На x = 3 горизонтальное смещение вдвое больше, вертикальное — в 8 раз больше.'],['Центр даёт h = 1 и k = 1.','Подставь B в формулу, чтобы найти a.']),
+item([-1,0,2],[[0,2],[1,1]],-1,['B относительно центра смещена на 1 вправо и 1 вниз.','Поверни B вокруг A на 180°.'],['Возьми h = 0, k = 2.','Из 1 = a + 2 найди a и подставь x = −1.']),
+item([1,-1,-2],[[-1,-2],[0,-1]],1,['От A до B по горизонтали 1, по вертикали 1.','На x = 1 расстояние от A удвоится, а отклонение по y станет в 8 раз больше.'],['Возьми h = −1, k = −2, найди a по B.','Вычисли (1 − h)³ и добавь k.'])]},
+{id:'hyperbola',name:'Гипербола',symbol:'⌁',template:'y = a/(x − h) + k',initial:[2,0,0],params:[curveA,horizontal,vertical],f:(x,[a,h,k])=>a/(x-h)+k,valid:(x,[a,h])=>x!==h,formula:([a,h,k])=>fmt(a)+' / '+shift(h)+tail(k),anchors:([a,h,k])=>[[h+1,k+a],[h-1,k-a]],asym:([a,h,k])=>[h,k],intro:'Асимптоты x = h и y = k отмечены пунктиром. На каждой ветви произведение (x − h)(y − k) постоянно.',quiz:[
+quiz('Где вертикальная асимптота y = 4/(x − 2) + 1?','x = 2',['x = −2','y = 1'],'Знаменатель становится нулём при x = 2.'),
+quiz('Если расстояние до вертикальной асимптоты удвоилось на той же ветви, что происходит с расстоянием до горизонтальной?','Оно уменьшается вдвое',['Оно удваивается','Оно уменьшается в 4 раза'],'Произведение этих расстояний остаётся постоянным.')],tasks:[
+item([4,0,0],[[1,4],[2,2]],4,['На x = 4 расстояние до вертикальной асимптоты вдвое больше, чем у B.','Значит, расстояние от B до горизонтальной асимптоты нужно поделить пополам.'],['Асимптоты дают h = 0 и k = 0.','Умножь координаты B, чтобы найти a.'],{},[.8,2.5]),
+item([6,1,-1],[[2,5],[3,2]],7,['B находится на 2 клетки правее асимптоты x = 1.','На x = 7 это расстояние втрое больше. Уменьши в 3 раза расстояние до y = −1.'],['Прочитай h и k по пунктиру.','По B найди a = (3 − 1)(2 − (−1)).'],{xmax:8},[1.7,4]),
+item([-4,-1,2],[[0,-2],[1,0]],3,['У B горизонтальное расстояние до асимптоты равно 2. На x = 3 оно удваивается.','Отступи от горизонтальной асимптоты вниз на половину прежнего расстояния.'],['Прочитай h и k по пунктиру.','По A найди a = (0 + 1)(−2 − 2) и подставь x = 3.'],{},[-.4,1.7])]},
+{id:'root',name:'Квадратный корень',symbol:'√',template:'y = a√(x − h) + k',initial:[1,0,0],params:[curveA,horizontal,vertical],f:(x,[a,h,k])=>a*Math.sqrt(x-h)+k,valid:(x,[a,h])=>x>=h,formula:([a,h,k])=>scale(a,'√'+(h===0?'x':shift(h)))+tail(k),anchors:([a,h,k])=>[[h,k],[h+1,k+a]],intro:'График начинается в точке (h; k) и идёт вправо. Удобные шаги по x от начала — 1, 4, 9.',quiz:[
+quiz('Где начинается y = 2√(x + 3) − 1?','(−3; −1)',['(3; −1)','(−3; 1)'],'Выражение под корнем равно нулю при x = −3.'),
+quiz('При увеличении расстояния от начала по x с 1 до 4 расстояние по y…','Удваивается',['Умножается на 4','Уменьшается вдвое'],'√4 = 2, а √1 = 1.')],tasks:[
+item([2,1,-1],[[1,-1],[2,1]],5,['От A до B по x 1 клетка, по y 2.','На x = 5 расстояние от A по x равно 4. Удвой подъём от A.'],['Начальная точка даёт h = 1, k = −1.','Подставь B в 1 = a√(2 − 1) − 1.']),
+item([-1,-2,3],[[-2,3],[-1,2]],2,['От А до B при шаге вправо на 1 график опустился на 1.','На расстоянии 4 вправо от А опускание вдвое больше.'],['Подставь h = −2 и k = 3 в формулу.','Из B получи a = −1 и подставь x = 2.']),
+item([1,-3,-2],[[-3,-2],[1,0]],6,['Горизонтальные отступы от A равны 4 для B и 9 для искомой точки.','Вертикальные отступы относятся как √4 к √9, то есть 2 к 3.'],['По A возьми h = −3 и k = −2.','Найди a из 0 = a√4 − 2 и подставь x = 6.'],{xmax:8})]},
+{id:'exponential',name:'Показательная',symbol:'⌟',template:'y = a·bˣ + k',initial:[1,2,0],params:[curveA,coefficient('b',.5,3,.25,'При шаге на 1 вправо отклонение y − k умножается на b.',.5,2.5),vertical],f:(x,[a,b,k])=>a*b**x+k,formula:([a,b,k])=>scale(a,'('+fmt(b)+')ˣ')+tail(k),anchors:([a,b,k])=>[[0,a+k],[1,a*b+k]],asym:([a,b,k])=>[null,k],intro:'При a ≠ 0 и b ≠ 1 прямая y = k — горизонтальная асимптота. При b = 1 график становится горизонтальной прямой.',quiz:[
+quiz('Как изменится y − k за один шаг вправо при b = 2?','Умножится на 2',['Прибавится 2','Разделится на 2'],'bˣ⁺¹ = b·bˣ.'),
+quiz('Что показывает точка при x = 0?','y = a + k',['y = k','y = b + k'],'Любое положительное основание в нулевой степени равно 1.')],tasks:[
+item([1,2,-1],[[0,0],[1,1]],3,['Расстояние над пунктиром y = −1 удвоилось из A в B.','Два следующих шага вправо — ещё два удвоения.'],['Из A получи a = 0 − (−1).','Раздели (yᴮ − k) на (yᴬ − k), чтобы найти b. Подставь x = 3.']),
+item([4,.5,1],[[0,5],[1,3]],3,['Из A в B расстояние над y = 1 сократилось с 4 до 2.','Повтори деление пополам для x = 2 и x = 3.'],['Асимптота даёт k = 1; A даёт a = 4.','Из B найди b = (3 − 1)/4 и подставь x = 3.']),
+item([-1,2,3],[[0,2],[1,1]],3,['Из A в B расстояние под y = 3 удвоилось.','На x = 3 сделай ещё два удвоения. Искомая точка останется под асимптотой.'],['Из A вычисли a = 2 − 3.','Подставь B, найди b и вычисли f(3).'])]},
+{id:'log',name:'Логарифмическая',symbol:'⤴',template:'y = a·logᵦ(x − h) + k',initial:[1,2,0,0],params:[curveA,{...coefficient('b',0,5,1,'Основание меняет горизонтальный масштаб. При 0 < b < 1 меняется направление.',.5,3),values:[.5,.75,1.5,2,3,4]},horizontal,vertical],f:(x,[a,b,h,k])=>a*Math.log(x-h)/Math.log(b)+k,valid:(x,[a,b,h])=>x>h,formula:([a,b,h,k])=>scale(a,'log('+shift(h)+'; осн. '+fmt(b)+')')+tail(k),anchors:([a,b,h,k])=>[[h+1,k],[h+b,k+a]],asym:([a,b,h])=>[h,null],intro:'График расположен справа от асимптоты x = h. Умножь расстояние x − h на b, и y изменится на a.',quiz:[
+quiz('При каком x график достигает y = k?','x = h + 1',['x = h','x = h + b'],'Логарифм единицы равен нулю.'),
+quiz('Что происходит с y, если расстояние до x = h умножить на b?','Прибавляется a',['Умножается на a','Прибавляется h'],'Логарифм произведения bx отличается от logᵦx на 1.')],tasks:[
+item([1,2,0,0],[[1,0],[2,1]],8,['Из A в B расстояние по x до асимптоты удвоилось, а y вырос на 1.','От 2 до 8 нужно ещё два удвоения; каждое добавляет 1 к y.'],['Для формы y = logᵦ x подставь B: logᵦ2 = 1.','Найди b и ответь, в какой степени b даёт 8.'],{xmax:10},[.65,2.8]),
+item([1,3,-1,1],[[0,1],[2,2]],8,['Отступ от асимптоты x = −1 из A в B вырос с 1 до 3.','На x = 8 отступ равен 9. Это ещё одно утроение.'],['Здесь a = 1, h = −1 и k = 1.','По B получи logᵦ3 = 1 и подставь x = 8.'],{xmax:10},[-.4,3.4]),
+item([-1,2,1,2],[[2,2],[3,1]],9,['В точках A и B расстояние от x = 1 равно 1 и 2; y падает на 1.','Для x = 9 отступ равен 8. Сделай ещё два удвоения.'],['Здесь a = −1, h = 1 и k = 2.','Из B следует logᵦ2 = 1. Подставь x = 9.'],{xmax:11},[1.45,4])]},
+{id:'sin',name:'Синус',symbol:'∿',template:'y = a·sin(ω(x − h)) + k',initial:[2,1,0,0],params:[curveA,coefficient('ω',.5,2,.5,'Чем больше ω, тем короче период. T = 2π/ω.',.5,2),horizontal,vertical],trig:true,f:(x,[a,w,h,k])=>a*Math.sin(w*Math.PI*(x-h))+k,anchors:([a,w,h,k])=>[[h,k],[h+.5/w,k+a]],intro:'Амплитуда равна |a|, средняя линия — y = k, период — 2π/ω. Горизонтальная ось размечена в долях π.',quiz:[
+quiz('Чему равна амплитуда y = −3·sin x + 1?','3',['−3','1'],'Амплитуда — расстояние от средней линии до максимума.'),
+quiz('Каков период y = sin(2x)?','π',['2π','4π'],'T = 2π/ω. При ω = 2 период вдвое короче.')],tasks:[
+item([2,1,0,0],[[0,0],[.5,2]],1.5,['A — пересечение средней линии снизу вверх, B — ближайший максимум.','Шаг между ними равен четверти периода. Ещё четверть — средняя линия, затем минимум.'],['Здесь h = 0, k = 0. По B видно a = 2.','Между A и B четверть периода, π/2. Получи ω = 1 и подставь x = 3π/2.']),
+item([1,2,0,1],[[0,1],[.25,2]],.75,['A лежит на средней линии, B — ближайший максимум.','Через четверть периода после B будет средняя линия, ещё через четверть — минимум.'],['Средняя линия даёт k = 1, максимум даёт a = 1.','По четверти периода π/4 найди ω = 2. Подставь x = 3π/4.']),
+item([-2,1,0,2],[[0,2],[.5,0]],2.5,['B — минимум. График повторяется через 2π.','Отметь x = π/2 + 2π. Высота та же, что у B.'],['По A возьми k = 2, по B a = −2.','Период 2π, следовательно ω = 1. Подставь x = 5π/2.'],{xmax:3})]},
+{id:'cos',name:'Косинус',symbol:'∼',template:'y = a·cos(ω(x − h)) + k',initial:[2,1,0,0],params:[curveA,coefficient('ω',.5,2,.5,'Задаёт период T = 2π/ω.',.5,2),horizontal,vertical],trig:true,f:(x,[a,w,h,k])=>a*Math.cos(w*Math.PI*(x-h))+k,anchors:([a,w,h,k])=>[[h,k+a],[h+.5/w,k]],intro:'Если a > 0, то при x = h косинус на вершине волны. Средняя линия y = k проходит посередине между максимумом и минимумом.',quiz:[
+quiz('Каков максимум y = 2·cos x + 3?','5',['2','3'],'К средней линии y = 3 добавь амплитуду 2.'),
+quiz('На каком расстоянии от максимума находится следующий минимум?','Половина периода',['Четверть периода','Целый период'],'За половину периода cos меняется с 1 на −1.')],tasks:[
+item([3,1,0,0],[[0,3],[.5,0]],1,['A — максимум, B — ближайшее пересечение средней линии.','Сделай от B ещё один точно такой же горизонтальный шаг. Получится минимум.'],['A даёт a = 3, B лежит на y = 0.','Четверть периода равна π/2, значит ω = 1. Подставь x = π.']),
+item([2,2,0,-1],[[0,1],[.25,-1]],.5,['От A до B — четверть периода.','От B до ближайшего минимума такой же шаг. Он на 2 клетки ниже средней линии.'],['Средняя линия k = −1. Из A получи a = 2.','Четверть периода равна π/4, значит ω = 2. Подставь x = π/2.']),
+item([1,1,.5,2],[[.5,3],[1,2]],1.5,['A — максимум, B — точка на средней линии.','Ещё один шаг на π/2 задаёт положение минимума.'],['Максимум даёт h = π/2. Средняя линия k = 2, амплитуда a = 1.','Подставь x = 3π/2. Из аргумента x вычти π/2.'])]}
+];
+
+const numberText=(n,trig=false)=>{
+  if(!trig || n===0)return fmt(n);
+  const fourths=Math.round(n*4);
+  if(!approx(n,fourths/4))return fmt(n)+'π';
+  const denom=fourths%4===0?1:fourths%2===0?2:4;
+  const count=Math.abs(fourths*denom/4);
+  return (n<0?'−':'')+(count===1?'':count)+'π'+(denom===1?'':'/'+denom);
+};
+const valueText=n=>fmt(n);
+const pointText=(x,y,t)=>'('+numberText(x,t.trig)+'; '+valueText(y)+')';
+const fixed=(n)=>Math.abs(n)<1e-10?0:n;
+const allTasks=topics.reduce((sum,t)=>sum+t.tasks.length,0);
+function restore(){
+  try{
+    const data=JSON.parse(localStorage.getItem('graph-lab-progress-v1'));
+    return {solved:new Set(Array.isArray(data?.solved)?data.solved:[]),passed:new Set(Array.isArray(data?.passed)?data.passed:[])};
+  }catch{return {solved:new Set(),passed:new Set()};}
+}
+const progress=restore();
+function persist(){
+  try{localStorage.setItem('graph-lab-progress-v1',JSON.stringify({solved:[...progress.solved],passed:[...progress.passed]}));}catch{}
+  refreshProgress();
+}
+let topicIndex=0, taskIndex=0, params=[], labFrame=0, modalFrame=0, modalTrigger=null;
+let accepted=null;
+const modal=byId('modal');
+const width=420,height=330,pad={left:38,right:21,top:19,bottom:31};
+const regular={xmin:-6,xmax:7,ymin:-6,ymax:8,dx:1,dy:1};
+function taskView(t,task,extraY=[]){
+  const supplied=task.view;
+  const base=t.trig?{xmin:-.5,xmax:2,ymin:-5,ymax:6,dx:.25,dy:1}:regular;
+  const answer=fixed(t.f(task.x,task.p));
+  const xs=[task.x,...task.points.map(p=>p[0])];
+  const ys=[answer,...task.points.map(p=>p[1]),...extraY];
+  const view={...base,...supplied};
+  view.xmin=Math.min(view.xmin,Math.min(...xs)-view.dx);
+  view.xmax=Math.max(view.xmax,Math.max(...xs)+view.dx);
+  view.ymin=Math.min(view.ymin,Math.floor(Math.min(...ys)-.6));
+  view.ymax=Math.max(view.ymax,Math.ceil(Math.max(...ys)+.6));
+  if(view.ymax-view.ymin>18)view.dy=Math.ceil((view.ymax-view.ymin)/14);
+  return view;
+}
+function plot(canvas,t,p,view,opt={}){
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  if(!ctx)return;
+  const dpr=Math.min(window.devicePixelRatio||1,3);
+  const cw=width*dpr,ch=height*dpr;
+  if(canvas.width!==Math.round(cw)||canvas.height!==Math.round(ch)){
+    canvas.width=Math.round(cw);
+    canvas.height=Math.round(ch);
+  }
+  ctx.setTransform(canvas.width/width,0,0,canvas.height/height,0,0);
+  ctx.clearRect(0,0,width,height);
+  const {xmin,xmax,ymin,ymax,dx,dy}=view;
+  const right=width-pad.right,bottom=height-pad.bottom;
+  const px=x=>pad.left+(x-xmin)*(right-pad.left)/(xmax-xmin);
+  const py=y=>bottom-(y-ymin)*(bottom-pad.top)/(ymax-ymin);
+  const axisX=Math.max(pad.left,Math.min(right,px(0)));
+  const axisY=Math.max(pad.top,Math.min(bottom,py(0)));
+  function line(x1,y1,x2,y2,color,w=1,dash=[]){
+    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=w;ctx.setLineDash(dash);
+    ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);
+  }
+  function text(s,x,y,color='#43584c',align='center'){
+    ctx.font='12px system-ui, sans-serif';ctx.fillStyle=color;ctx.textAlign=align;
+    ctx.fillText(s,x,y);
+  }
+  for(let j=Math.ceil(xmin/dx);j<=Math.floor(xmax/dx);j++){
+    const val=j*dx,x=px(val);
+    line(x,pad.top,x,bottom,'#dce8de');
+    if(j!==0&&(!t.trig||j%2===0)&&((xmax-xmin)/dx<17||j%2===0))text(numberText(val,t.trig),x,bottom+16);
+  }
+  for(let j=Math.ceil(ymin/dy);j<=Math.floor(ymax/dy);j++){
+    const val=j*dy,y=py(val);
+    line(pad.left,y,right,y,'#dce8de');
+    if(j!==0)text(fmt(val),pad.left-6,y+4,'#43584c','right');
+  }
+  line(pad.left,axisY,right,axisY,'#627c6d',1.4);
+  line(axisX,pad.top,axisX,bottom,'#627c6d',1.4);
+  if(xmin<=0&&xmax>=0)text('0',axisX,bottom+16);
+  text('x',width-9,Math.max(14,axisY-4));
+  text('y',Math.min(right,axisX+9),13);
+  ctx.save();
+  ctx.beginPath();ctx.rect(pad.left,pad.top,right-pad.left,bottom-pad.top);ctx.clip();
+  const asym=t.asym && !(t.id==='exponential' && (p[0]===0 || p[1]===1)) && !(t.id==='hyperbola'&&p[0]===0);
+  const aids=opt.aids??(asym?t.asym(p):t.trig?[null,p[3]]:[]);
+  if(Number.isFinite(aids[0]))line(px(aids[0]),pad.top,px(aids[0]),bottom,'#9e641b',1.6,[5,5]);
+  if(Number.isFinite(aids[1]))line(pad.left,py(aids[1]),right,py(aids[1]),'#9e641b',1.6,[5,5]);
+  function curve(values,from,to,color,w,dash){
+    const splits=t.id==='hyperbola'&&values[1]>from&&values[1]<to?[from,values[1],to]:[from,to];
+    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineJoin='round';ctx.lineCap='round';ctx.setLineDash(dash);
+    for(let part=0;part<splits.length-1;part++){
+      let start=splits[part],end=splits[part+1],drawing=false;
+      if(t.id==='root')start=Math.max(start,values[1]);
+      if(t.id==='log')start=Math.max(start,values[2]);
+      if(end<start)continue;
+      const steps=Math.max(2,Math.ceil((end-start)/(xmax-xmin)*750));
+      for(let i=0;i<=steps;i++){
+        const x=start+(end-start)*i/steps;
+        const y=t.valid&&!t.valid(x,values)?NaN:t.f(x,values);
+        if(!Number.isFinite(y)){drawing=false;continue;}
+        const yy=Math.max(-height*4,Math.min(height*5,py(y)));
+        if(drawing)ctx.lineTo(px(x),yy);else ctx.moveTo(px(x),yy);
+        drawing=true;
+      }
+    }
+    ctx.stroke();ctx.setLineDash([]);
+  }
+  if(opt.baseline)curve(t.initial,xmin,xmax,'#8884ac',1.55,[4,5]);
+  const span=opt.span??[xmin,xmax];
+  curve(p,Math.max(xmin,span[0]),Math.min(xmax,span[1]),'#176747',3.15,[]);
+  if(opt.extension){
+    for(const [a,b] of opt.extension)if(b>a)curve(p,a,b,'#5947b5',3.15,[]);
+  }
+  if(Number.isFinite(opt.target)){
+    line(px(opt.target),pad.top,px(opt.target),bottom,'#5947b5',1.45,[5,5]);
+  }
+  const points=opt.points??(opt.anchors?t.anchors(p):[]);
+  const drawPoints=points.map(([x,y],i)=>[x,y,opt.anchors?(i===0?'A':'B'):String.fromCharCode(65+i),'#176747',false]);
+  if(opt.marks)drawPoints.push(...opt.marks);
+  for(const [x,y,label,color,hollow] of drawPoints){
+    if(x<xmin||x>xmax||y<ymin||y>ymax)continue;
+    ctx.beginPath();ctx.arc(px(x),py(y),hollow?6:4.8,0,2*Math.PI);
+    ctx.fillStyle=hollow?'#f8fbf6':color;ctx.fill();ctx.strokeStyle=hollow?color:'#fff';ctx.lineWidth=2;ctx.stroke();
+    if(label)text(label,px(x)+(x>xmax-(xmax-xmin)*.11?-11:11),py(y)-9,color);
+  }
+  ctx.restore();
+  if(Number.isFinite(opt.target)){
+    const targetLabel=numberText(opt.target,t.trig);
+    ctx.fillStyle='#e8e2fa';ctx.fillRect(px(opt.target)-Math.max(10,targetLabel.length*4),bottom+3,Math.max(20,targetLabel.length*8),19);
+    text(targetLabel,px(opt.target),bottom+17,'#49368e');
+  }
+}
+function hero(){
+  const canvas=byId('hero-art'),box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);
+  if(!box.width||!box.height)return;
+  canvas.width=box.width*dpr;canvas.height=box.height*dpr;
+  const ctx=canvas.getContext('2d'),w=box.width,h=box.height,s=31,ox=w*.49,oy=h*.57;
+  ctx.scale(dpr,dpr);
+  ctx.strokeStyle='#355141';ctx.lineWidth=1;ctx.beginPath();
+  for(let x=ox%s;x<w;x+=s){ctx.moveTo(x,0);ctx.lineTo(x,h);}
+  for(let y=oy%s;y<h;y+=s){ctx.moveTo(0,y);ctx.lineTo(w,y);}
+  ctx.stroke();ctx.strokeStyle='#749681';ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(w,oy);ctx.moveTo(ox,0);ctx.lineTo(ox,h);ctx.stroke();
+  [ ['#d6f488',x=>.16*x*x-2],['#8ed6ad',x=>1.15*Math.sin(x*.73)+1.1] ].forEach(([color,f])=>{
+    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.6;
+    for(let i=0;i<=w;i+=2){
+      const y=oy-s*f((i-ox)/s);
+      if(i===0)ctx.moveTo(i,y);else ctx.lineTo(i,y);
+    }
+    ctx.stroke();
+  });
+  [[1,.16-2],[-2,1.15*Math.sin(-1.46)+1.1],[3,.16*9-2]].forEach(([x,y])=>{
+    ctx.fillStyle='#d6f488';ctx.beginPath();ctx.arc(ox+x*s,oy-y*s,4.8,0,Math.PI*2);ctx.fill();
+  });
+}
+function current(){return topics[topicIndex];}
+function key(t,i=taskIndex){return t.id+'-'+(i+1);}
+function refreshProgress(){
+  const total=topics.reduce((sum,t)=>sum+t.tasks.filter((task,i)=>progress.solved.has(key(t,i))).length,0);
+  byId('progress').max=allTasks;byId('progress').value=total;
+  byId('progress-text').textContent='Решено '+total+' из '+allTasks;
+  byId('topics').innerHTML=topics.map((t,i)=>{
+    const count=t.tasks.filter((task,j)=>progress.solved.has(key(t,j))).length;
+    return '<button type="button" class="topic '+(i===topicIndex?'active':'')+'" data-topic="'+i+'" '+(i===topicIndex?'aria-current="true"':'')+'><span class="mark" aria-hidden="true">'+(count===t.tasks.length?'✓':t.symbol)+'</span><span>'+t.name+'</span></button>';
+  }).join('');
+}
+function sliderValue(param,raw){return param.values?param.values[Number(raw)]:Number(raw);}
+function sliderRaw(param,value){return param.values?param.values.indexOf(value):value;}
+function formula(t,p){
+  if(t.id==='line'&&p[0]===0)return 'y = '+fmt(p[1]);
+  if(p[0]===0)return 'y = '+fmt(p.at(-1))+(t.id==='hyperbola'?'   (x ≠ '+fmt(p[1])+')':t.id==='root'?'   (x ≥ '+fmt(p[1])+')':t.id==='log'?'   (x > '+fmt(p[2])+')':'');
+  if(t.trig){
+    const [a,w,h,k]=p;
+    const arg=h===0?'x':'(x '+(h>0?'−':'+')+' '+numberText(Math.abs(h),true)+')';
+    return 'y = '+scale(a,t.id+'('+scale(w,arg)+')')+tail(k);
+  }
+  return 'y = '+t.formula(p);
+}
+function renderLesson(){
+  cancelAnimationFrame(labFrame);
+  const t=current();
+  params=[...t.initial];
+  const selectedQuiz=progress.passed.has(t.id);
+  const sliders=t.params.map((q,i)=>'<div class="slider"><label class="symbol" for="slider-'+i+'"><span>'+q.name+'</span><output id="value-'+i+'" for="slider-'+i+'"></output></label><input type="range" id="slider-'+i+'" data-param="'+i+'" min="'+q.min+'" max="'+q.max+'" step="'+q.step+'" value="'+sliderRaw(q,params[i])+'" aria-describedby="desc-'+i+'"><small id="desc-'+i+'">'+(t.trig&&q.name==='h'?'Сдвиг вдоль оси x. Единица на ползунке соответствует π.':q.desc)+'</small></div>').join('');
+  const questions=t.quiz.map((q,i)=>{
+    const options=[...q.w];options.splice((i+topicIndex)%3,0,q.a);
+    return '<fieldset class="question"><legend>'+q.q+'</legend><div class="options">'+options.map((o,j)=>'<label><input type="radio" name="q'+i+'" value="'+j+'" '+(o===q.a?'data-correct="true"':'')+'>'+o+'</label>').join('')+'</div><p class="feedback" id="quiz-'+i+'" aria-live="polite"></p></fieldset>';
+  }).join('');
+  byId('lesson').innerHTML='<div class="section-head" id="section-heading"><div><div class="eyebrow">Тема '+(topicIndex+1)+' из '+topics.length+'</div><h2>'+t.name+'</h2></div><span>'+t.template+'</span></div>'+
+  '<section class="panel" aria-labelledby="theory-title"><div class="panel-head"><h3 id="theory-title">Теория и анимация</h3></div><p class="guide">'+t.intro+'</p><div class="lab"><div><canvas class="plot" id="theory-plot" role="img" aria-label="График функции с подвижными коэффициентами"></canvas><div class="legend"><span><i class="key"></i>Текущий график</span><span><i class="key blue"></i>Начальное положение</span></div></div><div><div class="formula" id="formula"></div>'+sliders+'<div class="actions"><button type="button" class="btn bright" id="play-lab">Проиграть изменения</button><button type="button" class="btn" id="reset-lab">Сбросить</button></div><p class="feedback" id="lab-status" aria-live="polite"></p></div></div></section>'+
+  '<section class="panel" aria-labelledby="quiz-title"><div class="panel-head"><h3 id="quiz-title">Проверка перед задачами</h3><span id="quiz-state">'+(selectedQuiz?'Пройдено ✓':'')+'</span></div><form id="quiz-form"><div class="quiz-list">'+questions+'</div><div class="actions"><button class="btn">Проверить тест</button></div><p class="feedback" id="quiz-total" aria-live="polite"></p></form></section>'+
+  '<section class="panel" id="practice" aria-labelledby="practice-title"><div class="panel-head"><h3 id="practice-title">Дострой график</h3><span>'+t.tasks.length+' задачи</span></div><div class="task-tabs" id="task-tabs" aria-label="Задачи раздела"></div><div id="task"></div></section>'+
+  (topicIndex<topics.length-1?'<div class="end"><button class="btn primary" id="next-topic" type="button">Следующая тема</button></div>':'');
+  byId('quiz-form').addEventListener('submit',checkQuiz);
+  byId('play-lab').addEventListener('click',playLab);
+  byId('reset-lab').addEventListener('click',()=>{stopLab();params=[...t.initial];updateLab(true);});
+  byId('lesson').querySelectorAll('[data-param]').forEach(input=>input.addEventListener('input',()=>{
+    stopLab();
+    const i=Number(input.dataset.param);
+    params[i]=sliderValue(t.params[i],input.value);
+    updateLab();
+  }));
+  byId('next-topic')?.addEventListener('click',()=>chooseTopic(topicIndex+1,true));
+  byId('task-tabs').addEventListener('click',ev=>{
+    const button=ev.target.closest('[data-task]');
+    if(!button)return;
+    chooseTask(Number(button.dataset.task),true);
+  });
+  updateLab(true);
+  renderTask();
+  refreshProgress();
+}
+function updateLab(updateSliders=false){
+  const t=current();
+  byId('formula').textContent=formula(t,params);
+  t.params.forEach(({name},i)=>{
+    const value=t.trig&&name==='h'?numberText(params[i],true):fmt(params[i]);
+    byId('value-'+i).textContent=value;
+    byId('slider-'+i).setAttribute('aria-valuetext',value);
+    if(updateSliders)byId('slider-'+i).value=sliderRaw(t.params[i],params[i]);
+  });
+  const view=t.trig?{xmin:-4,xmax:4,ymin:-8,ymax:8,dx:.5,dy:2}:regular;
+  plot(byId('theory-plot'),t,params,view,{baseline:true,anchors:true});
+}
+function stopLab(){
+  cancelAnimationFrame(labFrame);labFrame=0;
+  byId('play-lab').textContent='Проиграть изменения';
+  byId('lab-status').textContent='';
+}
+function playLab(){
+  if(labFrame){stopLab();updateLab(true);return;}
+  const t=current(),button=byId('play-lab');
+  button.textContent='Остановить анимацию';
+  let previous=-1,start=null;
+  const duration=reduced.matches?1200:2050;
+  function frame(now){
+    if(start===null)start=now;
+    const stage=Math.floor((now-start)/duration);
+    if(stage>=t.params.length){
+      stopLab();params=[...t.initial];updateLab(true);
+      byId('lab-status').textContent='Теперь попробуй передвинуть ползунки.';
+      return;
+    }
+    const part=t.params[stage],elapsed=((now-start)%duration)/duration;
+    if(stage!==previous){
+      byId('lab-status').textContent=part.name+' · '+part.desc;
+      previous=stage;
+    }
+    params=[...t.initial];
+    const fraction=reduced.matches?1:Math.min(1,Math.max(0,(elapsed-.12)/.68));
+    if(part.values){
+      const first=part.values.indexOf(part.from),last=part.values.indexOf(part.to);
+      params[stage]=part.values[Math.round(first+(last-first)*fraction)];
+    }else{
+      const ideal=part.from+(part.to-part.from)*fraction;
+      params[stage]=part.min+Math.round((ideal-part.min)/part.step)*part.step;
+    }
+    updateLab(true);
+    labFrame=requestAnimationFrame(frame);
+  }
+  labFrame=requestAnimationFrame(frame);
+}
+function checkQuiz(event){
+  event.preventDefault();
+  const t=current();
+  let correct=0;
+  t.quiz.forEach((q,i)=>{
+    const checked=event.currentTarget.querySelector('input[name=q'+i+']:checked');
+    const good=checked?.dataset.correct==='true';
+    if(good)correct++;
+    const el=byId('quiz-'+i);
+    el.className='feedback '+(good?'good':'bad');
+    el.textContent=checked?(good?'Верно. ':'Попробуй ещё. ')+q.e:'Выбери один ответ.';
+  });
+  const el=byId('quiz-total');
+  if(correct===t.quiz.length){
+    progress.passed.add(t.id);persist();
+    byId('quiz-state').textContent='Пройдено ✓';
+    el.className='feedback good';el.textContent='Тест пройден. Попробуй применить эти правила к графику ниже.';
+  }else{
+    el.className='feedback bad';el.textContent='Верных ответов '+correct+' из '+t.quiz.length+'.';
+  }
+}
+function spanOf(task){
+  if(task.span)return task.span;
+  const xs=task.points.map(p=>p[0]),a=Math.min(...xs),b=Math.max(...xs);
+  const margin=Math.min(.32,(b-a)*.3);
+  return [a-margin,b+margin];
+}
+function taskTabs(){
+  const t=current();
+  byId('task-tabs').innerHTML=t.tasks.map((_,i)=>'<button class="btn" type="button" data-task="'+i+'" aria-pressed="'+(i===taskIndex)+'">Задача '+(i+1)+(progress.solved.has(key(t,i))?' ✓':'')+'</button>').join('');
+}
+function renderTask(){
+  const t=current(),task=t.tasks[taskIndex],x=numberText(task.x,t.trig);
+  accepted=null;taskTabs();
+  const pointLabels=task.points.map(([a,b],i)=>String.fromCharCode(65+i)+' '+pointText(a,b,t)).join(' · ');
+  const given=t.id==='log'?'<p class="notice">Известно '+['a = 1, h = 0, k = 0.','a = 1, h = −1, k = 1.','a = −1, h = 1, k = 2.'][taskIndex]+'</p>':'';
+  const hints=(title,steps)=>'<details><summary>'+title+'</summary><ol>'+steps.map(s=>'<li>'+s+'</li>').join('')+'</ol></details>';
+  byId('task').innerHTML='<div class="task-grid"><div><canvas id="task-plot" class="plot" role="img" aria-label="Фрагмент графика. '+pointLabels+'. Искомый x равен '+x+'."></canvas><div class="legend"><span>'+pointLabels+'</span><span><i class="key blue"></i>Искомый x</span></div></div>'+
+    '<div>'+given+'<p class="prompt">Найди значение функции при x = '+x+'.</p><form id="answer-form"><label for="answer">Твой ответ</label><div class="answer-row"><input id="answer" name="answer" inputmode="decimal" autocomplete="off" placeholder="Например, 2,5" aria-describedby="task-feedback"><button class="btn primary">Проверить</button></div></form>'+
+    '<p class="feedback" id="task-feedback" aria-live="polite"></p><div class="actions"><button class="btn bright" id="visual-check" type="button" hidden>Проверить на графике</button></div>'+
+    '<a class="anim-link" id="task-anim" href="#'+t.id+'/'+(taskIndex+1)+'/animation">Анимация к задаче</a><div class="hints">'+hints('Простой способ · через точки',task.pointSteps)+hints('Умный способ · через коэффициенты',task.coefSteps)+'</div></div></div>';
+  plot(byId('task-plot'),t,task.p,taskView(t,task),{span:spanOf(task),points:task.points,target:task.x});
+  byId('answer-form').addEventListener('submit',submitAnswer);
+  byId('answer').addEventListener('input',()=>{
+    accepted=null;byId('visual-check').hidden=true;byId('task-feedback').textContent='';
+  });
+  byId('visual-check').addEventListener('click',ev=>showVisual(t,task,accepted,ev.currentTarget));
+  byId('task-anim').addEventListener('click',ev=>{
+    ev.preventDefault();
+    history.replaceState(null,'',ev.currentTarget.hash);
+    showGuide(t,task,ev.currentTarget);
+  });
+}
+function parseAnswer(raw){
+  const value=raw.trim().replace(/[−–]/g,'-').replace(/,/g,'.');
+  const parts=value.split('/').map(p=>p.trim());
+  if(parts.length>2||parts.some(p=>!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(p)))return null;
+  const result=Number(parts[0])/(parts.length===1?1:Number(parts[1]));
+  return Number.isFinite(result)?result:null;
+}
+function submitAnswer(event){
+  event.preventDefault();
+  const t=current(),task=t.tasks[taskIndex];
+  const input=byId('answer'),value=parseAnswer(input.value),feedback=byId('task-feedback');
+  if(value===null){
+    feedback.className='feedback bad';
+    feedback.textContent='Введи число. Можно использовать запятую или дробь, например 3/2.';
+    input.focus();
+    return;
+  }
+  accepted=value;
+  const correct=approx(value,fixed(t.f(task.x,task.p)));
+  feedback.className='feedback '+(correct?'good':'bad');
+  feedback.textContent=correct?'Верно! Посмотри, как точка ложится на график.':'Пока мимо. Дострой график, чтобы увидеть расхождение.';
+  if(correct){
+    progress.solved.add(key(t));persist();taskTabs();
+  }
+  byId('visual-check').hidden=false;
+}
+function openModal(title,content,trigger){
+  cancelAnimationFrame(modalFrame);modalFrame=0;
+  modalTrigger=trigger??document.activeElement;
+  byId('modal-title').textContent=title;
+  byId('modal-content').innerHTML=content;
+  if(!modal.open)modal.showModal();
+}
+function animateExtension(t,task,canvas,marks,view,callback){
+  cancelAnimationFrame(modalFrame);
+  const known=spanOf(task),target=task.x;
+  const end=target<known[0]?Math.max(view.xmin,target-view.dx*.65):Math.min(view.xmax,target+view.dx*.65);
+  const from=target<known[0]?known[0]:known[1];
+  const onLeft=target<known[0];
+  const inside=target>=known[0]&&target<=known[1];
+  let start=null;
+  function tick(now){
+    if(start===null)start=now;
+    const phase=reduced.matches?1:Math.min(1,(now-start)/900);
+    const tip=from+(end-from)*(1-(1-phase)**2);
+    const extension=inside?[]:[onLeft?[tip,from]:[from,tip]];
+    plot(canvas,t,task.p,view,{span:known,extension,points:task.points,target,marks:phase===1?marks:[]});
+    if(phase<1)modalFrame=requestAnimationFrame(tick);else{modalFrame=0;callback?.();}
+  }
+  modalFrame=requestAnimationFrame(tick);
+}
+function showVisual(t,task,value,trigger){
+  if(value===null)return;
+  const real=fixed(t.f(task.x,task.p)),correct=approx(value,real),x=task.x;
+  const baseView=taskView(t,task);
+  const displayValue=Math.max(-1e5,Math.min(1e5,value));
+  const view=taskView(t,task,Math.abs(value)<=35?[value]:[]);
+  const inView=displayValue>=view.ymin&&displayValue<=view.ymax;
+  const plotted=correct?real:displayValue;
+  const marks=correct?[[x,real,'P','#176747',false]]:[[x,real,'P','#176747',false],...(inView?[[x,plotted,'Твой','#a53535',true]]:[])];
+  const statement=correct?'Твоя точка совпала с точкой графика.':'При одном и том же x у точек разная высота.';
+  const coordinates=correct?'Точка графика P '+pointText(x,real,t)+' — твой ответ.':'Точка графика P '+pointText(x,real,t)+'. Твоя точка '+pointText(x,value,t)+'.'+(inView?'':' Твоя точка за пределами сетки '+(value>baseView.ymax?'выше.':'ниже.'));
+  openModal('Визуальная проверка','<canvas class="plot" id="modal-plot" role="img" aria-label="Достроенный график с отмеченными точками"></canvas>'+
+    '<div class="legend"><span><i class="key"></i>Исходный фрагмент и точка P</span><span><i class="key blue"></i>Достроенный участок</span>'+(correct?'':'<span><i class="key red"></i>Твой ответ</span>')+'</div>'+
+    '<p class="modal-copy '+(correct?'good':'bad')+'" id="visual-result" aria-live="polite" hidden><strong>'+statement+'</strong><br>'+coordinates+'</p><div class="actions"><button class="btn" type="button" id="replay">Повторить построение</button></div>',trigger);
+  function play(){
+    byId('visual-result').hidden=true;
+    animateExtension(t,task,byId('modal-plot'),marks,view,()=>{byId('visual-result').hidden=false;});
+  }
+  byId('replay').addEventListener('click',play);play();
+}
+function showGuide(t,task,trigger){
+  const real=fixed(t.f(task.x,task.p));
+  const supplied=task.points.map(([x,y],i)=>String.fromCharCode(65+i)+' '+pointText(x,y,t)).join(' · ');
+  openModal('Анимация к задаче','<canvas class="plot" id="modal-plot" role="img" aria-label="График задачи по шагам"></canvas><p class="modal-copy" id="guide-description" aria-live="polite"></p><div class="actions"><button class="btn" type="button" id="guide-prev">Назад</button><button class="btn bright" type="button" id="guide-next">Следующий шаг</button></div>',trigger);
+  let step=0;
+  const view=taskView(t,task),canvas=byId('modal-plot'),description=byId('guide-description');
+  const next=byId('guide-next'),prev=byId('guide-prev');
+  function render(){
+    cancelAnimationFrame(modalFrame);modalFrame=0;
+    prev.disabled=step===0;
+    next.textContent=step===3?'Сначала':'Следующий шаг';
+    if(step===3){
+      description.textContent='Смотри, где вертикаль пересекает достроенный график.';
+      animateExtension(t,task,canvas,[[task.x,real,'P','#176747',false]],view,()=>{
+        description.textContent='Точка пересечения P '+pointText(task.x,real,t)+'. Прочитай её координату y.';
+      });
+      return;
+    }
+    const labels=['Начни с отмеченных точек · '+supplied+'.',...task.pointSteps];
+    description.textContent=labels[step];
+    plot(canvas,t,task.p,view,{span:spanOf(task),points:task.points,target:step>0?task.x:null});
+  }
+  prev.addEventListener('click',()=>{step=Math.max(0,step-1);render();});
+  next.addEventListener('click',()=>{step=(step+1)%4;render();});
+  render();
+}
+function chooseTopic(index,scroll){
+  topicIndex=index;taskIndex=0;renderLesson();
+  history.replaceState(null,'','#'+current().id);
+  if(scroll){byId('section-heading').scrollIntoView({block:'start',behavior:reduced.matches?'instant':'smooth'});byId('section-heading').querySelector('h2').setAttribute('tabindex','-1');byId('section-heading').querySelector('h2').focus({preventScroll:true});}
+}
+function chooseTask(index,update){
+  taskIndex=index;renderTask();
+  if(update){
+    history.replaceState(null,'','#'+current().id+'/'+(index+1));
+    byId('task-tabs').querySelector('[data-task="'+index+'"]').focus({preventScroll:true});
+  }
+}
+function routeHash(){
+  const [id,n,animation]=location.hash.slice(1).split('/');
+  const found=topics.findIndex(t=>t.id===id);
+  if(found<0)return false;
+  topicIndex=found;
+  const number=Number(n);
+  taskIndex=Number.isInteger(number)&&number>0&&number<=current().tasks.length?number-1:0;
+  renderLesson();
+  if(n)byId('practice').scrollIntoView({block:'start'});
+  if(animation==='animation')showGuide(current(),current().tasks[taskIndex],byId('task-anim'));
+  return true;
+}
+modal.addEventListener('close',()=>{
+  cancelAnimationFrame(modalFrame);modalFrame=0;
+  if(location.hash.endsWith('/animation'))history.replaceState(null,'','#'+current().id+'/'+(taskIndex+1));
+  modalTrigger?.focus({preventScroll:true});modalTrigger=null;
+});
+byId('topics').addEventListener('click',ev=>{
+  const button=ev.target.closest('[data-topic]');
+  if(button)chooseTopic(Number(button.dataset.topic),true);
+});
+addEventListener('hashchange',()=>{if(modal.open)modal.close();routeHash();});
+new ResizeObserver(hero).observe(byId('hero-art'));
+if(!routeHash())renderLesson();
+
+</script>
+</body></html>
